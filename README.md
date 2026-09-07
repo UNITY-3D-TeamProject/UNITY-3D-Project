@@ -90,8 +90,29 @@ K-POP 가수를 꿈꾸는 폰 주인의 잠긴 노래 파일을 해제하고, �
 - 담당 씬 / 프리팹 정상 실행 여부
 - 불필요한 Git 변경 사항 생성 여부
 
-> `Library/`, `Temp/`, `Logs/` 등 Unity가 자동 생성하는 폴더는 `.gitignore`로 관리한다.
+### 폴더 구조 및 Git Ignore 정책
 
+본 프로젝트는 외부 에셋과 자체 에셋이 섞이는 것을 방지하기 위해 **모든 작업물을 `Assets/_Project/` 폴더 내부**에서 관리한다.
+
+```text
+Assets/
+  ├─ _Project/          # 프로젝트 메인 폴더 (모든 자체 작업물은 이 안에서 관리)
+  │   ├─ Animations/    # 애니메이션 클립, 컨트롤러 등
+  │   ├─ Art/           # 3D 모델, 텍스처, 머티리얼 등
+  │   ├─ Audio/         # 배경음악, 효과음 등
+  │   ├─ Prefabs/       # 프리팹
+  │   ├─ Scenes/        # 씬 파일
+  │   ├─ ScriptableObjects/ # 데이터 에셋
+  │   ├─ Scripts/       # C# 스크립트 (세부 기능별 하위 폴더 권장)
+  │   ├─ Settings/      # URP 및 기타 글로벌 세팅
+  │   └─ UI/            # 2D UI 에셋 및 스프라이트
+  ├─ ThirdParty/        # 외부 스토어 에셋 및 대용량 플러그인 (Git 제외)
+  └─ Test/              # 개인 테스트용 폴더 (Git 제외)
+```
+
+**Git Ignore 주요 정책**
+- 용량이 크고 충돌이 잦은 외부 플러그인(`Assets/ThirdParty/`)과 개인의 테스트 결과물(`Assets/Test/`)은 깃허브에 공유되지 않도록 `.gitignore`에 의해 제외된다.
+- Unity가 자동 생성하는 `Library/`, `Temp/`, `Logs/` 폴더와 운영체제 환경 파일(`.DS_Store`, `Thumbs.db`)도 깃허브에 올라가지 않는다.
 ---
 
 ## 2. GitHub 협업 규칙
