@@ -56,8 +56,7 @@ K-POP 가수를 꿈꾸는 폰 주인의 잠긴 노래 파일을 해제하고, �
 - [1. 프로젝트 세팅](#1-프로젝트-세팅)
 - [2. GitHub 협업 규칙](#2-github-협업-규칙)
   - [2-1. 기본 작업 순서](#2-1-기본-작업-순서)
-  - [2-2. 브랜치 규칙](#2-2-브랜치-규칙)
-  - [2-3. 커밋 메시지 컨벤션](#2-3-커밋-메시지-컨벤션)
+  - [2-2. 브랜치 규칙 & 2-3. 커밋 메시지 컨벤션](#2-2-브랜치-규칙--2-3-커밋-메시지-컨벤션)
   - [2-4. 씬 / 프리팹 작업 규칙](#2-4-씬--프리팹-작업-규칙)
 - [3. GitHub Issue Template 사용법](#3-github-issue-template-사용법)
   - [3-1. 기능 제안](#3-1-기능-제안)
@@ -123,9 +122,9 @@ Assets/
 ```text
 Issue 확인 / 생성
         ↓
-작업 브랜치 생성
+develop 최신화
         ↓
-최신 develop 반영
+feature/{이름} 브랜치 생성
         ↓
 기능 / 버그 작업
         ↓
@@ -135,91 +134,20 @@ Commit
         ↓
 Push
         ↓
-Pull Request 생성
+develop 대상 Pull Request 생성
         ↓
 리뷰 및 수정
         ↓
 develop Merge
         ↓
-release 시점에 main 반영
+release/{버전} 분기 → main 반영
 ```
 
 `main`과 `develop`에는 직접 Push하지 않는다. 작업 브랜치에서 작업 후 PR을 통해 병합한다.
 
-### 2-2. 브랜치 규칙
+### 2-2. 브랜치 규칙 & 2-3. 커밋 메시지 컨벤션
 
-브랜치 이름은 다음 형식을 사용한다.
-
-```text
-feature/<issue-number>-<short-description>
-bugfix/<issue-number>-<short-description>
-refactor/<issue-number>-<short-description>
-chore/<issue-number>-<short-description>
-```
-
-예시:
-
-```text
-feature/12-player-movement
-bugfix/18-camera-limit
-refactor/21-enemy-fsm
-chore/25-readme-update
-```
-
-#### 작성 규칙
-
-- 작업 목적을 명확하게 작성한다.
-- 가능하면 Issue 번호를 포함한다.
-- 띄어쓰기 대신 `-`를 사용한다.
-- 하나의 브랜치에는 하나의 작업만 포함한다.
-
-### 2-3. 커밋 메시지 컨벤션
-
-#### 구조
-
-```text
-태그: 요약문
-- 작업자
-- 상세 작업 내용 1 (선택)
-- 상세 작업 내용 2 (선택)
-```
-
-#### 태그
-
-모든 태그는 소문자로 작성하며 콜론 뒤에 한 칸을 둔다.
-
-| 태그 | 용도 | 예시 |
-|---|---|---|
-| `feat` | 기능 / 시스템 / 스크립트 / 에셋 추가 | `feat: 플레이어 이동 및 점프 기능 구현` |
-| `fix` | 버그 / 에러 / 씬 / 프리팹 문제 수정 | `fix: 카메라 경계 이탈 오류 수정` |
-| `refactor` | 기능 변화 없이 구조 개선 / 최적화 | `refactor: 전투 상태 전환 구조 개선` |
-| `chore` | 폴더 / 패키지 / Git / 문서 작업 | `chore: GitHub Issue Template 추가` |
-
-#### 작성 규칙
-
-`~함`, `~했음` 대신 `~구현`, `~수정`, `~제거`, `~추가` 형태를 사용한다.
-
-권장:
-
-```text
-feat: 인벤토리 슬롯 드래그 앤 드롭 구현
-fix: 플레이어 낙하 시 콜라이더 끼임 현상 제거
-chore: README에 브랜치 전략 추가
-```
-
-지양:
-
-```text
-feat: 인벤토리 슬롯 드래그 앤 드롭 구현함
-fix: 버그 고쳤음
-```
-
-#### Commit 원칙
-
-- 하나의 Commit에는 하나의 논리적 변경만 포함한다.
-- 테스트하지 않은 기능을 정상 동작으로 기록하지 않는다.
-- 변경 내용을 확인할 수 있도록 작성한다.
-- Unity가 자동 생성하는 불필요한 파일은 Commit하지 않는다.
+이 프로젝트는 **Git-flow** 전략을 따른다. 브랜치 이름(`feature/{이름}`, `release/{버전}`, `hotfix/{이름}`)과 커밋 메시지 태그 규칙은 **[브랜치 & 커밋 컨벤션](./docs/commit-convention.md)** 문서를 따른다.
 
 ### 2-4. 씬 / 프리팹 작업 규칙
 
@@ -470,7 +398,7 @@ Issue 번호를 연결하면 PR 병합 시 관련 Issue가 자동으로 종료�
 
 ## 6. 코딩 컨벤션 (C#)
 
-코드 작성 시 팀 내 통일성을 유지하고 가독성을 높이기 위해 **[Unity 6 C# 코딩 컨벤션](./Unity6_CSharp_Convention.md)**을 참고한다.
+코드 작성 시 팀 내 통일성을 유지하고 가독성을 높이기 위해 **[Unity 6 C# 코딩 컨벤션](./docs/coding-convention.md)**을 참고한다.
 새로운 스크립트를 작성하거나 기존 코드를 수정할 때 해당 문서를 참조하여 작성한다.
 
 ---
@@ -607,5 +535,4 @@ PR에 출처 / 라이선스 기록
 본 프로젝트는 팀원들의 원활한 AI(Claude, Antigravity, Copilot 등) 협업을 위해 다음 규칙을 따른다.
 
 - **통합 지침서**: 모든 AI 에이전트는 작업을 시작하기 전 루트 폴더의 `CLAUDE.md`와 `AGENTS.md`를 필독하도록 설정되어 있다.
-- **기억 유지 (Memory Protocol)**: AI는 세션 간의 작업 맥락을 유지하기 위해 항상 `MEMORY.md`에 진행 상황을 기록하고 읽는다.
 - **커스텀 스킬**: 팀 전용 AI 스킬들은 `.claude/skills/` 및 `.agent/skills/` 디렉토리에 관리되며, 누구나 새로운 AI 행동 규칙(Skill)을 추가하여 PR을 올릴 수 있다.

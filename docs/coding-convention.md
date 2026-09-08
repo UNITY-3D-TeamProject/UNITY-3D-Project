@@ -299,9 +299,35 @@ public class SOWeaponData : ScriptableObject
 public class SOEnemyData : ScriptableObject { }
 ```
 
+### 3-6. 네임스페이스 → `PascalCase`, 폴더 구조와 일치
+모든 스크립트는 네임스페이스로 감싼다. 폴더 경로를 그대로 반영해 `Project.<상위폴더>.<하위폴더>` 형태로 짓는다.
+```csharp
+// Assets/_Project/Scripts/Player/PlayerController.cs
+namespace Project.Player
+{
+    public class PlayerController : MonoBehaviour { }
+}
+
+// Assets/_Project/Scripts/Enemy/AI/EnemyChaseState.cs
+namespace Project.Enemy.AI
+{
+    public class EnemyChaseState { }
+}
+```
+
 ---
 
 ## 4. 서식(Formatting) 규칙
+
+### 4-0. 들여쓰기 & using 순서
+- 들여쓰기는 **스페이스 4칸**을 사용한다 (탭 금지).
+- `using`은 파일 최상단에 모아 쓰고, 시스템 네임스페이스 → Unity 네임스페이스 → 프로젝트 네임스페이스 순으로 정렬한다.
+```csharp
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Project.Player;
+```
 
 ### 4-1. 중괄호 ( `{ }` ) — 항상 새 줄에
 중괄호는 항상 새 줄에 작성한다. 같은 줄에 여는 중괄호를 쓰지 않는다.
@@ -570,6 +596,7 @@ Assets/
 | **구조체** | `S` + `PascalCase` | `SDamageInfo` |
 | **열거형** | `E` + `PascalCase` | `EGameState` |
 | **ScriptableObject** | `SO` + `PascalCase` | `SOWeaponData` |
+| **네임스페이스** | `PascalCase`, 폴더 구조 반영 | `Project.Player` |
 
 ---
 
@@ -577,66 +604,73 @@ Assets/
 위의 모든 컨벤션이 적용된 실제 스크립트 예시다.
 
 ```csharp
-public class PlayerController : MonoBehaviour, IDamageable
+using System;
+using System.Collections;
+using UnityEngine;
+
+namespace Project.Player
 {
-    #region Constants
-    private const int   MAX_HEALTH       = 100;
-    private const float DEFAULT_MOVE_SPEED = 5.0f;
-    #endregion
-
-    #region Serialized Fields
-    [Header("Stats")]
-    [SerializeField] private float _moveSpeed = DEFAULT_MOVE_SPEED;
-
-    [Header("References")]
-    [SerializeField] private Animator _animator;
-    #endregion
-
-    #region Private Fields
-    private static readonly WaitForSeconds WaitRespawn = new WaitForSeconds(3.0f);
-    private int   _currentHealth;
-    private bool  _isInvincible;
-    #endregion
-
-    #region Properties
-    public int  CurrentHealth => _currentHealth;
-    public bool IsAlive       => _currentHealth > 0;
-    #endregion
-
-    #region Events
-    public event Action<int> OnHealthChanged;
-    public event Action      OnDied;
-    #endregion
-
-    #region Unity Lifecycle
-    private void Awake()
+    public class PlayerController : MonoBehaviour, IDamageable
     {
-        Debug.Assert(_animator != null, $"[{name}] Animator 누락");
-        _currentHealth = MAX_HEALTH;
+        #region Constants
+        private const int   MAX_HEALTH       = 100;
+        private const float DEFAULT_MOVE_SPEED = 5.0f;
+        #endregion
+
+        #region Serialized Fields
+        [Header("Stats")]
+        [SerializeField] private float _moveSpeed = DEFAULT_MOVE_SPEED;
+
+        [Header("References")]
+        [SerializeField] private Animator _animator;
+        #endregion
+
+        #region Private Fields
+        private static readonly WaitForSeconds WaitRespawn = new WaitForSeconds(3.0f);
+        private int   _currentHealth;
+        private bool  _isInvincible;
+        #endregion
+
+        #region Properties
+        public int  CurrentHealth => _currentHealth;
+        public bool IsAlive       => _currentHealth > 0;
+        #endregion
+
+        #region Events
+        public event Action<int> OnHealthChanged;
+        public event Action      OnDied;
+        #endregion
+
+        #region Unity Lifecycle
+        private void Awake()
+        {
+            Debug.Assert(_animator != null, $"[{name}] Animator 누락");
+            _currentHealth = MAX_HEALTH;
+        }
+        #endregion
+
+        #region Public Methods
+        public void TakeDamage(int amount)
+        {
+            bool canTakeDamage = IsAlive && !_isInvincible;
+            if (!canTakeDamage) return;
+
+            _currentHealth = Mathf.Max(0, _currentHealth - amount);
+            OnHealthChanged?.Invoke(_currentHealth);
+
+            if (!IsAlive)
+                StartCoroutine(CoDie());
+        }
+        #endregion
+
+        #region Coroutines
+        private IEnumerator CoDie()
+        {
+            OnDied?.Invoke();
+            yield return WaitRespawn;
+            _currentHealth = MAX_HEALTH;
+        }
+        #endregion
     }
-    #endregion
-
-    #region Public Methods
-    public void TakeDamage(int amount)
-    {
-        bool canTakeDamage = IsAlive && !_isInvincible;
-        if (!canTakeDamage) return;
-
-        _currentHealth = Mathf.Max(0, _currentHealth - amount);
-        OnHealthChanged?.Invoke(_currentHealth);
-
-        if (!IsAlive)
-            StartCoroutine(CoDie());
-    }
-    #endregion
-
-    #region Coroutines
-    private IEnumerator CoDie()
-    {
-        OnDied?.Invoke();
-        yield return WaitRespawn;
-        _currentHealth = MAX_HEALTH;
-    }
-    #endregion
 }
 ```

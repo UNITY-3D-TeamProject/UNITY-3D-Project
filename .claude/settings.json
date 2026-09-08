@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "d=\"docs/intent\"; if [ -d \"$d\" ]; then count=$(find \"$d\" -maxdepth 1 -name \"intent-*.md\" -type f 2>/dev/null | wc -l); if [ \"$count\" -gt 0 ]; then echo '{\"systemMessage\": \"docs/intent/ 에 열려있는(open) intent 문서가 '\"$count\"'개 있습니다. 이번 세션에서 마무리된 작업이 있다면 intent 스킬로 resolved 처리하고 docs/intent/clear/ 로 옮기는 것을 검토하세요.\"}'; fi; fi",
+            "shell": "bash"
+          }
+        ]
+      }
+    ]
+  }
+}
