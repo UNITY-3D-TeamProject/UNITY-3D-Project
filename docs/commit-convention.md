@@ -17,21 +17,22 @@
 
 | 브랜치 | 용도 | 분기 기준 | 병합 대상 |
 |---|---|---|---|
-| `feature/{이름}` | 담당자별 기능 개발 | `develop` | `develop` |
+| `feature/{파트명}-{할일}` | 기능 개발 | `develop` | `develop` |
 | `release/{버전}` | 배포 준비 (버전 고정, 마무리 수정) | `develop` | `main`, `develop` |
-| `hotfix/{이름}` | 배포 후 긴급 수정 | `main` | `main`, `develop` |
+| `hotfix/{파트명}-{버전}` | 배포 후 긴급 수정 | `main` | `main`, `develop` |
 
-`{이름}`은 작업 담당자의 이름을 사용한다.
+`{파트명}`은 기능의 파트(예: map, player), `{할일}`은 상세 작업 내용을 사용한다.
 
 ```text
-feature/Junbum
-feature/Sehun
-feature/Jeongbin
-feature/Seongjun
+feature/map-Lobby
+feature/player-move
+feature/enemy-ai
+feature/system-ui
 
 release/1.0.0
 
-hotfix/Junbum
+hotfix/map-1.0.1
+hotfix/player-1.0.2
 ```
 
 ### 1-3. 작업 흐름
@@ -39,7 +40,7 @@ hotfix/Junbum
 ```text
 develop 최신화
     ↓
-feature/{이름} 브랜치 생성
+feature/{파트명}-{할일} 브랜치 생성
     ↓
 기능 작업 + Unity 테스트
     ↓
