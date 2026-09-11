@@ -5,8 +5,8 @@
 
 ## 열려있는 인텐트 (Open)
 <!-- 파트별로 묶어서 나열. 형식: - **[파트]** 문제 한 줄 요약 → [문서](./intent-NNN-slug.md) -->
-- **[Movement System]** 이동 Intent/Motor 코어 계약 부재 → [문서](./intent-001-movement-system-core.md)
+(현재 열려있는 인텐트 없음)
 
 ## 해결됨 (Resolved)
 <!-- 형식: - **[파트]** 문제 한 줄 요약 → [문서](./clear/intent-NNN-slug.md) (resolved: YYYY-MM-DD) -->
-(아직 해결된 인텐트 없음)
+- **[Movement System]** 이동 시스템 공용 코어(CharacterMotor/WaypointMover) 부재 → [문서](./clear/intent-001-movement-system-core.md) (resolved: 2026-09-11)
