@@ -1,45 +1,45 @@
 using UnityEngine;
 
-namespace Project.Systems
+namespace Movement
 {
     /// <summary>
     /// CharacterController 기반 이동을 담당하는 공용 컴포넌트.
     /// Player/Enemy가 각자 계산한 방향을 갖고 매 프레임 Move(direction, speed)만 호출하면
-    /// 중력 누적, 지면 부착, 이동 방향으로 회전(FaceDirection), 이동 Platform 탑승까지
-    /// 이 컴포넌트가 대신 처리한다.
-    /// 사용법: 같은 오브젝트에 CharacterController와 함께 붙이고, GetComponent&lt;CharacterMotor&gt;()로
-    /// 참조한 뒤 Move()만 호출하면 된다. Move()는 프레임당 정확히 한 번만 호출해야 한다 —
-    /// CharacterController.Move()를 여러 번 호출하면 충돌 판정이 깨진다.
-    /// 이동 Platform에 탑승하려면 Platform 프리팹을 인스펙터의 Platform Layer Mask에 포함된
-    /// 레이어로 설정하고, 같은 오브젝트에 WaypointMover를 붙여야 한다.
+    /// 중력 누적, 지면 부착, 이동 방향으로 회전(FaceDirection)까지 이 컴포넌트가 대신 처리한다.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class CharacterMotor : MonoBehaviour
     {
         #region Constants
         private const float GROUNDED_STICK_VELOCITY = -2.0f;
-        private const float PLATFORM_NORMAL_THRESHOLD = 0.5f;
         #endregion
 
         #region Serialized Fields
         [Header("References")]
         [SerializeField] private SOMovementConfig _config;
-
-        [Header("Platform")]
-        [Tooltip("탑승 가능한 이동 Platform으로 인식할 레이어. Platform 프리팹을 이 레이어로 설정해야 한다.")]
-        [SerializeField] private LayerMask _platformLayerMask;
         #endregion
 
         #region Private Fields
         private CharacterController _controller;
         private float _verticalVelocity;
-        private Vector3 _platformDelta;
+        private Vector3 _externalDisplacement;
+        #endregion
+
+        #region Properties
+        /// <summary>
+        /// 할당된 이동 설정 에셋. MaxSpeed는 이 컴포넌트가 쓰지 않고 이동 주체 스크립트가
+        /// 읽어서 Move()의 speed 인자로 넘겨야 하므로, 같은 에셋을 다시 할당하지 않고
+        /// 이 프로퍼티로 가져다 쓰면 된다.
+        /// </summary>
+        public SOMovementConfig Config => _config;
         #endregion
 
         #region Unity Lifecycle
         private void Awake()
         {
             _controller = GetComponent<CharacterController>();
+
+            Debug.Assert(_config != null, $"[{name}] SOMovementConfig가 연결되지 않았습니다.");
         }
         #endregion
 
@@ -56,15 +56,28 @@ namespace Project.Systems
             Vector3 horizontalVelocity = direction.normalized * speed;
             Vector3 velocity = horizontalVelocity + (Vector3.up * _verticalVelocity);
 
-            Vector3 platformDeltaToApply = _platformDelta;
-            _platformDelta = Vector3.zero;
+            Vector3 displacementToApply = _externalDisplacement;
+            _externalDisplacement = Vector3.zero;
 
-            _controller.Move((velocity * Time.deltaTime) + platformDeltaToApply);
+            _controller.Move((velocity * Time.deltaTime) + displacementToApply);
 
             if (direction != Vector3.zero)
             {
                 FaceDirection(direction);
             }
+        }
+
+        /// <summary>
+        /// 외부 요인에 의한 변위를 이번 프레임 이동에 합산한다.
+        /// 한 프레임에 2번 부르지 않게끔 해주는 함수
+        /// 이동 Platform 탑승, 컨베이어, 넉백, 바람 등에서 사용
+        /// 이 컴포넌트는 변위의 원인을 알지 않는다.
+        /// 누적된 값은 다음 Move() 호출 때 적용되고 비워지므로, Move()는 매 프레임 호출해야 한다.
+        /// </summary>
+        /// <param name="displacement">이번 프레임에 추가로 적용할 위치 변화량.</param>
+        public void AddExternalDisplacement(Vector3 displacement)
+        {
+            _externalDisplacement += displacement;
         }
         #endregion
 
@@ -86,22 +99,6 @@ namespace Project.Systems
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _config.RotationSpeed * Time.deltaTime);
-        }
-
-        private void OnControllerColliderHit(ControllerColliderHit hit)
-        {
-            bool isFloorHit = hit.normal.y > PLATFORM_NORMAL_THRESHOLD;
-            bool isPlatformLayer = (_platformLayerMask.value & (1 << hit.gameObject.layer)) != 0;
-
-            if (!isFloorHit || !isPlatformLayer)
-            {
-                return;
-            }
-
-            if (hit.collider.TryGetComponent(out WaypointMover platform))
-            {
-                _platformDelta += platform.DeltaThisFrame;
-            }
         }
         #endregion
     }
