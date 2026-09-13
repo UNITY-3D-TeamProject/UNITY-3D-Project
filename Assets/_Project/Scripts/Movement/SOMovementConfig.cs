@@ -11,9 +11,6 @@ namespace Movement
     public class SOMovementConfig : ScriptableObject
     {
         #region Serialized Fields
-        [Header("Speed")]
-        [SerializeField] private float _maxSpeed = 5.0f;
-
         [Header("Gravity")]
         [SerializeField] private float _gravity = -20.0f;
 
@@ -22,7 +19,6 @@ namespace Movement
         #endregion
 
         #region Properties
-        public float MaxSpeed => _maxSpeed;
         public float Gravity => _gravity;
         public float RotationSpeed => _rotationSpeed;
         #endregion
