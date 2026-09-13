@@ -1,41 +1,43 @@
 using System;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 [Serializable]
-public enum ValueSource
+public enum EValueSource
 {
     Float,
     Attribute
 }
 
-[Serializable]
-public enum Modifier
-{
-    Add,
-    Multiply
-}
-
 [CreateAssetMenu(fileName = "SOAttributeEffect", menuName = "Attribute/AttributeEffect")]
 public class SOAttributeEffect : ScriptableObject
 {
-    [SerializeField] private Modifier _modifier;
-    [SerializeField, EffectTargetDropdown(typeof(SOAttributeData))]
-    private SOAttributeData _targetAttributeSet;
-    [SerializeField, AttributeTargetDropdown(nameof(_targetAttributeSet))]
-    private string _targetAttribute;
+    [SerializeField] private EModifier _modifier;
+    [SerializeField] private string _targetAttribute;
 
-    [SerializeField] private ValueSource _valueSource;
+    [SerializeField] private EValueSource _valueSource;
     [SerializeField] private float _amount;
-    [SerializeField, EffectTargetDropdown(typeof(SOAttributeData))]
-    private SOAttributeData _cursorAttributeSet;
-    [SerializeField, AttributeTargetDropdown(nameof(_cursorAttributeSet))]
-    private string _cursorAttribute;
+    [SerializeField] private string _cursorAttribute;
 
-    public Modifier Modifier => _modifier;
-    public SOAttributeData TargetAttributeSet => _targetAttributeSet;
+    public EModifier Modifier => _modifier;
     public string TargetAttribute => _targetAttribute;
-    public ValueSource ValueSource => _valueSource;
+    public EValueSource ValueSource => _valueSource;
     public float Amount => _amount;
-    public SOAttributeData CursorAttributeSet => _cursorAttributeSet;
     public string CursorAttribute => _cursorAttribute;
+
+    public void Apply(IEffectTarget cursor, IEffectTarget target)
+    {
+        if (!cursor.IsValidTarget(_cursorAttribute))
+        {
+            throw new InvalidOperationException($"[{_cursorAttribute}] : is not set in cursor");
+        }
+        if (!target.IsValidTarget(_targetAttribute))
+        {
+            throw new InvalidOperationException($"[{_targetAttribute}] : is not set in target");
+        }
+        
+        float amount = _valueSource == EValueSource.Attribute ? cursor.GetValue(_cursorAttribute) : _amount;
+        float newValue = Modifiers.Modify(_modifier, target.GetValue(_targetAttribute), amount);
+        target.SetValue(_targetAttribute, newValue);
+    }
 }
