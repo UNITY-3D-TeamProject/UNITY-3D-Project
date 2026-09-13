@@ -6,7 +6,7 @@ using UnityEngine.Assertions;
 namespace Attribute.Core
 {
     [DefaultExecutionOrder(-100)]
-    public class AttributeSet : MonoBehaviour
+    public class AttributeSet : MonoBehaviour, IEffectTarget
     {
         [SerializeField] private SOAttributeData _initData;
         private readonly Dictionary<string, AttributeData> _attributes = new(StringComparer.OrdinalIgnoreCase);
@@ -43,6 +43,35 @@ namespace Attribute.Core
             }
         }
 
+        #region IEffectTarget functions
+        //begin IEffectTarget
+        public bool IsValidTarget(string targetName)
+        {
+            return _attributes.ContainsKey(targetName);
+        }
+        
+        public float GetValue(string targetName)
+        {
+            if (!IsValidTarget(targetName))
+            {
+                Assert.IsTrue(false, $"[{targetName}] : is invalid attribute name");
+                return 0.0f;
+            }
+
+            return _attributes[targetName].Value;
+        }
+
+        public void SetValue(string targetName, float value)
+        {
+            if (!IsValidTarget(targetName))
+            {
+                Assert.IsTrue(false, $"[{targetName}] : is invalid attribute name");
+            }
+            _attributes[targetName].Value = value;
+        }
+        //end IEffectTarget
+        #endregion
+        
         /// <summary>
         /// Value 변경 전 발생할 콜백 Set, newValue 에 대해 클램핑이 필요한 경우 진행
         /// </summary>
@@ -72,33 +101,7 @@ namespace Attribute.Core
             if (callback == null) return;
             _postAttributeChangedEvent = callback;
         }
-
-        /// <summary>
-        /// 해당 Name 을 가진 AttributeData 존재여부 체크
-        /// </summary>
-        /// <param name="attributeName">확인하고자 하는 Name</param>
-        /// <returns>존재 여부</returns>
-        public bool IsValidAttribute(string attributeName)
-        {
-            return _attributes.ContainsKey(attributeName);
-        }
-
-        /// <summary>
-        /// 해당 Name 을 가진 AttributeData Value 값 읽기
-        /// </summary>
-        /// <param name="attributeName">값을 읽을 attributeData의 Name</param>
-        /// <returns>attributeData Value, 존재하지 않는 경우 0</returns>
-        public float GetValue(string attributeName)
-        {
-            if (!IsValidAttribute(attributeName))
-            {
-                Assert.IsTrue(false, $"[{attributeName}] : is invalid attribute name");
-                return 0.0f;
-            }
-
-            return _attributes[attributeName].Value;
-        }
-
+        
         private void NativePreAttributeChanged(AttributeData target, ref float newValue, float oldValue)
         {
             _preAttributeChangedEvent?.Invoke(target.Name, ref newValue, oldValue);

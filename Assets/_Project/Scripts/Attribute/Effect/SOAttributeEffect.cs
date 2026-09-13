@@ -34,7 +34,7 @@ namespace Attribute.Effect
         /// <param name="target">effect 를 적용할 객체의 IEffectTarget</param>
         public void Apply(IEffectTarget cursor, IEffectTarget target)
         {
-            if (!cursor.IsValidTarget(_cursorAttribute))
+            if (_valueSource == EValueSource.Attribute && !cursor.IsValidTarget(_cursorAttribute))
             {
                 throw new InvalidOperationException($"[{_cursorAttribute}] : is not set in cursor");
             }
