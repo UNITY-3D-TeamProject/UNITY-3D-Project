@@ -32,11 +32,12 @@ namespace Attribute.Effect
         /// </summary>
         /// <param name="cursor">effect 를 발생시키는 객체의 IEffectTarget</param>
         /// <param name="target">effect 를 적용할 객체의 IEffectTarget</param>
-        public void Apply(IEffectTarget cursor, IEffectTarget target)
+        public void Apply(IEffectTarget target, IEffectTarget cursor = null)
         {
-            if (_valueSource == EValueSource.Attribute && !cursor.IsValidTarget(_cursorAttribute))
+            if (_valueSource == EValueSource.Attribute)
             {
-                throw new InvalidOperationException($"[{_cursorAttribute}] : is not set in cursor");
+                if(cursor == null) throw new InvalidOperationException("cursor : is null");
+                if(!cursor.IsValidTarget(_cursorAttribute)) throw new InvalidOperationException($"[{_cursorAttribute}] : is not set in cursor");
             }
 
             if (!target.IsValidTarget(_targetAttribute))
@@ -44,7 +45,7 @@ namespace Attribute.Effect
                 throw new InvalidOperationException($"[{_targetAttribute}] : is not set in target");
             }
 
-            float amount = _valueSource == EValueSource.Attribute ? cursor.GetValue(_cursorAttribute) : _amount;
+            float amount = _valueSource == EValueSource.Float ? _amount : (cursor?.GetValue(_cursorAttribute) ?? 0);
             float newValue = Modifiers.Modify(_modifier, target.GetValue(_targetAttribute), amount);
             target.SetValue(_targetAttribute, newValue);
         }
