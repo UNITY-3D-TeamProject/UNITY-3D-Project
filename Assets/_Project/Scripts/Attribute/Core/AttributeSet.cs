@@ -5,6 +5,7 @@ using UnityEngine.Assertions;
 
 namespace Attribute.Core
 {
+    //Awake 가 먼저 실행되어 다른 곳에서 attribute 를 참조할 때 문제가 없도록 순서 조정
     [DefaultExecutionOrder(-100)]
     public class AttributeSet : MonoBehaviour, IEffectTarget
     {
@@ -66,6 +67,7 @@ namespace Attribute.Core
             if (!IsValidTarget(targetName))
             {
                 Assert.IsTrue(false, $"[{targetName}] : is invalid attribute name");
+                return;
             }
             _attributes[targetName].Value = value;
         }
@@ -73,7 +75,8 @@ namespace Attribute.Core
         #endregion
         
         /// <summary>
-        /// Value 변경 전 발생할 콜백 Set, newValue 에 대해 클램핑이 필요한 경우 진행
+        /// Value 변경 전 발생할 콜백 Set
+        /// newValue 에 대해 클램핑이 가능하므로 단일구독을 위해 Set
         /// </summary>
         /// <param name="callback">void(string, ref float, float) 시그니쳐 callback</param>
         public void SetPreAttributeChangedCallback(OnAttributeChangeWithRef callback)
@@ -83,23 +86,43 @@ namespace Attribute.Core
         }
 
         /// <summary>
-        /// Value 변경 시 발생할 콜백 Set
+        /// Value 변경 시 발생할 콜백 Add
         /// </summary>
         /// <param name="callback">void(string, float, float) 시그니쳐 callback</param>
-        public void SetOnAttributeChangedCallback(OnAttributeChange callback)
+        public void AddOnAttributeChangedCallback(OnAttributeChange callback)
         {
             if (callback == null) return;
-            _onAttributeChangedEvent = callback;
+            _onAttributeChangedEvent += callback;
         }
 
         /// <summary>
-        /// Value 변경 후 발생할 콜백 Set
+        /// Value 변경 시 발생할 콜백 Remove
         /// </summary>
         /// <param name="callback">void(string, float, float) 시그니쳐 callback</param>
-        public void SetPostAttributeChangedCallback(OnAttributeChange callback)
+        public void RemoveOnAttributeChangedCallback(OnAttributeChange callback)
         {
             if (callback == null) return;
-            _postAttributeChangedEvent = callback;
+            _onAttributeChangedEvent -= callback;
+        }
+        
+        /// <summary>
+        /// Value 변경 후 발생할 콜백 Add
+        /// </summary>
+        /// <param name="callback">void(string, float, float) 시그니쳐 callback</param>
+        public void AddPostAttributeChangedCallback(OnAttributeChange callback)
+        {
+            if (callback == null) return;
+            _postAttributeChangedEvent += callback;
+        }
+        
+        /// <summary>
+        /// Value 변경 후 발생할 콜백 Remove
+        /// </summary>
+        /// <param name="callback">void(string, float, float) 시그니쳐 callback</param>
+        public void RemovePostAttributeChangedCallback(OnAttributeChange callback)
+        {
+            if (callback == null) return;
+            _postAttributeChangedEvent -= callback;
         }
         
         private void NativePreAttributeChanged(AttributeData target, ref float newValue, float oldValue)
