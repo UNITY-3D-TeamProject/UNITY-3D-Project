@@ -29,14 +29,31 @@ BT는 **판단 분기가 실제로 있는 대상에만** 쓴다.
 설계안의 "보안 앱 적 = BT"는 전투맵 적과 같은 대상으로 본다 (전투는 보안 앱 스테이지와 보스전에 국한되므로).
 
 ### 판단부와 실행부 분리
-BT는 아래 컴포넌트를 **호출만** 한다. 노드 안에서 `NavMeshAgent`를 직접 만지거나 투사체를 직접 생성하지 않는다.
+노드 안에서 `NavMeshAgent`를 직접 만지거나 투사체를 직접 생성하지 않는다.
 
-| 컴포넌트 | 역할 |
+**실행 모델 (2026-09-16):** Action은 컴포넌트에 명령(목적지 설정, 정지, 조준 대상 설정, 공격 시작)만 건다. 실제 실행은 컴포넌트의 `Update`가 매 프레임 한다. 노드는 결과를 보고 Running/Success/Failure를 리턴한다. 이렇게 하면 노드가 바뀌어도(예: 추격 → 공격) 중력, 외부 변위, `nextPosition` 동기화가 끊기지 않는다. `CharacterMotor.Move()`는 매 프레임 불러야 하기 때문이다(`CharacterMotor.cs:60`).
+
+**분류 기준:** 아래 중 하나라도 해당하면 컴포넌트에 둔다. 셋 다 아니면 노드 안에 직접 쓴다. 상태가 없고 한 줄로 끝나는 로직은 노드 안에 둬도 된다.
+- A. 노드 수명보다 오래 사는 상태나 매 프레임 처리가 있다
+- B. BT 밖에서도 불린다 (피격, 애니메이션 이벤트, 기즈모, 재진입)
+- C. 여러 노드가 공유하는 계산이나 캐시다
+
+| 컴포넌트 | 역할 | 기준 |
+|---|---|---|
+| `EnemyMotor` | `MoveTo(pos)`, `Stop()`, `SetLookTarget(t)`, `ClearLookTarget()`. 매 프레임 `CharacterMotor.Move()` 호출, NavMeshAgent 설정·delta 이동·동기화, 회전(평소 `steeringTarget` 기준 / 조준 대상 있으면 대상 기준), `HasArrived`·`IsPathValid` 조회, 끼임 감지. **회전은 이 컴포넌트만 한다** (노드가 `transform.rotation`을 직접 건드리면 서로 덮어씀) | A, C |
+| `EnemySensor` | 플레이어 참조 캐싱, `IsPlayerVisible()`(거리 + 시야각 + 레이캐스트), `DistanceToPlayer()`, 감지 범위 기즈모 | B, C |
+| `EnemyCombat` | **미정 — 전투 담당과 회의 후 확정 (열린 질문 5).** 후보 책임: 공격 쿨다운, 공격 판정 적용(`SOAttributeEffect.Apply`), 모션·사운드 재생, 선딜 취소 | A, B |
+| `EnemyHealth` | HP, 피격, 사망, 사망 시 BT 정지 (사망은 BT 밖). 구현 방식은 열린 질문 5를 따른다 | B |
+| 적 루트 | 재진입 시 `ResetState()` (아래 예외 처리 참고) | B |
+
+| 노드 안에 직접 쓰는 것 | 종류 |
 |---|---|
-| `EnemyMotor` | `MoveTo(pos)`, `Stop()`, `FaceTarget()` |
-| `EnemySensor` | `IsPlayerVisible()`, `DistanceToPlayer()` (시야각 포함) |
-| `EnemyCombat` | `CanAttack()`, `Attack()`, `GetAttackRange()` — 전투 시스템으로 가는 창구 |
-| `EnemyHealth` | `TakeDamage()`, `OnDeath` — HP 0이면 BT 틱 정지 후 사망 처리 (사망은 BT 밖) |
+| `Init Home`, `Acquire Target`, `Clear Target`, `Record Last Seen` — 블랙보드 쓰기만 | Action |
+| 추격(`OnStart`에서 `MoveTo`, `OnUpdate`에서 목적지 갱신·도착 확인), 귀환(`MoveTo(HomePosition)`, 도착 시 Success), 대기(`Stop()`) | Action |
+| 경로 실패 처리 — `Motor.IsPathValid`가 false면 Failure | Action |
+| 스트레이프 목적지 계산, `NavMesh.SamplePosition` 검사 (원거리, 본 개발) | Action |
+| 선딜 대기 타이머 — 노드 수명과 같으므로 공격 Action 안, 중간에 끊기면 `OnEnd`에서 취소. **`EnemyCombat` 확정 후 최종 결정** | Action |
+| `In Attack Range`, 추격 포기(`Time.time - LastSeenTime`), 리쉬(`HomePosition`까지 거리), 수직 대응(높이 차) | Condition |
 
 블랙보드는 범용 `Dictionary<string, object>` 대신 명시적 필드로 둔다. 저장 위치는 혼합이다 (근거는 열린 질문 3번 참고):
 - **Unity Behavior 패키지 블랙보드** (프로토타입): `Self`(기본), `Target`(Transform), `HomePosition`(리쉬·재진입), `LastSeenTime`(추격 포기) — AI만 쓰는 판단 상태. **판단이 바뀌는 순간에만** 전용 Action이 기록한다: `Acquire Target`/`Clear Target`(Target 채우기/비우기), `Record Last Seen`(놓친 순간 1회), `Init Home`(루프 밖 1회). 추격·조준 노드는 `Target`을 읽기만 한다. `LastSeenPosition`은 수색 기능이 생길 때 추가한다.
@@ -158,6 +175,7 @@ Selector
      1. 공격범위/선딜처럼 전투 중 안 바뀌는 상수 값도 `AttributeSet`(문자열 키, 변경 콜백)에 넣을지, 아니면 별도 typed SO/struct로 뺄지. 안 바뀌는 값에 변경 콜백을 거는 건 낭비이고, 문자열 키는 오타를 컴파일러가 못 잡는다(블랙보드를 명시적 필드로 둔 것과 같은 이유, 위 3번 항목 참고).
      2. 플레이어 쪽도 같은 `AttributeSet` + 같은 속성 이름(`"HP"` 등)을 쓰는지 — 안 그러면 `Apply()`가 플레이어를 못 찾는다.
      3. **이보다 먼저, 게임 디자인 확인이 필요하다:** 이 적이 선딜(telegraph)을 갖는 몹인지(몹 타입마다 다를 수 있음), 공격 간격을 고정 간격(마지막 시도 시각 기준)으로 볼지 쿨다운(마지막 성공/발동 시각 기준, 회피 시 리셋 여부 등)으로 볼지. `CanAttack()`의 판정 로직과 Attack 노드의 트리 구조(선딜 단계 유무)가 이 답에 따라 달라진다.
+   - **(2026-09-16)** "판단부와 실행부 분리" 절의 `EnemyCombat` 책임 범위도 이 회의 결과에 따라 확정한다. `AttributeSet`에 어떤 값을 넣을지 아직 정해지지 않아 미해결로 둔다.
 6. **폴더/네임스페이스** — `docs/coding-convention.md` 예시(`Assets/_Project/Scripts/Enemy/AI/`, `Project.Enemy.AI`)를 따르는가? 기존 이동 코어는 `namespace Movement`다.
    - **해결 (2026-09-15):** `Enemy` 밑에 `AI`를 두지 않고, **`AI`를 최상위로 두고 그 밑에 `Core`/`Enemy`(미래: `Police`/`GC`)를 둔다.** 이 AI(BT) 구조가 전투 적뿐 아니라 미로의 GC/경찰(보류 항목, 위 참고)에도 재사용될 예정이라, `Enemy.AI`처럼 AI를 Enemy 하위로 두면 그 재사용이 어색해진다. 현재 브랜치(`feature/AI-Core`)가 만드는 것도 "Enemy/Police/GC가 공통으로 쓸 Core"이므로 `AI/Core`를 별도 하위 폴더로 둔다.
      - 폴더: `Assets/_Project/Scripts/AI/Core/`(공유 기반) + `AI/Enemy/`(Enemy 전용, `Core` 소비)
@@ -166,6 +184,9 @@ Selector
      - `docs/coding-convention.md` 3-6("네임스페이스는 폴더 구조를 그대로 반영")과 충돌하지 않는다 — 문서의 `Enemy/AI` 예시는 예시일 뿐, 규칙 자체가 그 순서를 강제하지는 않는다.
 7. **`CharacterMotor`의 이동 방향 회전** — `Move()`가 이동 방향으로 몸을 돌린다(`CharacterMotor.cs:64-67`, `FaceDirection`). 원거리 적의 "플레이어를 바라본 채 좌우 스트레이프"와 충돌하며, (a)/(c) 어느 쪽이든 발생한다. 회전 기준이 쓰는 쪽마다 다르다는 점에서 `intent-002`가 `TransformMotor`에서 회전을 뺀 근거와 같다. **기획자에게 플레이어 이동 방식(평소 회전 기준 / 조준 중 스트레이프 여부 / 공중 방향 전환)을 확인한 뒤** 코어에서 회전을 뺄지 결정한다. 빼면 `intent-002`의 "`FaceDirection` 유지" 결정이 뒤집힌다. ~~프로토타입(근거리 1종)에는 영향 없음.~~ → **근거리 적에도 영향 있음 (2026-09-14 스파이크):** 좁은 곳에 몰리면 이동량 방향이 좌우로 뒤집혀 몸통이 떨리고, 회전을 `steeringTarget` 기준으로 분리해야 해소된다(1번 스파이크 중간 결과 참고). 프로토타입 전에 코어 API 방향(`Move()`에서 회전 빼기 / 회전 방향을 따로 받기)을 정해야 한다.
    - **해결 (2026-09-14):** 회의 결과 플레이어는 WASD 이동 + 마우스 회전으로 확정. → `CharacterMotor`에서 회전(`FaceDirection`)을 뺐다. `Move(direction, speed)` 시그니처는 그대로이고 이동·중력만 적용한다. 회전은 호출자가 `transform.rotation`을 직접 다룬다(적 = `steeringTarget` 기준). 회전 속도만 남았던 `SOMovementConfig`는 삭제하고 중력은 `CharacterMotor`의 `[SerializeField] _gravity`로 옮겼다.
+8. **AI 스탯 SO 접근 방식** — Condition/Action이 추격 포기 시간, 리쉬 거리 같은 SO 값을 어떻게 읽는가?
+   - (a) 블랙보드에 SO **참조** 하나만 둔다. 값 복사가 아니므로 중복 정의 금지에 걸리지 않는다. Behavior 패키지 블랙보드가 ScriptableObject 타입 변수를 지원하는지 확인이 필요하다.
+   - (b) 컴포넌트가 SO를 들고 있고, 노드는 컴포넌트를 통해 읽는다.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:
