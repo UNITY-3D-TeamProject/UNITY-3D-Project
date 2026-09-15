@@ -19,10 +19,8 @@
 
 ## 3. 현재 상태 및 이슈
 - Grep 기준 `Assets/` 코드에 `SOMovementConfig|RotationSpeed|FaceDirection|.Config` 참조 0건.
-- **Unity 컴파일 / PlayMode 확인 미완.** `Test.unity`의 CharacterMotor는 `_gravity` 기본값 -20으로 들어가야 함.
-- 커밋 안 함.
+- **PlayMode 확인 완료.** Test 씬 Dog가 정상 이동하는 것을 Game 뷰에서 직접 확인.
+- 커밋 완료 — `8951eea` (`refactor: CharacterMotor 이동 방향 회전 제거 및 SOMovementConfig 삭제`).
 
 ## 4. 다음 할 일
-- Unity에서 컴파일 에러 없는지, 스파이크 씬에서 적이 바닥에 붙어 이동하고 steeringTarget 기준으로 회전하는지 확인.
-- 확인되면 커밋 (`refactor : CharacterMotor 회전 제거 및 SOMovementConfig 삭제` 형식).
-- `intent-003` 나머지 열린 질문(2~6) 진행.
+- `intent-003` 나머지 열린 질문(4~6) 진행.

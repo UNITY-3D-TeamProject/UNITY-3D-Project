@@ -2,9 +2,9 @@
 id: intent-002
 title: 이동 코어에 경로/회전/탑승 정책이 섞여 있음
 part: Movement System
-status: open
+status: resolved
 created: 2026-09-12
-resolved: null
+resolved: 2026-09-14
 ---
 
 ## 문제 (Problem)
@@ -79,5 +79,5 @@ resolved: null
 없음 — 세션 내 논의로 모두 해결됨.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
-- 최종 결정:
-- 관련 커밋/PR:
+- 최종 결정: 위 "기대 결과"대로 `WaypointMover`를 `TransformMotor`로 축소 개명하고 `CharacterMotor`에서 탑승 로직·LayerMask를 제거, `AddExternalDisplacement()`를 신설했다. 이후 09-14 세션에서 플레이어 마우스 회전 확정에 따라 `CharacterMotor`의 이동 방향 회전(`FaceDirection`)도 제거하고 `SOMovementConfig`를 삭제(중력은 `CharacterMotor`의 `[SerializeField] _gravity`로 이동) — 이 두 건은 본문에 취소선으로 반영되어 있다. 코어에서 빠진 웨이포인트 순회/회전/탑승 로직은 `docs/HANDOVER/BF_Leers/2026-09-12/movement-core-scope-cleanup.md`에 스니펫으로 보관.
+- 관련 커밋/PR: `7def965`/`8951eea` (refactor: CharacterMotor 이동 방향 회전 제거 및 SOMovementConfig 삭제). TransformMotor 축소 작업은 `docs/HANDOVER/BF_Leers/2026-09-12/movement-core-scope-cleanup.md` 참고.

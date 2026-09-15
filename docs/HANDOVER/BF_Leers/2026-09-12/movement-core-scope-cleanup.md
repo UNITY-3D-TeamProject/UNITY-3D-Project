@@ -1,7 +1,7 @@
 # Movement System 코어 범위 재정렬 (WaypointMover → TransformMotor)
 
 - 날짜: 2026-09-12
-- 관련 intent: [intent-002 이동 코어에 경로/회전/탑승 정책이 섞여 있음](../../../intent/intent-002-movement-core-scope.md)
+- 관련 intent: [intent-002 이동 코어에 경로/회전/탑승 정책이 섞여 있음](../../../intent/clear/intent-002-movement-core-scope.md)
 - 대상: `Assets/_Project/Scripts/Systems/`
 
 ---
