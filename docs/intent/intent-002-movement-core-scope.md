@@ -59,7 +59,7 @@ resolved: null
 - 이번 범위는 `Assets/_Project/Scripts/Systems/` 코어뿐이다. `PlayerMovement`/`EnemyMovement`/`PlatformMovement`/`CrowdMovement`는 `intent-001`과 동일하게 팀원 몫으로 남긴다.
 - 코어에서 빠지는 것은 **동작하는 코드 스니펫으로 HANDOVER 문서에 넘긴다**(웨이포인트 순회 / 회전 Slerp / 플랫폼 탑승). 담당자가 복사해 쓰면 되므로 잃는 것이 없다.
 - 이 변경으로 **슬라이딩 버그가 수정되는 것이 아니라 담당자 쪽으로 이관된다.** 대신 프레임 순서까지 해결한 정답 구현을 스니펫으로 넘겨 같은 함정을 막는다.
-- `CharacterMotor.FaceDirection`은 **유지한다.** `Move(direction, speed)`는 호출자가 방향을 이미 넘겨주므로 회전 소스가 명확하다 — `MoveTo(위치, speed)`가 방향을 *추측*해야 했던 것이 문제였다. API 모양의 차이가 이 비대칭을 정당화한다.
+- ~~`CharacterMotor.FaceDirection`은 **유지한다.** `Move(direction, speed)`는 호출자가 방향을 이미 넘겨주므로 회전 소스가 명확하다 — `MoveTo(위치, speed)`가 방향을 *추측*해야 했던 것이 문제였다. API 모양의 차이가 이 비대칭을 정당화한다.~~ → **(2026-09-14) 뒤집힘:** 플레이어는 마우스 회전, 적은 `steeringTarget` 기준 회전이 필요해 이동 방향 회전을 쓰는 곳이 없다. `CharacterMotor`에서도 회전을 제거했다 (`intent-003` 열린 질문 7).
 - 두 모터를 **공통 추상 클래스나 인터페이스로 통합하지 않는다.** 검토했으나 기각한다: ①`Move(direction, speed)`와 `MoveTo(targetPosition, speed)`는 둘 다 `(Vector3, float)`지만 인자 의미가 반대여서(상대 방향 vs 월드 절대 좌표) 공통 시그니처가 그 구분을 지운다. ②두 모터를 구현 종류를 모른 채 소비하는 호출자가 없다 — Player/Enemy는 항상 `CharacterMotor`, Platform/Crowd는 항상 `TransformMotor`이며 런타임 교체가 없다. ③공통 베이스 타입은 위 "Platform과 Crowd가 같은 타입을 쓰게 되어 구분이 사라진" 문제를 그대로 되살린다. ④겹치는 것은 메서드 이름뿐이고 베이스로 올릴 실제 코드가 없다.
 - 위 결정이 **뒤집히는 조건**: 대상이 어느 모터인지 모른 채 다뤄야 하는 실제 소비자(넉백/스턴, 애니메이션 드라이버 등)가 생겼을 때. 그때도 묶는 축은 `Move()`가 아니라 그 소비자가 실제로 필요로 하는 최소 계약이다 — `IDisplacementReceiver { void AddExternalDisplacement(Vector3); }` 또는 `IMotorReadout { Vector3 DeltaThisFrame { get; } }` (후자를 쓰려면 `CharacterMotor`에도 `DeltaThisFrame`을 추가해야 한다).
 - 회전 정책을 코어에서 빼는 결정적 근거: **회전 소스가 클라이언트마다 다르다.** 코어는 `LookRotation(DeltaThisFrame)`을 쓰지만 스플라인은 `EvaluateTangent(t)`, NavMesh는 `agent.velocity`, 포탑형 플랫폼은 이동과 무관한 방향을 본다. 코어가 가질 수 없는 지식이다.
@@ -73,7 +73,7 @@ resolved: null
 ### intent-001의 결정 중 유지되는 것
 - `CharacterController`는 Rigidbody 없이 Trigger 이벤트를 안정적으로 받지 못하므로 탑승 감지는 `OnControllerColliderHit`을 쓴다 (감지 주체만 코어 → 담당자로 이동).
 - 회전하는 Platform이라도 탑승자의 시야 방향은 따라 돌지 않는다 — 위치 변위만 전달한다.
-- `SOMovementConfig`는 캐릭터 타입별로 에셋을 만들어 할당하고, `MaxSpeed`는 이동 주체가 읽어 `Move()`의 `speed` 인자로 넘긴다.
+- ~~`SOMovementConfig`는 캐릭터 타입별로 에셋을 만들어 할당하고, `MaxSpeed`는 이동 주체가 읽어 `Move()`의 `speed` 인자로 넘긴다.~~ → **(2026-09-14) `SOMovementConfig` 삭제.** 회전 제거 후 중력 하나만 남아 `CharacterMotor`의 `[SerializeField] _gravity`로 옮겼다. 이동 속도는 이동 주체가 소유해 `Move()`의 `speed` 인자로 넘긴다.
 
 ## 열린 질문 (Open questions)
 없음 — 세션 내 논의로 모두 해결됨.
