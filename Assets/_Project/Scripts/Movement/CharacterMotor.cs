@@ -80,14 +80,22 @@ namespace Movement
         /// <param name="deltaTime">이번 스텝의 경과 시간.</param>
         private void Move(float deltaTime)
         {
+            // 컨트롤러 없을때 방지
+            if (!_controller.enabled) return;
+
             ApplyGravity(deltaTime);
 
-            Vector3 horizontalVelocity = _direction.normalized * _speed;
+            // 방향에 y값 섞여서 수평 속도 줄어들지 않게 방지
+            Vector3 horizontalDirection = new Vector3(_direction.x, 0.0f, _direction.z).normalized;
+            Vector3 horizontalVelocity = horizontalDirection * _speed;
             Vector3 velocity = horizontalVelocity + (Vector3.up * _verticalVelocity);
 
             Vector3 displacementToApply = _externalDisplacement;
             _externalDisplacement = Vector3.zero;
-
+            
+            // 순간이동 시 도루마무 되지 않기 위함
+            Physics.SyncTransforms();
+            
             _controller.Move((velocity * deltaTime) + displacementToApply);
         }
 
