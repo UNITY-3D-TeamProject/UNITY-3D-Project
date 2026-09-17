@@ -300,16 +300,16 @@ public class SOEnemyData : ScriptableObject { }
 ```
 
 ### 3-6. 네임스페이스 → `PascalCase`, 폴더 구조와 일치
-모든 스크립트는 네임스페이스로 감싼다. 폴더 경로를 그대로 반영해 `Project.<상위폴더>.<하위폴더>` 형태로 짓는다.
+모든 스크립트는 네임스페이스로 감싼다. `Scripts/` 아래 폴더 경로를 그대로 반영해 `<상위폴더>.<하위폴더>` 형태로 짓는다.
 ```csharp
 // Assets/_Project/Scripts/Player/PlayerController.cs
-namespace Project.Player
+namespace Player
 {
     public class PlayerController : MonoBehaviour { }
 }
 
 // Assets/_Project/Scripts/Enemy/AI/EnemyChaseState.cs
-namespace Project.Enemy.AI
+namespace Enemy.AI
 {
     public class EnemyChaseState { }
 }
@@ -326,7 +326,7 @@ namespace Project.Enemy.AI
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Project.Player;
+using Player;
 ```
 
 ### 4-1. 중괄호 ( `{ }` ) — 항상 새 줄에
@@ -596,7 +596,7 @@ Assets/
 | **구조체** | `S` + `PascalCase` | `SDamageInfo` |
 | **열거형** | `E` + `PascalCase` | `EGameState` |
 | **ScriptableObject** | `SO` + `PascalCase` | `SOWeaponData` |
-| **네임스페이스** | `PascalCase`, 폴더 구조 반영 | `Project.Player` |
+| **네임스페이스** | `PascalCase`, `Scripts/` 아래 폴더 구조 반영 | `Player`, `Enemy.AI` |
 
 ---
 
@@ -608,7 +608,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace Project.Player
+namespace Player
 {
     public class PlayerController : MonoBehaviour, IDamageable
     {
