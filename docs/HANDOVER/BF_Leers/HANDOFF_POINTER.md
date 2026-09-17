@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-09-17** — intent-003 열린 질문 5 반영: 속성 SO를 플레이어용/적용(타입별 복제)으로 분리하고 상수도 같은 SO에 넣기로 했다. 공통 속성은 같은 이름을 쓰고, 공격 간격은 `AttackCooldown` 쿨다운이다. 쿨다운 기준 시점과 선딜 유무는 남음. 문서만, 커밋 안 함: [전투 속성 SO 결정](./2026-09-17/intent-003-combat-attribute-so.md)
 - **2026-09-16** — intent-003 판단부/실행부 분리 기준 재정립(컴포넌트 = 노드보다 오래 사는 상태·BT 밖 호출·공유 계산, 나머지는 노드 안). `EnemyMotor`가 회전 단독 소유. `EnemyCombat`·열린 질문 5는 회의 후 확정, 열린 질문 8(SO 접근) 신설. 문서만, 커밋 안 함: [판단부/실행부 분리 기준](./2026-09-16/intent-003-component-node-split.md)
 - **2026-09-14** — intent-003 열린 질문 3번(블랙보드) 설계를 grilling으로 검증, Behavior 1.0.16 소스와 대조해 근거 정정("기본 노드 재사용" 철회) 및 기록 시점(Action 4개)·재진입 초기화 방식 확정. 문서만 수정, 코드 없음: [intent-003 블랙보드 설계 grilling](./2026-09-14/intent-003-blackboard-grilling.md)
 - **2026-09-14** — 회의 결과(플레이어 마우스 회전)로 `CharacterMotor`에서 회전 제거, `SOMovementConfig` 삭제하고 중력은 Motor `[SerializeField] _gravity`로 이동. 컨트롤러는 `Move(방향, 속도)`만 호출. **PlayMode 확인 완료, 커밋 완료**(`8951eea`): [CharacterMotor 회전 제거 + SO 삭제](./2026-09-14/motor-rotation-removal.md)

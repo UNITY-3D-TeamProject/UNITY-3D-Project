@@ -42,8 +42,8 @@ BT는 **판단 분기가 실제로 있는 대상에만** 쓴다.
 |---|---|---|
 | `EnemyMotor` | `MoveTo(pos)`, `Stop()`, `SetLookTarget(t)`, `ClearLookTarget()`. 매 프레임 `CharacterMotor.Move()` 호출, NavMeshAgent 설정·delta 이동·동기화, 회전(평소 `steeringTarget` 기준 / 조준 대상 있으면 대상 기준), `HasArrived`·`IsPathValid` 조회, 끼임 감지. **회전은 이 컴포넌트만 한다** (노드가 `transform.rotation`을 직접 건드리면 서로 덮어씀) | A, C |
 | `EnemySensor` | 플레이어 참조 캐싱, `IsPlayerVisible()`(거리 + 시야각 + 레이캐스트), `DistanceToPlayer()`, 감지 범위 기즈모 | B, C |
-| `EnemyCombat` | **미정 — 전투 담당과 회의 후 확정 (열린 질문 5).** 후보 책임: 공격 쿨다운, 공격 판정 적용(`SOAttributeEffect.Apply`), 모션·사운드 재생, 선딜 취소 | A, B |
-| `EnemyHealth` | HP, 피격, 사망, 사망 시 BT 정지 (사망은 BT 밖). 구현 방식은 열린 질문 5를 따른다 | B |
+| `EnemyCombat` | 공격 쿨다운(`AttackCooldown` 속성), 공격 범위 조회(자기 `AttributeSet`), 공격 판정 적용(`SOAttributeEffect.Apply(플레이어 AttributeSet, 자기 AttributeSet)`), 모션·사운드 재생, 선딜 취소. 전투 수치는 모두 자기 `AttributeSet`에서 읽는다 (열린 질문 5, 2026-09-17) | A, B |
+| `EnemyHealth` | `"Hp"` 속성 변경 콜백으로 피격·사망 처리(`TakeDamage()` 따로 두지 않음), 사망 시 BT 정지 (사망은 BT 밖) | B |
 | 적 루트 | 재진입 시 `ResetState()` (아래 예외 처리 참고) | B |
 
 | 노드 안에 직접 쓰는 것 | 종류 |
@@ -64,6 +64,21 @@ BT는 **판단 분기가 실제로 있는 대상에만** 쓴다.
 ### 값 소유권
 - **AI 스탯 SO (AI 소유)**: 감지 거리, 시야각, 선호 거리(stoppingDistance), 이동 속도, 회전 속도, 추격 포기 시간, 리쉬 거리, 재배치 거리
 - **전투 시스템 (팀원 소유)**: HP, 공격력, 방어력, 데미지, 공격 쿨다운, 선딜, 공격 범위
+  - 저장 위치 (2026-09-17): `SOAttributeData` 에셋. 플레이어용과 적용으로 나누고, 적용은 타입마다 복제한다. 전투 중 안 바뀌는 상수(공격 범위, 선딜)도 같은 에셋에 넣는다. 같은 의미의 속성은 플레이어와 적이 같은 이름을 쓴다(예: `"Hp"`).
+  - 적 속성 목록 (2026-09-17, 프로토타입 근거리 1종 기준):
+
+    | 속성 | 용도 | 사용처 |
+    |---|---|---|
+    | `Hp` | 현재 체력 | `EnemyHealth` 변경 콜백, 플레이어 공격 Effect의 target |
+    | `MaxHp` | 체력 상한 (회복 클램프, 이후 보스 페이즈 비율). `AttributeSet`에 최댓값 개념이 없어 따로 둔다 | `EnemyHealth` |
+    | `AttackPower` | 데미지 값. `SOAttributeEffect`의 cursor 속성 (`Subtract`, target `Hp`) | `EnemyCombat` → `Apply` |
+    | `AttackCooldown` | 공격 간격 | `EnemyCombat.CanAttack()` |
+    | `AttackRange` | 공격 사거리 | `In Attack Range` Condition → `EnemyCombat` |
+    | `AttackWindup` | 선딜 시간 (0.5초) | `EnemyCombat` / 공격 Action |
+
+    - `Defense`는 넣지 않는다. `SOAttributeEffect`는 cursor 속성 하나로 가감만 해서(`Add`/`Subtract`/`Multiply`) "공격력 − 방어력" 같은 공식을 표현할 수 없다. 데미지 공식이 정해지면 넣는다.
+    - 이동 속도, 감지 거리, 시야각, 추격 포기 시간, 리쉬 거리는 넣지 않는다. 이 값들은 AI 스탯 SO가 가진다.
+    - 플레이어 SO도 `Hp`/`MaxHp`/`AttackPower`를 같은 이름으로 가져야 서로 데미지를 줄 수 있다.
 - BT는 전투 값을 직접 읽지 않고 `EnemyCombat`에 묻는다. 경계가 애매한 값(공격 범위, 선딜)은 전투 쪽에 둔다.
 - 적 타입 추가 = 양쪽 에셋을 각각 복제 후 숫자만 수정.
 
@@ -172,10 +187,17 @@ Selector
 5. **전투 인터페이스** — `EnemyHealth.TakeDamage()`와 `EnemyCombat.CanAttack()/GetAttackRange()`가 기대하는 계약(`IDamageable` 등)을 전투 담당 팀원과 어떻게 합의하는가? 합의 전 프로토타입은 임시 구현으로 가는가?
    - **부분 진전 (2026-09-15):** 팀원 쪽에 이미 `AttributeSet`/`SOAttributeData`(`Assets/_Project/Scripts/Attribute/Core/`)가 있다. 이름-값(`string`, `float`) 속성을 들고 있고, `AddOnAttributeChangedCallback(name, newValue, oldValue)`으로 변경을 구독할 수 있으며, `SOAttributeEffect.Apply(target, cursor)`(`Attribute/Effect/SOAttributeEffect.cs`)로 한 쪽의 속성값을 다른 쪽에 가감할 수 있다. 이걸 쓰면 `IDamageable`을 새로 만들 필요가 없다 — `EnemyCombat.Attack()`은 `_attackEffect.Apply(playerAttributeSet, myAttributeSet)`만 호출하면 되고, `EnemyHealth`는 `TakeDamage()`를 따로 두지 않고 `"HP"` 속성의 변경 콜백에서 `newValue <= 0`이면 `OnDeath`를 발동하는 식으로 대체 가능해 보인다.
    - **남은 확인 (팀원 대상):**
-     1. 공격범위/선딜처럼 전투 중 안 바뀌는 상수 값도 `AttributeSet`(문자열 키, 변경 콜백)에 넣을지, 아니면 별도 typed SO/struct로 뺄지. 안 바뀌는 값에 변경 콜백을 거는 건 낭비이고, 문자열 키는 오타를 컴파일러가 못 잡는다(블랙보드를 명시적 필드로 둔 것과 같은 이유, 위 3번 항목 참고).
-     2. 플레이어 쪽도 같은 `AttributeSet` + 같은 속성 이름(`"HP"` 등)을 쓰는지 — 안 그러면 `Apply()`가 플레이어를 못 찾는다.
-     3. **이보다 먼저, 게임 디자인 확인이 필요하다:** 이 적이 선딜(telegraph)을 갖는 몹인지(몹 타입마다 다를 수 있음), 공격 간격을 고정 간격(마지막 시도 시각 기준)으로 볼지 쿨다운(마지막 성공/발동 시각 기준, 회피 시 리셋 여부 등)으로 볼지. `CanAttack()`의 판정 로직과 Attack 노드의 트리 구조(선딜 단계 유무)가 이 답에 따라 달라진다.
+     1. → **해결 (2026-09-17)**, 아래 참고. 공격범위/선딜처럼 전투 중 안 바뀌는 상수 값도 `AttributeSet`(문자열 키, 변경 콜백)에 넣을지, 아니면 별도 typed SO/struct로 뺄지. 안 바뀌는 값에 변경 콜백을 거는 건 낭비이고, 문자열 키는 오타를 컴파일러가 못 잡는다(블랙보드를 명시적 필드로 둔 것과 같은 이유, 위 3번 항목 참고).
+     2. → **해결 (2026-09-17)**, 아래 참고. 플레이어 쪽도 같은 `AttributeSet` + 같은 속성 이름(`"HP"` 등)을 쓰는지 — 안 그러면 `Apply()`가 플레이어를 못 찾는다.
+     3. → **일부 해결 (2026-09-17)**, 아래 참고. **이보다 먼저, 게임 디자인 확인이 필요하다:** 이 적이 선딜(telegraph)을 갖는 몹인지(몹 타입마다 다를 수 있음), 공격 간격을 고정 간격(마지막 시도 시각 기준)으로 볼지 쿨다운(마지막 성공/발동 시각 기준, 회피 시 리셋 여부 등)으로 볼지. `CanAttack()`의 판정 로직과 Attack 노드의 트리 구조(선딜 단계 유무)가 이 답에 따라 달라진다.
    - **(2026-09-16)** "판단부와 실행부 분리" 절의 `EnemyCombat` 책임 범위도 이 회의 결과에 따라 확정한다. `AttributeSet`에 어떤 값을 넣을지 아직 정해지지 않아 미해결로 둔다.
+   - **해결 (2026-09-17, 팀 회의):**
+     - `SOAttributeData` 에셋을 플레이어용과 적용 두 종류로 나눈다. 적용은 타입(근거리/원거리/보스)마다 에셋을 복제하고 숫자만 바꾼다.
+     - 전투 중 안 바뀌는 상수(공격 범위, 선딜 등)도 같은 SO에 넣는다. 전투 기준 값은 한 곳에서 관리하는 편이 편하기 때문이다. 별도 typed SO는 만들지 않는다. (남은 확인 1번)
+     - 같은 의미의 속성은 플레이어와 적이 같은 이름을 쓴다(예: `"Hp"`). 그래야 `SOAttributeEffect.Apply()`가 상대의 속성을 찾는다. (남은 확인 2번)
+     - 공격 간격은 쿨다운 방식이고 속성 이름은 `AttackCooldown`이다. (남은 확인 3번 일부)
+     - 결과: `IDamageable`은 만들지 않는다. `EnemyCombat`/`EnemyHealth`는 자기 `AttributeSet`에서 문자열 키로 값을 읽는다(예: `GetValue("AttackRange")`). **알려진 대가:** 키 오타를 컴파일러가 못 잡는다. 완화책(속성 이름 상수 클래스 등)은 구현 단계에서 정한다.
+     - **구현 전 확인할 것:** 쿨다운 기준 시점(공격 발동 시각인지 적중 시각인지)과 몹 타입별 선딜 유무. 이 답에 따라 `CanAttack()` 판정과 Attack 노드의 선딜 단계가 정해진다.
 6. **폴더/네임스페이스** — `docs/coding-convention.md` 예시(`Assets/_Project/Scripts/Enemy/AI/`, `Project.Enemy.AI`)를 따르는가? 기존 이동 코어는 `namespace Movement`다.
    - **해결 (2026-09-15):** `Enemy` 밑에 `AI`를 두지 않고, **`AI`를 최상위로 두고 그 밑에 `Core`/`Enemy`(미래: `Police`/`GC`)를 둔다.** 이 AI(BT) 구조가 전투 적뿐 아니라 미로의 GC/경찰(보류 항목, 위 참고)에도 재사용될 예정이라, `Enemy.AI`처럼 AI를 Enemy 하위로 두면 그 재사용이 어색해진다. 현재 브랜치(`feature/AI-Core`)가 만드는 것도 "Enemy/Police/GC가 공통으로 쓸 Core"이므로 `AI/Core`를 별도 하위 폴더로 둔다.
      - 폴더: `Assets/_Project/Scripts/AI/Core/`(공유 기반) + `AI/Enemy/`(Enemy 전용, `Core` 소비)
