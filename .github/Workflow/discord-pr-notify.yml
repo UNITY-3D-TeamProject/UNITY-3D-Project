@@ -3,7 +3,7 @@ name: Discord PR Notification
 on:
   pull_request:
     types: [opened, reopened]
-    branches: [ dev, main ]
+    branches: [ develop, main ]
 
 jobs:
   notify-discord:
