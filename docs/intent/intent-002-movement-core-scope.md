@@ -45,7 +45,7 @@ resolved: null
 | 플랫폼 탑승 감지 (`OnControllerColliderHit`, LayerMask) | 두 오브젝트 간 상호작용 | 담당자 |
 
 결과적으로 코어는 두 개가 대칭을 이루며, 둘 다 "어디로 갈지"도 "왜 밀리는지"도 모른다:
-- **`CharacterMotor`** — `CharacterController`에 적용. `Move(direction, speed)` + `AddExternalDisplacement(displacement)`
+- ~~**`CharacterMotor`** — `CharacterController`에 적용. `Move(direction, speed)` + `AddExternalDisplacement(displacement)`~~ → **(2026-09-17) 변경:** `Move(direction, speed)` 호출 방식을 `Direction`/`Speed` 프로퍼티로 대체하고 `FixedUpdate`에서 자동 구동한다. 이유: Player/Enemy 둘 다 `CharacterController` 이동을 `FixedUpdate` 기준으로 처리하기 때문. `AddExternalDisplacement(displacement)`는 그대로 유지.
 - **`TransformMotor`** (`WaypointMover`를 대체) — `Transform`에 직접 적용. `MoveTo(targetPosition, speed)` + `DeltaThisFrame`
 
 `AddExternalDisplacement`는 편의 기능이 아니라 **필수**다. `Move()`는 프레임당 한 번만 호출해야 한다는 제약을 코어가 소유하므로, 담당자가 캐릭터를 추가로 밀 방법을 코어가 제공하지 않으면 탑승 구현 자체가 불가능하다. 코어는 원인(플랫폼/컨베이어/넉백/바람)을 알지 않고 단일 `Move()` 호출에 합산되는 것만 보장한다.
