@@ -11,3 +11,4 @@
 ## 해결됨 (Resolved)
 <!-- 형식: - **[파트]** 문제 한 줄 요약 → [문서](./clear/intent-NNN-slug.md) (resolved: YYYY-MM-DD) -->
 - **[Movement System]** 이동 시스템 공용 코어(CharacterMotor/WaypointMover) 부재 → [문서](./clear/intent-001-movement-system-core.md) (resolved: 2026-09-11)
+- **[Combat]** 전투 컴포넌트 통신 채널 부재 → [문서](./clear/intent-004-combat-component-channel.md) (resolved: 2026-09-20)
