@@ -1,32 +1,29 @@
+using System;
+using Scripts.Controller;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Scripts.Input
 {
-    public class PlayerInputComponent : MonoBehaviour
+    public class PlayerInputComponent : MonoBehaviour, ICharacterController
     {
-        public delegate void RequestInputVector2(Vector2 amount);
-        public delegate void RequestInputButton();
+        private event Action<Vector2> OnMoveRequested;
+        private event Action<Vector2> OnLookRequested;
+        private event Action OnJumpRequested;
 
-        private event RequestInputVector2 RequestMove;
-        private event RequestInputVector2 RequestLook;
-        private event RequestInputButton RequestJump;
-        
         private void OnMove(InputValue value)
         {
-            Vector2 input = value.Get<Vector2>();
-            RequestMove?.Invoke(input);
+            OnMoveRequested?.Invoke(value.Get<Vector2>());
         }
-    
+
         private void OnLook(InputValue value)
         {
-            Vector2 input = value.Get<Vector2>();
-            RequestLook?.Invoke(input);
+            OnLookRequested?.Invoke(value.Get<Vector2>());
         }
-    
+
         private void OnJump(InputValue value)
         {
-            RequestJump?.Invoke();
+            OnJumpRequested?.Invoke();
         }
     
         private void OnRoll(InputValue value)
@@ -59,22 +56,40 @@ namespace Scripts.Input
             Debug.Log("SpawnVehicle");
         }
 
-        public void SetRequestMove(RequestInputVector2 callback)
+        public void SetMoveRequest(Action<Vector2> callback)
         {
-            if (callback == null) return;
-            RequestMove = callback;
+            if(callback == null) return;
+            OnMoveRequested = callback;
         }
 
-        public void SetRequestLook(RequestInputVector2 callback)
+        public void SetLookRequest(Action<Vector2> callback)
         {
-            if (callback == null) return;
-            RequestLook = callback;
+            if(callback == null) return;
+            OnLookRequested = callback;
         }
-        
-        public void SetRequestJump(RequestInputButton callback)
+
+        public void SetJumpRequest(Action callback)
         {
-            if (callback == null) return;
-            RequestJump = callback;
+            if(callback == null) return;
+            OnJumpRequested = callback;
+        }
+
+        public void RemoveMoveRequest(Action<Vector2> callback)
+        {
+            if(callback == null) return;
+            OnMoveRequested -= callback;
+        }
+
+        public void RemoveLookRequest(Action<Vector2> callback)
+        {
+            if(callback == null) return;
+            OnLookRequested -= callback;
+        }
+
+        public void RemoveJumpRequest(Action callback)
+        {
+            if(callback == null) return;
+            OnJumpRequested -= callback;
         }
     }
 }
