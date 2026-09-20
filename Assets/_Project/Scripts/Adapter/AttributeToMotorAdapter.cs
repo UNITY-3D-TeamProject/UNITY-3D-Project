@@ -1,23 +1,41 @@
 using System;
+using UnityEngine;
+using UnityEngine.Serialization;
 using Attribute.Core;
 using Movement;
-using UnityEngine;
 
-namespace Scripts.Adapter
+namespace Adapter
 {
+    /// <summary>
+    /// AttributeSet의 속도 어트리뷰트 값을 CharacterMotor.Speed에 연결하는 접착 컴포넌트.
+    /// AttributeSet과 CharacterMotor는 서로를 알지 못하며, 이 어댑터가 둘 사이의 값 동기화만 담당한다.
+    /// </summary>
     public class AttributeToMotorAdapter : MonoBehaviour
     {
-        [SerializeField] private AttributeSet attributeSet;
-        [SerializeField] private CharacterMotor characterMotor;
-        [SerializeField] private string speedValueKey;
+        #region Serialized Fields
+        [Header("References")]
+        [FormerlySerializedAs("attributeSet")]
+        [SerializeField] private AttributeSet _attributeSet;
+        [FormerlySerializedAs("characterMotor")]
+        [SerializeField] private CharacterMotor _characterMotor;
 
-        public string SpeedValueKey => speedValueKey;
+        [Header("Settings")]
+        [Tooltip("CharacterMotor.Speed 로 연결할 어트리뷰트 이름")]
+        [FormerlySerializedAs("speedValueKey")]
+        [SerializeField] private string _speedValueKey;
+        #endregion
 
+        #region Properties
+        /// <summary>CharacterMotor.Speed 로 연결되는 어트리뷰트 이름.</summary>
+        public string SpeedValueKey => _speedValueKey;
+        #endregion
+
+        #region Unity Lifecycle
         private void Awake()
         {
-            if(!attributeSet) attributeSet = GetComponent<AttributeSet>();
-            
-            if (!attributeSet)
+            if (!_attributeSet) _attributeSet = GetComponent<AttributeSet>();
+
+            if (!_attributeSet)
             {
                 Debug.LogError($"[{name}] AttributeSet is not found", this);
             }
@@ -25,23 +43,34 @@ namespace Scripts.Adapter
 
         private void OnEnable()
         {
-            if (!attributeSet || !characterMotor) return;
-            characterMotor.Speed = attributeSet.GetValue(speedValueKey);
-            attributeSet.AddOnAttributeChangedCallback(OnSpeedChanged);
+            if (!_attributeSet || !_characterMotor) return;
+
+            // 활성화 시점의 값을 먼저 반영하고, 이후 변경은 콜백으로 동기화
+            _characterMotor.Speed = _attributeSet.GetValue(_speedValueKey);
+            _attributeSet.AddOnAttributeChangedCallback(OnSpeedChanged);
         }
 
         private void OnDisable()
         {
-            if (!attributeSet) return;
-            attributeSet.RemoveOnAttributeChangedCallback(OnSpeedChanged);
+            if (!_attributeSet) return;
+            _attributeSet.RemoveOnAttributeChangedCallback(OnSpeedChanged);
         }
-        
+        #endregion
+
+        #region Private Methods
+        /// <summary>
+        /// 어트리뷰트 변경 콜백. 속도 키에 해당하는 변경만 Motor 에 반영한다.
+        /// </summary>
+        /// <param name="attributeKey">변경된 어트리뷰트 이름</param>
+        /// <param name="newValue">변경 후 값</param>
+        /// <param name="oldValue">변경 전 값</param>
         private void OnSpeedChanged(string attributeKey, float newValue, float oldValue)
         {
-            if (string.Equals(attributeKey, speedValueKey, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(attributeKey, _speedValueKey, StringComparison.OrdinalIgnoreCase))
             {
-                characterMotor.Speed = newValue; 
+                _characterMotor.Speed = newValue;
             }
         }
+        #endregion
     }
 }
