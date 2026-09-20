@@ -5,21 +5,26 @@ namespace Scripts.Input
 {
     public class PlayerInputComponent : MonoBehaviour
     {
+        public delegate void RequestInputVector3(Vector3 amount);
+        public delegate void RequestInputButton();
+
+        private event RequestInputVector3 RequestMove;
+        private event RequestInputButton RequestJump;
+        
         private void OnMove(InputValue value)
         {
             Vector2 input = value.Get<Vector2>();
-            Debug.Log("Move");
+            RequestMove?.Invoke(new Vector3(input.x, 0, input.y));
         }
     
         private void OnLook(InputValue value)
         {
             Vector2 input = value.Get<Vector2>();
-            Debug.Log("Look");
         }
     
         private void OnJump(InputValue value)
         {
-            Debug.Log("Jump");
+            RequestJump?.Invoke();
         }
     
         private void OnRoll(InputValue value)
@@ -50,6 +55,18 @@ namespace Scripts.Input
         private void OnSpawnVehicle(InputValue value)
         {
             Debug.Log("SpawnVehicle");
+        }
+
+        public void SetRequestMove(RequestInputVector3 callback)
+        {
+            if (callback == null) return;
+            RequestMove = callback;
+        }
+        
+        public void SetRequestJump(RequestInputButton callback)
+        {
+            if (callback == null) return;
+            RequestJump = callback;
         }
     }
 }
