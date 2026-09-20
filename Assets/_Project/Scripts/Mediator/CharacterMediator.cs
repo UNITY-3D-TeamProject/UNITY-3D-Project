@@ -21,6 +21,7 @@ namespace Scripts.Mediator
             if (cameraMediator)
             {
                 inputComponent.SetRequestLook(cameraMediator.CommandRotateCamera);
+                moveMediator.SetReferenceFrame(cameraMediator.ReferenceFrame);
             }
         }
     }

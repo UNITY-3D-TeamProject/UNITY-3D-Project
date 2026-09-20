@@ -22,6 +22,8 @@ namespace Scripts.Camera
             set => _look = value;
         }
 
+        public Transform Pivot => cameraPivot;
+
         private void Start()
         {
             if (cameraPivot == null) return;
