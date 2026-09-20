@@ -2520,8 +2520,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7828893035030437631}
-  - {fileID: 265546469717160086}
   - {fileID: 8848263748336345543}
+  - {fileID: 265546469717160086}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &4073810537523457601
@@ -2615,7 +2615,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Scripts.Mediator.CharacterMediator
   inputComponent: {fileID: 8819838127059369083}
   moveMediator: {fileID: 7523128385923799439}
-  CameraMediator: {fileID: 4037666890982176721}
+  cameraMediator: {fileID: 4037666890982176721}
 --- !u!1 &7343216831179619095
 GameObject:
   m_ObjectHideFlags: 0
@@ -3405,10 +3405,34 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7955953769729619003}
     m_Modifications:
+    - target: {fileID: 397994105355548391, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
+      propertyPath: valueKey
+      value: MoveSpeed
+      objectReference: {fileID: 0}
+    - target: {fileID: 397994105355548391, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
+      propertyPath: attributeSet
+      value: 
+      objectReference: {fileID: 5605405084726051257}
+    - target: {fileID: 865581795102873156, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
+      propertyPath: m_Height
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 865581795102873156, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
+      propertyPath: m_Radius
+      value: 0.23
+      objectReference: {fileID: 0}
+    - target: {fileID: 865581795102873156, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
+      propertyPath: m_Center.y
+      value: 0.75
+      objectReference: {fileID: 0}
     - target: {fileID: 2003498906128450184, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
       propertyPath: m_Name
       value: MovePrefab
       objectReference: {fileID: 0}
+    - target: {fileID: 4236341993996040545, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
+      propertyPath: motor
+      value: 
+      objectReference: {fileID: 6280536272913815049}
     - target: {fileID: 4461279346169992253, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
       propertyPath: m_Height
       value: 1.5
@@ -3480,6 +3504,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5837350018986070136, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
   m_PrefabInstance: {fileID: 5957426615118029038}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6280536272913815049 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 397994105355548391, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
+  m_PrefabInstance: {fileID: 5957426615118029038}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53f76bd54b171de4b89de150ed196cf8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Scripts.Adapter.AttributeToMotorAdapter
 --- !u!114 &7523128385923799439 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4236341993996040545, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}

@@ -7,20 +7,15 @@ namespace Scripts.Mediator
     public class MoveMediator : MonoBehaviour
     {
         [SerializeField] private CharacterMotor motor;
-
-        private void Start()
+        
+        public void CommandMove(Vector2 dir)
         {
-            motor.Speed = 10;
-        }
-
-        public void CommandMove(Vector3 dir)
-        {
-            motor.Direction = dir;
+            motor.Direction = new Vector3(dir.x, 0, dir.y);
         }
         
         public void CommandJump()
         {
-            motor.Direction = (motor.Direction + Vector3.up);
+            //todo : motor 에 점프함수 추가 후 적용
         }
     }
 }

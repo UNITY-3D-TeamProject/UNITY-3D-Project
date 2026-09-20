@@ -8,7 +8,7 @@ namespace Scripts.Mediator
         [SerializeField] private PlayerInputComponent inputComponent;
 
         [SerializeField] private MoveMediator moveMediator;
-        [SerializeField] private CameraMediator CameraMediator;
+        [SerializeField] private CameraMediator cameraMediator;
 
         private void OnEnable()
         {
@@ -18,9 +18,9 @@ namespace Scripts.Mediator
                 inputComponent.SetRequestJump(moveMediator.CommandJump);
             }
 
-            if (CameraMediator)
+            if (cameraMediator)
             {
-                inputComponent.SetRequestLook(CameraMediator.CommandRotateCamera);
+                inputComponent.SetRequestLook(cameraMediator.CommandRotateCamera);
             }
         }
     }
