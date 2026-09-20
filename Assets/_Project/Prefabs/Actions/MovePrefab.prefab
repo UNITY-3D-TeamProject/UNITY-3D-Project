@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4236341993996040545}
   - component: {fileID: 865581795102873156}
   - component: {fileID: 397994105355548391}
+  - component: {fileID: 8199077832532000388}
   m_Layer: 0
   m_Name: MovePrefab
   m_TagString: Untagged
@@ -46,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4184b676d9d003498c27f9ce1b7507b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Mediator.MoveMediator
-  motor: {fileID: 0}
+  motor: {fileID: 8199077832532000388}
 --- !u!143 &865581795102873156
 CharacterController:
   m_ObjectHideFlags: 0
@@ -84,6 +85,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53f76bd54b171de4b89de150ed196cf8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Scripts.Adapter.AttributeToMotorAdapter
-  _gravity: 9.8
   attributeSet: {fileID: 0}
-  valueKey: 
+  characterMotor: {fileID: 8199077832532000388}
+  speedValueKey: MoveSpeed
+--- !u!114 &8199077832532000388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2003498906128450184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c0204b33ccc984f88ec4f9d98a1298, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movement.CharacterMotor
+  _gravity: 9.8
