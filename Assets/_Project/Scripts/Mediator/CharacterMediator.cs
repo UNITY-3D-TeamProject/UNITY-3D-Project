@@ -6,7 +6,7 @@ namespace Scripts.Mediator
     public class CharacterMediator : MonoBehaviour
     {
         [SerializeField] private PlayerInputComponent inputComponent;
-        
+
         [SerializeField] private MoveMediator moveMediator;
 
         private void OnEnable()
