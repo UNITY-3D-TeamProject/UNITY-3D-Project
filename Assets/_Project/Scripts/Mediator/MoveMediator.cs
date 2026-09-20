@@ -1,4 +1,3 @@
-using System;
 using Movement;
 using UnityEngine;
 
@@ -13,6 +12,8 @@ namespace Scripts.Mediator
 
         private void Update()
         {
+            if (!motor) return;
+            
             if (!_referenceFrame)
             {
                 motor.Direction = new Vector3(_moveInput.x, 0, _moveInput.y);

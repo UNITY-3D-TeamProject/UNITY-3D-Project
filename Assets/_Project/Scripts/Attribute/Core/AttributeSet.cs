@@ -85,6 +85,11 @@ namespace Attribute.Core
             _preAttributeChangedEvent = callback;
         }
 
+        public void ClearPreAttributeChangedCallback()
+        {
+            _preAttributeChangedEvent = null;
+        }
+        
         /// <summary>
         /// Value 변경 시 발생할 콜백 Add
         /// </summary>

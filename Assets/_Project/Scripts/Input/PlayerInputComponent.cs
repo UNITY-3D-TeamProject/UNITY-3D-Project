@@ -74,22 +74,19 @@ namespace Scripts.Input
             OnJumpRequested = callback;
         }
 
-        public void RemoveMoveRequest(Action<Vector2> callback)
+        public void ClearMoveRequest()
         {
-            if(callback == null) return;
-            OnMoveRequested -= callback;
+            OnMoveRequested = null;
         }
 
-        public void RemoveLookRequest(Action<Vector2> callback)
+        public void ClearLookRequest()
         {
-            if(callback == null) return;
-            OnLookRequested -= callback;
+            OnLookRequested = null;
         }
 
-        public void RemoveJumpRequest(Action callback)
+        public void ClearJumpRequest()
         {
-            if(callback == null) return;
-            OnJumpRequested -= callback;
+            OnJumpRequested = null;
         }
     }
 }

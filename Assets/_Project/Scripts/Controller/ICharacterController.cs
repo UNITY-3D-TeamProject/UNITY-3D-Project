@@ -9,8 +9,8 @@ namespace Scripts.Controller
         void SetLookRequest(Action<Vector2> callback);
         void SetJumpRequest(Action callback);
         
-        void RemoveMoveRequest(Action<Vector2> callback);
-        void RemoveLookRequest(Action<Vector2> callback);
-        void RemoveJumpRequest(Action callback);
+        void ClearMoveRequest();
+        void ClearLookRequest();
+        void ClearJumpRequest();
     }
 }

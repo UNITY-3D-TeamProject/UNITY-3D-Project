@@ -39,16 +39,13 @@ namespace Scripts.Mediator
         {
             if (_controller == null) return;
 
+            _controller.ClearMoveRequest();
+            _controller.ClearJumpRequest();
+            _controller.ClearLookRequest();
+            
             if (moveMediator)
             {
-                _controller.RemoveMoveRequest(moveMediator.CommandMove);
-                _controller.RemoveJumpRequest(moveMediator.CommandJump);
                 moveMediator.SetReferenceFrame(null);
-            }
-            
-            if (cameraMediator)
-            {
-                _controller.RemoveLookRequest(cameraMediator.CommandRotateCamera);
             }
         }
     }

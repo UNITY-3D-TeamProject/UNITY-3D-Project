@@ -42,6 +42,11 @@ namespace Attribute.Core
             _preValueChangedEvent = callback;
         }
 
+        public void ClearPreValueChangedCallback()
+        {
+            _preValueChangedEvent = null;
+        }
+        
         /// <summary>
         /// Value 변경 시 발생할 콜백 Set
         /// </summary>
@@ -52,6 +57,12 @@ namespace Attribute.Core
             _onValueChangedEvent = callback;
         }
     
+        public void RemoveOnValueChangedCallback(OnValueChange callback)
+        {
+            if (callback == null) return;
+            _onValueChangedEvent -= callback;
+        }
+        
         /// <summary>
         /// Value 변경 후 발생할 콜백 Set
         /// </summary>
@@ -60,6 +71,12 @@ namespace Attribute.Core
         {
             if (callback == null) return;
             _postValueChangedEvent = callback;
+        }
+        
+        public void RemovePostValueChangedCallback(OnValueChange callback)
+        {
+            if (callback == null) return;
+            _postValueChangedEvent -= callback;
         }
     }
 }
