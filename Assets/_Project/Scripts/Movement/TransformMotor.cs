@@ -27,8 +27,9 @@ namespace Movement
         public void MoveTo(Vector3 targetPosition, float speed)
         {
             Vector3 previousPosition = transform.position;
-
-            transform.position = Vector3.MoveTowards(previousPosition, targetPosition, speed * Time.deltaTime);
+            
+            // 속도가 음수일 시 목표 반대쪽으로 움직이는 것 방지
+            transform.position = Vector3.MoveTowards(previousPosition, targetPosition, Mathf.Max(0.0f, speed) * Time.deltaTime);
             DeltaThisFrame = transform.position - previousPosition;
         }
         #endregion
