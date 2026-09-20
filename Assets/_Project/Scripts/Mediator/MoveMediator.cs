@@ -1,3 +1,4 @@
+using System;
 using Movement;
 using UnityEngine;
 
@@ -23,6 +24,12 @@ namespace Scripts.Mediator
             Vector3 forward = Vector3.ProjectOnPlane(_referenceFrame.forward, Vector3.up).normalized;
             Vector3 right = Vector3.ProjectOnPlane(_referenceFrame.right, Vector3.up).normalized;
             motor.Direction = (right * _moveInput.x) + (forward * _moveInput.y);
+        }
+
+        private void OnDisable()
+        {
+            _moveInput = Vector2.zero;
+            if(motor) motor.Direction = Vector3.zero;
         }
 
         public void SetReferenceFrame(Transform frame)

@@ -1,4 +1,4 @@
-using Scripts.Camera;
+using Scripts.CameraControl;
 using UnityEngine;
 
 namespace Scripts.Mediator

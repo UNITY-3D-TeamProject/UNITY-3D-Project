@@ -1,9 +1,9 @@
 using System;
-using Scripts.Controller;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Scripts.Controller;
 
-namespace Scripts.Input
+namespace Scripts.PlayerInput
 {
     public class PlayerInputComponent : MonoBehaviour, ICharacterController
     {

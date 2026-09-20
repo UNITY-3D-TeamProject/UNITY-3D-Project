@@ -15,7 +15,7 @@ namespace Scripts.Adapter
 
         private void Awake()
         {
-            if(!attributeSet) attributeSet = GetComponentInParent<AttributeSet>();
+            if(!attributeSet) attributeSet = GetComponent<AttributeSet>();
             
             if (!attributeSet)
             {

@@ -12,7 +12,7 @@ namespace Scripts.Mediator
 
         private void Awake()
         {
-            if(_controller == null) _controller = GetComponentInParent<ICharacterController>();
+            if(_controller == null) _controller = GetComponent<ICharacterController>();
         }
 
         private void OnEnable()
