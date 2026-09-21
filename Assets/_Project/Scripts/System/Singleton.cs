@@ -2,8 +2,8 @@ using UnityEngine; // 유니티 엔진 기능 사용 (네임스페이스)
 
 namespace System
 {
-    // T는 클래스 타입
-    // T는 Component를 상속받은 클래스여야함
+    // T는 클래스 타입, T는 Component를 상속받은 클래스여야함
+    // Object->Component->MonoBehaviour
     public class Singleton<T> : MonoBehaviour where T : Component 
     {
         private static T _instance; // 하나만 존재하는 싱글톤 객체
@@ -13,8 +13,8 @@ namespace System
             get // 외부에서 싱글톤 가져오기
             {
                 if (_instance == null)
-                {
-                    _instance = FindObjectOfType<T>();
+                {   
+                    _instance = FindAnyObjectByType<T>();  // 존재하는 T 타입 인스턴스 아무거나 하나 찾기
                     if (_instance == null)
                     {
                         GameObject obj = new GameObject(); // 빈 오브젝트 생성
@@ -46,3 +46,8 @@ namespace System
 // 4. Awake()에서 이미 할당되어 있다면 그대로 _instance를 반환한다.
 // 5. 없다면 씬에서 GameManager를 찾고, 그래도 없다면 새 GameObject를 생성하여 GameManager를 붙인다.
 // => 어떤 씬에도 하이어라키에 GameManager 안넣었는데 호출한다면 null 에러 대신 그냥 즉시 만들어 버린다.
+
+// 기존 함수(FindObjectOfType<T>())와 가장 직접적으로 대응하는 함수는
+// FindFirstObjectByType<T>()지만,
+// Unity 공식 문서에서도 임의의 인스턴스면 충분한 경우
+// FindAnyObjectByType이 더 빠르다고 안내함.
