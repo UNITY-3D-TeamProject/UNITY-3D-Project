@@ -34,3 +34,5 @@ resolved: 2026-09-20
   - `OnHit`/`OnDeath`는 순수 C# `event`로 방출 — 중재자 구현 형태(`character-architecture.md` §8 열린 질문 2, 아직 미정)를 몰라도 동작한다.
   - (2026-09-20 추가) `ReceiveHit` 내부 순서를 `OnHit 발사 → Effect.Apply → CheckDeath`로 조정했다. 팀원이 `AttributeSet.AddOnAttributeChangedCallback`으로 `NotifyAttributeChanged`를 옵서버 배선하면, `Apply` 호출 중에 `NotifyAttributeChanged → CheckDeath → OnDeath`가 끼어들 수 있다. `OnHit`을 `Apply`보다 먼저 쏘지 않으면 치명타 시 `OnDeath`가 `OnHit`보다 먼저 발사되는 순서 역전이 생긴다. 이 조정으로 배선 전/후 모두 `OnHit → OnDeath` 순서가 보장된다. 5-b(비-피격 경로의 "피격 체크")는 `SHitInfo`를 만들 수 없어 이번 범위에서 제외.
 - 관련 커밋/PR: (구현 커밋에서 채워짐)
+- (2026-09-21 추가) 이 문서의 설계는 [intent-005](../intent-005-combat-component-decoupling.md)로 대체됨. "기존 Attribute 코드를 건드리지 않는다"를 우선한 결과 Combat이 Attribute/Effect 타입에 묶여 이식성이 깨진 것이 원인 — `SHitInfo`/`CharacterCombat`을 Unity 기본 타입만으로 재작성하고, AttributeSet 연동은 별도 `AttributeToCombatObserver`(Observer)로 분리했다.
+- (2026-09-21 추가) 위 결정 항목 중 "공격자가 대상의 중재자를 거치지 않고 직접 호출한다"는 **파기됨**. 당시엔 캐릭터당 중재자가 1개뿐이라 예외를 뒀지만, 이후 메인+서브 중재자 구조로 바뀌어 예외 명분이 사라졌다. 지금은 피격자의 전투 서브 중재자가 `ReceiveHit`을 호출한다 — 근거와 상세는 [intent-005](../intent-005-combat-component-decoupling.md)의 "intent-004 해석 파기" 절 참고.
