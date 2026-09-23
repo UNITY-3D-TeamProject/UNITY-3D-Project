@@ -47,13 +47,13 @@ namespace Adapter
 
             // 활성화 시점의 값을 먼저 반영하고, 이후 변경은 콜백으로 동기화
             _characterMotor.Speed = _attributeSet.GetValue(_speedValueKey);
-            _attributeSet.AddOnAttributeChangedCallback(OnAttributeChanged);
+            _attributeSet.AddOnAttributeChangedCallback(OnSpeedChanged);
         }
 
         private void OnDisable()
         {
             if (!_attributeSet) return;
-            _attributeSet.RemoveOnAttributeChangedCallback(OnAttributeChanged);
+            _attributeSet.RemoveOnAttributeChangedCallback(OnSpeedChanged);
         }
         #endregion
 
@@ -64,7 +64,7 @@ namespace Adapter
         /// <param name="attributeKey">변경된 어트리뷰트 이름</param>
         /// <param name="newValue">변경 후 값</param>
         /// <param name="oldValue">변경 전 값</param>
-        private void OnAttributeChanged(string attributeKey, float newValue, float oldValue)
+        private void OnSpeedChanged(string attributeKey, float newValue, float oldValue)
         {
             if (string.Equals(attributeKey, _speedValueKey, StringComparison.OrdinalIgnoreCase))
             {
