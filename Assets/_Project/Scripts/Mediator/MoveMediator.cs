@@ -71,8 +71,7 @@ namespace Mediator
         /// </summary>
         public void CommandJump()
         {
-            if (!_motor) return;
-            _motor.Jump();
+            //todo : motor 에 점프함수 추가 후 적용
         }
         #endregion
     }

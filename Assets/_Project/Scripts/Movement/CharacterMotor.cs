@@ -20,11 +20,11 @@ namespace Movement
         #region Serialized Fields
         [Header("Gravity")]
         [Tooltip("중력 가속도 크기(양수). 아래 방향으로 적용된다.")]
-        [SerializeField] private float _gravity = 20.0f;
+        [SerializeField] private float _gravity = 9.8f;
 
         [Header("Jump")]
         [Tooltip("공중에서 목표 수평 속도로 수렴하는 가속도. 클수록 공중 조작이 민첩해진다.")]
-        [SerializeField] private float _airAcceleration = 30.0f;
+        [SerializeField] private float _airAcceleration = 10.0f;
         #endregion
 
         #region Private Fields
@@ -34,7 +34,7 @@ namespace Movement
         private Vector3 _externalDisplacement;
         private Vector3 _direction;
         private float _speed;
-        private float _jumpSpeed;
+        private float _jumpPower;       // Adapter를 통해 JumPower 값 가져옴.
         private bool _jumpRequested;
         #endregion
 
@@ -56,8 +56,8 @@ namespace Movement
         /// <summary>점프 시 부여되는 초기 상승 속도.</summary>
         public float JumpSpeed
         {
-            get => _jumpSpeed;
-            set => _jumpSpeed = value;
+            get => _jumpPower;
+            set => _jumpPower = value;
         }
 
         /// <summary>지면에 닿아 있는지 여부.</summary>
@@ -115,7 +115,7 @@ namespace Movement
         /// </summary>
         public void Jump()
         {
-            Debug.Log($"[JumpDebug] Jump() called. _jumpSpeed={_jumpSpeed}, _controller.enabled={_controller.enabled}");
+            // Debug.Log($"[JumpDebug] Jump() called. _jumpSpeed={_jumpSpeed}, _controller.enabled={_controller.enabled}");
             if (!_controller.enabled) return;
 
             _jumpRequested = true;
@@ -129,14 +129,14 @@ namespace Movement
         /// </summary>
         private void ConsumeJumpRequest()
         {
-            if (_jumpRequested)
-            {
-                Debug.Log($"[JumpDebug] ConsumeJumpRequest(). isGrounded={_controller.isGrounded}, _jumpSpeed={_jumpSpeed}");
-            }
+            // if (_jumpRequested)
+            // {
+            //     Debug.Log($"[JumpDebug] ConsumeJumpRequest(). isGrounded={_controller.isGrounded}, _jumpSpeed={_jumpPower}");
+            // }
 
             if (_jumpRequested && _controller.isGrounded)
             {
-                _verticalVelocity = _jumpSpeed;
+                _verticalVelocity = _jumpPower;
             }
 
             _jumpRequested = false;
@@ -176,7 +176,7 @@ namespace Movement
             // 방향에 y값 섞여서 수평 속도 줄어들지 않게 방지
             Vector3 horizontalDirection = new Vector3(_direction.x, 0.0f, _direction.z).normalized;
             Vector3 targetVelocity = horizontalDirection * _speed;
-
+ 
             if (_controller.isGrounded)
             {
                 _horizontalVelocity = targetVelocity;

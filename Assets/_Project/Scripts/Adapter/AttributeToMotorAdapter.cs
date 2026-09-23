@@ -23,16 +23,11 @@ namespace Adapter
         [Tooltip("CharacterMotor.Speed 로 연결할 어트리뷰트 이름")]
         [FormerlySerializedAs("speedValueKey")]
         [SerializeField] private string _speedValueKey;
-        [Tooltip("CharacterMotor.JumpSpeed 로 연결할 어트리뷰트 이름")]
-        [SerializeField] private string _jumpSpeedValueKey;
         #endregion
 
         #region Properties
         /// <summary>CharacterMotor.Speed 로 연결되는 어트리뷰트 이름.</summary>
         public string SpeedValueKey => _speedValueKey;
-
-        /// <summary>CharacterMotor.JumpSpeed 로 연결되는 어트리뷰트 이름.</summary>
-        public string JumpSpeedValueKey => _jumpSpeedValueKey;
         #endregion
 
         #region Unity Lifecycle
@@ -52,7 +47,6 @@ namespace Adapter
 
             // 활성화 시점의 값을 먼저 반영하고, 이후 변경은 콜백으로 동기화
             _characterMotor.Speed = _attributeSet.GetValue(_speedValueKey);
-            _characterMotor.JumpSpeed = _attributeSet.GetValue(_jumpSpeedValueKey);
             _attributeSet.AddOnAttributeChangedCallback(OnAttributeChanged);
         }
 
@@ -75,10 +69,6 @@ namespace Adapter
             if (string.Equals(attributeKey, _speedValueKey, StringComparison.OrdinalIgnoreCase))
             {
                 _characterMotor.Speed = newValue;
-            }
-            else if (string.Equals(attributeKey, _jumpSpeedValueKey, StringComparison.OrdinalIgnoreCase))
-            {
-                _characterMotor.JumpSpeed = newValue;
             }
         }
         #endregion
