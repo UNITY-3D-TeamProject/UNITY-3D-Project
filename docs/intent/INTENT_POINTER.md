@@ -8,6 +8,7 @@
 - **[Movement System]** 이동 코어에 경로/회전/탑승 정책이 섞여 있음 → [문서](./intent-002-movement-core-scope.md)
 - **[Movement System]** PlayMode 테스트로 발견된 이동 자체 버그 4건 → [문서](./intent-003-movement-playtest-bugfixes.md)
 - **[Combat]** Combat 컴포넌트 재설계 — 의존성 0 + HP 옵서버 완료. `IHitReceiver`/`SHitInfo` 폐기로 입구가 `Health` setter 하나로 통합됨(HP 감소 = 피격). HP를 깎는 주체 등 이세훈과 협의할 열린 질문 3건 남음 → [문서](./intent-005-combat-component-decoupling.md)
+- **[AI]** 적·NPC 조종부 부재 — BT 기반 AI 구조 28개 결정 확정, 1차는 이동만(순찰→감지→추격→수색→복귀). 스킬 매니저 대기 4건 + 문서-코드 불일치 4건 열림 → [문서](./intent-008-enemy-ai-system.md)
 
 ## 해결됨 (Resolved)
 <!-- 형식: - **[파트]** 문제 한 줄 요약 → [문서](./clear/intent-NNN-slug.md) (resolved: YYYY-MM-DD) -->
