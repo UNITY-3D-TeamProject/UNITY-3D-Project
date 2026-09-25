@@ -7,7 +7,7 @@ using Movement;
 namespace Adapter
 {
     /// <summary>
-    /// AttributeSet의 속도 어트리뷰트 값을 CharacterMotor.Speed에 연결하는 접착 컴포넌트.
+    /// AttributeSet의 속도/점프 어트리뷰트 값을 CharacterMotor.Speed/JumpSpeed에 연결하는 접착 컴포넌트.
     /// AttributeSet과 CharacterMotor는 서로를 알지 못하며, 이 어댑터가 둘 사이의 값 동기화만 담당한다.
     /// </summary>
     public class AttributeToMotorAdapter : MonoBehaviour
@@ -59,7 +59,7 @@ namespace Adapter
 
         #region Private Methods
         /// <summary>
-        /// 어트리뷰트 변경 콜백. 속도 키에 해당하는 변경만 Motor 에 반영한다.
+        /// 어트리뷰트 변경 콜백. 속도/점프 키에 해당하는 변경만 Motor 에 반영한다.
         /// </summary>
         /// <param name="attributeKey">변경된 어트리뷰트 이름</param>
         /// <param name="newValue">변경 후 값</param>
