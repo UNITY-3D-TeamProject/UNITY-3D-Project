@@ -31,6 +31,8 @@ namespace AI
         [SerializeField] private Sensor _sensor;
         [Tooltip("경로 계산 전용 NavMeshAgent. 이동은 이 컴포넌트가 직접 하지 않는다.")]
         [SerializeField] private NavMeshAgent _agent;
+        [Tooltip("실제로 이동하는 몸통 Transform (CharacterMotor 가 붙은 오브젝트). 비워두면 이 오브젝트의 Transform 을 쓴다.")]
+        [SerializeField] private Transform _body;
 
         [Header("Patrol")]
         [Tooltip("스폰 지점 기준 순찰 반경(m).")]
@@ -59,7 +61,7 @@ namespace AI
         public bool HasLastKnownPosition => _sensor && _sensor.HasLastKnownPosition;
 
         /// <summary>대상을 마지막으로 본 위치.</summary>
-        public Vector3 LastKnownPosition => _sensor ? _sensor.LastKnownPosition : transform.position;
+        public Vector3 LastKnownPosition => _sensor ? _sensor.LastKnownPosition : _body.position;
 
         /// <summary>목적지에 도착했는지 여부. 목적지가 없으면 true.</summary>
         public bool HasArrived
@@ -80,6 +82,7 @@ namespace AI
         {
             if (!_sensor) _sensor = GetComponent<Sensor>();
             if (!_agent) _agent = GetComponent<NavMeshAgent>();
+            if (!_body) _body = transform;
 
             if (!_agent)
             {
@@ -95,9 +98,9 @@ namespace AI
 
         private void Start()
         {
-            _spawnPosition = transform.position;
+            _spawnPosition = _body.position;
             // 방어 코드
-            if (_agent) _agent.nextPosition = transform.position;
+            if (_agent) _agent.nextPosition = _body.position;
         }
 
         private void Update()
@@ -109,7 +112,7 @@ namespace AI
             }
 
             // CharacterMotor 가 옮긴 실제 위치를 Agent 에 되돌려야 다음 경로가 어긋나지 않는다
-            _agent.nextPosition = transform.position;
+            _agent.nextPosition = _body.position;
 
             if (!_hasDestination || HasArrived)
             {
