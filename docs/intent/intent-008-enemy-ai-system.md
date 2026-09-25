@@ -45,7 +45,7 @@ resolved: null
 
 | # | 결정 |
 |---|---|
-| Q1 | BT는 `com.unity.behavior` (**미설치**) |
+| Q1 | BT는 `com.unity.behavior` (**1.0.16 설치 완료**) |
 | Q3 | NavMesh로 경로 계산 → `Vector2` 환산 → **기존 `MoveMediator.CommandMove` 재사용** (이동 코드 신규 작성 없음) |
 | Q4 | BT 그래프는 캐릭터별로 따로, **재사용 단위는 액션·조건 노드** |
 | Q5 | `Sensor` 컴포넌트 신설 — 조종부 소속, 중재자가 관리하지 않음 |
@@ -66,7 +66,8 @@ resolved: null
 
 - **누가 사용하는가**: 적/NPC 프리팹, 레벨 디자인(적 배치·순찰 반경 조정), 이후의 스킬 매니저
 - **어떤 시스템/모듈이 건드려지는가**
-  - 신규 (코드): `Assets/_Project/Scripts/` 아래 AI 폴더 — `Sensor` / `AIController` / `AIActionBase` / BT 액션·조건 노드
+  - 신규 (코드): `Assets/_Project/Scripts/AI/` — `Sensor` / `AIController` (완료),
+    `Assets/_Project/Scripts/AI/BT/` — `AIActionBase` / `AIConditionBase` / 액션 4종 / 조건 2종 (완료)
   - 재사용 (수정 없음): `MoveMediator.CommandMove`, `CharacterMotor`, `ICharacterController`
   - `[USER]` 영역: `ProjectSettings/TagManager.asset`(레이어), `Packages/manifest.json`(BT 패키지), 적 프리팹, BT 그래프 에셋, NavMesh 베이크
 
@@ -74,13 +75,28 @@ resolved: null
 
 - **`.unity` / `.prefab` / `.asset` / `.controller` 직접 편집 금지** (CLAUDE.local.md 0장). 따라서 레이어 추가·NavMesh 베이크·프리팹 구성·BT 그래프 작성은 전부 `[USER]` 티켓으로 분리한다.
 - 작업 범위는 `Assets/_Project/` 안으로 한정하고 `docs/coding-convention.md`를 따른다.
-- **선행 의존 미충족 4건**
-  1. `com.unity.behavior` 미설치 (`Packages/manifest.json`에 없음)
-  2. 커스텀 레이어·태그 0개 (`TagManager.asset`이 기본값)
+- **선행 의존 현황** (최초 4건 중 2건 해소)
+  1. ~~`com.unity.behavior` 미설치~~ → **1.0.16 설치 완료**. asmdef 불필요(패키지 asmdef가 전부 `autoReferenced: true`)
+  2. ~~커스텀 레이어·태그 0개~~ → **부분 해소**. layer 3 `Player` 추가됨. layer 6이 `Obserct`로 **오타** 상태라 `Obstacle`로 수정 필요 (`[USER]`)
   3. 스킬 매니저 미구현 (`Scripts/` 아래 Skill 폴더 없음) → Q18에서 1차 범위에서 공격을 뺀 이유
   4. 애니메이션 컴포넌트 미구현 (`AnimationMediator` 없음)
+  5. **몸통 회전 컴포넌트 미구현** — 프로젝트에 회전 코드가 한 줄도 없어 `Sensor`의 시야 방향이 스폰 시점 `forward`에 고정된다. 회전 티켓이 들어오기 전까지는 `_sightAngle`을 360에 가깝게 두고 플레이테스트한다
 - **1차 결과물은 적이 T포즈로 미끄러지듯 이동하는 것이 정상이다.** 애니메이션 컴포넌트가 아직 없기 때문이며, 동작 실패로 오해하지 말 것. 애니메이션은 별도 티켓.
 - `MoveMediator.CommandJump()`는 현재 비어 있으나(`//todo`), 1차 AI에 점프가 없어 영향 없음.
+
+## 진행 상황 (Progress)
+
+| 단계 | 상태 |
+|---|---|
+| `Sensor` / `AIController` 구현 | ✅ 완료 (2026-09-24) |
+| BT 액션·조건 노드 구현 | ✅ 완료 (2026-09-25) — `Assets/_Project/Scripts/AI/BT/` 8개 파일, 컴파일 0 에러 |
+| 순찰/수색 정체(Stuck) 감지 추가 | ✅ 완료 (2026-09-25) — `AIController.IsStuck` 신설, 벽에 낑겨 무한 `Running`에 빠지던 버그 수정. **Unity 컴파일/Play 모드 미확인**: [상세](../HANDOVER/BF_Leers/2026-09-25/ai-patrol-stuck-detection.md) |
+| BT 그래프 자산 조립 | ⬜ `[USER]` — [조립 가이드](../features/enemy-ai-bt-graph-guide.md) |
+| 적 프리팹 구성 + NavMesh 베이크 + 레이어 오타 수정 | ⬜ `[USER]` |
+| Play 모드 루프 완주 검증 | ⬜ 미완 — 이게 끝나야 `resolved` |
+
+노드가 목적지를 정하는 정책 3종(순찰·수색·추격)으로 나뉘고, 이동 구현 자체는 `AIController` 하나뿐이다.
+`AIController`는 "왜 거기로 가는지"를 모르며 목적지와 도착 여부만 안다. 의미는 전부 BT 쪽에 있다.
 
 ## 열린 질문 (Open questions)
 
@@ -100,6 +116,7 @@ resolved: null
 ---
 
 ## 관련 문서
+- [적 AI BT 그래프 조립 가이드 (`[USER]` 작업 절차)](../features/enemy-ai-bt-graph-guide.md)
 - [AI 구조 설계 확정 (grilling 세션) — 28개 결정 전문](../HANDOVER/BF_Leers/2026-09-24/ai-architecture-design-grilling.md)
 - [캐릭터 공통 구조](../character-architecture.md)
 - [코딩 컨벤션](../coding-convention.md)
