@@ -1,3 +1,4 @@
+using Attribute.Core;
 using UnityEngine;
 
 namespace Core
@@ -11,7 +12,16 @@ namespace Core
             Playing,
             Pause,
         }
+        [SerializeField] private SOAttributeData _playerAttributeData;
         public GameState CurrentState { get; private set; }
+
+        public PlayerState playerState { get; private set; }
+
+        public override void Awake()
+        {
+            base.Awake();
+            playerState = new PlayerState(_playerAttributeData);
+        }
 
         public void StartGame()
         {
@@ -31,8 +41,12 @@ namespace Core
         }
 
 
-
-
-        // 게임 진행 흐름 관리 (전체 진행도)
+        // 준범이가 만드는 씬 매니저?가 싱글톤일지 뭘지 모르겠는데
+        // 이벤트 구독하기
+        // 씬 전환 직전 이벤트를 받으면 호출하기
+        private void HandleBeforeSceneChange()
+        {
+            playerState.SaveCurrentAttributes();
+        }
     }
 }
