@@ -86,8 +86,7 @@ namespace Mediator
         {
             foreach (var mediator in _mediators)
             {
-                if (mediator.AttributeCallback.TryGetValue(attributeName, out var moveCallback))
-                    moveCallback?.Invoke(newValue, oldValue);
+                mediator.NotifyAttributeChanged(attributeName, newValue, oldValue);
             }
         }
         #endregion
