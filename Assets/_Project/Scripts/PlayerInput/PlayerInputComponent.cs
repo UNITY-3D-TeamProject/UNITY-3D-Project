@@ -7,11 +7,6 @@ using Mediator.SubMediators;
 // 이 프로젝트 코드에서 해당 클래스를 쓸 때는 반드시 UnityEngine.InputSystem.PlayerInput 으로 완전 수식한다.
 namespace PlayerInput
 {
-    /// <summary>
-    /// Input System 의 PlayerInput(Send Messages 방식)이 호출하는 입력 메시지를 받아
-    /// ICharacterController 요청 콜백으로 전달하는 플레이어 입력 컴포넌트.
-    /// 이동/시점/점프 외의 입력은 아직 로그만 남기는 스텁 상태이다.
-    /// </summary>
     public class PlayerInputComponent : MonoBehaviour, IMoveController, IRotateController
     {
         #region Events

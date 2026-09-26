@@ -46,7 +46,7 @@ namespace Mediator.SubMediators
         
         #region Private Methods
         /// <summary>
-        /// Controller 에 대한 바인딩 실행
+        /// 컴포넌트 이벤트 에 대한 바인딩 실행
         /// </summary>
         private void BindRequest()
         {
@@ -57,7 +57,7 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// Controller 에 대한 언바인딩 실행
+        /// 컴포넌트 이벤트 에 대한 언바인딩 실행
         /// </summary>
         private void UnBindRequest()
         {
