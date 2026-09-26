@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Movement;
@@ -19,7 +18,7 @@ namespace Mediator
     /// 기준 프레임(카메라 피벗 등)이 설정되어 있으면 그 수평 forward/right 를 기준으로 방향을 계산하고,
     /// 없으면 월드 축 기준으로 계산한다.
     /// </summary>
-    public class MoveMediator : MonoBehaviour
+    public class MoveMediator : MediatorBase
     {
         #region Serialized Fields
         [Header("References")]
@@ -36,8 +35,6 @@ namespace Mediator
         private IMoveController _moveController;
         private Vector2 _moveInput;
         private Transform _referenceFrame;
-        private readonly Dictionary<string, Action<float, float>> _attributeCallback = new(StringComparer.OrdinalIgnoreCase);
-        private GetAttributeDelegate _getAttribute;
         #endregion
 
         #region Properties
@@ -52,14 +49,8 @@ namespace Mediator
                 BindRequest();
             }
         }
+        #endregion
 
-        public Dictionary<string, Action<float, float>> AttributeCallback { get=>_attributeCallback; }
-        #endregion
-        
-        #region Delegates
-        public delegate float GetAttributeDelegate(string key);
-        #endregion
-        
         #region Unity Lifecycle
         private void Update()
         {
@@ -77,15 +68,10 @@ namespace Mediator
             _motor.Direction = (right * _moveInput.x) + (forward * _moveInput.y);
         }
 
-        private void Awake()
-        {
-            InitAttributeCallback();
-        }
-
-        private void OnEnable()
+        protected override void OnEnable()
         {
             BindRequest();
-            InitValue();
+            base.OnEnable();
         }
 
         private void OnDisable()
@@ -106,40 +92,20 @@ namespace Mediator
         {
             _referenceFrame = frame;
         }
-
-        /// <summary>
-        /// 속성값을 읽기 위한 델리게이트 설정
-        /// </summary>
-        public void SetGetAttribute(GetAttributeDelegate callback)
-        {
-            if (callback == null) return;
-            _getAttribute = callback;
-            InitValue();
-        }
-        
-        /// <summary>
-        /// 속성값을 읽기 위한 델리게이트 제거
-        /// </summary>
-        public void ClearGetAttribute()
-        {
-            _getAttribute = null;
-        }
-        
         #endregion
-        
-        #region Private Methods
 
+        #region Protected Methods
         /// <summary>
         /// 원하는 속성값이 변한 경우에 대한 콜백
         /// </summary>
-        private void InitAttributeCallback()
+        protected override void InitAttributeCallback()
         {
-            _attributeCallback.Add(_speedValueKey, (float newValue, float oldValue) =>
+            AttributeCallback.Add(_speedValueKey, (float newValue, float oldValue) =>
             {
                 if (_motor != null) _motor.Speed = newValue;
             });
-            
-            _attributeCallback.Add(_jumpSpeedValueKey, (float newValue, float oldValue) =>
+
+            AttributeCallback.Add(_jumpSpeedValueKey, (float newValue, float oldValue) =>
             {
                 if (_motor != null) _motor.JumpSpeed = newValue;
             });
@@ -148,14 +114,17 @@ namespace Mediator
         /// <summary>
         /// 속성값에 대한 초기화 진행
         /// </summary>
-        private void InitValue()
+        protected override void InitValue()
         {
-            if (_getAttribute == null) return;
+            if (AttributeGetter == null) return;
 
-            _motor.Speed = _getAttribute.Invoke(_speedValueKey);
-            _motor.JumpSpeed = _getAttribute.Invoke(_jumpSpeedValueKey);
+            _motor.Speed = AttributeGetter.Invoke(_speedValueKey);
+            _motor.JumpSpeed = AttributeGetter.Invoke(_jumpSpeedValueKey);
         }
-        
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
         /// 이동 명령을 전달한다. 값은 다음 Update 까지 유지된다.
         /// </summary>
