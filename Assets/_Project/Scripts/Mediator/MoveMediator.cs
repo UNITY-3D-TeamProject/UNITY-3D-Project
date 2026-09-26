@@ -1,9 +1,18 @@
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Movement;
 
 namespace Mediator
 {
+    public interface IMoveController
+    {
+        public void SetMoveRequest(Action<Vector2> callback);
+        public void SetJumpRequest(Action callback);
+        public void ClearMoveRequest();
+        public void ClearJumpRequest();
+    }
+    
     /// <summary>
     /// 2D 이동 입력을 월드 방향으로 변환해 CharacterMotor.Direction 에 전달하는 접착 컴포넌트.
     /// 기준 프레임(카메라 피벗 등)이 설정되어 있으면 그 수평 forward/right 를 기준으로 방향을 계산하고,
@@ -18,10 +27,25 @@ namespace Mediator
         #endregion
 
         #region Private Fields
+        private IMoveController _moveController;
         private Vector2 _moveInput;
         private Transform _referenceFrame;
         #endregion
 
+        #region Properties
+        public IMoveController MoveController 
+        { 
+            get => _moveController;
+            set
+            {
+                if(value == null) return;
+                UnBindRequest();
+                _moveController = value;
+                BindRequest();
+            }
+        }
+        #endregion
+        
         #region Unity Lifecycle
         private void Update()
         {
@@ -39,11 +63,17 @@ namespace Mediator
             _motor.Direction = (right * _moveInput.x) + (forward * _moveInput.y);
         }
 
+        private void OnEnable()
+        {
+            BindRequest();
+        }
+
         private void OnDisable()
         {
             // 비활성화 시 입력 잔여값으로 계속 움직이지 않도록 정지
             _moveInput = Vector2.zero;
             if (_motor) _motor.Direction = Vector3.zero;
+            UnBindRequest();
         }
         #endregion
 
@@ -56,12 +86,14 @@ namespace Mediator
         {
             _referenceFrame = frame;
         }
-
+        #endregion
+        
+        #region Private Methods
         /// <summary>
         /// 이동 명령을 전달한다. 값은 다음 Update 까지 유지된다.
         /// </summary>
         /// <param name="dir">이동 입력 (x: 좌우, y: 전후)</param>
-        public void CommandMove(Vector2 dir)
+        private void CommandMove(Vector2 dir)
         {
             _moveInput = dir;
         }
@@ -69,10 +101,29 @@ namespace Mediator
         /// <summary>
         /// 점프 명령을 전달한다.
         /// </summary>
-        public void CommandJump()
+        private void CommandJump()
         {
-            //todo : motor 에 점프함수 추가 후 적용
+            _motor?.Jump();
         }
+        
+        /// <summary>
+        /// Controller 에 대한 바인딩 실행
+        /// </summary>
+        private void BindRequest()
+        {
+            MoveController?.SetMoveRequest(CommandMove);
+            MoveController?.SetJumpRequest(CommandJump);
+        }
+
+        /// <summary>
+        /// Controller 에 대한 언바인딩 실행
+        /// </summary>
+        private void UnBindRequest()
+        {
+            MoveController?.ClearMoveRequest();
+            MoveController?.ClearJumpRequest();
+        }
+        
         #endregion
     }
 }
