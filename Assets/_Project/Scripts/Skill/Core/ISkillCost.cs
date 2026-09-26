@@ -1,0 +1,14 @@
+namespace Skill.Core
+{
+    /// <summary>
+    /// 스킬 사용 코스트. 스킬과 같은 GameObject 에 붙이면 SkillBase 가 자동으로 참조한다.
+    /// </summary>
+    public interface ISkillCost
+    {
+        /// <summary>코스트를 지불할 수 있는지 여부.</summary>
+        bool CanPay();
+
+        /// <summary>코스트를 지불한다. 스킬 발동 직전에 호출된다.</summary>
+        void Pay();
+    }
+}
