@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using Attribute.Core;
 using UnityEngine;
 using UnityEngine.Serialization;
-using Controller;
 
 namespace Mediator
 {

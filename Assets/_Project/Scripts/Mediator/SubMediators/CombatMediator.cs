@@ -30,7 +30,7 @@ namespace Mediator
         #region Protected Methods
         protected override void InitAttributeCallback()
         {
-            AttributeCallback.Add(_healthValueKey, (float newValue, float oldValue) =>
+            AttributeCallback.TryAdd(_healthValueKey, (float newValue, float oldValue) =>
             {
                 if (_combatComponent != null) _combatComponent.Health = newValue;
             });

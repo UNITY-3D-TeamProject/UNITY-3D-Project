@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Controller;
 using Mediator;
 
 // 주의: 이 네임스페이스는 UnityEngine.InputSystem.PlayerInput 클래스와 이름이 같다.
