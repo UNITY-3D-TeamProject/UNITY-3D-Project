@@ -29,7 +29,7 @@ namespace Mediator
         #region Private Fields
         private IMoveController _moveController;
         private IRotateController _rotateController;
-        private List<MediatorBase> _mediators = new List<MediatorBase>();
+        private readonly List<MediatorBase> _mediators = new List<MediatorBase>();
         #endregion
 
         #region Unity Lifecycle
