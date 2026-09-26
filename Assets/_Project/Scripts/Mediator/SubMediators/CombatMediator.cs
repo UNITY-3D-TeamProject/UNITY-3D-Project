@@ -56,7 +56,7 @@ namespace Mediator.SubMediators
 
         protected override void InitValue()
         {
-            if (AttributeGetter == null) return;
+            if (_combatComponent == null || AttributeGetter == null) return;
 
             _combatComponent.Health = AttributeGetter.Invoke(_healthValueKey);
         }
