@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Attribute.Core;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -22,21 +23,33 @@ namespace Mediator
         [SerializeField] private MoveMediator _moveMediator;
         [FormerlySerializedAs("cameraMediator")]
         [SerializeField] private CameraMediator _cameraMediator;
+        [SerializeField] private CombatMediator _combatMediator;
         #endregion
 
         #region Private Fields
         private IMoveController _moveController;
         private IRotateController _rotateController;
+        private List<MediatorBase> _mediators = new List<MediatorBase>();
         #endregion
 
         #region Unity Lifecycle
         private void Awake()
         {
             if(_moveController == null) _moveController = GetComponent<IMoveController>();
-            if(_moveMediator) _moveMediator.MoveController = _moveController;
+            if(_moveMediator)
+            {
+                _moveMediator.MoveController = _moveController;
+                _mediators.Add(_moveMediator);
+            }
             
             if(_rotateController == null) _rotateController = GetComponent<IRotateController>();
-            if(_cameraMediator) _cameraMediator.RotateController = _rotateController;
+            if(_cameraMediator)
+            {
+                _cameraMediator.RotateController = _rotateController;
+                _mediators.Add(_cameraMediator);
+            }
+            
+            if(_combatMediator) _mediators.Add(_combatMediator);
         }
 
         private void OnEnable()
@@ -66,8 +79,14 @@ namespace Mediator
         /// </summary>
         private void BindCallbacks()
         {
-            if(_attributeSet) _attributeSet.AddOnAttributeChangedCallback(OnAttributeChangeCallback);
-            if (_moveMediator && _attributeSet) _moveMediator.SetGetAttribute(_attributeSet.GetValue);
+            if(_attributeSet)
+            {
+                _attributeSet.AddOnAttributeChangedCallback(OnAttributeChangeCallback);
+                foreach (var mediator in _mediators)
+                {
+                    mediator.SetGetAttribute(_attributeSet.GetValue);
+                }
+            }
         }
         /// <summary>
         /// 등록된 바인딩 해제
@@ -75,18 +94,21 @@ namespace Mediator
         private void UnbindCallbacks()
         {
             if(_attributeSet) _attributeSet.RemoveOnAttributeChangedCallback(OnAttributeChangeCallback);
-            if (_moveMediator) _moveMediator.ClearGetAttribute();
+            foreach (var mediator in _mediators)
+            {
+                mediator.ClearGetAttribute();
+            }
         }
         /// <summary>
         /// 중재자들이 원하는 값 변경시 알림 발송
         /// </summary>
         private void OnAttributeChangeCallback(string attributeName, float newValue, float oldValue)
         {
-            if (_moveMediator && _moveMediator.AttributeCallback.TryGetValue(attributeName, out var moveCallback))
-                moveCallback?.Invoke(newValue, oldValue);
-
-            if (_cameraMediator && _cameraMediator.AttributeCallback.TryGetValue(attributeName, out var cameraCallback))
-                cameraCallback?.Invoke(newValue, oldValue);
+            foreach (var mediator in _mediators)
+            {
+                if (mediator.AttributeCallback.TryGetValue(attributeName, out var moveCallback))
+                    moveCallback?.Invoke(newValue, oldValue);
+            }
         }
         #endregion
     }
