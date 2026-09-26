@@ -52,6 +52,14 @@ namespace Mediator.SubMediators
         #endregion
 
         #region Unity Lifecycle
+
+        protected override void Awake()
+        {
+            base.Awake();
+            MoveController = GetComponentInParent<IMoveController>();
+            BindRequest();
+        }
+        
         private void Update()
         {
             if (!_motor) return;

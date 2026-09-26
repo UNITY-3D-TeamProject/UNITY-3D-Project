@@ -43,6 +43,17 @@ namespace Mediator.SubMediators
         public Transform ReferenceFrame => _targetCamera ? _targetCamera.Pivot : null;
         #endregion
 
+        #region Unity Lifecycle
+
+        protected override void Awake()
+        {
+            base.Awake();
+            _rotateController = GetComponentInParent<IRotateController>();
+            BindRequest();
+        }
+        
+        #endregion  
+        
         #region Protected Methods
         /// <inheritdoc />
         protected override void InitAttributeCallback()

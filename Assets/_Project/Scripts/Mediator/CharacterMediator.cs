@@ -23,27 +23,13 @@ namespace Mediator
         #region Private Fields
         private IMoveController _moveController;
         private IRotateController _rotateController;
-        private readonly List<MediatorBase> _mediators = new List<MediatorBase>();
+        private MediatorBase[] _mediators;
         #endregion
 
         #region Unity Lifecycle
         private void Awake()
         {
-            if(_moveController == null) _moveController = GetComponent<IMoveController>();
-            if(_moveMediator)
-            {
-                _moveMediator.MoveController = _moveController;
-                _mediators.Add(_moveMediator);
-            }
-            
-            if(_rotateController == null) _rotateController = GetComponent<IRotateController>();
-            if(_cameraMediator)
-            {
-                _cameraMediator.RotateController = _rotateController;
-                _mediators.Add(_cameraMediator);
-            }
-            
-            if(_combatMediator) _mediators.Add(_combatMediator);
+            _mediators = GetComponentsInChildren<MediatorBase>();
         }
 
         private void OnEnable()
