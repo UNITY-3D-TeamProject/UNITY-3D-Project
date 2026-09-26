@@ -23,6 +23,15 @@ namespace AI
         /// 여유가 없으면 목적지 주변에서 계속 진동한다.
         /// </summary>
         private const float ARRIVAL_THRESHOLD = 0.25f;
+
+        /// <summary>정체 판정 검사 주기(초). 이 주기마다 이동 거리를 확인한다.</summary>
+        private const float STUCK_CHECK_INTERVAL = 2.0f;
+
+        /// <summary>정체 판정 검사 주기 동안 이 거리(m) 미만으로 이동했으면 정체로 본다.</summary>
+        private const float STUCK_DISTANCE_THRESHOLD = 0.1f;
+
+        /// <summary>한 목적지를 향해 이동을 시도할 수 있는 최대 시간(초). 초과하면 정체로 본다.</summary>
+        private const float DESTINATION_TIMEOUT = 10.0f;
         #endregion
 
         #region Serialized Fields
@@ -42,6 +51,11 @@ namespace AI
         #region Private Fields
         private Vector3 _spawnPosition;
         private bool _hasDestination;
+
+        private Vector3 _stuckCheckPosition;
+        private float _stuckCheckTimer;
+        private float _destinationTimer;
+        private bool _isStuck;
         #endregion
 
         #region Events
@@ -75,6 +89,13 @@ namespace AI
                 return _agent.remainingDistance <= (_agent.stoppingDistance + ARRIVAL_THRESHOLD);
             }
         }
+
+        /// <summary>
+        /// 목적지로 이동 중 정체되었는지 여부.
+        /// 경로가 도달 불가능하거나(PathInvalid), 일정 시간 동안 거의 움직이지 못했거나,
+        /// 제한 시간을 넘겨도 도착하지 못하면 true 가 된다. 목적지가 없으면 false.
+        /// </summary>
+        public bool IsStuck => _isStuck;
         #endregion
 
         #region Unity Lifecycle
@@ -113,6 +134,8 @@ namespace AI
 
             // CharacterMotor 가 옮긴 실제 위치를 Agent 에 되돌려야 다음 경로가 어긋나지 않는다
             _agent.nextPosition = _body.position;
+
+            UpdateStuckState();
 
             if (!_hasDestination || HasArrived)
             {
@@ -200,6 +223,7 @@ namespace AI
             if (!_agent.SetDestination(hit.position)) return false;
 
             _hasDestination = true;
+            ResetStuckState();
             return true;
         }
 
@@ -221,6 +245,7 @@ namespace AI
         public void StopMove()
         {
             _hasDestination = false;
+            ResetStuckState();
 
             if (_agent && _agent.isOnNavMesh)
             {
@@ -247,6 +272,57 @@ namespace AI
         private void RequestMove(Vector2 input)
         {
             _onMoveRequested?.Invoke(input);
+        }
+
+        /// <summary>
+        /// 목적지로 이동 중인 동안 매 프레임 호출해 정체 여부를 갱신한다.
+        /// 경로를 계산할 수 없거나(PathInvalid), 검사 주기 동안 거의 못 움직였거나,
+        /// 제한 시간을 넘기면 정체로 판정한다.
+        /// </summary>
+        private void UpdateStuckState()
+        {
+            if (!_hasDestination || HasArrived)
+            {
+                ResetStuckState();
+                return;
+            }
+
+            if (!_agent.pathPending && _agent.pathStatus == NavMeshPathStatus.PathInvalid)
+            {
+                _isStuck = true;
+                return;
+            }
+
+            _destinationTimer += Time.deltaTime;
+            if (_destinationTimer >= DESTINATION_TIMEOUT)
+            {
+                _isStuck = true;
+                return;
+            }
+
+            _stuckCheckTimer += Time.deltaTime;
+            if (_stuckCheckTimer < STUCK_CHECK_INTERVAL) return;
+
+            float movedDistance = Vector3.Distance(_body.position, _stuckCheckPosition);
+            if (movedDistance < STUCK_DISTANCE_THRESHOLD)
+            {
+                _isStuck = true;
+            }
+
+            _stuckCheckPosition = _body.position;
+            _stuckCheckTimer = 0.0f;
+        }
+
+        /// <summary>
+        /// 정체 판정 상태와 그 측정에 쓰이는 타이머·기준 위치를 초기화한다.
+        /// 새 목적지를 잡거나(MoveTo), 이동을 멈출 때(StopMove) 호출한다.
+        /// </summary>
+        private void ResetStuckState()
+        {
+            _isStuck = false;
+            _destinationTimer = 0.0f;
+            _stuckCheckTimer = 0.0f;
+            _stuckCheckPosition = _body.position;
         }
         #endregion
     }
