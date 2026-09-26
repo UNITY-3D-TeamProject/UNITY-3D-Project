@@ -5,6 +5,11 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-09-26** — PlayerSpawner 변경 커밋 771f3c6 생성: [플레이어 스포너 커밋](./2026-09-26/player-spawner-commit.md)
+- **2026-09-26** — PlayerState 및 GameManager 변경 커밋 5460c98 생성: [플레이어 Attribute 커밋](./2026-09-26/player-attribute-commit.md)
+- **2026-09-26** — Codex 명의 HUD 기록을 SungJun 폴더로 통합: [인수인계 기록 통합](./2026-09-26/handover-folder-consolidation.md)
+- **2026-09-26** — 실제 HP·배터리·총 게이지 HUD 연결 검토: [HUD 연결 검토](./2026-09-26/player-hud-wiring-review.md)
+- **2026-09-25** — 플레이어 HUD MVP 스크립트 3종 추가: [플레이어 HUD MVP 기반](./2026-09-25/player-hud-mvp-foundation.md)
 - **2026-09-24** — `StageBase`를 상속하는 앱별 스테이지 구현체 다섯 개 추가: [앱별 스테이지 구현체 추가](./2026-09-24/stage-implementations.md)
 - **2026-09-24** — 현재 StageManager의 실행 흐름 누락 요소와 다음 구현 우선순위 검토: [StageManager 보완 요소 검토](./2026-09-24/stage-manager-gap-review.md)
 - **2026-09-24** — `Core.Stage` 네임스페이스에 스테이지 코어 타입 다섯 개의 최소 골격 구성: [스테이지 코어 타입 골격 구성](./2026-09-24/stage-core-foundation.md)
