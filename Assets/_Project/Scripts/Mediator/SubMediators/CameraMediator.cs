@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using CameraControl;
 
-namespace Mediator
+namespace Mediator.SubMediators
 {
     public interface IRotateController
     {

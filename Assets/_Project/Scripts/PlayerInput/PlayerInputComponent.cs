@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Mediator;
+using Mediator.SubMediators;
 
 // 주의: 이 네임스페이스는 UnityEngine.InputSystem.PlayerInput 클래스와 이름이 같다.
 // 이 프로젝트 코드에서 해당 클래스를 쓸 때는 반드시 UnityEngine.InputSystem.PlayerInput 으로 완전 수식한다.

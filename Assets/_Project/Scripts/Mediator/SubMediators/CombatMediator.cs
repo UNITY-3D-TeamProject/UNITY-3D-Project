@@ -1,7 +1,7 @@
 using Combat;
 using UnityEngine;
 
-namespace Mediator
+namespace Mediator.SubMediators
 {
     public class CombatMediator : MediatorBase
     {
