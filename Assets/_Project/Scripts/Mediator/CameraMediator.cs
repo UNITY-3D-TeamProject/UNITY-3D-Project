@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using CameraControl;
@@ -25,6 +26,11 @@ namespace Mediator
 
         #region Private Fields
         private IRotateController _rotateController;
+        private readonly Dictionary<string, Action<float, float>> _attributeCallback = new(StringComparer.OrdinalIgnoreCase);
+        #endregion
+        
+        #region Properties
+        public Dictionary<string, Action<float, float>> AttributeCallback { get=>_attributeCallback; }
         #endregion
         
         #region Properties

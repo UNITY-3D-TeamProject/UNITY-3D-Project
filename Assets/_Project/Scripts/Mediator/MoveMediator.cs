@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Movement;
@@ -24,12 +25,19 @@ namespace Mediator
         [Header("References")]
         [FormerlySerializedAs("motor")]
         [SerializeField] private CharacterMotor _motor;
+        [Header("Settings")]
+        [Tooltip("CharacterMotor.Speed 로 연결할 어트리뷰트 이름")]
+        [SerializeField] private string _speedValueKey;
+        [Tooltip("CharacterMotor.JumpSpeed 로 연결할 어트리뷰트 이름")]
+        [SerializeField] private string _jumpSpeedValueKey;
         #endregion
-
+        
         #region Private Fields
         private IMoveController _moveController;
         private Vector2 _moveInput;
         private Transform _referenceFrame;
+        private readonly Dictionary<string, Action<float, float>> _attributeCallback = new(StringComparer.OrdinalIgnoreCase);
+        private GetAttributeDelegate _getAttribute;
         #endregion
 
         #region Properties
@@ -44,6 +52,12 @@ namespace Mediator
                 BindRequest();
             }
         }
+
+        public Dictionary<string, Action<float, float>> AttributeCallback { get=>_attributeCallback; }
+        #endregion
+        
+        #region Delegates
+        public delegate float GetAttributeDelegate(string key);
         #endregion
         
         #region Unity Lifecycle
@@ -63,9 +77,15 @@ namespace Mediator
             _motor.Direction = (right * _moveInput.x) + (forward * _moveInput.y);
         }
 
+        private void Awake()
+        {
+            InitAttributeCallback();
+        }
+
         private void OnEnable()
         {
             BindRequest();
+            InitValue();
         }
 
         private void OnDisable()
@@ -86,9 +106,56 @@ namespace Mediator
         {
             _referenceFrame = frame;
         }
+
+        /// <summary>
+        /// 속성값을 읽기 위한 델리게이트 설정
+        /// </summary>
+        public void SetGetAttribute(GetAttributeDelegate callback)
+        {
+            if (callback == null) return;
+            _getAttribute = callback;
+            InitValue();
+        }
+        
+        /// <summary>
+        /// 속성값을 읽기 위한 델리게이트 제거
+        /// </summary>
+        public void ClearGetAttribute()
+        {
+            _getAttribute = null;
+        }
+        
         #endregion
         
         #region Private Methods
+
+        /// <summary>
+        /// 원하는 속성값이 변한 경우에 대한 콜백
+        /// </summary>
+        private void InitAttributeCallback()
+        {
+            _attributeCallback.Add(_speedValueKey, (float newValue, float oldValue) =>
+            {
+                if (_motor != null) _motor.Speed = newValue;
+            });
+            
+            _attributeCallback.Add(_jumpSpeedValueKey, (float newValue, float oldValue) =>
+            {
+                if (_motor != null) _motor.JumpSpeed = newValue;
+            });
+        }
+
+        /// <summary>
+        /// 속성값에 대한 초기화 진행
+        /// </summary>
+        private void InitValue()
+        {
+            if (_getAttribute == null) return;
+
+            _motor.Speed = _getAttribute.Invoke(_speedValueKey);
+            _motor.JumpSpeed = _getAttribute.Invoke(_jumpSpeedValueKey);
+        }
+        
         /// <summary>
         /// 이동 명령을 전달한다. 값은 다음 Update 까지 유지된다.
         /// </summary>

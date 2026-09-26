@@ -1,3 +1,5 @@
+using System;
+using Attribute.Core;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Controller;
@@ -15,6 +17,7 @@ namespace Mediator
     {
         #region Serialized Fields
         [Header("References")]
+        [SerializeField] private AttributeSet _attributeSet;
         [FormerlySerializedAs("moveMediator")]
         [SerializeField] private MoveMediator _moveMediator;
         [FormerlySerializedAs("cameraMediator")]
@@ -38,6 +41,8 @@ namespace Mediator
 
         private void OnEnable()
         {
+            BindCallbacks();
+            
             if (_moveMediator && _cameraMediator)
             {
                 _moveMediator.SetReferenceFrame(_cameraMediator.ReferenceFrame);
@@ -46,10 +51,42 @@ namespace Mediator
 
         private void OnDisable()
         {
+            UnbindCallbacks();
+            
             if (_moveMediator)
             {
                 _moveMediator.SetReferenceFrame(null);
             }
+        }
+        #endregion
+        
+        #region Private Methods
+        /// <summary>
+        /// 필요한 바인딩 실행
+        /// </summary>
+        private void BindCallbacks()
+        {
+            if(_attributeSet) _attributeSet.AddOnAttributeChangedCallback(OnAttributeChangeCallback);
+            if (_moveMediator && _attributeSet) _moveMediator.SetGetAttribute(_attributeSet.GetValue);
+        }
+        /// <summary>
+        /// 등록된 바인딩 해제
+        /// </summary>
+        private void UnbindCallbacks()
+        {
+            if(_attributeSet) _attributeSet.RemoveOnAttributeChangedCallback(OnAttributeChangeCallback);
+            if (_moveMediator) _moveMediator.ClearGetAttribute();
+        }
+        /// <summary>
+        /// 중재자들이 원하는 값 변경시 알림 발송
+        /// </summary>
+        private void OnAttributeChangeCallback(string attributeName, float newValue, float oldValue)
+        {
+            if (_moveMediator && _moveMediator.AttributeCallback.TryGetValue(attributeName, out var moveCallback))
+                moveCallback?.Invoke(newValue, oldValue);
+
+            if (_cameraMediator && _cameraMediator.AttributeCallback.TryGetValue(attributeName, out var cameraCallback))
+                cameraCallback?.Invoke(newValue, oldValue);
         }
         #endregion
     }

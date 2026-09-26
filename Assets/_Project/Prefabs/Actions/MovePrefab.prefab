@@ -10,8 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5837350018986070136}
   - component: {fileID: 4236341993996040545}
-  - component: {fileID: 865581795102873156}
-  - component: {fileID: 397994105355548391}
   - component: {fileID: 8199077832532000388}
   m_Layer: 0
   m_Name: MovePrefab
@@ -47,47 +45,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4184b676d9d003498c27f9ce1b7507b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Mediator.MoveMediator
-  motor: {fileID: 8199077832532000388}
---- !u!143 &865581795102873156
-CharacterController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2003498906128450184}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 2
-  m_Radius: 0.5
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &397994105355548391
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2003498906128450184}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 53f76bd54b171de4b89de150ed196cf8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Scripts.Adapter.AttributeToMotorAdapter
-  attributeSet: {fileID: 0}
-  characterMotor: {fileID: 8199077832532000388}
-  speedValueKey: MoveSpeed
+  _motor: {fileID: 8199077832532000388}
+  _speedValueKey: MoveSpeed
+  _jumpSpeedValueKey: JumpPower
 --- !u!114 &8199077832532000388
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101,3 +61,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Movement.CharacterMotor
   _gravity: 9.8
+  _airAcceleration: 10
