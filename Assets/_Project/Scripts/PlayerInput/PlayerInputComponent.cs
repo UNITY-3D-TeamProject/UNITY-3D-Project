@@ -7,12 +7,13 @@ using Mediator.SubMediators;
 // 이 프로젝트 코드에서 해당 클래스를 쓸 때는 반드시 UnityEngine.InputSystem.PlayerInput 으로 완전 수식한다.
 namespace PlayerInput
 {
-    public class PlayerInputComponent : MonoBehaviour, IMoveController, IRotateController
+    public class PlayerInputComponent : MonoBehaviour, IMoveController, IRotateController, ISkillRequestController
     {
         #region Events
         private event Action<Vector2> _onMoveRequested;
         private event Action<Vector2> _onLookRequested;
         private event Action _onJumpRequested;
+        private event ISkillRequestController.RequestExecuteSkillDelegate _requestExecuteSkill;
         #endregion
 
         #region IMoveController
@@ -48,6 +49,19 @@ namespace PlayerInput
         }
         #endregion
         
+        #region ISkillRequestController
+        public void SetRequestExecuteSkill(ISkillRequestController.RequestExecuteSkillDelegate requestExecuteSkill)
+        {
+            if(requestExecuteSkill == null) return;
+            _requestExecuteSkill = requestExecuteSkill;
+        }
+
+        public void ClearRequestExecuteSkill()
+        {
+            _requestExecuteSkill = null;
+        }
+        #endregion
+        
         #region Input Messages
         // PlayerInput(Send Messages) 가 액션 이름("On" + 액션명)으로 호출하는 메서드들.
         // 직접 호출되지 않으므로 이름을 바꾸면 Input Actions 에셋의 액션 이름도 함께 바꿔야 한다.
@@ -69,32 +83,32 @@ namespace PlayerInput
 
         private void OnRoll(InputValue value)
         {
-            Debug.Log("Roll");
+            _requestExecuteSkill?.Invoke("Roll");
         }
 
         private void OnAim(InputValue value)
         {
-            Debug.Log("Aim");
+            _requestExecuteSkill?.Invoke("Aim");
         }
 
         private void OnFire(InputValue value)
         {
-            Debug.Log("Fire");
+            _requestExecuteSkill?.Invoke("Fire");
         }
 
         private void OnInteract(InputValue value)
         {
-            Debug.Log("Interact");
+            _requestExecuteSkill?.Invoke("Interact");
         }
 
         private void OnScan(InputValue value)
         {
-            Debug.Log("Scan");
+            _requestExecuteSkill?.Invoke("Scan");
         }
 
         private void OnSpawnVehicle(InputValue value)
         {
-            Debug.Log("SpawnVehicle");
+            _requestExecuteSkill?.Invoke("SpawnVehicle");
         }
         #endregion
     }

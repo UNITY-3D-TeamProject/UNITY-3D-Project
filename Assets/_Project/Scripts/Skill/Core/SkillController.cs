@@ -60,7 +60,7 @@ namespace Skill.Core
         /// </summary>
         /// <param name="skillName">사용할 스킬 이름</param>
         /// <returns>실제로 발동했으면 true</returns>
-        public bool TryUseSkill(string skillName)
+        public bool TryExecuteSkill(string skillName)
         {
             if (!TryGetSkill(skillName, out var skill)) return false;
 
