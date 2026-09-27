@@ -13,7 +13,7 @@ namespace Mediator.SubMediators
     
     /// <summary>
     /// 시점 회전 명령을 PlayerBaseCamera 에 전달하는 접착 컴포넌트.
-    /// 카메라 피벗을 이동 기준 프레임(ReferenceFrame)으로 외부에 제공한다.
+    /// 회전 명령 시 카메라 피벗의 forward 를 이벤트로 알린다.
     /// </summary>
     public class CameraMediator : MediatorBase
     {
@@ -39,8 +39,11 @@ namespace Mediator.SubMediators
                 BindRequest();
             }
         }
-        /// <summary>이동 방향 계산의 기준이 되는 카메라 피벗. 카메라가 없으면 null.</summary>
-        public Transform ReferenceFrame => _targetCamera ? _targetCamera.Pivot : null;
+        #endregion
+
+        #region Events
+        /// <summary>회전 명령이 전달될 때 카메라 피벗의 forward 를 알린다.</summary>
+        public event Action<Vector3> OnViewForwardChanged;
         #endregion
 
         #region Unity Lifecycle
@@ -52,8 +55,20 @@ namespace Mediator.SubMediators
             BindRequest();
         }
         
-        #endregion  
-        
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// 현재 카메라 피벗의 forward 를 OnViewForwardChanged 로 알린다.
+        /// </summary>
+        public void PublishViewForward()
+        {
+            if (_targetCamera == null || !_targetCamera.Pivot) return;
+
+            OnViewForwardChanged?.Invoke(_targetCamera.Pivot.forward);
+        }
+        #endregion
+
         #region Protected Methods
         /// <inheritdoc />
         protected override void InitAttributeCallback()
@@ -76,6 +91,9 @@ namespace Mediator.SubMediators
             if (_targetCamera == null) return;
 
             _targetCamera.Look = amount;
+
+            // 실제 회전은 PlayerBaseCamera.LateUpdate 에서 적용되므로 직전 프레임까지의 피벗 방향이 전달된다
+            PublishViewForward();
         }
         /// <summary>
         /// Controller 에 대한 바인딩 실행

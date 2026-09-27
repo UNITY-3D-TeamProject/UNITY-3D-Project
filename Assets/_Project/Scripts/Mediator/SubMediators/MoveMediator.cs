@@ -14,9 +14,7 @@ namespace Mediator.SubMediators
     }
     
     /// <summary>
-    /// 2D 이동 입력을 월드 방향으로 변환해 CharacterMotor.Direction 에 전달하는 접착 컴포넌트.
-    /// 기준 프레임(카메라 피벗 등)이 설정되어 있으면 그 수평 forward/right 를 기준으로 방향을 계산하고,
-    /// 없으면 월드 축 기준으로 계산한다.
+    /// 이동 입력을 MoveDirectionCalculator 로 넘기고, 계산된 이동 방향과 점프 입력·속도 어트리뷰트를 CharacterMotor 로 전달하는 접착 컴포넌트.
     /// </summary>
     public class MoveMediator : MediatorBase
     {
@@ -24,6 +22,7 @@ namespace Mediator.SubMediators
         [Header("References")]
         [FormerlySerializedAs("motor")]
         [SerializeField] private CharacterMotor _motor;
+        [SerializeField] private MoveDirectionCalculator _moveDirectionCalculator;
         [Header("Settings")]
         [Tooltip("CharacterMotor.Speed 로 연결할 어트리뷰트 이름")]
         [SerializeField] private string _speedValueKey;
@@ -33,8 +32,6 @@ namespace Mediator.SubMediators
         
         #region Private Fields
         private IMoveController _moveController;
-        private Vector2 _moveInput;
-        private Transform _referenceFrame;
         #endregion
 
         #region Properties
@@ -57,48 +54,35 @@ namespace Mediator.SubMediators
         {
             base.Awake();
             MoveController = GetComponentInParent<IMoveController>();
-            BindRequest();
-        }
-        
-        private void Update()
-        {
-            if (!_motor) return;
-
-            if (!_referenceFrame)
-            {
-                _motor.Direction = new Vector3(_moveInput.x, 0, _moveInput.y);
-                return;
-            }
-
-            // 기준 프레임의 forward/right 를 수평면에 투영해 카메라 기울기가 이동에 섞이지 않게 한다
-            Vector3 forward = Vector3.ProjectOnPlane(_referenceFrame.forward, Vector3.up).normalized;
-            Vector3 right = Vector3.ProjectOnPlane(_referenceFrame.right, Vector3.up).normalized;
-            _motor.Direction = (right * _moveInput.x) + (forward * _moveInput.y);
         }
 
         protected override void OnEnable()
         {
             BindRequest();
+            Subscribe();
             base.OnEnable();
         }
 
         private void OnDisable()
         {
             // 비활성화 시 입력 잔여값으로 계속 움직이지 않도록 정지
-            _moveInput = Vector2.zero;
+            if (_moveDirectionCalculator) _moveDirectionCalculator.SetMoveInput(Vector2.zero);
             if (_motor) _motor.Direction = Vector3.zero;
+            Unsubscribe();
             UnBindRequest();
         }
         #endregion
 
         #region Public Methods
         /// <summary>
-        /// 이동 방향 계산의 기준 프레임을 설정한다. null 이면 월드 축 기준.
+        /// 카메라가 보는 방향을 MoveDirectionCalculator 로 전달한다.
         /// </summary>
-        /// <param name="frame">기준이 될 Transform (보통 카메라 피벗)</param>
-        public void SetReferenceFrame(Transform frame)
+        /// <param name="viewForward">카메라가 보는 방향 (월드 기준)</param>
+        public void SetViewForward(Vector3 viewForward)
         {
-            _referenceFrame = frame;
+            if (!_moveDirectionCalculator) return;
+
+            _moveDirectionCalculator.SetViewForward(viewForward);
         }
         #endregion
 
@@ -124,7 +108,7 @@ namespace Mediator.SubMediators
         /// </summary>
         protected override void InitValue()
         {
-            if (AttributeGetter == null) return;
+            if (_motor == null || AttributeGetter == null) return;
 
             _motor.Speed = AttributeGetter.Invoke(_speedValueKey);
             _motor.JumpSpeed = AttributeGetter.Invoke(_jumpSpeedValueKey);
@@ -134,12 +118,25 @@ namespace Mediator.SubMediators
         #region Private Methods
 
         /// <summary>
-        /// 이동 명령을 전달한다. 값은 다음 Update 까지 유지된다.
+        /// 이동 입력을 MoveDirectionCalculator 로 전달한다.
         /// </summary>
-        /// <param name="dir">이동 입력 (x: 좌우, y: 전후)</param>
-        private void CommandMove(Vector2 dir)
+        /// <param name="input">이동 입력 (x: 좌우, y: 전후)</param>
+        private void SendMoveInput(Vector2 input)
         {
-            _moveInput = dir;
+            if (!_moveDirectionCalculator) return;
+
+            _moveDirectionCalculator.SetMoveInput(input);
+        }
+
+        /// <summary>
+        /// MoveDirectionCalculator 가 계산한 이동 방향을 CharacterMotor 로 전달한다.
+        /// </summary>
+        /// <param name="direction">계산된 월드 이동 방향</param>
+        private void ApplyDirection(Vector3 direction)
+        {
+            if (!_motor) return;
+
+            _motor.Direction = direction;
         }
 
         /// <summary>
@@ -155,7 +152,7 @@ namespace Mediator.SubMediators
         /// </summary>
         private void BindRequest()
         {
-            MoveController?.SetMoveRequest(CommandMove);
+            MoveController?.SetMoveRequest(SendMoveInput);
             MoveController?.SetJumpRequest(CommandJump);
         }
 
@@ -167,7 +164,23 @@ namespace Mediator.SubMediators
             MoveController?.ClearMoveRequest();
             MoveController?.ClearJumpRequest();
         }
-        
+
+        /// <summary>
+        /// MoveDirectionCalculator 이벤트 구독
+        /// </summary>
+        private void Subscribe()
+        {
+            if (_moveDirectionCalculator) _moveDirectionCalculator.OnDirectionCalculated += ApplyDirection;
+        }
+
+        /// <summary>
+        /// MoveDirectionCalculator 이벤트 구독 해지
+        /// </summary>
+        private void Unsubscribe()
+        {
+            if (_moveDirectionCalculator) _moveDirectionCalculator.OnDirectionCalculated -= ApplyDirection;
+        }
+
         #endregion
     }
 }
