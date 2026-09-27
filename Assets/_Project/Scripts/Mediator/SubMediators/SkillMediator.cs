@@ -22,8 +22,6 @@ namespace Mediator.SubMediators
     
         #region Private Fields
         private ISkillRequestController _skillRequestController;
-        private IEffectTarget _effectTarget;
-        private IEffectTargetReceiver[] _effectTargetReceivers;
         #endregion
 
         #region Unity Lifecycle
@@ -32,22 +30,18 @@ namespace Mediator.SubMediators
         {
             base.Awake();
             _skillRequestController = GetComponentInParent<ISkillRequestController>();
-            _effectTarget = GetComponentInParent<IEffectTarget>();
-            _effectTargetReceivers = GetComponentsInChildren<IEffectTargetReceiver>(true);
             BindRequest();
         }
 
         protected override void OnEnable()
         {
             BindRequest();
-            BindEffectTarget();
             base.OnEnable();
         }
 
         private void OnDisable()
         {
             UnBindRequest();
-            UnBindEffectTarget();
         }
         #endregion
         
@@ -70,6 +64,7 @@ namespace Mediator.SubMediators
             if (_skillController == null || _skillRequestController == null) return;
 
             _skillRequestController.SetRequestExecuteSkill(_skillController.TryExecuteSkill);
+            _skillController.SetGetAttribute(key => AttributeGetter?.Invoke(key) ?? 0.0f);
         }
 
         /// <summary>
@@ -80,30 +75,6 @@ namespace Mediator.SubMediators
             if (_skillRequestController == null) return;
             
             _skillRequestController.ClearRequestExecuteSkill();
-        }
-
-        /// <summary>
-        /// 자식의 IEffectTargetReceiver 에 IEffectTarget 주입
-        /// </summary>
-        private void BindEffectTarget()
-        {
-            if (_effectTarget == null) return;
-
-            foreach (var receiver in _effectTargetReceivers)
-            {
-                receiver.SetEffectTarget(_effectTarget);
-            }
-        }
-
-        /// <summary>
-        /// 주입한 IEffectTarget 해제
-        /// </summary>
-        private void UnBindEffectTarget()
-        {
-            foreach (var receiver in _effectTargetReceivers)
-            {
-                receiver.ClearEffectTarget();
-            }
         }
         #endregion
     }

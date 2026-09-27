@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Skill.Core;
 
@@ -20,6 +21,11 @@ namespace Skill.Costs
         #endregion
 
         #region ISkillCost
+
+        public void SetGetAttribute(Func<string, float> getAttribute)
+        {
+        }
+
         public bool CanPay()
         {
             return Time.time >= _readyTime;

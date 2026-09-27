@@ -12,8 +12,9 @@ namespace Skill.Core
     {
         #region Private Fields
         private readonly Dictionary<string, SkillBase> _skills = new(StringComparer.OrdinalIgnoreCase);
+        private Func<string, float> _getAttribute;
         #endregion
-
+        
         #region Unity Lifecycle
         private void Awake()
         {
@@ -25,6 +26,20 @@ namespace Skill.Core
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// 원하는 값을 얻기 위한 델리게이트 주입
+        /// </summary>
+        public void SetGetAttribute(Func<string, float> getAttribute)
+        {
+            if (getAttribute == null) return;
+            _getAttribute = getAttribute;
+            foreach(KeyValuePair<string, SkillBase> skillPair in _skills)
+            {
+                SkillBase skill = skillPair.Value;
+                skill.SetGetAttribute(getAttribute);
+            }
+        }
+        
         /// <summary>
         /// 스킬을 등록한다. 이름이 비어 있거나 이미 같은 이름이 있으면 등록하지 않는다.
         /// </summary>
@@ -43,6 +58,7 @@ namespace Skill.Core
             {
                 Debug.LogWarning($"[{name}] '{skill.SkillName}' 이름의 스킬이 이미 등록되어 있습니다: {skill.name}", skill);
             }
+            if (_getAttribute != null) skill.SetGetAttribute(_getAttribute);
         }
 
         /// <summary>

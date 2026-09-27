@@ -1,3 +1,5 @@
+using System;
+
 namespace Skill.Core
 {
     /// <summary>
@@ -5,6 +7,9 @@ namespace Skill.Core
     /// </summary>
     public interface ISkillCost
     {
+        /// <summary>코스트를 위한 값을 참조하기 위한 함수 주입</summary>
+        void SetGetAttribute(Func<string, float> getAttribute);
+        
         /// <summary>코스트를 지불할 수 있는지 여부.</summary>
         bool CanPay();
 

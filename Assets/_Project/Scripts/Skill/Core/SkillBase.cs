@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Skill.Core
@@ -17,8 +18,9 @@ namespace Skill.Core
         #region Private Fields
         private ISkillCondition[] _conditions;
         private ISkillCost[] _costs;
+        private Func<string, float> _getAttribute;
         #endregion
-
+        
         #region Properties
         public string SkillName => _skillName;
         #endregion
@@ -28,10 +30,29 @@ namespace Skill.Core
         {
             _conditions = GetComponents<ISkillCondition>();
             _costs = GetComponents<ISkillCost>();
+            
+            if (_costs == null) return;
+            foreach (ISkillCost cost in _costs)
+            {
+                cost.SetGetAttribute(_getAttribute);
+            }
         }
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// 원하는 값을 얻기 위한 델리게이트 주입
+        /// </summary>
+        public void SetGetAttribute(Func<string, float> getAttribute)
+        {
+            if (getAttribute == null) return;
+            _getAttribute = getAttribute;
+            foreach (ISkillCost cost in _costs)
+            {
+                cost.SetGetAttribute(_getAttribute);
+            }
+        }
+        
         /// <summary>
         /// 발동에 필요한 준비가 되어 있고, 모든 조건을 만족하며, 모든 코스트를 지불할 수 있는지 확인한다.
         /// </summary>
