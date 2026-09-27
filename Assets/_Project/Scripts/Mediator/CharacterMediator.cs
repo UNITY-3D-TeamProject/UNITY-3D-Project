@@ -21,8 +21,6 @@ namespace Mediator
         #endregion
 
         #region Private Fields
-        private IMoveController _moveController;
-        private IRotateController _rotateController;
         private MediatorBase[] _mediators;
         #endregion
 
@@ -35,21 +33,16 @@ namespace Mediator
         private void OnEnable()
         {
             BindCallbacks();
-            
-            if (_moveMediator && _cameraMediator)
-            {
-                _moveMediator.SetReferenceFrame(_cameraMediator.ReferenceFrame);
-            }
+            Subscribe();
+
+            // 시점 입력 전에도 이동이 카메라 기준이 되도록 초기 방향을 한 번 전달
+            if (_cameraMediator) _cameraMediator.PublishViewForward();
         }
 
         private void OnDisable()
         {
             UnbindCallbacks();
-            
-            if (_moveMediator)
-            {
-                _moveMediator.SetReferenceFrame(null);
-            }
+            Unsubscribe();
         }
         #endregion
         
@@ -88,6 +81,27 @@ namespace Mediator
             {
                 mediator.NotifyAttributeChanged(attributeName, newValue, oldValue);
             }
+        }
+        /// <summary>
+        /// 카메라 중재자가 알린 시점 방향을 이동 중재자로 전달
+        /// </summary>
+        private void SendViewForward(Vector3 viewForward)
+        {
+            if (_moveMediator) _moveMediator.SetViewForward(viewForward);
+        }
+        /// <summary>
+        /// 중재자 이벤트 구독
+        /// </summary>
+        private void Subscribe()
+        {
+            if (_cameraMediator) _cameraMediator.OnViewForwardChanged += SendViewForward;
+        }
+        /// <summary>
+        /// 중재자 이벤트 구독 해지
+        /// </summary>
+        private void Unsubscribe()
+        {
+            if (_cameraMediator) _cameraMediator.OnViewForwardChanged -= SendViewForward;
         }
         #endregion
     }
