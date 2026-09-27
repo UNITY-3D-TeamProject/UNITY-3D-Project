@@ -1,3 +1,4 @@
+using System;
 using Combat;
 using UnityEngine;
 
@@ -12,7 +13,14 @@ namespace Mediator.SubMediators
         [Tooltip("CharacterCombat.Health 로 연결할 어트리뷰트 이름")]
         [SerializeField] private string _healthValueKey;
         #endregion
-    
+
+        #region Events
+        /// <summary>CharacterCombat 이 피격되었을 때 발생한다.</summary>
+        public event Action OnHit;
+        /// <summary>CharacterCombat 이 사망했을 때 발생한다.</summary>
+        public event Action OnDeath;
+        #endregion
+
         #region Unity Lifecycle
 
         protected override void OnEnable()
@@ -24,6 +32,16 @@ namespace Mediator.SubMediators
         private void OnDisable()
         {
             UnBindRequest();
+        }
+        #endregion
+        
+        #region Protected Methods
+
+        public bool IsDead()
+        {
+            if (_combatComponent == null) return true;
+            
+            return _combatComponent.IsDead;
         }
         #endregion
         
@@ -69,10 +87,12 @@ namespace Mediator.SubMediators
 
         private void OnHitCallback()
         {
+            OnHit?.Invoke();
         }
 
         private void OnDeathCallback()
         {
+            OnDeath?.Invoke();
         }
         #endregion
     }
