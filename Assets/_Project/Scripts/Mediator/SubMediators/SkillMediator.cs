@@ -1,4 +1,5 @@
 using System;
+using Attribute.Core;
 using Skill.Core;
 using UnityEngine;
 
@@ -21,26 +22,32 @@ namespace Mediator.SubMediators
     
         #region Private Fields
         private ISkillRequestController _skillRequestController;
+        private IEffectTarget _effectTarget;
+        private IEffectTargetReceiver[] _effectTargetReceivers;
         #endregion
-        
+
         #region Unity Lifecycle
 
         protected override void Awake()
         {
             base.Awake();
             _skillRequestController = GetComponentInParent<ISkillRequestController>();
+            _effectTarget = GetComponentInParent<IEffectTarget>();
+            _effectTargetReceivers = GetComponentsInChildren<IEffectTargetReceiver>(true);
             BindRequest();
         }
-        
+
         protected override void OnEnable()
         {
             BindRequest();
+            BindEffectTarget();
             base.OnEnable();
         }
 
         private void OnDisable()
         {
             UnBindRequest();
+            UnBindEffectTarget();
         }
         #endregion
         
@@ -73,6 +80,30 @@ namespace Mediator.SubMediators
             if (_skillRequestController == null) return;
             
             _skillRequestController.ClearRequestExecuteSkill();
+        }
+
+        /// <summary>
+        /// 자식의 IEffectTargetReceiver 에 IEffectTarget 주입
+        /// </summary>
+        private void BindEffectTarget()
+        {
+            if (_effectTarget == null) return;
+
+            foreach (var receiver in _effectTargetReceivers)
+            {
+                receiver.SetEffectTarget(_effectTarget);
+            }
+        }
+
+        /// <summary>
+        /// 주입한 IEffectTarget 해제
+        /// </summary>
+        private void UnBindEffectTarget()
+        {
+            foreach (var receiver in _effectTargetReceivers)
+            {
+                receiver.ClearEffectTarget();
+            }
         }
         #endregion
     }
