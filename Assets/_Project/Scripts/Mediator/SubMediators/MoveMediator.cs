@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Movement;
@@ -24,6 +23,7 @@ namespace Mediator.SubMediators
         [FormerlySerializedAs("motor")]
         [SerializeField] private CharacterMotor _motor;
         [SerializeField] private MoveDirectionCalculator _moveDirectionCalculator;
+        [SerializeField] private RollMover _rollMover;
         [Header("Settings")]
         [Tooltip("CharacterMotor.Speed 로 연결할 어트리뷰트 이름")]
         [SerializeField] private string _speedValueKey;
@@ -32,9 +32,8 @@ namespace Mediator.SubMediators
         #endregion
         
         #region Private Fields
-        private static readonly WaitForFixedUpdate WaitFixedUpdate = new();
         private IMoveController _moveController;
-        private Coroutine _rollCoroutine;
+        private Vector3 _lastDirection;
         #endregion
 
         #region Properties
@@ -71,12 +70,6 @@ namespace Mediator.SubMediators
             // 비활성화 시 입력 잔여값으로 계속 움직이지 않도록 정지
             if (_moveDirectionCalculator) _moveDirectionCalculator.SetMoveInput(Vector2.zero);
             if (_motor) _motor.Direction = Vector3.zero;
-            // 컴포넌트만 비활성화되면 코루틴이 계속 돌기 때문에 직접 정지
-            if (_rollCoroutine != null)
-            {
-                StopCoroutine(_rollCoroutine);
-                _rollCoroutine = null;
-            }
             Unsubscribe();
             UnBindRequest();
         }
@@ -95,25 +88,17 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 카메라가 보는 수평 방향으로 일정 시간 동안 일정 거리를 구른다.
-        /// 이미 구르는 중이면 무시한다.
+        /// 카메라가 보는 수평 방향으로 구르기를 RollMover 에 요청한다.
+        /// 구르는 동안에는 이동/점프 입력이 모터에 전달되지 않는다.
         /// </summary>
         /// <param name="distance">이동 거리</param>
         /// <param name="duration">이동에 걸리는 시간(초)</param>
         public void CommandRoll(float distance, float duration)
         {
-            if (!_motor || !_moveDirectionCalculator || _rollCoroutine != null) return;
-
-            Vector3 direction = _moveDirectionCalculator.ViewDirection;
-
-            // 시간이 0 이하면 다음 물리 스텝에 한 번에 이동
-            if (duration <= 0.0f)
-            {
-                _motor.AddExternalDisplacement(direction * distance);
-                return;
-            }
-
-            _rollCoroutine = StartCoroutine(CoRoll(direction, distance, duration));
+            if (!_rollMover || !_moveDirectionCalculator) return;
+            if (_rollMover.IsRolling) return;
+            
+            _rollMover.Roll(_moveDirectionCalculator.ViewDirection, distance, duration);
         }
         #endregion
 
@@ -161,20 +146,25 @@ namespace Mediator.SubMediators
 
         /// <summary>
         /// MoveDirectionCalculator 가 계산한 이동 방향을 CharacterMotor 로 전달한다.
+        /// 구르는 중에는 방향만 기억해 두고, 구르기가 끝날 때 적용한다.
         /// </summary>
         /// <param name="direction">계산된 월드 이동 방향</param>
         private void ApplyDirection(Vector3 direction)
         {
-            if (!_motor) return;
+            _lastDirection = direction;
+            //모터가 없거나 구르는 중일경우 return
+            if (!_motor || (_rollMover && _rollMover.IsRolling)) return;
 
             _motor.Direction = direction;
         }
 
         /// <summary>
-        /// 점프 명령을 전달한다.
+        /// 점프 명령을 전달한다. 구르는 중에는 무시한다.
         /// </summary>
         private void CommandJump()
         {
+            if (_rollMover && _rollMover.IsRolling) return;
+
             _motor?.Jump();
         }
         
@@ -197,47 +187,58 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// MoveDirectionCalculator 이벤트 구독
+        /// 구르기 시작 시 입력에 의한 이동 정지
+        /// </summary>
+        private void OnRollStarted()
+        {
+            if (_motor) _motor.Direction = Vector3.zero;
+        }
+
+        /// <summary>
+        /// 구르기 종료 시 구르는 동안 들어온 최신 입력 방향으로 이동 재개
+        /// </summary>
+        private void OnRollEnded()
+        {
+            if (_motor) _motor.Direction = _lastDirection;
+        }
+
+        /// <summary>
+        /// RollMover 가 계산한 구르기 이동량을 CharacterMotor 로 전달한다.
+        /// </summary>
+        /// <param name="displacement">이번 물리 스텝에 적용할 이동량</param>
+        private void ApplyRollDisplacement(Vector3 displacement)
+        {
+            if (_motor) _motor.AddExternalDisplacement(displacement);
+        }
+
+        /// <summary>
+        /// MoveDirectionCalculator, RollMover 이벤트 구독
         /// </summary>
         private void Subscribe()
         {
             if (_moveDirectionCalculator) _moveDirectionCalculator.OnDirectionCalculated += ApplyDirection;
+            if (_rollMover)
+            {
+                _rollMover.OnRollStarted += OnRollStarted;
+                _rollMover.OnRollEnded += OnRollEnded;
+                _rollMover.OnDisplacementCalculated += ApplyRollDisplacement;
+            }
         }
 
         /// <summary>
-        /// MoveDirectionCalculator 이벤트 구독 해지
+        /// MoveDirectionCalculator, RollMover 이벤트 구독 해지
         /// </summary>
         private void Unsubscribe()
         {
             if (_moveDirectionCalculator) _moveDirectionCalculator.OnDirectionCalculated -= ApplyDirection;
-        }
-
-        #endregion
-
-        #region Coroutines
-        /// <summary>
-        /// duration 동안 물리 스텝마다 나눠서 direction 으로 distance 만큼 이동시킨다.
-        /// </summary>
-        /// <param name="direction">정규화된 이동 방향</param>
-        /// <param name="distance">이동 거리</param>
-        /// <param name="duration">이동에 걸리는 시간(초). 0 보다 커야 한다</param>
-        private IEnumerator CoRoll(Vector3 direction, float distance, float duration)
-        {
-            float speed = distance / duration;
-            float elapsed = 0.0f;
-
-            while (elapsed < duration)
+            if (_rollMover)
             {
-                yield return WaitFixedUpdate;
-
-                // 마지막 스텝은 남은 시간만큼만 이동해 총 이동 거리를 맞춘다
-                float deltaTime = Mathf.Min(Time.fixedDeltaTime, duration - elapsed);
-                _motor.AddExternalDisplacement(direction * (speed * deltaTime));
-                elapsed += deltaTime;
+                _rollMover.OnRollStarted -= OnRollStarted;
+                _rollMover.OnRollEnded -= OnRollEnded;
+                _rollMover.OnDisplacementCalculated -= ApplyRollDisplacement;
             }
-
-            _rollCoroutine = null;
         }
+
         #endregion
     }
 }

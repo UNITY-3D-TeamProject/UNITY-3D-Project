@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2677404558911658289}
   - component: {fileID: 6733967775434476933}
   - component: {fileID: 58172441717136714}
+  - component: {fileID: 2541243726050994379}
   m_Layer: 0
   m_Name: Roll
   m_TagString: Untagged
@@ -46,8 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Skill.Skills.Roll
   _skillName: Roll
-  _distance: 3
-  _duration: 1
+  _distance: 5
+  _duration: 0.3
 --- !u!114 &58172441717136714
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -60,4 +61,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4b4bbfb30b27084297015379edf9e4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.CooldownCost
-  _cooldown: 1
+  _cooldown: 0.3
+--- !u!114 &2541243726050994379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7110997488271800336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fc734381ee5c2d43850843ff3bfe3c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.ResourceCost
+  _cost: 1
+  _resourceKey: CurrentBattery
