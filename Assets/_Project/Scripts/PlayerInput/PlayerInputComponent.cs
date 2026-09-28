@@ -7,11 +7,12 @@ using Mediator.SubMediators;
 // 이 프로젝트 코드에서 해당 클래스를 쓸 때는 반드시 UnityEngine.InputSystem.PlayerInput 으로 완전 수식한다.
 namespace PlayerInput
 {
-    public class PlayerInputComponent : MonoBehaviour, IMoveController, IRotateController, ISkillRequestController
+    public class PlayerInputComponent : MonoBehaviour, IMoveController, ICameraController, ISkillRequestController
     {
         #region Events
         private event Action<Vector2> _onMoveRequested;
         private event Action<Vector2> _onLookRequested;
+        private event Action<bool> _onAimRequested;
         private event Action _onJumpRequested;
         private event ISkillRequestController.RequestExecuteSkillDelegate _requestExecuteSkill;
         private event ISkillRequestController.RequestStopSkillDelegate _requestStopSkill;
@@ -38,7 +39,7 @@ namespace PlayerInput
         }
         #endregion
         
-        #region IRotateController
+        #region ICameraController
         public void SetLookRequest(Action<Vector2> callback)
         {
             if (callback == null) return;
@@ -47,6 +48,15 @@ namespace PlayerInput
         public void ClearLookRequest()
         {
             _onLookRequested = null;
+        }
+        public void SetAimRequest(Action<bool> callback)
+        {
+            if (callback == null) return;
+            _onAimRequested = callback;
+        }
+        public void ClearAimRequest()
+        {
+            _onAimRequested = null;
         }
         #endregion
         
@@ -78,6 +88,21 @@ namespace PlayerInput
         // PlayerInput(Send Messages) 가 액션 이름("On" + 액션명)으로 호출하는 메서드들.
         // 직접 호출되지 않으므로 이름을 바꾸면 Input Actions 에셋의 액션 이름도 함께 바꿔야 한다.
 
+        // Aim 액션은 Press And Release 로 설정되어 누를 때와 뗄 때 모두 호출된다.
+        private void OnAim(InputValue value)
+        {
+            _onAimRequested?.Invoke(value.isPressed);
+        }
+
+        // Fire 액션은 Press And Release 로 설정되어 누를 때와 뗄 때 모두 호출된다.
+        private void OnFire(InputValue value)
+        {
+            if (value.isPressed)
+                _requestExecuteSkill?.Invoke("Fire");
+            else
+                _requestStopSkill?.Invoke("Fire");
+        }
+        
         private void OnMove(InputValue value)
         {
             _onMoveRequested?.Invoke(value.Get<Vector2>());
@@ -96,20 +121,6 @@ namespace PlayerInput
         private void OnRoll(InputValue value)
         {
             _requestExecuteSkill?.Invoke("Roll");
-        }
-
-        private void OnAim(InputValue value)
-        {
-            _requestExecuteSkill?.Invoke("Aim");
-        }
-
-        // Fire 액션은 Press And Release 로 설정되어 누를 때와 뗄 때 모두 호출된다.
-        private void OnFire(InputValue value)
-        {
-            if (value.isPressed)
-                _requestExecuteSkill?.Invoke("Fire");
-            else
-                _requestStopSkill?.Invoke("Fire");
         }
 
         private void OnInteract(InputValue value)

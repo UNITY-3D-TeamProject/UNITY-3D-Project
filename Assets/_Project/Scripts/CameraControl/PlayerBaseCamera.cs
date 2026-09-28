@@ -1,3 +1,4 @@
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -7,6 +8,7 @@ namespace CameraControl
     /// Look 입력으로 카메라 피벗을 yaw/pitch 회전시키는 컴포넌트.
     /// 매 프레임 Look 에 설정된 값을 감도만큼 누적해 LateUpdate 에서 피벗 회전에 반영한다.
     /// 입력이 없으면 회전을 유지하며, 각도는 설정된 범위로 클램프된다.
+    /// 조준 시 조준 전용 시네머신 카메라를 활성화하며, 전환 보간은 CinemachineBrain 의 Blend 가 담당한다.
     /// </summary>
     public class PlayerBaseCamera : MonoBehaviour
     {
@@ -14,6 +16,8 @@ namespace CameraControl
         [Header("References")]
         [FormerlySerializedAs("cameraPivot")]
         [SerializeField] private Transform _cameraPivot;
+        [Tooltip("조준 중에만 활성화되는 시네머신 카메라. 기본 카메라와 같은 피벗을 따라가도록 설정한다.")]
+        [SerializeField] private CinemachineCamera _aimCamera;
 
         [Header("Look")]
         [FormerlySerializedAs("sensitivity")]
@@ -51,6 +55,9 @@ namespace CameraControl
         #region Unity Lifecycle
         private void Start()
         {
+            // 조준하지 않은 상태로 시작
+            SetAim(false);
+
             if (_cameraPivot == null) return;
 
             // 피벗의 초기 회전을 yaw/pitch 누적값의 시작점으로 사용
@@ -71,6 +78,19 @@ namespace CameraControl
             _pitch = Mathf.Clamp(_pitch, _pitchMin, _pitchMax);
 
             _cameraPivot.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
+        }
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// 조준 전용 카메라를 켜고 끈다. 켜지면 CinemachineBrain 이 기본 카메라에서 조준 카메라로 블렌드한다.
+        /// </summary>
+        /// <param name="isAiming">true 면 조준 카메라 활성화, false 면 비활성화</param>
+        public void SetAim(bool isAiming)
+        {
+            if (_aimCamera == null) return;
+
+            _aimCamera.enabled = isAiming;
         }
         #endregion
     }
