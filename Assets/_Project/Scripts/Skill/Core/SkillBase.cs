@@ -118,6 +118,13 @@ namespace Skill.Core
             Execute();
             return true;
         }
+
+        /// <summary>
+        /// 진행 중인 스킬 동작을 중지한다. 지속형 스킬만 오버라이드하며 기본 동작은 없다.
+        /// </summary>
+        public virtual void Stop()
+        {
+        }
         #endregion
         
         #region Protected Methods

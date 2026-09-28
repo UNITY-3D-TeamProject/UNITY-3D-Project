@@ -14,6 +14,7 @@ namespace PlayerInput
         private event Action<Vector2> _onLookRequested;
         private event Action _onJumpRequested;
         private event ISkillRequestController.RequestExecuteSkillDelegate _requestExecuteSkill;
+        private event ISkillRequestController.RequestStopSkillDelegate _requestStopSkill;
         #endregion
 
         #region IMoveController
@@ -60,6 +61,17 @@ namespace PlayerInput
         {
             _requestExecuteSkill = null;
         }
+
+        public void SetRequestStopSkill(ISkillRequestController.RequestStopSkillDelegate requestStopSkill)
+        {
+            if (requestStopSkill == null) return;
+            _requestStopSkill = requestStopSkill;
+        }
+
+        public void ClearRequestStopSkill()
+        {
+            _requestStopSkill = null;
+        }
         #endregion
         
         #region Input Messages
@@ -91,9 +103,13 @@ namespace PlayerInput
             _requestExecuteSkill?.Invoke("Aim");
         }
 
+        // Fire 액션은 Press And Release 로 설정되어 누를 때와 뗄 때 모두 호출된다.
         private void OnFire(InputValue value)
         {
-            _requestExecuteSkill?.Invoke("Fire");
+            if (value.isPressed)
+                _requestExecuteSkill?.Invoke("Fire");
+            else
+                _requestStopSkill?.Invoke("Fire");
         }
 
         private void OnInteract(InputValue value)

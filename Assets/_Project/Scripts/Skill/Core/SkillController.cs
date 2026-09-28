@@ -114,6 +114,17 @@ namespace Skill.Core
 
             return skill.TryExecute();
         }
+
+        /// <summary>
+        /// 진행 중인 스킬 동작의 중지를 요청한다.
+        /// </summary>
+        /// <param name="skillName">중지할 스킬 이름</param>
+        public void StopSkill(string skillName)
+        {
+            if (!TryGetSkill(skillName, out var skill)) return;
+
+            skill.Stop();
+        }
         #endregion
 
         #region Private Methods
