@@ -26,14 +26,19 @@ namespace Skill.Costs
         {
         }
 
+        public void SetRequestPay(Func<string, float, bool> requestPay)
+        {
+        }
+
         public bool CanPay()
         {
             return Time.time >= _readyTime;
         }
 
-        public void Pay()
+        public bool Pay()
         {
             _readyTime = Time.time + _cooldown;
+            return true;
         }
         #endregion
     }

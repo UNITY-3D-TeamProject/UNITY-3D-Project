@@ -22,14 +22,21 @@ namespace Skill.Costs
 
         #region Private Fields
         private Func<string, float> _getAttribute;
+        private Func<string, float, bool> _requestPay;
         #endregion
-        
+
         #region ISkillCost
 
         public void SetGetAttribute(Func<string, float> getAttribute)
         {
             if (getAttribute == null) return;
             _getAttribute = getAttribute;
+        }
+
+        public void SetRequestPay(Func<string, float, bool> requestPay)
+        {
+            if (requestPay == null) return;
+            _requestPay = requestPay;
         }
 
         public bool CanPay()
@@ -41,8 +48,9 @@ namespace Skill.Costs
             return false;
         }
 
-        public void Pay()
+        public bool Pay()
         {
+            return _requestPay?.Invoke(_resourceKey, _cost) ?? false;
         }
         
         #endregion

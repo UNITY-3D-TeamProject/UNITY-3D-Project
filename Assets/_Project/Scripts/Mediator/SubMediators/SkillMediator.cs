@@ -65,6 +65,7 @@ namespace Mediator.SubMediators
 
             _skillRequestController.SetRequestExecuteSkill(_skillController.TryExecuteSkill);
             _skillController.SetGetAttribute(key => AttributeGetter?.Invoke(key) ?? 0.0f);
+            _skillController.SetRequestPay(OnRequestPay);
         }
 
         /// <summary>
@@ -75,6 +76,19 @@ namespace Mediator.SubMediators
             if (_skillRequestController == null) return;
             
             _skillRequestController.ClearRequestExecuteSkill();
+        }
+
+        /// <summary>
+        /// 코스트 지불 요청 처리
+        /// </summary>
+        /// <param name="key">소모할 어트리뷰트 이름</param>
+        /// <param name="amount">소모량</param>
+        /// <returns>지불에 성공했으면 true</returns>
+        private bool OnRequestPay(string key, float amount)
+        {
+            // TODO: CharacterMediator 로 지불 요청 전달 후 결과 반환
+            Debug.Log($"[{name}] 코스트 지불 요청: {key} -{amount}", this);
+            return true;
         }
         #endregion
     }

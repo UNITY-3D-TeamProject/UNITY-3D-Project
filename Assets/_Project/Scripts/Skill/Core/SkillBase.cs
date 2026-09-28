@@ -19,6 +19,7 @@ namespace Skill.Core
         private ISkillCondition[] _conditions;
         private ISkillCost[] _costs;
         private Func<string, float> _getAttribute;
+        private Func<string, float, bool> _requestPay;
         #endregion
         
         #region Properties
@@ -35,6 +36,7 @@ namespace Skill.Core
             foreach (ISkillCost cost in _costs)
             {
                 cost.SetGetAttribute(_getAttribute);
+                cost.SetRequestPay(_requestPay);
             }
         }
         #endregion
@@ -47,9 +49,26 @@ namespace Skill.Core
         {
             if (getAttribute == null) return;
             _getAttribute = getAttribute;
+            // Awake 이전이면 저장만 하고, Awake 에서 코스트에 전달
+            if (_costs == null) return;
             foreach (ISkillCost cost in _costs)
             {
                 cost.SetGetAttribute(_getAttribute);
+            }
+        }
+
+        /// <summary>
+        /// 코스트 지불을 요청하기 위한 델리게이트 주입
+        /// </summary>
+        public void SetRequestPay(Func<string, float, bool> requestPay)
+        {
+            if (requestPay == null) return;
+            _requestPay = requestPay;
+            // Awake 이전이면 저장만 하고, Awake 에서 코스트에 전달
+            if (_costs == null) return;
+            foreach (ISkillCost cost in _costs)
+            {
+                cost.SetRequestPay(_requestPay);
             }
         }
         
@@ -82,7 +101,8 @@ namespace Skill.Core
 
             foreach (var cost in _costs)
             {
-                cost.Pay();
+                // 지불 실패 시 발동하지 않는다. 앞서 지불된 코스트는 되돌리지 않는다.
+                if (!cost.Pay()) return false;
             }
 
             Execute();

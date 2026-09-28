@@ -13,6 +13,7 @@ namespace Skill.Core
         #region Private Fields
         private readonly Dictionary<string, SkillBase> _skills = new(StringComparer.OrdinalIgnoreCase);
         private Func<string, float> _getAttribute;
+        private Func<string, float, bool> _requestPay;
         #endregion
         
         #region Unity Lifecycle
@@ -39,7 +40,21 @@ namespace Skill.Core
                 skill.SetGetAttribute(getAttribute);
             }
         }
-        
+
+        /// <summary>
+        /// 코스트 지불을 요청하기 위한 델리게이트 주입
+        /// </summary>
+        public void SetRequestPay(Func<string, float, bool> requestPay)
+        {
+            if (requestPay == null) return;
+            _requestPay = requestPay;
+            foreach(KeyValuePair<string, SkillBase> skillPair in _skills)
+            {
+                SkillBase skill = skillPair.Value;
+                skill.SetRequestPay(requestPay);
+            }
+        }
+
         /// <summary>
         /// 스킬을 등록한다. 이름이 비어 있거나 이미 같은 이름이 있으면 등록하지 않는다.
         /// </summary>
@@ -59,6 +74,7 @@ namespace Skill.Core
                 Debug.LogWarning($"[{name}] '{skill.SkillName}' 이름의 스킬이 이미 등록되어 있습니다: {skill.name}", skill);
             }
             if (_getAttribute != null) skill.SetGetAttribute(_getAttribute);
+            if (_requestPay != null) skill.SetRequestPay(_requestPay);
         }
 
         /// <summary>
