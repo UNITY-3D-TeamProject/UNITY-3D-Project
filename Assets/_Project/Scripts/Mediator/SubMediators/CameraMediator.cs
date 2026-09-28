@@ -25,6 +25,7 @@ namespace Mediator.SubMediators
 
         #region Private Fields
         private IRotateController _rotateController;
+        private bool _isAiming;
         #endregion
 
         #region Properties
@@ -66,6 +67,17 @@ namespace Mediator.SubMediators
             if (_targetCamera == null || !_targetCamera.Pivot) return;
 
             OnViewForwardChanged?.Invoke(_targetCamera.Pivot.forward);
+        }
+
+        /// <summary>
+        /// 조준 상태를 전환한다.
+        /// </summary>
+        public void ToggleAim()
+        {
+            _isAiming = !_isAiming;
+
+            // TODO: 시네머신 카메라 거리 조절 연결
+            Debug.Log($"[{name}] 조준 상태: {_isAiming}", this);
         }
         #endregion
 

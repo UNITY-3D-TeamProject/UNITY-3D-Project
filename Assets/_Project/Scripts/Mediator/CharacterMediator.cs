@@ -112,6 +112,8 @@ namespace Mediator
         {
             if (_cameraMediator) _cameraMediator.OnViewForwardChanged += SendViewForward;
             if (_skillMediator) _skillMediator.OnPayRequested += PayAttribute;
+            if (_skillMediator && _moveMediator) _skillMediator.OnRollRequested += _moveMediator.CommandRoll;
+            if (_skillMediator && _cameraMediator) _skillMediator.OnAimToggled += _cameraMediator.ToggleAim;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -120,6 +122,8 @@ namespace Mediator
         {
             if (_cameraMediator) _cameraMediator.OnViewForwardChanged -= SendViewForward;
             if (_skillMediator) _skillMediator.OnPayRequested -= PayAttribute;
+            if (_skillMediator && _moveMediator) _skillMediator.OnRollRequested -= _moveMediator.CommandRoll;
+            if (_skillMediator && _cameraMediator) _skillMediator.OnAimToggled -= _cameraMediator.ToggleAim;
         }
         #endregion
     }
