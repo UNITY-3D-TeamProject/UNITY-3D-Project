@@ -24,6 +24,14 @@ namespace Mediator.SubMediators
         private ISkillRequestController _skillRequestController;
         #endregion
 
+        #region Events
+        /// <summary>
+        /// 코스트 지불 요청. (어트리뷰트 이름, 소모량)을 받아 지불 성공 여부를 반환한다.
+        /// 반환값은 마지막 구독자의 값만 남으므로 단일 구독(CharacterMediator)을 전제로 한다.
+        /// </summary>
+        public event Func<string, float, bool> OnPayRequested;
+        #endregion
+
         #region Unity Lifecycle
 
         protected override void Awake()
@@ -86,9 +94,8 @@ namespace Mediator.SubMediators
         /// <returns>지불에 성공했으면 true</returns>
         private bool OnRequestPay(string key, float amount)
         {
-            // TODO: CharacterMediator 로 지불 요청 전달 후 결과 반환
-            Debug.Log($"[{name}] 코스트 지불 요청: {key} -{amount}", this);
-            return true;
+            // 구독자가 없으면 지불 실패로 처리
+            return OnPayRequested?.Invoke(key, amount) ?? false;
         }
         #endregion
     }
