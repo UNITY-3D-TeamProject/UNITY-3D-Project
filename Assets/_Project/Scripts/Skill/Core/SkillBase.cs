@@ -20,6 +20,7 @@ namespace Skill.Core
         private ISkillCost[] _costs;
         private Func<string, float> _getAttribute;
         private Func<string, float, bool> _requestPay;
+        private Action<SkillBase> _notifyExecuted;
         #endregion
         
         #region Properties
@@ -71,7 +72,16 @@ namespace Skill.Core
                 cost.SetRequestPay(_requestPay);
             }
         }
-        
+
+        /// <summary>
+        /// 스킬 발동을 알리기 위한 델리게이트 주입
+        /// </summary>
+        public void SetNotifyExecuted(Action<SkillBase> notifyExecuted)
+        {
+            if (notifyExecuted == null) return;
+            _notifyExecuted = notifyExecuted;
+        }
+
         /// <summary>
         /// 발동에 필요한 준비가 되어 있고, 모든 조건을 만족하며, 모든 코스트를 지불할 수 있는지 확인한다.
         /// </summary>
@@ -113,8 +123,12 @@ namespace Skill.Core
         #region Protected Methods
         /// <summary>
         /// 스킬의 실제 동작. CanUse 가 true 일 때만 호출된다.
+        /// 기본 동작은 스킬 발동을 외부에 알리는 것이며, 자식 클래스는 필요하면 base.Execute() 로 호출한다.
         /// </summary>
-        protected abstract void Execute();
+        protected virtual void Execute()
+        {
+            _notifyExecuted?.Invoke(this);
+        }
         #endregion
     }
 }

@@ -8,6 +8,7 @@ namespace Skill.Skills
         protected override void Execute()
         {
             Debug.Log("Scan");
+            base.Execute();
         }
     }
 }
