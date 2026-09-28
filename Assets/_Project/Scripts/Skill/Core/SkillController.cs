@@ -14,6 +14,7 @@ namespace Skill.Core
         private readonly Dictionary<string, SkillBase> _skills = new(StringComparer.OrdinalIgnoreCase);
         private Func<string, float> _getAttribute;
         private Func<string, float, bool> _requestPay;
+        private Action<SkillBase> _notifyExecuted;
         #endregion
         
         #region Unity Lifecycle
@@ -56,6 +57,20 @@ namespace Skill.Core
         }
 
         /// <summary>
+        /// 스킬 발동을 알리기 위한 델리게이트 주입
+        /// </summary>
+        public void SetNotifyExecuted(Action<SkillBase> notifyExecuted)
+        {
+            if (notifyExecuted == null) return;
+            _notifyExecuted = notifyExecuted;
+            foreach(KeyValuePair<string, SkillBase> skillPair in _skills)
+            {
+                SkillBase skill = skillPair.Value;
+                skill.SetNotifyExecuted(notifyExecuted);
+            }
+        }
+
+        /// <summary>
         /// 스킬을 등록한다. 이름이 비어 있거나 이미 같은 이름이 있으면 등록하지 않는다.
         /// </summary>
         /// <param name="skill">등록할 스킬</param>
@@ -75,6 +90,7 @@ namespace Skill.Core
             }
             if (_getAttribute != null) skill.SetGetAttribute(_getAttribute);
             if (_requestPay != null) skill.SetRequestPay(_requestPay);
+            if (_notifyExecuted != null) skill.SetNotifyExecuted(_notifyExecuted);
         }
 
         /// <summary>
