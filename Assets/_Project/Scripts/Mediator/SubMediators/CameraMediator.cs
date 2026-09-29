@@ -5,12 +5,16 @@ using CameraControl;
 
 namespace Mediator.SubMediators
 {
-    public interface IRotateController
+    public interface ICameraController
     {
         public void SetLookRequest(Action<Vector2> callback);
         public void ClearLookRequest();
+
+        /// <summary>조준 요청 콜백 등록. true 면 조준 시작, false 면 조준 해제.</summary>
+        public void SetAimRequest(Action<bool> callback);
+        public void ClearAimRequest();
     }
-    
+
     /// <summary>
     /// 시점 회전 명령을 PlayerBaseCamera 에 전달하는 접착 컴포넌트.
     /// 회전 명령 시 카메라 피벗의 forward 를 이벤트로 알린다.
@@ -24,18 +28,18 @@ namespace Mediator.SubMediators
         #endregion
 
         #region Private Fields
-        private IRotateController _rotateController;
+        private ICameraController _cameraController;
         #endregion
 
         #region Properties
-        public IRotateController RotateController 
-        { 
-            get => _rotateController;
+        public ICameraController CameraController
+        {
+            get => _cameraController;
             set
             {
                 if(value == null) return;
                 UnBindRequest();
-                _rotateController = value;
+                _cameraController = value;
                 BindRequest();
             }
         }
@@ -51,7 +55,7 @@ namespace Mediator.SubMediators
         protected override void Awake()
         {
             base.Awake();
-            _rotateController = GetComponentInParent<IRotateController>();
+            _cameraController = GetComponentInParent<ICameraController>();
             BindRequest();
         }
         
@@ -96,19 +100,31 @@ namespace Mediator.SubMediators
             PublishViewForward();
         }
         /// <summary>
+        /// 조준 명령을 전달한다.
+        /// </summary>
+        /// <param name="isAiming">true 면 조준 시작, false 면 조준 해제</param>
+        private void CommandAim(bool isAiming)
+        {
+            if (_targetCamera == null) return;
+
+            _targetCamera.SetAim(isAiming);
+        }
+        /// <summary>
         /// Controller 에 대한 바인딩 실행
         /// </summary>
         private void BindRequest()
         {
-            _rotateController?.SetLookRequest(CommandRotateCamera);
+            _cameraController?.SetLookRequest(CommandRotateCamera);
+            _cameraController?.SetAimRequest(CommandAim);
         }
-        
+
         /// <summary>
         /// Controller 에 대한 언바인딩 실행
         /// </summary>
         private void UnBindRequest()
         {
-            _rotateController?.ClearLookRequest();
+            _cameraController?.ClearLookRequest();
+            _cameraController?.ClearAimRequest();
         }
         
         #endregion
