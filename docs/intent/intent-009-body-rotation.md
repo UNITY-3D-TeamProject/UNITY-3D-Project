@@ -40,6 +40,7 @@ CharacterRotator  (실행 — 실제 Transform yaw 회전, 기준 자세 보존)
 | D6 | 방향이 zero면 직전 방향을 유지한다 | 순찰 도착 후 Wait 중에는 이동 입력이 0이 된다. 0을 그대로 받으면 회전이 튀거나 초기화된다 |
 | D7 | 회전 대상은 자기 `transform`이 아니라 캐릭터 루트다. `CharacterMotor`와 같은 "명시적 참조 + 부모 탐색 fallback" 방식을 쓴다 | 회전 스크립트는 `MovePrefab`처럼 루트 아래 자식 프리팹에 놓일 수 있다. `CharacterMotor.Awake`가 이미 `GetComponentInParent<CharacterController>()`로 같은 문제를 해결해 뒀다 |
 | D9 | 몸통 회전 기준은 **이동 입력 방향**이다(AI). 카메라 기준 변환은 이번 범위에 포함하지 않는다 | 카메라 연동(과거 D8·D12)은 재작성 메모 참고 — 재도입 시 별도 문서 |
+| D14 | (2026-09-29) 카메라 추종 복원 — `RotateMediator.SetViewForward(Vector3)`로 시점 방향을 받으면 입력과 무관하게 그 정면을 바라보고, 받지 않았으면(AI) D9대로 월드 기준 입력 방향을 바라본다. 배선은 `CharacterMediator.SendViewForward`가 `CameraMediator.OnViewForwardChanged`를 이동·회전 중재자에 함께 전달 | 과거 `e65fe11`의 동작(카메라 피벗 정면 추종)을 되살리되, 옛 `ReferenceFrame` API 대신 현재 develop의 이벤트 구조에 맞춘다. D9는 AI에 한해 유효 |
 | D13 | `CharacterRotator`는 로컬 X/Z(기준 자세)를 보존하고 yaw(Y)만 회전시킨다. `Awake`에서 `_restRotation`/`_yaw`를 저장해 두고 `Update`에서 yaw만 갱신한다 | 플레이어처럼 스킨 메시 루트의 평상시 로컬 회전이 0이 아닌 캐릭터에도 재사용 가능해야 한다. AI는 `_body`가 루트이고 X/Z가 0이라 `_restRotation`이 identity가 되어 기존 `LookRotation` 거동과 결과가 동일하다 |
 
 ## 영향 범위 (Affected users and systems)
@@ -48,7 +49,8 @@ CharacterRotator  (실행 — 실제 Transform yaw 회전, 기준 자세 보존)
 - **어떤 시스템/모듈이 건드려지는가**
   - 신규: `Assets/_Project/Scripts/Mediator/SubMediators/RotateMediator.cs`(`IBodyRotateController` 도 같은 파일에 선언), `Assets/_Project/Scripts/Rotation/CharacterRotator.cs`
   - 수정: `Assets/_Project/Scripts/AI/AIController.cs` — 예전(팀원 Mediator 리팩터 이전) `ICharacterController`/`IRotateRequestSource` 기반 코드가 브랜치 리셋으로 되살아나 있었던 것을, 현재 구조의 `IMoveController`/`IBodyRotateController`로 다시 정리
-  - 수정 없음: `PlayerInputComponent.cs`, `MoveMediator.cs`, `CameraMediator.cs`, `CharacterMediator.cs`, `CharacterMotor.cs`
+  - 수정: `Assets/_Project/Scripts/Mediator/CharacterMediator.cs` — `_rotateMediator` 슬롯 추가, 시점 방향을 회전 중재자에도 전달(D14)
+  - 수정 없음: `PlayerInputComponent.cs`, `MoveMediator.cs`, `CameraMediator.cs`, `CharacterMotor.cs`
   - `[USER]` 영역: 적 프리팹에 `CharacterRotator`/`RotateMediator` 배치·배선(`RotationPrefab`이 이전 작업에서 만들어졌으나 이번 재설정으로 git에 없음 — 재생성 필요), `Sensor._sightAngle` 정상값 복귀, `_rotateSpeed` 튜닝
 
 ## 제약 (Constraints)
