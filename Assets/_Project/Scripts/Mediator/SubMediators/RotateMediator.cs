@@ -11,7 +11,9 @@ namespace Mediator.SubMediators
     }
 
     /// <summary>
-    /// 몸통 회전 요청(월드 기준)을 CharacterRotator 에 전달하는 접착 컴포넌트.
+    /// 몸통 회전 요청을 CharacterRotator 에 전달하는 접착 컴포넌트.
+    /// 카메라 시점 방향이 전달되어 있으면 입력과 무관하게 그 정면을 바라보고,
+    /// 없으면 회전 입력을 월드 축 기준 방향으로 해석한다.
     /// </summary>
     public class RotateMediator : MediatorBase
     {
@@ -23,6 +25,7 @@ namespace Mediator.SubMediators
         #region Private Fields
         private IBodyRotateController _bodyRotateController;
         private Vector2 _rotateInput;
+        private Vector3 _viewForward;
         #endregion
 
         #region Properties
@@ -51,7 +54,14 @@ namespace Mediator.SubMediators
         {
             if (!_rotator) return;
 
-            _rotator.SetLookDirection(new Vector3(_rotateInput.x, 0.0f, _rotateInput.y));
+            if (_viewForward == Vector3.zero)
+            {
+                _rotator.SetLookDirection(new Vector3(_rotateInput.x, 0.0f, _rotateInput.y));
+                return;
+            }
+
+            // 카메라 시점이 있으면 입력과 무관하게 그 정면을 바라본다 (수평 투영은 SetLookDirection 내부에서 처리)
+            _rotator.SetLookDirection(_viewForward);
         }
 
         protected override void OnEnable()
@@ -65,6 +75,17 @@ namespace Mediator.SubMediators
             // 비활성화 시 입력 잔여값으로 계속 돌지 않도록 정지
             _rotateInput = Vector2.zero;
             UnBindRequest();
+        }
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// 카메라가 보는 방향을 설정한다. 설정되면 몸통이 그 정면을 바라본다.
+        /// </summary>
+        /// <param name="viewForward">카메라가 보는 방향 (월드 기준)</param>
+        public void SetViewForward(Vector3 viewForward)
+        {
+            _viewForward = viewForward;
         }
         #endregion
 

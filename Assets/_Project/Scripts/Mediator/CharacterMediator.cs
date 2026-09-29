@@ -18,6 +18,7 @@ namespace Mediator
         [FormerlySerializedAs("cameraMediator")]
         [SerializeField] private CameraMediator _cameraMediator;
         [SerializeField] private CombatMediator _combatMediator;
+        [SerializeField] private RotateMediator _rotateMediator;
         #endregion
 
         #region Private Fields
@@ -83,11 +84,12 @@ namespace Mediator
             }
         }
         /// <summary>
-        /// 카메라 중재자가 알린 시점 방향을 이동 중재자로 전달
+        /// 카메라 중재자가 알린 시점 방향을 이동·회전 중재자로 전달
         /// </summary>
         private void SendViewForward(Vector3 viewForward)
         {
             if (_moveMediator) _moveMediator.SetViewForward(viewForward);
+            if (_rotateMediator) _rotateMediator.SetViewForward(viewForward);
         }
         /// <summary>
         /// 중재자 이벤트 구독
