@@ -45,7 +45,7 @@ namespace Attribute.Effect
     /// <summary>current / amount</summary>
     public sealed class DivideModifier : Modifier
     {
-        public override float Modify(float current, float amount) => current / amount;
+        public override float Modify(float current, float amount) => amount == 0 ? 0 : current / amount;
     }
 
     /// <summary>

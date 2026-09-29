@@ -23,6 +23,7 @@ namespace Mediator.SubMediators
         [FormerlySerializedAs("motor")]
         [SerializeField] private CharacterMotor _motor;
         [SerializeField] private MoveDirectionCalculator _moveDirectionCalculator;
+        [SerializeField] private RollMover _rollMover;
         [Header("Settings")]
         [Tooltip("CharacterMotor.Speed 로 연결할 어트리뷰트 이름")]
         [SerializeField] private string _speedValueKey;
@@ -32,6 +33,7 @@ namespace Mediator.SubMediators
         
         #region Private Fields
         private IMoveController _moveController;
+        private Vector3 _lastDirection;
         #endregion
 
         #region Properties
@@ -84,6 +86,20 @@ namespace Mediator.SubMediators
 
             _moveDirectionCalculator.SetViewForward(viewForward);
         }
+
+        /// <summary>
+        /// 카메라가 보는 수평 방향으로 구르기를 RollMover 에 요청한다.
+        /// 구르는 동안에는 이동/점프 입력이 모터에 전달되지 않는다.
+        /// </summary>
+        /// <param name="distance">이동 거리</param>
+        /// <param name="duration">이동에 걸리는 시간(초)</param>
+        public void CommandRoll(float distance, float duration)
+        {
+            if (!_rollMover || !_moveDirectionCalculator) return;
+            if (_rollMover.IsRolling) return;
+            
+            _rollMover.Roll(_moveDirectionCalculator.ViewDirection, distance, duration);
+        }
         #endregion
 
         #region Protected Methods
@@ -130,20 +146,25 @@ namespace Mediator.SubMediators
 
         /// <summary>
         /// MoveDirectionCalculator 가 계산한 이동 방향을 CharacterMotor 로 전달한다.
+        /// 구르는 중에는 방향만 기억해 두고, 구르기가 끝날 때 적용한다.
         /// </summary>
         /// <param name="direction">계산된 월드 이동 방향</param>
         private void ApplyDirection(Vector3 direction)
         {
-            if (!_motor) return;
+            _lastDirection = direction;
+            //모터가 없거나 구르는 중일경우 return
+            if (!_motor || (_rollMover && _rollMover.IsRolling)) return;
 
             _motor.Direction = direction;
         }
 
         /// <summary>
-        /// 점프 명령을 전달한다.
+        /// 점프 명령을 전달한다. 구르는 중에는 무시한다.
         /// </summary>
         private void CommandJump()
         {
+            if (_rollMover && _rollMover.IsRolling) return;
+
             _motor?.Jump();
         }
         
@@ -166,19 +187,56 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// MoveDirectionCalculator 이벤트 구독
+        /// 구르기 시작 시 입력에 의한 이동 정지
+        /// </summary>
+        private void OnRollStarted()
+        {
+            if (_motor) _motor.Direction = Vector3.zero;
+        }
+
+        /// <summary>
+        /// 구르기 종료 시 구르는 동안 들어온 최신 입력 방향으로 이동 재개
+        /// </summary>
+        private void OnRollEnded()
+        {
+            if (_motor) _motor.Direction = _lastDirection;
+        }
+
+        /// <summary>
+        /// RollMover 가 계산한 구르기 이동량을 CharacterMotor 로 전달한다.
+        /// </summary>
+        /// <param name="displacement">이번 물리 스텝에 적용할 이동량</param>
+        private void ApplyRollDisplacement(Vector3 displacement)
+        {
+            if (_motor) _motor.AddExternalDisplacement(displacement);
+        }
+
+        /// <summary>
+        /// MoveDirectionCalculator, RollMover 이벤트 구독
         /// </summary>
         private void Subscribe()
         {
             if (_moveDirectionCalculator) _moveDirectionCalculator.OnDirectionCalculated += ApplyDirection;
+            if (_rollMover)
+            {
+                _rollMover.OnRollStarted += OnRollStarted;
+                _rollMover.OnRollEnded += OnRollEnded;
+                _rollMover.OnDisplacementCalculated += ApplyRollDisplacement;
+            }
         }
 
         /// <summary>
-        /// MoveDirectionCalculator 이벤트 구독 해지
+        /// MoveDirectionCalculator, RollMover 이벤트 구독 해지
         /// </summary>
         private void Unsubscribe()
         {
             if (_moveDirectionCalculator) _moveDirectionCalculator.OnDirectionCalculated -= ApplyDirection;
+            if (_rollMover)
+            {
+                _rollMover.OnRollStarted -= OnRollStarted;
+                _rollMover.OnRollEnded -= OnRollEnded;
+                _rollMover.OnDisplacementCalculated -= ApplyRollDisplacement;
+            }
         }
 
         #endregion

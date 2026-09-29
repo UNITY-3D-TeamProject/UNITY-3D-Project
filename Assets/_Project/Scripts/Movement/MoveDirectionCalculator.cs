@@ -18,6 +18,11 @@ namespace Movement
         private Vector3 _viewForward;
         #endregion
 
+        #region Properties
+        /// <summary>시점 방향을 수평면에 투영한 앞 방향 (정규화됨).</summary>
+        public Vector3 ViewDirection => Calculate(Vector2.up, _viewForward);
+        #endregion
+
         #region Events
         /// <summary>이동 입력 또는 시점 방향이 설정되어 이동 방향이 다시 계산되었을 때 발생한다.</summary>
         public event Action<Vector3> OnDirectionCalculated;

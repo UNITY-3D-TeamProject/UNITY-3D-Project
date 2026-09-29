@@ -18,6 +18,7 @@ namespace Mediator
         [FormerlySerializedAs("cameraMediator")]
         [SerializeField] private CameraMediator _cameraMediator;
         [SerializeField] private CombatMediator _combatMediator;
+        [SerializeField] private SkillMediator _skillMediator;
         #endregion
 
         #region Private Fields
@@ -90,11 +91,28 @@ namespace Mediator
             if (_moveMediator) _moveMediator.SetViewForward(viewForward);
         }
         /// <summary>
+        /// 스킬 중재자의 코스트 지불 요청을 어트리뷰트에 반영
+        /// </summary>
+        /// <param name="key">소모할 어트리뷰트 이름</param>
+        /// <param name="amount">소모량</param>
+        /// <returns>지불에 성공했으면 true</returns>
+        private bool PayAttribute(string key, float amount)
+        {
+            if (!_attributeSet || !_attributeSet.IsValidTarget(key)) return false;
+
+            float current = _attributeSet.GetValue(key);
+
+            _attributeSet.SetValue(key, current - amount);
+            return true;
+        }
+        /// <summary>
         /// 중재자 이벤트 구독
         /// </summary>
         private void Subscribe()
         {
             if (_cameraMediator) _cameraMediator.OnViewForwardChanged += SendViewForward;
+            if (_skillMediator) _skillMediator.OnPayRequested += PayAttribute;
+            if (_skillMediator && _moveMediator) _skillMediator.OnRollRequested += _moveMediator.CommandRoll;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -102,6 +120,8 @@ namespace Mediator
         private void Unsubscribe()
         {
             if (_cameraMediator) _cameraMediator.OnViewForwardChanged -= SendViewForward;
+            if (_skillMediator) _skillMediator.OnPayRequested -= PayAttribute;
+            if (_skillMediator && _moveMediator) _skillMediator.OnRollRequested -= _moveMediator.CommandRoll;
         }
         #endregion
     }
