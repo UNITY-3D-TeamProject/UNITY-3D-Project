@@ -1,6 +1,7 @@
 using UnityEngine;
+using Map.Common;
 
-namespace Platform
+namespace Tutorial
 {
     /// <summary>
     /// 앱이 분쇄 통로에 도착하면 반응하는 연출 담당: 본체 진동, 파쇄 링 가속, 도착 지점 파쇄 버스트.

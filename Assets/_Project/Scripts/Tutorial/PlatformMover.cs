@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Platform
+namespace Tutorial
 {
     /// <summary>
     /// 스포너가 지정한 방향으로 일정 속도로 직진하다가, 최대 이동 거리에 도달하면 스포너에게 반환을 요청한다.

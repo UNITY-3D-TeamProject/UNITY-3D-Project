@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Platform
+namespace Map.Common
 {
     /// <summary>
     /// 오브젝트를 자기 축 기준으로 일정 속도로 회전시킨다. (소각로 파쇄 링용)

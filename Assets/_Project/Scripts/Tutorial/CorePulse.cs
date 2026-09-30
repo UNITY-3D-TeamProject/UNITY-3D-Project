@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Platform
+namespace Tutorial
 {
     /// <summary>
     /// 소각로 코어를 심장처럼 맥동시킨다. 크기와 발광 세기(Emission)가 함께 변한다.

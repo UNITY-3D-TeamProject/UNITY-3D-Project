@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Platform
+namespace Tutorial
 {
     /// <summary>
     /// 최초 생성 파이프에서 삭제 대상 앱 아이콘을 일정 간격으로 만들어 forward 방향으로 직선 이동시킨다.

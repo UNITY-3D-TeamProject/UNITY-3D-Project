@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Platform
+namespace Tutorial
 {
     /// <summary>
     /// 발판이 생성될 때마다 그 생성 위치에서 빛 이펙트를 1회 내보낸다. (팽창하며 페이드아웃, 위치 고정)

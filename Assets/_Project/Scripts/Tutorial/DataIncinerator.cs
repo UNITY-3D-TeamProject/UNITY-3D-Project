@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Platform
+namespace Tutorial
 {
     /// <summary>
     /// 발판(데이터 쪼가리)이 삭제 지점에 도달할 때마다 소각 이펙트를 내고, 소각로 위 "Deleting... N%" 진행 바를 채운다.

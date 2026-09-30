@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Platform
+namespace Tutorial
 {
     /// <summary>
     /// 파이프(이 오브젝트)의 원형 단면 안에서 발판을 랜덤 위치에 생성한다.
