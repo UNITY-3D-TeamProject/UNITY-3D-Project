@@ -94,9 +94,9 @@ namespace Mediator.SubMediators
         {
             if (_targetCamera == null) return;
 
-            _targetCamera.Look = amount;
+            _targetCamera.ApplyLook(amount);
 
-            // 실제 회전은 PlayerBaseCamera.LateUpdate 에서 적용되므로 직전 프레임까지의 피벗 방향이 전달된다
+            // 회전이 즉시 적용되므로 이번 입력이 반영된 피벗 방향이 전달된다
             PublishViewForward();
         }
         /// <summary>
