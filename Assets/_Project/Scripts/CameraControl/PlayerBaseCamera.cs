@@ -6,7 +6,7 @@ namespace CameraControl
 {
     /// <summary>
     /// Look 입력으로 카메라 피벗을 yaw/pitch 회전시키는 컴포넌트.
-    /// 매 프레임 Look 에 설정된 값을 감도만큼 누적해 LateUpdate 에서 피벗 회전에 반영한다.
+    /// ApplyLook 으로 전달된 값을 감도만큼 누적해 즉시 피벗 회전에 반영한다.
     /// 입력이 없으면 회전을 유지하며, 각도는 설정된 범위로 클램프된다.
     /// 조준 시 조준 전용 시네머신 카메라를 활성화하며, 전환 보간은 CinemachineBrain 의 Blend 가 담당한다.
     /// </summary>
@@ -36,18 +36,11 @@ namespace CameraControl
         #endregion
 
         #region Private Fields
-        private Vector2 _look;
         private float _pitch;
         private float _yaw;
         #endregion
 
         #region Properties
-        /// <summary>이번 프레임에 적용할 Look 입력 (x: yaw, y: pitch).</summary>
-        public Vector2 Look
-        {
-            set => _look = value;
-        }
-
         /// <summary>회전이 적용되는 카메라 피벗. 이동 기준 프레임으로도 사용된다.</summary>
         public Transform Pivot => _cameraPivot;
         #endregion
@@ -65,12 +58,19 @@ namespace CameraControl
             _yaw = eulerAngle.y;
             _pitch = Mathf.DeltaAngle(0f, eulerAngle.x);
         }
+        #endregion
 
-        private void LateUpdate()
+        #region Public Methods
+        /// <summary>
+        /// Look 입력을 감도만큼 누적해 즉시 피벗 회전에 반영한다.
+        /// 호출 직후 Pivot.forward 가 이번 입력이 적용된 방향이 된다.
+        /// </summary>
+        /// <param name="look">시점 입력 (x: yaw, y: pitch)</param>
+        public void ApplyLook(Vector2 look)
         {
-            if (!_cameraPivot || _look.sqrMagnitude < 0.0001f) return;
+            if (!_cameraPivot || look.sqrMagnitude < 0.0001f) return;
 
-            Vector2 delta = _look * _sensitivity;
+            Vector2 delta = look * _sensitivity;
 
             _yaw += delta.x;
             _yaw = Mathf.Clamp(_yaw, _yawMin, _yawMax);
@@ -79,9 +79,7 @@ namespace CameraControl
 
             _cameraPivot.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
         }
-        #endregion
 
-        #region Public Methods
         /// <summary>
         /// 조준 전용 카메라를 켜고 끈다. 켜지면 CinemachineBrain 이 기본 카메라에서 조준 카메라로 블렌드한다.
         /// </summary>
