@@ -8,12 +8,9 @@ namespace Mediator.SubMediators
 {
     public interface ISkillRequestController
     {
-        public delegate bool RequestExecuteSkillDelegate(string skillName);
-        public delegate void RequestStopSkillDelegate(string skillName);
-
-        public void SetRequestExecuteSkill(RequestExecuteSkillDelegate requestExecuteSkill);
+        public void SetRequestExecuteSkill(Action<string> requestExecuteSkill);
         public void ClearRequestExecuteSkill();
-        public void SetRequestStopSkill(RequestStopSkillDelegate requestStopSkill);
+        public void SetRequestStopSkill(Action<string> requestStopSkill);
         public void ClearRequestStopSkill();
     }
     
@@ -78,7 +75,7 @@ namespace Mediator.SubMediators
         {
             if (_skillController == null || _skillRequestController == null) return;
 
-            _skillRequestController.SetRequestExecuteSkill(_skillController.TryExecuteSkill);
+            _skillRequestController.SetRequestExecuteSkill(skillName => _skillController.TryExecuteSkill(skillName));
             _skillRequestController.SetRequestStopSkill(_skillController.StopSkill);
             _skillController.SetGetAttribute(key => AttributeGetter?.Invoke(key) ?? 0.0f);
             _skillController.SetRequestPay(OnRequestPay);
