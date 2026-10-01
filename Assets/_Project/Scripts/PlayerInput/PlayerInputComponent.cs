@@ -98,9 +98,9 @@ namespace PlayerInput
         private void OnFire(InputValue value)
         {
             if (value.isPressed)
-                _requestExecuteSkill?.Invoke("Fire");
+                _requestExecuteSkill?.Invoke("Attack");
             else
-                _requestStopSkill?.Invoke("Fire");
+                _requestStopSkill?.Invoke("Attack");
         }
         
         private void OnMove(InputValue value)
