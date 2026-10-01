@@ -105,6 +105,7 @@ Observer를 채택하되, 기각 사유를 남겨 같은 논의가 반복되지 
 ## 열린 질문 (Open questions)
 - ① **데미지를 AttributeSet에 반영하는 주체/경로** — 스킬 매니저 설계 때 결정. 이번 범위에서 옵서버는 AttributeSet → Combat 읽기 방향만 담당한다. `AttributeSet`/`SOAttributeEffect`는 `Scripts/Mediator/`·`Scripts/Attribute/` 소유자(이세훈) 영역이라 **이세훈과의 협의 항목**이다 — BF_Leers 단독으로 확정하지 않는다. Combat은 이 결정과 무관하게 이미 완성 상태이므로 블로커는 아니다.
   - (2026-09-21 갱신) `ReceiveHit` 폐기로 이 질문이 **캐릭터 간 전투 통신의 유일한 경로**가 됐다. 공격이 성립하려면 누군가 피격자의 AttributeSet HP를 깎아야 하고, 그 순간 Combat의 `OnHit`/`OnDeath`는 자동으로 따라온다. 중요도는 올라갔지만 여전히 Combat 쪽 블로커는 아니다.
+  - (2026-10-01 확정) 공격 스킬이 만든 **매개체가 피격자의 `IEffectTarget`을 `GetComponentInParent`로 얻어 `SOAttributeEffect.Apply`를 직접 호출**한다. 중재자 창구는 두지 않는다. 총알은 `BulletController`(이세훈, `feature/Skill`), 근접은 `MeleeHitController` → [intent-010](./intent-010-enemy-melee-attack.md).
 - ② **서브 중재자가 Combat에 내릴 지시의 내용** — 입구 모양(`CharacterCombat`의 public 메서드)은 확정, 목록(예: `SetInvulnerable`/`Kill`/`Revive`)은 서브 중재자 설계 때 결정. 지금 만들면 오버엔지니어링(CLAUDE.md §3-2)이라 만들지 않는다.
 - ③ **`Current*` 속성을 `Max*`로 채우는 주체** — `SOAttributeData_Player.asset`/`_Enemy.asset`의 `CurrentHp`(및 `CurrentBattery`/`CurrentHeat`)가 전부 0으로 들어있고 채우는 코드가 없다. 이대로 `AttributeToCombatAdapter`를 실제 프리팹에 붙이면 씨앗 pull이 0을 읽어 전 캐릭터가 첫 프레임에 사망한다. 이것이 정해지기 전까지 어댑터는 코드만 존재하고 프리팹에 배선하지 않는다.
 
