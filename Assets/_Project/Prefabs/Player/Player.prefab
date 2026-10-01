@@ -2678,6 +2678,7 @@ Transform:
   - {fileID: 1644703497541121440}
   - {fileID: 501191497638698248}
   - {fileID: 7396282012125815698}
+  - {fileID: 6366983546057295461}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &4073810537523457601
@@ -2786,6 +2787,8 @@ MonoBehaviour:
   _cameraMediator: {fileID: 4037666890982176721}
   _combatMediator: {fileID: 3668456207256696484}
   _skillMediator: {fileID: 8471388793956935183}
+  _rotateMediator: {fileID: 8808901908423996939}
+  _spawnMediator: {fileID: 3514931562783129404}
 --- !u!114 &5304988351085931332
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3624,6 +3627,10 @@ PrefabInstance:
       propertyPath: _firePoint
       value: 
       objectReference: {fileID: 3183685172745475560}
+    - target: {fileID: 9051118714484636340, guid: a235576c8e08dcb43b441281b659a175, type: 3}
+      propertyPath: '_references.Array.data[0]'
+      value: 
+      objectReference: {fileID: 993769317585094885}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4049,6 +4056,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3071669656261294831, guid: ddb7337e6e074674c8bc33f618b3b463, type: 3}
   m_PrefabInstance: {fileID: 5477533879010204029}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8808901908423996939 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3907890376078094198, guid: ddb7337e6e074674c8bc33f618b3b463, type: 3}
+  m_PrefabInstance: {fileID: 5477533879010204029}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 136e6af819d7888478f288c5fda2b586, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.RotateMediator
 --- !u!1001 &5957426615118029038
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4122,6 +4140,83 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4184b676d9d003498c27f9ce1b7507b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Mediator.MoveMediator
+--- !u!1001 &8012930144078046411
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7955953769729619003}
+    m_Modifications:
+    - target: {fileID: 2506959676500259623, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+      propertyPath: m_Name
+      value: SpawnPrefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 3994609649491518126, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.17512426
+      objectReference: {fileID: 0}
+    - target: {fileID: 3994609649491518126, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.95216
+      objectReference: {fileID: 0}
+    - target: {fileID: 3994609649491518126, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.1641142
+      objectReference: {fileID: 0}
+    - target: {fileID: 3994609649491518126, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3994609649491518126, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3994609649491518126, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3994609649491518126, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3994609649491518126, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3994609649491518126, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3994609649491518126, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8022144537374413043, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+      propertyPath: _hitEffect
+      value: 
+      objectReference: {fileID: 11400000, guid: 83a8f163506eca545bf8968db1921f59, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+--- !u!114 &3514931562783129404 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6914202046496611319, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+  m_PrefabInstance: {fileID: 8012930144078046411}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67f2e5e264e40c74c8da1c75e48ea06b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.SpawnMediator
+--- !u!4 &6366983546057295461 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3994609649491518126, guid: b7825bf07d23c1b46a047ebce86f0d59, type: 3}
+  m_PrefabInstance: {fileID: 8012930144078046411}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8193747420113210606
 PrefabInstance:
   m_ObjectHideFlags: 0

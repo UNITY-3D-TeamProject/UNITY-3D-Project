@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3756347830307143739}
   - component: {fileID: 8827643837087973989}
   - component: {fileID: 5751343608836102321}
+  - component: {fileID: 9051118714484636340}
   m_Layer: 0
   m_Name: Fire
   m_TagString: Untagged
@@ -47,7 +48,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Skill.Skills.Fire
   _skillName: Attack
   _duration: 0.1
-  _bulletPrefab: {fileID: 4555850187240467820, guid: e9c7c98f57efe734c8cfe056d3122412, type: 3}
   _firePoint: {fileID: 0}
 --- !u!114 &5751343608836102321
 MonoBehaviour:
@@ -63,3 +63,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.ResourceCost
   _cost: 1
   _resourceKey: CurrentHeat
+--- !u!114 &9051118714484636340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7012313840834341081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2345ca72abf58e429e6e8971704815e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Skill.Conditions.NotNullCondition
+  _references:
+  - {fileID: 0}

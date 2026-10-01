@@ -34,6 +34,9 @@ namespace Mediator.SubMediators
 
         /// <summary>구르기 요청. (이동 거리, 이동 시간)</summary>
         public event Action<float, float> OnRollRequested;
+
+        /// <summary>사격 요청. (총알 생성 위치)</summary>
+        public event Action<Vector3> OnFireRequested;
         #endregion
 
         #region Unity Lifecycle
@@ -117,6 +120,9 @@ namespace Mediator.SubMediators
             {
                 case Roll roll:
                     OnRollRequested?.Invoke(roll.Distance, roll.Duration);
+                    break;
+                case Fire fire:
+                    OnFireRequested?.Invoke(fire.FirePosition);
                     break;
             }
         }
