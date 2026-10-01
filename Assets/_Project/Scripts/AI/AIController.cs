@@ -11,7 +11,7 @@ namespace AI
     /// NavMeshAgent 는 경로 계산에만 쓰고 실제 이동은 기존 이동 요청(CommandMove)을 통해 CharacterMotor 가 수행한다.
     /// BT의 액션·조건 노드는 Sensor 나 NavMeshAgent 가 아니라 이 컴포넌트의 공개 API 에만 묻는다.
     /// </summary>
-    public class AIController : MonoBehaviour, IMoveController, IBodyRotateController
+    public class AIController : MonoBehaviour, IMoveController, IBodyRotateController, ISkillRequestController
     {
         #region Constants
         /// <summary>목적지를 NavMesh 위로 끌어당길 때 허용하는 최대 거리(m).</summary>
@@ -46,6 +46,10 @@ namespace AI
         [Header("Patrol")]
         [Tooltip("스폰 지점 기준 순찰 반경(m).")]
         [SerializeField] private float _patrolRadius = 10.0f;
+
+        [Header("Attack")]
+        [Tooltip("공격할 때 요청할 스킬 이름. 이 캐릭터의 SkillController 에 등록된 스킬의 SkillName 과 같아야 한다.")]
+        [SerializeField] private string _attackSkillName;
         #endregion
 
         #region Private Fields
@@ -62,6 +66,8 @@ namespace AI
         private event Action<Vector2> _onMoveRequested;
         private event Action _onJumpRequested;
         private event Action<Vector2> _onBodyRotateRequested;
+        private event ISkillRequestController.RequestExecuteSkillDelegate _requestExecuteSkill;
+        private event ISkillRequestController.RequestStopSkillDelegate _requestStopSkill;
         #endregion
 
         #region Properties
@@ -76,6 +82,18 @@ namespace AI
 
         /// <summary>대상을 마지막으로 본 위치.</summary>
         public Vector3 LastKnownPosition => _sensor ? _sensor.LastKnownPosition : _body.position;
+
+        /// <summary>현재 보이는 대상까지의 수평 거리(m). 보이는 대상이 없으면 양의 무한대.</summary>
+        public float DistanceToTarget
+        {
+            get
+            {
+                if (!HasVisibleTarget) return float.PositiveInfinity;
+
+                Vector3 toTarget = Vector3.ProjectOnPlane(VisibleTarget.position - _body.position, Vector3.up);
+                return toTarget.magnitude;
+            }
+        }
 
         /// <summary>목적지에 도착했는지 여부. 목적지가 없으면 true.</summary>
         public bool HasArrived
@@ -226,6 +244,34 @@ namespace AI
         }
         #endregion
 
+        #region ISkillRequestController
+        /// <inheritdoc />
+        public void SetRequestExecuteSkill(ISkillRequestController.RequestExecuteSkillDelegate requestExecuteSkill)
+        {
+            if (requestExecuteSkill == null) return;
+            _requestExecuteSkill = requestExecuteSkill;
+        }
+
+        /// <inheritdoc />
+        public void ClearRequestExecuteSkill()
+        {
+            _requestExecuteSkill = null;
+        }
+
+        /// <inheritdoc />
+        public void SetRequestStopSkill(ISkillRequestController.RequestStopSkillDelegate requestStopSkill)
+        {
+            if (requestStopSkill == null) return;
+            _requestStopSkill = requestStopSkill;
+        }
+
+        /// <inheritdoc />
+        public void ClearRequestStopSkill()
+        {
+            _requestStopSkill = null;
+        }
+        #endregion
+
         #region Public Methods
         /// <summary>
         /// 지정한 월드 위치를 목적지로 삼는다. 위치가 NavMesh 밖이면 가까운 NavMesh 지점으로 보정한다.
@@ -276,6 +322,22 @@ namespace AI
             }
 
             RequestMove(Vector2.zero);
+        }
+
+        /// <summary>
+        /// 보이는 대상을 바라보며 공격 스킬을 한 번 요청한다. 보이는 대상이 없으면 무시한다.
+        /// 실제 발동 여부와 간격은 스킬의 조건·코스트가 정하므로 매 틱 호출해도 된다.
+        /// </summary>
+        public void Attack()
+        {
+            if (!HasVisibleTarget) return;
+
+            Vector3 toTarget = VisibleTarget.position - _body.position;
+            RequestRotate(new Vector2(toTarget.x, toTarget.z));
+
+            _requestExecuteSkill?.Invoke(_attackSkillName);
+            // 누르고 있는 동안 반복되는 스킬(연사 등)이어도 한 번만 발동하도록 바로 뗀다
+            _requestStopSkill?.Invoke(_attackSkillName);
         }
 
         /// <summary>
