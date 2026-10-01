@@ -1,6 +1,7 @@
 using System.Collections;
-using Skill.Core;
 using UnityEngine;
+using Projectile;
+using Skill.Core;
 
 namespace Skill.Skills
 {
@@ -15,6 +16,12 @@ namespace Skill.Skills
         [Header("Fire")]
         [Tooltip("사격 간격(초)")]
         [SerializeField, Min(0.0f)] private float _duration = 0.1f;
+
+        [Header("References")]
+        [Tooltip("발사할 총알 프리팹")]
+        [SerializeField] private BulletController _bulletPrefab;
+        [Tooltip("총알이 생성될 위치")]
+        [SerializeField] private Transform _firePoint;
         #endregion
 
         #region Private Fields
@@ -27,6 +34,9 @@ namespace Skill.Skills
         {
             base.Awake();
             _waitDuration = new WaitForSeconds(_duration);
+
+            Debug.Assert(_bulletPrefab != null, $"[{name}] 총알 프리팹이 연결되지 않았습니다.");
+            Debug.Assert(_firePoint != null, $"[{name}] 발사 지점이 연결되지 않았습니다.");
         }
 
         private void OnDisable()
@@ -48,7 +58,7 @@ namespace Skill.Skills
         #region Protected Methods
         protected override void Execute()
         {
-            Debug.Log("Fire");
+            Instantiate(_bulletPrefab, _firePoint.position, _firePoint.rotation);
             base.Execute();
 
             // 연사 중 재발동(코루틴 내부 TryExecute)이면 한 발만 쏘고 코루틴은 새로 시작하지 않는다.

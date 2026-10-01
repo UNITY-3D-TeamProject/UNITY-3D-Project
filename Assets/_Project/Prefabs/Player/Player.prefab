@@ -336,7 +336,39 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 769670683958422937}
+  - {fileID: 3183685172745475560}
   m_Father: {fileID: 9164688526660742473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &993769317585094885
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3183685172745475560}
+  m_Layer: 0
+  m_Name: FirePosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3183685172745475560
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 993769317585094885}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.5098004, y: -0.50160366, z: -0.4977278, w: -0.49067748}
+  m_LocalPosition: {x: 0.025, y: 0.529, z: 0.017}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4169296440061436531}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1407921597240058777
 GameObject:
@@ -3588,6 +3620,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Fire
       objectReference: {fileID: 0}
+    - target: {fileID: 8827643837087973989, guid: a235576c8e08dcb43b441281b659a175, type: 3}
+      propertyPath: _firePoint
+      value: 
+      objectReference: {fileID: 3183685172745475560}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
