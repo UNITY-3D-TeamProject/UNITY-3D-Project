@@ -53,6 +53,8 @@ namespace Mediator.SubMediators
 
         private void OnDisable()
         {
+            // Stop 요청 경로가 끊기기 전에 진행 중인 지속형 스킬(연사 등)을 멈춘다
+            if (_skillController) _skillController.StopAllSkills();
             UnBindRequest();
         }
         #endregion
