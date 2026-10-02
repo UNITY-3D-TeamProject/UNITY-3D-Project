@@ -10,7 +10,8 @@ namespace Attribute.Effect
         Add,
         Subtract,
         Multiply,
-        Divide
+        Divide,
+        Set
     }
 
     /// <summary>
@@ -45,9 +46,15 @@ namespace Attribute.Effect
     /// <summary>current / amount</summary>
     public sealed class DivideModifier : Modifier
     {
-        public override float Modify(float current, float amount) => current / amount;
+        public override float Modify(float current, float amount) => amount == 0 ? 0 : current / amount;
     }
 
+    /// <summary>current / amount</summary>
+    public sealed class SetModifier : Modifier
+    {
+        public override float Modify(float current, float amount) => amount;
+    }
+    
     /// <summary>
     /// EModifier 를 실제 Modifier 구현으로 매핑해 연산을 수행하는 정적 진입점.
     /// </summary>
@@ -60,6 +67,7 @@ namespace Attribute.Effect
             { EModifier.Subtract, new SubtractModifier() },
             { EModifier.Multiply, new MultiplyModifier() },
             { EModifier.Divide, new DivideModifier() },
+            { EModifier.Set, new SetModifier() },
         };
         #endregion
 
