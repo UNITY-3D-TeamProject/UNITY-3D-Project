@@ -29,9 +29,14 @@ namespace Map.Maze
         private int _width;
         private int _height;
         private SCell[,] _grid;
+        private System.Random _random;
 
-        public SCell[,] GenerateMaze(int width, int height, Vector2Int startPos)
+        /// <summary>
+        /// 미로를 생성한다. 같은 random(시드)에서는 항상 같은 미로가 나온다.
+        /// </summary>
+        public SCell[,] GenerateMaze(int width, int height, Vector2Int startPos, System.Random random)
         {
+            _random = random;
             _width = width;
             _height = height;
             _grid = new SCell[width, height];
@@ -57,10 +62,10 @@ namespace Map.Maze
                 EDirection.North, EDirection.East, EDirection.South, EDirection.West
             };
             
-            // Shuffle directions
-            for (int i = 0; i < dirs.Count; i++)
+            // Shuffle directions (Fisher-Yates)
+            for (int i = dirs.Count - 1; i > 0; i--)
             {
-                int rnd = Random.Range(0, dirs.Count);
+                int rnd = _random.Next(i + 1);
                 EDirection temp = dirs[i];
                 dirs[i] = dirs[rnd];
                 dirs[rnd] = temp;
@@ -104,6 +109,44 @@ namespace Map.Maze
                     RecursiveBacktracking(nx, ny);
                 }
             }
+        }
+
+        /// <summary>
+        /// start 에서 각 칸까지 가는 데 필요한 칸 수를 구한다. 갈 수 없는 칸은 -1.
+        /// 가장 먼 칸을 도착 지점으로 고르는 데 쓴다.
+        /// </summary>
+        public int[,] ComputeDistances(SCell[,] grid, Vector2Int start)
+        {
+            int w = grid.GetLength(0);
+            int h = grid.GetLength(1);
+
+            int[,] distances = new int[w, h];
+            for (int x = 0; x < w; x++)
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    distances[x, y] = -1;
+                }
+            }
+
+            Queue<Vector2Int> queue = new Queue<Vector2Int>();
+            distances[start.x, start.y] = 0;
+            queue.Enqueue(start);
+
+            while (queue.Count > 0)
+            {
+                Vector2Int current = queue.Dequeue();
+
+                foreach (var neighbor in GetNeighbors(grid, current))
+                {
+                    if (distances[neighbor.x, neighbor.y] >= 0) continue;
+
+                    distances[neighbor.x, neighbor.y] = distances[current.x, current.y] + 1;
+                    queue.Enqueue(neighbor);
+                }
+            }
+
+            return distances;
         }
 
         public List<Vector2Int> FindPathAStar(SCell[,] grid, Vector2Int start, Vector2Int end)
