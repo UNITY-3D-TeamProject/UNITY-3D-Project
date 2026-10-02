@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Movement;
 
 namespace Map.Platforms
 {
@@ -12,6 +13,8 @@ namespace Map.Platforms
         Loop        // 끝에 도달하면 처음 웨이포인트로 바로 넘어가서 반복
     }
 
+    [DefaultExecutionOrder(-100)]   // 탑승자(PlatformRider)보다 먼저 움직여야 이번 프레임 이동량이 전달된다
+    [RequireComponent(typeof(TransformMotor))]
     public class WaypointPlatform : MonoBehaviour
     {
         #region Serialized Fields
@@ -38,9 +41,19 @@ namespace Map.Platforms
         private bool _isMoving;
         private bool _isForward = true;
         private bool _isWaiting;
+        private TransformMotor _motor;
         #endregion
 
         #region Unity Lifecycle
+        private void Awake()
+        {
+            // 이전에 배치된 발판에는 TransformMotor가 없을 수 있다
+            if (!TryGetComponent(out _motor))
+            {
+                _motor = gameObject.AddComponent<TransformMotor>();
+            }
+        }
+
         private void Start()
         {
             if (_waypoints == null || _waypoints.Count < 2)
@@ -61,7 +74,13 @@ namespace Map.Platforms
 
         private void Update()
         {
-            if (!_isMoving || _isWaiting || _waypoints.Count < 2) return;
+            if (!_isMoving || _isWaiting || _waypoints.Count < 2)
+            {
+                // TransformMotor.DeltaThisFrame은 MoveTo를 호출하지 않으면 직전 값이 남는다.
+                // 정지 중에 탑승자가 밀리지 않도록 제자리 이동으로 0을 만든다.
+                _motor.MoveTo(transform.position, 0.0f);
+                return;
+            }
 
             MoveTowardsWaypoint();
         }
@@ -110,7 +129,7 @@ namespace Map.Platforms
         private void MoveTowardsWaypoint()
         {
             Transform targetWaypoint = _waypoints[_currentWaypointIndex];
-            transform.position = Vector3.MoveTowards(transform.position, targetWaypoint.position, _moveSpeed * Time.deltaTime);
+            _motor.MoveTo(targetWaypoint.position, _moveSpeed);
 
             if (Vector3.Distance(transform.position, targetWaypoint.position) < 0.01f)
             {
