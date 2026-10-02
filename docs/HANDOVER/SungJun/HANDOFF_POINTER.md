@@ -5,6 +5,13 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-02** — 현재 작업 트리 변경사항의 커밋 메시지 분류: [커밋 메시지 검토](./2026-10-02/commit-message-review.md)
+- **2026-10-01** — 독백 View/Presenter 최소 구현 책임과 순서 검토: [독백 UI 최소 구현 계획](./2026-10-01/monologue-view-presenter-plan.md)
+- **2026-10-01** — UI 폴더에 독백·안내 패널 View/Presenter 빈 스크립트 생성: [UI 스크립트 틀 생성](./2026-10-01/ui-panel-script-stubs.md)
+- **2026-10-01** — 튜토리얼 안내 패널의 MVP 역할과 단계 완료 책임 검토: [튜토리얼 패널 MVP 구조 검토](./2026-10-01/tutorial-panel-mvp-review.md)
+- **2026-10-01** — 플레이어 독백 이벤트 흐름과 대사 저장 위치 검토: [플레이어 독백 구조 검토](./2026-10-01/player-monologue-architecture-review.md)
+- **2026-10-01** — 개인 Test Canvas HUD 위치 커밋과 해상도 의존 배치 확인: [Canvas HUD 위치 커밋 확인](./2026-10-01/canvas-hud-position-commit-check.md)
+- **2026-10-01** — 빌드 씬 목록을 변경한 커밋의 작성자와 현재 브랜치 상태 확인: [빌드 씬 커밋 확인](./2026-10-01/build-scene-list-commit-check.md)
 - **2026-09-29** — 작업자 김성준 표기로 작업 기록 문서와 목차 변경 커밋: [문서 커밋 기록](./2026-09-29/docs-changes-commit.md)
 - **2026-09-29** — 문서 추가와 목차 갱신을 요약하는 커밋 메시지 작성: [문서 변경 커밋 메시지](./2026-09-29/docs-changes-commit-message.md)
 - **2026-09-29** — 작업자 김성준 표기로 스크립트 변경만 3개 커밋 생성: [스크립트 분리 커밋](./2026-09-29/script-changes-split-commits.md)
