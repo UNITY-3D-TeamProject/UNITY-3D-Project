@@ -215,7 +215,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 36561869}
-  - component: {fileID: 36561870}
   m_Layer: 0
   m_Name: Tunnel
   m_TagString: Untagged
@@ -243,21 +242,6 @@ Transform:
   - {fileID: 127636846}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &36561870
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 36561867}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ba0a6e57bc74cf41966fe00cad38de0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Project.Test.FastRotateY
-  _rotationSpeed: 0
-  _rotationX: 0
-  _rotationZ: 0
 --- !u!1001 &50673082
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -422,29 +406,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 72727126}
-  - component: {fileID: 72727125}
+  - component: {fileID: 72727127}
   m_Layer: 0
   m_Name: Rotation
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &72727125
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 72727124}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ba0a6e57bc74cf41966fe00cad38de0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Project.Test.FastRotateY
-  _rotationSpeed: 20
-  _rotationX: 0
-  _rotationZ: 0
+  m_IsActive: 1
 --- !u!4 &72727126
 Transform:
   m_ObjectHideFlags: 0
@@ -468,6 +437,20 @@ Transform:
   - {fileID: 554626781}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &72727127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 72727124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9a1ed71039a8b547947237bc3595048, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Common.SelfSpinner
+  _axis: {x: 0, y: 1, z: 0}
+  _degreesPerSecond: 20
 --- !u!1001 &76632352
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -640,7 +623,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1931330679601746, guid: 11d8077e2d9cb464e9d8486566a851a5, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 148126355}
+      addedObject: {fileID: 148126357}
   m_SourcePrefab: {fileID: 100100000, guid: 11d8077e2d9cb464e9d8486566a851a5, type: 3}
 --- !u!1001 &93007393
 PrefabInstance:
@@ -929,7 +912,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1931330679601746, guid: 11d8077e2d9cb464e9d8486566a851a5, type: 3}
   m_PrefabInstance: {fileID: 88652080}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &148126355
+--- !u!4 &148126356 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4762683593043876, guid: 11d8077e2d9cb464e9d8486566a851a5, type: 3}
+  m_PrefabInstance: {fileID: 88652080}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &148126357
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -938,15 +926,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 148126354}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a71211b4bce0954e8c36b39435f56c8, type: 3}
+  m_Script: {fileID: 11500000, guid: f9a1ed71039a8b547947237bc3595048, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Project.Test.FastRotateZ
-  _rotationSpeed: -20
---- !u!4 &148126356 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4762683593043876, guid: 11d8077e2d9cb464e9d8486566a851a5, type: 3}
-  m_PrefabInstance: {fileID: 88652080}
-  m_PrefabAsset: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Common.SelfSpinner
+  _axis: {x: 0, y: 0, z: 1}
+  _degreesPerSecond: -20
 --- !u!4 &186116603 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4431867822504610, guid: 5d3ab7f71117ab949b769b6541f0b339, type: 3}
@@ -1195,7 +1179,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &250265620
 Transform:
   m_ObjectHideFlags: 0
@@ -1379,7 +1363,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1931330679601746, guid: 11d8077e2d9cb464e9d8486566a851a5, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 901501702}
+      addedObject: {fileID: 901501704}
   m_SourcePrefab: {fileID: 100100000, guid: 11d8077e2d9cb464e9d8486566a851a5, type: 3}
 --- !u!4 &341438293 stripped
 Transform:
@@ -1915,7 +1899,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1650256952041124, guid: 0fafb1450aa63ce469d1b0dde39971c1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2007890487}
+      addedObject: {fileID: 2007890491}
   m_SourcePrefab: {fileID: 100100000, guid: 0fafb1450aa63ce469d1b0dde39971c1, type: 3}
 --- !u!1001 &476475755
 PrefabInstance:
@@ -3465,14 +3449,19 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1391373417113574, guid: a279d9ca726ccb34a923266d9c5f9987, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1368267706}
+      addedObject: {fileID: 1368267710}
   m_SourcePrefab: {fileID: 100100000, guid: a279d9ca726ccb34a923266d9c5f9987, type: 3}
 --- !u!1 &901501701 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1931330679601746, guid: 11d8077e2d9cb464e9d8486566a851a5, type: 3}
   m_PrefabInstance: {fileID: 296979716}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &901501702
+--- !u!4 &901501703 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4762683593043876, guid: 11d8077e2d9cb464e9d8486566a851a5, type: 3}
+  m_PrefabInstance: {fileID: 296979716}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &901501704
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3481,15 +3470,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 901501701}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a71211b4bce0954e8c36b39435f56c8, type: 3}
+  m_Script: {fileID: 11500000, guid: f9a1ed71039a8b547947237bc3595048, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Project.Test.FastRotateZ
-  _rotationSpeed: -20
---- !u!4 &901501703 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4762683593043876, guid: 11d8077e2d9cb464e9d8486566a851a5, type: 3}
-  m_PrefabInstance: {fileID: 296979716}
-  m_PrefabAsset: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Common.SelfSpinner
+  _axis: {x: 0, y: 0, z: 1}
+  _degreesPerSecond: -20
 --- !u!4 &905983686 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4431867822504610, guid: 5d3ab7f71117ab949b769b6541f0b339, type: 3}
@@ -4743,7 +4728,7 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4076457533959554, guid: a279d9ca726ccb34a923266d9c5f9987, type: 3}
   m_PrefabInstance: {fileID: 888118612}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1368267706
+--- !u!114 &1368267710
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4752,12 +4737,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1368267700}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b25a91c29953d349b1bcc6f2a4061f1, type: 3}
+  m_Script: {fileID: 11500000, guid: f9a1ed71039a8b547947237bc3595048, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Project.Test.FastRotateX
-  _rotationSpeed: 20
-  _rotationY: -90
-  _rotationZ: -90
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Common.SelfSpinner
+  _axis: {x: 0, y: 1, z: 0}
+  _degreesPerSecond: 20
 --- !u!4 &1371744138 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4431867822504610, guid: 5d3ab7f71117ab949b769b6541f0b339, type: 3}
@@ -6477,7 +6461,7 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4988443623280750, guid: 0fafb1450aa63ce469d1b0dde39971c1, type: 3}
   m_PrefabInstance: {fileID: 468513409}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2007890487
+--- !u!114 &2007890491
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6486,12 +6470,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2007890481}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b25a91c29953d349b1bcc6f2a4061f1, type: 3}
+  m_Script: {fileID: 11500000, guid: f9a1ed71039a8b547947237bc3595048, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Project.Test.FastRotateX
-  _rotationSpeed: 20
-  _rotationY: 90
-  _rotationZ: -90
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Common.SelfSpinner
+  _axis: {x: 0, y: 1, z: 0}
+  _degreesPerSecond: 20
 --- !u!1001 &2054049491
 PrefabInstance:
   m_ObjectHideFlags: 0

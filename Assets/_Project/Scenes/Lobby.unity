@@ -3979,6 +3979,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1868077915973288, guid: e9a4f67b7f329ca4abf5de824f66db82, type: 3}
       insertIndex: -1
       addedObject: {fileID: 855715058}
+    - targetCorrespondingSourceObject: {fileID: 1868077915973288, guid: e9a4f67b7f329ca4abf5de824f66db82, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 855715059}
   m_SourcePrefab: {fileID: 100100000, guid: e9a4f67b7f329ca4abf5de824f66db82, type: 3}
 --- !u!4 &107258141 stripped
 Transform:
@@ -31232,6 +31235,18 @@ MonoBehaviour:
   _waypoints:
   - {fileID: 2067886723}
   - {fileID: 2130977525}
+--- !u!114 &855715059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 855715051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30e5beee8bce1ec4c81588fb5a2b3e83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movement.TransformMotor
 --- !u!1001 &858377016
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37624,7 +37639,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e2c2ac52136fa4eb5d43dbcd108269, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Project.Test.Billboard
-  _target: {fileID: 1554961997}
+  _target: {fileID: 0}
   _shouldLockPitch: 0
   _shouldReverseFace: 0
 --- !u!1001 &1045069719
@@ -41144,7 +41159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e2c2ac52136fa4eb5d43dbcd108269, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Project.Test.Billboard
-  _target: {fileID: 1554961997}
+  _target: {fileID: 0}
   _shouldLockPitch: 0
   _shouldReverseFace: 0
 --- !u!1001 &1139593127
@@ -43261,7 +43276,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e2c2ac52136fa4eb5d43dbcd108269, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Project.Test.Billboard
-  _target: {fileID: 1554961997}
+  _target: {fileID: 0}
   _shouldLockPitch: 0
   _shouldReverseFace: 0
 --- !u!1001 &1206152699
@@ -51367,63 +51382,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4094620560865620, guid: 5a3418dd159d8ef46a8c8d04842c5fe4, type: 3}
   m_PrefabInstance: {fileID: 1442215795}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &1442527140
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2647074863589646664, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
-      propertyPath: m_Name
-      value: Player (No Override)
-      objectReference: {fileID: 0}
-    - target: {fileID: 5524787967823675965, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -34.49
-      objectReference: {fileID: 0}
-    - target: {fileID: 5524787967823675965, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 17.66
-      objectReference: {fileID: 0}
-    - target: {fileID: 5524787967823675965, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 93.61
-      objectReference: {fileID: 0}
-    - target: {fileID: 5524787967823675965, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5524787967823675965, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5524787967823675965, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5524787967823675965, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5524787967823675965, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5524787967823675965, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
-      objectReference: {fileID: 0}
-    - target: {fileID: 5524787967823675965, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
 --- !u!1001 &1443815145
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -52785,7 +52743,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e2c2ac52136fa4eb5d43dbcd108269, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Project.Test.Billboard
-  _target: {fileID: 1554961997}
+  _target: {fileID: 0}
   _shouldLockPitch: 0
   _shouldReverseFace: 0
 --- !u!1001 &1482442283
@@ -55150,11 +55108,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4712475898776088, guid: 8feb2335a05b64642a1d35a6a73cb21c, type: 3}
   m_PrefabInstance: {fileID: 1552955454}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &1554961997 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5524787967823675965, guid: fa51bfb5a3c4ea742a65f4af143cd4c3, type: 3}
-  m_PrefabInstance: {fileID: 1442527140}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1556109362
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -55359,7 +55312,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e2c2ac52136fa4eb5d43dbcd108269, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Project.Test.Billboard
-  _target: {fileID: 1554961997}
+  _target: {fileID: 0}
   _shouldLockPitch: 0
   _shouldReverseFace: 0
 --- !u!1001 &1562784307
@@ -74883,7 +74836,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e2c2ac52136fa4eb5d43dbcd108269, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Project.Test.Billboard
-  _target: {fileID: 1554961997}
+  _target: {fileID: 0}
   _shouldLockPitch: 0
   _shouldReverseFace: 0
 --- !u!1001 &2074514570
@@ -77365,7 +77318,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e2c2ac52136fa4eb5d43dbcd108269, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Project.Test.Billboard
-  _target: {fileID: 1554961997}
+  _target: {fileID: 0}
   _shouldLockPitch: 0
   _shouldReverseFace: 0
 --- !u!4 &2145759867 stripped
@@ -77384,7 +77337,6 @@ SceneRoots:
   - {fileID: 1646654912}
   - {fileID: 1035078528}
   - {fileID: 529946821}
-  - {fileID: 1442527140}
   - {fileID: 701031932}
   - {fileID: 1041982371}
   - {fileID: 1145083025}
