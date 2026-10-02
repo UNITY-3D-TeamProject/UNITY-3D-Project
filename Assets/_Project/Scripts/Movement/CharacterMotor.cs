@@ -87,10 +87,12 @@ namespace Movement
             }
         }
 
-        private void FixedUpdate()
+        //private void FixedUpdate()
+        private void Update()
         {
             ConsumeJumpRequest();
-            Move(Time.fixedDeltaTime);
+            Move(Time.deltaTime);
+            //Move(Time.fixedDeltaTime);
         }
         #endregion
 
