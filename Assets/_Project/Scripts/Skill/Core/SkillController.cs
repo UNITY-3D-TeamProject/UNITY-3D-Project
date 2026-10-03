@@ -125,6 +125,18 @@ namespace Skill.Core
 
             skill.Stop();
         }
+
+        /// <summary>
+        /// 등록된 모든 스킬의 진행 중인 동작을 중지한다.
+        /// </summary>
+        public void StopAllSkills()
+        {
+            foreach (KeyValuePair<string, SkillBase> skillPair in _skills)
+            {
+                SkillBase skill = skillPair.Value;
+                if (skill) skill.Stop();
+            }
+        }
         #endregion
 
         #region Private Methods

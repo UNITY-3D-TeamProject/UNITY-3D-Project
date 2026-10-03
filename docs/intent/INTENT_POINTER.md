@@ -14,6 +14,10 @@
 
 ## 해결됨 (Resolved)
 <!-- 형식: - **[파트]** 문제 한 줄 요약 → [문서](./clear/intent-NNN-slug.md) (resolved: YYYY-MM-DD) -->
+- **[Scene Test]** 박스 접촉으로 Home/Lobby 씬 전환 테스트 → [문서](../HANDOVER/SungJun/2026-09-26/intent-008-test-scene-transition-box.md) (resolved: 2026-09-26)
+- **[UI]** 플레이어 Attribute를 표시할 HUD MVP 기반이 없음 → [문서](./clear/intent-006-player-hud-mvp-foundation.md) (resolved: 2026-09-25)
+- **[Stage System]** 앱별 `StageBase` 구현체가 없음 → [문서](./clear/intent-005-stage-implementations.md) (resolved: 2026-09-24)
+- **[Stage System]** 앱별 스테이지와 내부 Phase를 위한 공통 코어 타입 부재 → [문서](./clear/intent-004-stage-core-foundation.md) (resolved: 2026-09-24)
 - **[Movement System]** 이동 시스템 공용 코어(CharacterMotor/WaypointMover) 부재 → [문서](./clear/intent-001-movement-system-core.md) (resolved: 2026-09-11)
 - **[Combat]** 전투 컴포넌트 통신 채널 부재 → [문서](./clear/intent-004-combat-component-channel.md) (resolved: 2026-09-20)
 - **[Combat]** asmdef 부재로 자동 단위 테스트 불가(수동 테스트뿐) → [문서](./clear/intent-006-combat-unit-testing.md) (resolved: 2026-09-21)
