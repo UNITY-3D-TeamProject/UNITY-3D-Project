@@ -64,8 +64,11 @@ namespace Hit
                 if (target == null || target == cursor) continue;
                 if (!target.IsValidTarget(hitEffect.TargetAttribute)) continue;
                 if (!appliedTargets.Add(target)) continue;
-
+                
+                // Hp 증가 감소 확인용 디버그
+                float before = target.GetValue(hitEffect.TargetAttribute);
                 hitEffect.Apply(target, cursor);
+                Debug.Log($"[MeleeHit] {other.name} 피격: {hitEffect.TargetAttribute} {before} → {target.GetValue(hitEffect.TargetAttribute)}");
             }
         }
         #endregion
