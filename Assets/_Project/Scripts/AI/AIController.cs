@@ -46,10 +46,6 @@ namespace AI
         [Header("Patrol")]
         [Tooltip("스폰 지점 기준 순찰 반경(m).")]
         [SerializeField] private float _patrolRadius = 10.0f;
-
-        [Header("Attack")]
-        [Tooltip("공격할 때 요청할 스킬 이름. 이 캐릭터의 SkillController 에 등록된 스킬의 SkillName 과 같아야 한다.")]
-        [SerializeField] private string _attackSkillName;
         #endregion
 
         #region Private Fields
@@ -327,6 +323,7 @@ namespace AI
         /// <summary>
         /// 보이는 대상을 바라보며 공격 스킬을 한 번 요청한다. 보이는 대상이 없으면 무시한다.
         /// 실제 발동 여부와 간격은 스킬의 조건·코스트가 정하므로 매 틱 호출해도 된다.
+        /// 이 캐릭터의 SkillController 에 SkillName 이 "Attack" 인 스킬이 등록되어 있어야 한다.
         /// </summary>
         public void Attack()
         {
@@ -335,9 +332,9 @@ namespace AI
             Vector3 toTarget = VisibleTarget.position - _body.position;
             RequestRotate(new Vector2(toTarget.x, toTarget.z));
 
-            _requestExecuteSkill?.Invoke(_attackSkillName);
+            _requestExecuteSkill?.Invoke("Attack");
             // 누르고 있는 동안 반복되는 스킬(연사 등)이어도 한 번만 발동하도록 바로 뗀다
-            _requestStopSkill?.Invoke(_attackSkillName);
+            _requestStopSkill?.Invoke("Attack");
         }
 
         /// <summary>
