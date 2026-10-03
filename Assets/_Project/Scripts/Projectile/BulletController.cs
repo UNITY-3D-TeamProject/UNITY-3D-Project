@@ -51,15 +51,21 @@ namespace Projectile
             }
 
             float stepDistance = Mathf.Max(0.0f, _speed) * Time.deltaTime;
-
-            if (TryFindHit(stepDistance, out RaycastHit hit))
-            {
-                ApplyHitEffect(hit.collider);
-                Destroy(gameObject);
-                return;
-            }
-
             _motor.MoveTo(transform.position + _direction * stepDistance, _speed);
+        }
+
+        /// <summary>
+        /// 다른 콜라이더와 겹치면 호출된다.
+        /// 피격 레이어에 속한 대상이면 효과를 적용하고 총알을 소멸시킨다.
+        /// </summary>
+        private void OnTriggerEnter(Collider other)
+        {
+            // other의 레이어가 _hitLayers에 포함되는지 검사
+            if ((_hitLayers.value & (1 << other.gameObject.layer)) == 0)
+                return;
+
+            ApplyHitEffect(other);
+            Destroy(gameObject);
         }
         #endregion
 
@@ -79,44 +85,6 @@ namespace Projectile
         #endregion
 
         #region Private Methods
-        /// <summary>
-        /// 이번 프레임 이동 구간에서 가장 가까운 유효 피격 대상을 찾는다.
-        /// </summary>
-        /// <param name="distance">이번 프레임 이동 거리</param>
-        /// <param name="closestHit">가장 가까운 피격 정보</param>
-        /// <returns>피격 대상이 있으면 true</returns>
-        private bool TryFindHit(float distance, out RaycastHit closestHit)
-        {
-            closestHit = default;
-
-            Vector3 origin = transform.TransformPoint(_sphereCollider.center);
-            Vector3 scale = transform.lossyScale;
-            float radius = _sphereCollider.radius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
-
-            RaycastHit[] hits = Physics.SphereCastAll(
-                origin,
-                radius,
-                _direction,
-                distance,
-                _hitLayers,
-                QueryTriggerInteraction.Ignore);
-
-            bool hasHit = false;
-            foreach (RaycastHit hit in hits)
-            {
-                // 총알 자신의 콜라이더는 제외
-                if (hit.collider == _sphereCollider) continue;
-
-                if (!hasHit || hit.distance < closestHit.distance)
-                {
-                    closestHit = hit;
-                    hasHit = true;
-                }
-            }
-
-            return hasHit;
-        }
-
         /// <summary>
         /// 피격 대상에서 IEffectTarget 을 찾아 효과를 적용한다.
         /// 대상이 없거나 효과의 대상 어트리뷰트를 갖지 않으면 적용하지 않는다.
