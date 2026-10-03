@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-03** — Unity 컬링 적용 방법 조사 및 안내: [컬링 적용 안내](./2026-10-03/culling-guidance.md)
 - **2026-10-03** — intent 공용 목차의 병합 충돌을 정리하고 SungJun 폴더의 중복 목차를 통합: [Intent 목차 병합 충돌 정리](./2026-10-03/intent-pointer-merge-resolution.md)
 - **2026-10-02** — 현재 작업 트리 변경사항의 커밋 메시지 분류: [커밋 메시지 검토](./2026-10-02/commit-message-review.md)
 - **2026-10-01** — 독백 View/Presenter 최소 구현 책임과 순서 검토: [독백 UI 최소 구현 계획](./2026-10-01/monologue-view-presenter-plan.md)
