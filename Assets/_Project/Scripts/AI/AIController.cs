@@ -66,8 +66,8 @@ namespace AI
         private event Action<Vector2> _onMoveRequested;
         private event Action _onJumpRequested;
         private event Action<Vector2> _onBodyRotateRequested;
-        private event ISkillRequestController.RequestExecuteSkillDelegate _requestExecuteSkill;
-        private event ISkillRequestController.RequestStopSkillDelegate _requestStopSkill;
+        private event Action<string> _requestExecuteSkill;
+        private event Action<string> _requestStopSkill;
         #endregion
 
         #region Properties
@@ -246,7 +246,7 @@ namespace AI
 
         #region ISkillRequestController
         /// <inheritdoc />
-        public void SetRequestExecuteSkill(ISkillRequestController.RequestExecuteSkillDelegate requestExecuteSkill)
+        public void SetRequestExecuteSkill(Action<string> requestExecuteSkill)
         {
             if (requestExecuteSkill == null) return;
             _requestExecuteSkill = requestExecuteSkill;
@@ -259,7 +259,7 @@ namespace AI
         }
 
         /// <inheritdoc />
-        public void SetRequestStopSkill(ISkillRequestController.RequestStopSkillDelegate requestStopSkill)
+        public void SetRequestStopSkill(Action<string> requestStopSkill)
         {
             if (requestStopSkill == null) return;
             _requestStopSkill = requestStopSkill;
