@@ -64,7 +64,8 @@ namespace Hit
                 if (target == null || target == cursor) continue;
                 if (!target.IsValidTarget(hitEffect.TargetAttribute)) continue;
                 if (!appliedTargets.Add(target)) continue;
-                
+
+                hitEffect.Apply(target, cursor);
             }
         }
         #endregion
