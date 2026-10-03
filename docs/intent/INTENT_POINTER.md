@@ -11,6 +11,7 @@
 - **[Movement System]** Player_test 이동/점프 입력이 CharacterMotor까지 도달하지 않음(프리팹 참조 끊김 + 점프 명령/속도 미구현) → [문서](./intent-007-move-jump-not-reaching-motor.md)
 - **[Character]** 몸통 회전 채널 부재로 AI 시야 부채꼴이 스폰 시점 forward에 고정됨. `feature/Rotation` 브랜치가 팀원 Mediator 리팩터 PR 머지 후 `git reset`으로 이전 구현을 잃어 재작성 → [문서](./intent-009-body-rotation.md)
 - **[AI / Combat]** 적이 추격만 하고 공격하지 않음. 스킬(`EnemyMeleeAttack`) + 근접 판정 매개체 + BT 공격 가지로 구현, 코드 완료·에디터 배선(`[USER]`)과 Play 검증 남음 → [문서](./intent-010-enemy-melee-attack.md)
+- **[AI]** 시야 감지·해제가 즉시 일어나 등 뒤로 돌면 엉뚱한 곳을 수색함. 발견 게이지 + 놓친 뒤 유예(실제 위치 추적)를 도입, 코드 완료·Play 검증 남음 → [문서](./intent-011-sensor-awareness.md)
 
 ## 해결됨 (Resolved)
 <!-- 형식: - **[파트]** 문제 한 줄 요약 → [문서](./clear/intent-NNN-slug.md) (resolved: YYYY-MM-DD) -->

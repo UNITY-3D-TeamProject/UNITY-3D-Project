@@ -6,7 +6,9 @@ namespace AI
     /// 시야(거리 + 각도 + 차폐)로 대상을 감지하는 조종부 소속 자료원.
     /// 중재자가 관리하지 않으며, 조종부(AIController)만 이 컴포넌트를 참조한다.
     /// 출력은 "보이는가"(bool)가 아니라 대상 자체와 마지막 목격 위치다.
-    /// 시야를 잃어도 마지막 목격 위치는 남아 수색의 목적지로 쓰인다.
+    /// 시야에 머무는 동안 발견 게이지가 차야 대상이 확정되고(가까울수록 빨리 찬다),
+    /// 확정된 대상을 놓쳐도 유예 시간 동안은 실제 위치를 계속 추적한다.
+    /// 유예가 끝나도 마지막 목격 위치는 남아 수색의 목적지로 쓰인다.
     /// </summary>
     public class Sensor : MonoBehaviour
     {
@@ -26,6 +28,16 @@ namespace AI
         [Range(0.0f, 360.0f)]
         [SerializeField] private float _sightAngle = 90.0f;
 
+        [Header("Awareness")]
+        [Tooltip("대상이 바로 앞에 있을 때 발견 게이지가 가득 차는 시간(초).")]
+        [SerializeField] private float _detectTimeNear = 0.2f;
+        [Tooltip("대상이 시야 거리 끝에 있을 때 발견 게이지가 가득 차는 시간(초).")]
+        [SerializeField] private float _detectTimeFar = 1.5f;
+        [Tooltip("대상이 보이지 않을 때 가득 찬 발견 게이지가 0 까지 빠지는 시간(초).")]
+        [SerializeField] private float _awarenessDecayTime = 2.0f;
+        [Tooltip("확정된 대상을 놓친 뒤에도 실제 위치를 계속 추적하는 유예 시간(초).")]
+        [SerializeField] private float _loseGraceTime = 3.0f;
+
         [Header("Layers")]
         [Tooltip("감지 대상 레이어 (Player 등).")]
         [SerializeField] private LayerMask _targetLayers;
@@ -43,13 +55,15 @@ namespace AI
         private Vector3 _lastKnownPosition;
         private bool _hasLastKnownPosition;
         private float _detectTimer;
+        private float _awareness;
+        private float _graceTimer;
         #endregion
 
         #region Properties
-        /// <summary>현재 보이는 대상. 보이지 않으면 null.</summary>
+        /// <summary>발견이 확정된 대상. 놓친 뒤 유예 시간 동안에도 유지된다. 없으면 null.</summary>
         public Transform CurrentTarget => _currentTarget;
 
-        /// <summary>현재 보이는 대상이 있는지 여부.</summary>
+        /// <summary>발견이 확정된 대상이 있는지 여부.</summary>
         public bool HasTarget => _currentTarget != null;
 
         /// <summary>대상을 마지막으로 본 위치. 시야를 잃어도 유지된다.</summary>
@@ -108,11 +122,12 @@ namespace AI
 
         #region Private Methods
         /// <summary>
-        /// 시야 범위 안의 대상 중 각도와 차폐 검사를 모두 통과한 가장 가까운 것을 찾는다.
+        /// 시야 범위 안의 대상 중 각도와 차폐 검사를 모두 통과한 가장 가까운 것을 찾아
+        /// 발견 게이지와 놓친 뒤 유예 시간을 갱신한다.
         /// </summary>
         private void Detect()
         {
-            _currentTarget = null;
+            Transform seenTarget = null;
 
             Vector3 eyePosition = _eye.position;
             int hitCount = Physics.OverlapSphereNonAlloc(
@@ -139,14 +154,37 @@ namespace AI
                 if (sqrDistance >= nearestSqrDistance) continue;
 
                 nearestSqrDistance = sqrDistance;
-                _currentTarget = hit.transform;
+                seenTarget = hit.transform;
             }
 
-            if (_currentTarget)
+            if (seenTarget)
             {
-                _lastKnownPosition = _currentTarget.position;
-                _hasLastKnownPosition = true;
+                // 가까울수록 게이지가 빨리 찬다
+                float distanceRatio = Mathf.Sqrt(nearestSqrDistance) / _sightRange;
+                float fillTime = Mathf.Lerp(_detectTimeNear, _detectTimeFar, distanceRatio);
+                _awareness = Mathf.Min(1.0f, _awareness + (_detectInterval / Mathf.Max(fillTime, Mathf.Epsilon)));
+
+                if (_awareness >= 1.0f)
+                {
+                    _currentTarget = seenTarget;
+                    _graceTimer = _loseGraceTime;
+                    _lastKnownPosition = _currentTarget.position;
+                    _hasLastKnownPosition = true;
+                }
+                return;
             }
+
+            // 확정된 대상을 놓쳐도 유예 시간 동안은 실제 위치를 계속 추적한다
+            if (_currentTarget && (_graceTimer > 0.0f))
+            {
+                _graceTimer -= _detectInterval;
+                _lastKnownPosition = _currentTarget.position;
+                return;
+            }
+
+            // 유예가 끝나면 놓친다. 마지막 목격 위치는 남아 수색이 이어받는다
+            _currentTarget = null;
+            _awareness = Mathf.Max(0.0f, _awareness - (_detectInterval / Mathf.Max(_awarenessDecayTime, Mathf.Epsilon)));
         }
 
         /// <summary>
