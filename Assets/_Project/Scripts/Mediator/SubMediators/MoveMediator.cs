@@ -88,7 +88,18 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 카메라가 보는 수평 방향으로 구르기를 RollMover 에 요청한다.
+        /// 카메라가 보는 방향을 수평면에 투영한 앞 방향을 반환한다.
+        /// </summary>
+        /// <returns>정규화된 수평 앞 방향. MoveDirectionCalculator 가 없으면 Vector3.zero</returns>
+        public Vector3 GetViewDirection()
+        {
+            if (!_moveDirectionCalculator) return Vector3.zero;
+
+            return _moveDirectionCalculator.ViewDirection;
+        }
+
+        /// <summary>
+        /// 이동 입력 방향으로 구르기를 RollMover 에 요청한다. 입력이 없으면 카메라가 보는 수평 방향으로 구른다.
         /// 구르는 동안에는 이동/점프 입력이 모터에 전달되지 않는다.
         /// </summary>
         /// <param name="distance">이동 거리</param>
@@ -98,7 +109,12 @@ namespace Mediator.SubMediators
             if (!_rollMover || !_moveDirectionCalculator) return;
             if (_rollMover.IsRolling) return;
             
-            _rollMover.Roll(_moveDirectionCalculator.ViewDirection, distance, duration);
+            // 이동 입력이 있으면 그 방향, 없으면 카메라 앞 방향
+            Vector3 direction = (_lastDirection.sqrMagnitude > 0.0001f)
+                ? _lastDirection
+                : _moveDirectionCalculator.ViewDirection;
+
+            _rollMover.Roll(direction, distance, duration);
         }
         #endregion
 

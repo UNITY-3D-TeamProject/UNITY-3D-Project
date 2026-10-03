@@ -8,12 +8,9 @@ namespace Mediator.SubMediators
 {
     public interface ISkillRequestController
     {
-        public delegate bool RequestExecuteSkillDelegate(string skillName);
-        public delegate void RequestStopSkillDelegate(string skillName);
-
-        public void SetRequestExecuteSkill(RequestExecuteSkillDelegate requestExecuteSkill);
+        public void SetRequestExecuteSkill(Action<string> requestExecuteSkill);
         public void ClearRequestExecuteSkill();
-        public void SetRequestStopSkill(RequestStopSkillDelegate requestStopSkill);
+        public void SetRequestStopSkill(Action<string> requestStopSkill);
         public void ClearRequestStopSkill();
     }
     
@@ -37,6 +34,9 @@ namespace Mediator.SubMediators
 
         /// <summary>구르기 요청. (이동 거리, 이동 시간)</summary>
         public event Action<float, float> OnRollRequested;
+
+        /// <summary>사격 요청. (총알 생성 위치)</summary>
+        public event Action<Vector3> OnFireRequested;
         #endregion
 
         #region Unity Lifecycle
@@ -56,6 +56,8 @@ namespace Mediator.SubMediators
 
         private void OnDisable()
         {
+            // Stop 요청 경로가 끊기기 전에 진행 중인 지속형 스킬(연사 등)을 멈춘다
+            if (_skillController) _skillController.StopAllSkills();
             UnBindRequest();
         }
         #endregion
@@ -78,7 +80,7 @@ namespace Mediator.SubMediators
         {
             if (_skillController == null || _skillRequestController == null) return;
 
-            _skillRequestController.SetRequestExecuteSkill(_skillController.TryExecuteSkill);
+            _skillRequestController.SetRequestExecuteSkill(skillName => _skillController.TryExecuteSkill(skillName));
             _skillRequestController.SetRequestStopSkill(_skillController.StopSkill);
             _skillController.SetGetAttribute(key => AttributeGetter?.Invoke(key) ?? 0.0f);
             _skillController.SetRequestPay(OnRequestPay);
@@ -118,6 +120,9 @@ namespace Mediator.SubMediators
             {
                 case Roll roll:
                     OnRollRequested?.Invoke(roll.Distance, roll.Duration);
+                    break;
+                case Fire fire:
+                    OnFireRequested?.Invoke(fire.FirePosition);
                     break;
             }
         }
