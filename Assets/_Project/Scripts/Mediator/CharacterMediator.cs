@@ -118,6 +118,17 @@ namespace Mediator
             _attributeSet.SetValue(key, current - amount);
             return true;
         }
+
+        private void OnHitCallback()
+        {
+            Debug.Log($"{name} is hit!");
+        }
+
+        private void OnDeathCallback()
+        {
+            Debug.Log($"{name} is Death!");
+            Destroy(gameObject);
+        }
         /// <summary>
         /// 중재자 이벤트 구독
         /// </summary>
@@ -127,6 +138,8 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnPayRequested += PayAttribute;
             if (_skillMediator && _moveMediator) _skillMediator.OnRollRequested += _moveMediator.CommandRoll;
             if (_skillMediator && _spawnMediator) _skillMediator.OnFireRequested += _spawnMediator.CommandSpawnBullet;
+            if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
+            if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -137,6 +150,8 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnPayRequested -= PayAttribute;
             if (_skillMediator && _moveMediator) _skillMediator.OnRollRequested -= _moveMediator.CommandRoll;
             if (_skillMediator && _spawnMediator) _skillMediator.OnFireRequested -= _spawnMediator.CommandSpawnBullet;
+            if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
+            if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
         }
         #endregion
     }
