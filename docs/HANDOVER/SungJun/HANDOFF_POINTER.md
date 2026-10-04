@@ -5,6 +5,11 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-05** — 새 intent 문서를 SungJun 폴더로 모으고 현재 작업 트리의 커밋 메시지 분류: [문서 위치 및 커밋 메시지 정리](./2026-10-05/commit-messages-and-intent-move.md)
+- **2026-10-04** — 몬스터 Init Data Missing 참조 원인과 재설정 방법 확인: [몬스터 Init Data 누락 참조 확인](./2026-10-04/monster-init-data-missing-reference.md)
+- **2026-10-04** — MonsterSpawner 기본 생성과 SpawnerBase 공통 처리 추가: [몬스터 스포너 기본 생성](./2026-10-04/monster-spawner-foundation.md)
+- **2026-10-04** — 스폰 후 카메라가 보이지 않는 원인을 씬별 Camera/Cinemachine 구성과 대조: [스폰 카메라 진단](./2026-10-04/player-spawn-camera-diagnosis.md)
+- **2026-10-04** — PlayerSpawner가 생성된 플레이어의 자식에서 AttributeSet을 찾도록 수정: [플레이어 자식 AttributeSet 조회](./2026-10-04/player-spawner-child-attribute-set.md)
 - **2026-10-04** — 개인 intent 문서 위치 정리 및 현재 변경사항의 커밋 분리안 작성: [커밋 분리 및 intent 정리](./2026-10-04/commit-split-and-intent-location.md)
 - **2026-10-04** — 테스트 박스가 저장만 하고 SpawnReason을 변경하지 않아 다음 스폰에서 복원 대신 초기화하는 원인 확인: [테스트 씬 상태 복원 진단](./2026-10-04/test-scene-player-state-restore-diagnosis.md)
 - **2026-10-04** — 스폰→HUD 세 게이지 연결 확인, 저장된 테스트 씬의 초기화 Effect 미연결 확인: [스폰·HUD 연동 검토](./2026-10-04/player-spawn-hud-integration-review.md)

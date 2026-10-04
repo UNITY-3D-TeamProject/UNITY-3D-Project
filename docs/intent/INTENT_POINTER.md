@@ -15,6 +15,7 @@
 
 ## 해결됨 (Resolved)
 <!-- 형식: - **[파트]** 문제 한 줄 요약 → [문서](./clear/intent-NNN-slug.md) (resolved: YYYY-MM-DD) -->
+- **[Monster Spawner]** 몬스터 프리팹 생성과 시작 능력치 설정 기반 부재 → [문서](../HANDOVER/SungJun/intent/intent-012-monster-spawner-foundation.md) (resolved: 2026-10-04)
 - **[Scene Test]** 박스 접촉으로 Home/Lobby 씬 전환 테스트 → [문서](../HANDOVER/SungJun/2026-09-26/intent-008-test-scene-transition-box.md) (resolved: 2026-09-26)
 - **[UI]** 플레이어 Attribute를 표시할 HUD MVP 기반이 없음 → [문서](./clear/intent-006-player-hud-mvp-foundation.md) (resolved: 2026-09-25)
 - **[Stage System]** 앱별 `StageBase` 구현체가 없음 → [문서](./clear/intent-005-stage-implementations.md) (resolved: 2026-09-24)
