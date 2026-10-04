@@ -55,6 +55,9 @@ namespace Mediator.SubMediators
         protected override void Awake()
         {
             base.Awake();
+            ResolveComponent(ref _motor);
+            ResolveComponent(ref _moveDirectionCalculator);
+            ResolveComponent(ref _rollMover);
             MoveController = GetComponentInParent<IMoveController>();
         }
 

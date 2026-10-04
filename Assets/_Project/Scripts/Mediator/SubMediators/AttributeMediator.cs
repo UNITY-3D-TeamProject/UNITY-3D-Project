@@ -25,6 +25,12 @@ namespace Mediator.SubMediators
         #endregion
 
         #region Unity Lifecycle
+        protected override void Awake()
+        {
+            base.Awake();
+            ResolveComponent(ref _attributeSet);
+        }
+
         protected override void OnEnable()
         {
             if (_attributeSet) _attributeSet.AddOnAttributeChangedCallback(RelayAttributeChanged);

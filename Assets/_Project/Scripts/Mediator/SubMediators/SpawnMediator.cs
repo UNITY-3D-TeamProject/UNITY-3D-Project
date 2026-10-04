@@ -23,6 +23,14 @@ namespace Mediator.SubMediators
         private IEffectTarget _effectCursor;
         #endregion
 
+        #region Unity Lifecycle
+        protected override void Awake()
+        {
+            base.Awake();
+            ResolveComponent(ref _bulletFactory);
+        }
+        #endregion
+
         #region Public Methods
         /// <summary>
         /// 총알 발사 방향을 얻기 위한 델리게이트 주입

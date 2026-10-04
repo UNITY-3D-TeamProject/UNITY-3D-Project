@@ -78,6 +78,18 @@ namespace Mediator
         /// 속성값에 대한 초기화 진행
         /// </summary>
         protected abstract void InitValue();
+
+        /// <summary>
+        /// 참조가 지정되지 않았으면 같은 GameObject 에서 찾아 채운다. 찾지 못하면 로그를 남긴다.
+        /// </summary>
+        /// <param name="component">확인할 참조</param>
+        protected void ResolveComponent<T>(ref T component) where T : Component
+        {
+            if (component) return;
+            if (TryGetComponent(out component)) return;
+
+            Debug.LogWarning($"[{name}] {GetType().Name} : {typeof(T).Name} is not assigned and not found", this);
+        }
         #endregion
     }
 }
