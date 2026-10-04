@@ -332,12 +332,39 @@ namespace AI
         {
             if (!HasVisibleTarget) return;
 
-            Vector3 toTarget = VisibleTarget.position - _body.position;
-            RequestRotate(new Vector2(toTarget.x, toTarget.z));
+            FaceDirection(VisibleTarget.position - _body.position);
 
-            _requestExecuteSkill?.Invoke("Attack");
+            ExecuteSkill("Attack");
             // 누르고 있는 동안 반복되는 스킬(연사 등)이어도 한 번만 발동하도록 바로 뗀다
-            _requestStopSkill?.Invoke("Attack");
+            StopSkill("Attack");
+        }
+
+        /// <summary>
+        /// 몸통을 지정한 월드 방향으로 돌리도록 요청한다. 수직 성분은 무시한다.
+        /// </summary>
+        /// <param name="worldDirection">바라볼 월드 방향</param>
+        public void FaceDirection(Vector3 worldDirection)
+        {
+            RequestRotate(new Vector2(worldDirection.x, worldDirection.z));
+        }
+
+        /// <summary>
+        /// 지정한 이름의 스킬 발동을 요청한다. 자동으로 떼지 않으므로
+        /// 유지형 스킬(조준선 등)은 끝낼 때 StopSkill 을 호출해야 한다.
+        /// </summary>
+        /// <param name="skillName">발동할 스킬 이름</param>
+        public void ExecuteSkill(string skillName)
+        {
+            _requestExecuteSkill?.Invoke(skillName);
+        }
+
+        /// <summary>
+        /// 지정한 이름의 스킬 중지를 요청한다.
+        /// </summary>
+        /// <param name="skillName">중지할 스킬 이름</param>
+        public void StopSkill(string skillName)
+        {
+            _requestStopSkill?.Invoke(skillName);
         }
 
         /// <summary>
