@@ -12,7 +12,7 @@ namespace Mediator
     {
         #region Serialized Fields
         [Header("References")]
-        [SerializeField] private AttributeSet _attributeSet;
+        [SerializeField] private AttributeMediator _attributeMediator;
         [FormerlySerializedAs("moveMediator")]
         [SerializeField] private MoveMediator _moveMediator;
         [FormerlySerializedAs("cameraMediator")]
@@ -25,12 +25,15 @@ namespace Mediator
 
         #region Private Fields
         private MediatorBase[] _mediators;
+        // _attributeMediator 가 지정되지 않았을 때 직접 사용할 AttributeSet
+        private AttributeSet _attributeSet;
         #endregion
 
         #region Unity Lifecycle
         private void Awake()
         {
             _mediators = GetComponentsInChildren<MediatorBase>();
+            if (!_attributeMediator) _attributeSet = GetComponentInChildren<AttributeSet>();
         }
 
         private void OnEnable()
@@ -48,6 +51,7 @@ namespace Mediator
             Unsubscribe();
         }
         #endregion
+
         
         #region Private Methods
         /// <summary>
@@ -55,7 +59,15 @@ namespace Mediator
         /// </summary>
         private void BindCallbacks()
         {
-            if(_attributeSet)
+            if (_attributeMediator)
+            {
+                _attributeMediator.OnAttributeChanged += OnAttributeChangeCallback;
+                foreach (var mediator in _mediators)
+                {
+                    mediator.SetGetAttribute(_attributeMediator.GetValue);
+                }
+            }
+            else if (_attributeSet)
             {
                 _attributeSet.AddOnAttributeChangedCallback(OnAttributeChangeCallback);
                 foreach (var mediator in _mediators)
@@ -65,7 +77,8 @@ namespace Mediator
             }
             if (_spawnMediator)
             {
-                if (_attributeSet) _spawnMediator.SetEffectCursor(_attributeSet);
+                if (_attributeMediator) _spawnMediator.SetEffectCursor(_attributeMediator.EffectTarget);
+                else if (_attributeSet) _spawnMediator.SetEffectCursor(_attributeSet);
                 if (_moveMediator) _spawnMediator.SetGetFireDirection(_moveMediator.GetViewDirection);
             }
         }
@@ -74,7 +87,8 @@ namespace Mediator
         /// </summary>
         private void UnbindCallbacks()
         {
-            if(_attributeSet) _attributeSet.RemoveOnAttributeChangedCallback(OnAttributeChangeCallback);
+            if (_attributeMediator) _attributeMediator.OnAttributeChanged -= OnAttributeChangeCallback;
+            else if (_attributeSet) _attributeSet.RemoveOnAttributeChangedCallback(OnAttributeChangeCallback);
             foreach (var mediator in _mediators)
             {
                 mediator.ClearGetAttribute();
@@ -111,6 +125,14 @@ namespace Mediator
         /// <returns>지불에 성공했으면 true</returns>
         private bool PayAttribute(string key, float amount)
         {
+            if (_attributeMediator)
+            {
+                if (!_attributeMediator.IsValidTarget(key)) return false;
+
+                _attributeMediator.SetValue(key, amount);
+                return true;
+            }
+
             if (!_attributeSet || !_attributeSet.IsValidTarget(key)) return false;
 
             float current = _attributeSet.GetValue(key);
