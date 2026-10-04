@@ -1,4 +1,5 @@
 using Attribute.Core;
+using Attribute.Effect;
 using Core;
 using Core.Stage;
 using System;
@@ -8,8 +9,21 @@ using UnityEngine;
 public class PlayerSpawner : MonoBehaviour
 {
     [SerializeField]
+    // 플레이어 프리팹
     private GameObject _playerPrefab;
 
+    // PlayerEffects SO 배열
+    [SerializeField]
+    private SOAttributeEffect[] _playerEffects;
+
+
+    // 로비 씬에서만 체크한다.
+    [SerializeField] private bool _isLobbySpawner;
+
+    // 로비에서 스테이지 타입별 복귀 위치를 연결한다.
+    // 타입의 길이 0짜리 빈 배열을 반환한다.
+    [SerializeField]
+    private SLobbySpawnPoint[] _lobbySpawnPoints;
 
     // 직접 만든 구조체의 데이터를 Unity가 저장하고 인스펙터에서 편집할 수 있음
     [Serializable]
@@ -25,13 +39,9 @@ public class PlayerSpawner : MonoBehaviour
         public Transform Point => _point;
     }
 
-    // 로비 씬에서만 체크한다.
-    [SerializeField] private bool _isLobbySpawner;
 
-    // 로비에서 스테이지 타입별 복귀 위치를 연결한다.
-    // 타입의 길이 0짜리 빈 배열을 반환한다.
-    [SerializeField]
-    private SLobbySpawnPoint[] _lobbySpawnPoints;
+
+
 
     private void Start()
     {
@@ -78,8 +88,27 @@ public class PlayerSpawner : MonoBehaviour
             return;
         }
 
+        // 새 게임과 부활에서는 저장값 대신 Effect SO의 초기값을 사용한다.
+        bool shouldInitialize =
+            gameManager.SpawnReason == GameManager.EPlayerSpawnReason.NewGame ||
+            gameManager.SpawnReason == GameManager.EPlayerSpawnReason.Respawn;
+
+        if (shouldInitialize && _playerEffects != null)
+        {
+            foreach (SOAttributeEffect effect in _playerEffects)
+            {
+                if (effect == null)
+                {
+                    continue;
+                }
+
+                // Effect SO에 설정된 Float 값을 대상 어트리뷰트에 적용한다.
+                effect.Apply(_spawnedPlayerattributeSet);
+            }
+        }
+
         // GameManager 하나에만 알린다. UI도 모르고 PlayerState에서도 모른다. (GameManager가 모두 직접 알려준다.)
-        gameManager.RegisterPlayer(_spawnedPlayerattributeSet);
+        gameManager.CompletePlayerSpawn(_spawnedPlayerattributeSet);
 
         // 로비에서 생성·등록을 완료했을 때만 기록을 비운다.
         if (_isLobbySpawner)

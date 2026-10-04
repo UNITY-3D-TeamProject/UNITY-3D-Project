@@ -32,8 +32,8 @@ namespace UI
                 return;
             }
 
-            // 3. 앞으로 플레이어가 등록되면
-            //    HandlePlayerSpawned를 실행해 달라고 등록한다. HandlePlayerSpwned 함수는 => UI를 스폰된 플레이어와 동기화 시키는 함수
+            // 3. 앞으로 플레이어가 스폰되면 
+            // HandlePlayerSpawned를 실행해 달라고 등록한다. HandlePlayerSpwned 함수는 => UI를 스폰된 플레이어와 동기화 시키는 함수
             _gameManager.OnPlayerSpawned += HandlePlayerSpawned;
 
             // 4. UI가 켜지기 전에 이미 등록된 플레이어가 있다면

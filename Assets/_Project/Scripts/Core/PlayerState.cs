@@ -23,6 +23,10 @@ namespace Core
         public AttributeSet CurrentAttributeSet => _playerCurrentAttributeSet;
 
 
+        // 플레이어가 스폰할 때 넘겨줄 데이터가 존재하는지 존재 여부 조회 변수
+        public bool HasSavedAttributes => _playerAttributesForSaving.Count > 0;
+
+
         // GameManager에서 SO에셋 원본을 매개변수로 받아옴 (GameManager에서 new로 만들어서 갖고있고 초기화해줌)
         public PlayerState(SOAttributeData playerSOattributeData)
         {
@@ -36,28 +40,41 @@ namespace Core
         }
 
 
-        // 새 플레이어를 기억하고, 저장된 값을 플레이어에게 적용
+        // 현재 씬에서 사용할 플레이어 참조를 연결한다.
         // 매개변수는 PlayerSpawner가 방금 생성한 실제 플레이어의 AttributeSet 컴포넌트
-        public void RegisterPlayer(AttributeSet _spawnedPlayerattributeSet)
+        public void SetCurrentPlayer(AttributeSet spawnedAttributeSet)
         {
-            if (_spawnedPlayerattributeSet == null)
+            if (spawnedAttributeSet == null)
             {
                 Debug.LogError("플레이어의 AttributeSet이 없습니다.");
                 return;
             }
 
-            // 이 실제 플레이어 인스턴스의 AttributeSet(변하는 값이겠지)을 PlayerState에서 _playerCurrentAttributeSet으로 변수로 갖고 있는다. 
-            // 나중에 이 값을 가지고 데이터를 저장할 것이기 때문에           
-            _playerCurrentAttributeSet = _spawnedPlayerattributeSet;
+            _playerCurrentAttributeSet = spawnedAttributeSet;
+        }
 
-            // 만약에 이전 플레이어의 Value 값들을 저장해놓은 딕셔너리가 존재하면 현재 플레이어 인스턴스의 Value에 덮어쓰기 해준다.
+        // 저장된 능력치를 현재 플레이어에게 복원한다.
+        public void RestoreSavedAttributes()
+        {
+            if (_playerCurrentAttributeSet == null)
+            {
+                Debug.LogError("능력치를 복원할 플레이어가 없습니다.");
+                return;
+            }
+
             foreach (var pair in _playerAttributesForSaving)
             {
-                if (_spawnedPlayerattributeSet.IsValidTarget(pair.Key))
+                if (_playerCurrentAttributeSet.IsValidTarget(pair.Key))
                 {
-                    _spawnedPlayerattributeSet.SetValue(pair.Key, pair.Value);
+                    _playerCurrentAttributeSet.SetValue(pair.Key, pair.Value);
                 }
             }
+        }
+
+        // 보관 중인 능력치만 비우며 현재 플레이어의 값은 변경하지 않는다.
+        public void ClearSavedAttributes()
+        {
+            _playerAttributesForSaving.Clear();
         }
 
         // 씬 전환 하기 전에 플레이어의 어트리뷰트셋 값들을 저장하는 로직
