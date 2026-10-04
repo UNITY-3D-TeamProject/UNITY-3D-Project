@@ -23,6 +23,12 @@ namespace Mediator.SubMediators
 
         #region Unity Lifecycle
 
+        protected override void Awake()
+        {
+            base.Awake();
+            ResolveComponent(ref _combatComponent);
+        }
+
         protected override void OnEnable()
         {
             BindRequest();

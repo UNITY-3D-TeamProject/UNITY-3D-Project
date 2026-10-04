@@ -86,17 +86,14 @@ namespace Projectile
 
         #region Private Methods
         /// <summary>
-        /// 피격 대상에서 IEffectTarget 을 찾아 효과를 적용한다.
+        /// 피격 대상에 효과를 적용한다.
         /// 대상이 없거나 효과의 대상 어트리뷰트를 갖지 않으면 적용하지 않는다.
         /// </summary>
         private void ApplyHitEffect(Collider other)
         {
             if (_hitEffect == null) return;
 
-            IEffectTarget target = other.GetComponentInParent<IEffectTarget>();
-            if (target == null || !target.IsValidTarget(_hitEffect.TargetAttribute)) return;
-
-            _hitEffect.Apply(target, _cursor);
+            _hitEffect.Apply(other.gameObject, _cursor);
         }
         #endregion
     }
