@@ -15,6 +15,9 @@ namespace Mediator.SubMediators
         [SerializeField] private AttributeSet _attributeSet;
         [SerializeField] private AttributeClamper _clamper;
         [SerializeField] private AttributeRegenerator _regenerator;
+        [Header("Settings")]
+        [Tooltip("사격 시 회복을 정지할 어트리뷰트 이름")]
+        [SerializeField] private string _firePauseKey = "CurrentHeat";
         #endregion
 
         #region Properties
@@ -93,6 +96,16 @@ namespace Mediator.SubMediators
             if (!_attributeSet) return;
 
             _attributeSet.SetValue(key, _attributeSet.GetValue(key) - amount);
+        }
+
+        /// <summary>
+        /// 사격 시 _firePauseKey 의 회복을 정지한다.
+        /// </summary>
+        public void PauseRegenOnFire()
+        {
+            if (!_regenerator) return;
+
+            _regenerator.Pause(_firePauseKey);
         }
         #endregion
 

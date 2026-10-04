@@ -152,6 +152,14 @@ namespace Mediator
             Destroy(gameObject);
         }
         /// <summary>
+        /// 사격 요청을 어트리뷰트 중재자에 전달해 회복을 정지한다.
+        /// </summary>
+        /// <param name="position">총알 생성 위치 (사용하지 않음)</param>
+        private void OnFireCallback(Vector3 position)
+        {
+            _attributeMediator.PauseRegenOnFire();
+        }
+        /// <summary>
         /// 중재자 이벤트 구독
         /// </summary>
         private void Subscribe()
@@ -160,6 +168,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnPayRequested += PayAttribute;
             if (_skillMediator && _moveMediator) _skillMediator.OnRollRequested += _moveMediator.CommandRoll;
             if (_skillMediator && _spawnMediator) _skillMediator.OnFireRequested += _spawnMediator.CommandSpawnBullet;
+            if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested += OnFireCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
         }
@@ -172,6 +181,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnPayRequested -= PayAttribute;
             if (_skillMediator && _moveMediator) _skillMediator.OnRollRequested -= _moveMediator.CommandRoll;
             if (_skillMediator && _spawnMediator) _skillMediator.OnFireRequested -= _spawnMediator.CommandSpawnBullet;
+            if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested -= OnFireCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
         }
