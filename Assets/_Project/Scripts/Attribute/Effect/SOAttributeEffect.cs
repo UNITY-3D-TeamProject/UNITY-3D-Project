@@ -77,6 +77,21 @@ namespace Attribute.Effect
             float newValue = Modifiers.Modify(_modifier, target.GetValue(_targetAttribute), amount);
             target.SetValue(_targetAttribute, newValue);
         }
+
+        /// <summary>
+        /// target 과 그 자식에서 IEffectTarget 을 찾아 Effect 를 적용한다.
+        /// </summary>
+        /// <param name="target">effect 를 적용할 GameObject</param>
+        /// <param name="cursor">effect 를 발생시키는 객체의 IEffectTarget (ValueSource 가 Attribute 일 때 필수)</param>
+        /// <returns>대상이 없거나 대상 어트리뷰트를 갖지 않으면 적용하지 않고 false</returns>
+        public bool Apply(GameObject target, IEffectTarget cursor = null)
+        {
+            IEffectTarget effectTarget = target ? target.GetComponentInChildren<IEffectTarget>() : null;
+            if (effectTarget == null || !effectTarget.IsValidTarget(_targetAttribute)) return false;
+
+            Apply(effectTarget, cursor);
+            return true;
+        }
         #endregion
     }
 }
