@@ -12,6 +12,7 @@
 - **[Character]** 몸통 회전 채널 부재로 AI 시야 부채꼴이 스폰 시점 forward에 고정됨. `feature/Rotation` 브랜치가 팀원 Mediator 리팩터 PR 머지 후 `git reset`으로 이전 구현을 잃어 재작성 → [문서](./intent-009-body-rotation.md)
 - **[AI / Combat]** 적이 추격만 하고 공격하지 않음. 스킬(`EnemyMeleeAttack`) + 근접 판정 매개체 + BT 공격 가지로 구현, 코드 완료·에디터 배선(`[USER]`)과 Play 검증 남음 → [문서](./intent-010-enemy-melee-attack.md)
 - **[AI]** 시야 감지·해제가 즉시 일어나 등 뒤로 돌면 엉뚱한 곳을 수색함. 발견 게이지 + 놓친 뒤 유예(실제 위치 추적)를 도입, 코드 완료·Play 검증 남음 → [문서](./intent-011-sensor-awareness.md)
+- **[AI / Combat]** 적이 근거리 한 종류뿐. 프로토타입용으로 `EnemyRangedAttack`(스킬이 총알을 직접 생성) 구현. 풀링 도입 시 Factory 경로로 옮기는 것이 기술 부채. 코드 완료, 에디터 배선(`[USER]`)과 Play 검증 남음 → [문서](./intent-012-enemy-ranged-attack.md)
 
 ## 해결됨 (Resolved)
 <!-- 형식: - **[파트]** 문제 한 줄 요약 → [문서](./clear/intent-NNN-slug.md) (resolved: YYYY-MM-DD) -->
