@@ -46,6 +46,7 @@ namespace Mediator.SubMediators
         protected override void Awake()
         {
             base.Awake();
+            ResolveComponent(ref _rotator);
             _bodyRotateController = GetComponentInParent<IBodyRotateController>();
             BindRequest();
         }

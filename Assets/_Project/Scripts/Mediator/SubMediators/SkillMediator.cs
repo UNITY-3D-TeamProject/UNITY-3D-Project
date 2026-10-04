@@ -44,6 +44,7 @@ namespace Mediator.SubMediators
         protected override void Awake()
         {
             base.Awake();
+            ResolveComponent(ref _skillController);
             _skillRequestController = GetComponentInParent<ISkillRequestController>();
             BindRequest();
         }

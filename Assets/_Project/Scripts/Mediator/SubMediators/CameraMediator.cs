@@ -55,6 +55,7 @@ namespace Mediator.SubMediators
         protected override void Awake()
         {
             base.Awake();
+            ResolveComponent(ref _targetCamera);
             _cameraController = GetComponentInParent<ICameraController>();
             BindRequest();
         }
