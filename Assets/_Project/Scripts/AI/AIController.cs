@@ -67,6 +67,9 @@ namespace AI
         #endregion
 
         #region Properties
+        /// <summary>몸통의 현재 월드 위치.</summary>
+        public Vector3 Position => _body.position;
+
         /// <summary>현재 시야에 대상이 보이는지 여부.</summary>
         public bool HasVisibleTarget => _sensor && _sensor.HasTarget;
 
