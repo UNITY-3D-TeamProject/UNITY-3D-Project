@@ -76,7 +76,7 @@ namespace Attribute.Core
         {
             if (!IsValidTarget(targetName))
             {
-                Assert.IsTrue(false, $"[{targetName}] : is invalid attribute name");
+                Debug.Log($"[{targetName}] : is invalid attribute name");
                 return 0.0f;
             }
 
@@ -88,7 +88,7 @@ namespace Attribute.Core
         {
             if (!IsValidTarget(targetName))
             {
-                Assert.IsTrue(false, $"[{targetName}] : is invalid attribute name");
+                Debug.Log($"[{targetName}] : is invalid attribute name");
                 return;
             }
 
