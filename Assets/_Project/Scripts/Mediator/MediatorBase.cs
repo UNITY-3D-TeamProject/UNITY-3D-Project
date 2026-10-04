@@ -32,7 +32,7 @@ namespace Mediator
 
         protected virtual void OnEnable()
         {
-            InitValue();
+            //InitValue();
         }
         #endregion
 
@@ -44,7 +44,7 @@ namespace Mediator
         {
             if (callback == null) return;
             _getAttribute = callback;
-            InitValue();
+            //InitValue();
         }
 
         /// <summary>

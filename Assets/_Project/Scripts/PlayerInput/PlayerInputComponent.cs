@@ -14,8 +14,8 @@ namespace PlayerInput
         private event Action<Vector2> _onLookRequested;
         private event Action<bool> _onAimRequested;
         private event Action _onJumpRequested;
-        private event ISkillRequestController.RequestExecuteSkillDelegate _requestExecuteSkill;
-        private event ISkillRequestController.RequestStopSkillDelegate _requestStopSkill;
+        private event Action<string> _requestExecuteSkill;
+        private event Action<string> _requestStopSkill;
         #endregion
 
         #region IMoveController
@@ -61,7 +61,7 @@ namespace PlayerInput
         #endregion
         
         #region ISkillRequestController
-        public void SetRequestExecuteSkill(ISkillRequestController.RequestExecuteSkillDelegate requestExecuteSkill)
+        public void SetRequestExecuteSkill(Action<string> requestExecuteSkill)
         {
             if(requestExecuteSkill == null) return;
             _requestExecuteSkill = requestExecuteSkill;
@@ -72,7 +72,7 @@ namespace PlayerInput
             _requestExecuteSkill = null;
         }
 
-        public void SetRequestStopSkill(ISkillRequestController.RequestStopSkillDelegate requestStopSkill)
+        public void SetRequestStopSkill(Action<string> requestStopSkill)
         {
             if (requestStopSkill == null) return;
             _requestStopSkill = requestStopSkill;
@@ -98,9 +98,9 @@ namespace PlayerInput
         private void OnFire(InputValue value)
         {
             if (value.isPressed)
-                _requestExecuteSkill?.Invoke("Fire");
+                _requestExecuteSkill?.Invoke("Attack");
             else
-                _requestStopSkill?.Invoke("Fire");
+                _requestStopSkill?.Invoke("Attack");
         }
         
         private void OnMove(InputValue value)

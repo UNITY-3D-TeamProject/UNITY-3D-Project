@@ -20,6 +20,7 @@ namespace Mediator
         [SerializeField] private CombatMediator _combatMediator;
         [SerializeField] private SkillMediator _skillMediator;
         [SerializeField] private RotateMediator _rotateMediator;
+        [SerializeField] private SpawnMediator _spawnMediator;
         #endregion
 
         #region Private Fields
@@ -62,6 +63,11 @@ namespace Mediator
                     mediator.SetGetAttribute(_attributeSet.GetValue);
                 }
             }
+            if (_spawnMediator)
+            {
+                if (_attributeSet) _spawnMediator.SetEffectCursor(_attributeSet);
+                if (_moveMediator) _spawnMediator.SetGetFireDirection(_moveMediator.GetViewDirection);
+            }
         }
         /// <summary>
         /// 등록된 바인딩 해제
@@ -72,6 +78,11 @@ namespace Mediator
             foreach (var mediator in _mediators)
             {
                 mediator.ClearGetAttribute();
+            }
+            if (_spawnMediator)
+            {
+                _spawnMediator.ClearEffectCursor();
+                _spawnMediator.ClearGetFireDirection();
             }
         }
         /// <summary>
@@ -107,6 +118,17 @@ namespace Mediator
             _attributeSet.SetValue(key, current - amount);
             return true;
         }
+
+        private void OnHitCallback()
+        {
+            Debug.Log($"{name} is hit!");
+        }
+
+        private void OnDeathCallback()
+        {
+            Debug.Log($"{name} is Death!");
+            Destroy(gameObject);
+        }
         /// <summary>
         /// 중재자 이벤트 구독
         /// </summary>
@@ -115,6 +137,9 @@ namespace Mediator
             if (_cameraMediator) _cameraMediator.OnViewForwardChanged += SendViewForward;
             if (_skillMediator) _skillMediator.OnPayRequested += PayAttribute;
             if (_skillMediator && _moveMediator) _skillMediator.OnRollRequested += _moveMediator.CommandRoll;
+            if (_skillMediator && _spawnMediator) _skillMediator.OnFireRequested += _spawnMediator.CommandSpawnBullet;
+            if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
+            if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -124,6 +149,9 @@ namespace Mediator
             if (_cameraMediator) _cameraMediator.OnViewForwardChanged -= SendViewForward;
             if (_skillMediator) _skillMediator.OnPayRequested -= PayAttribute;
             if (_skillMediator && _moveMediator) _skillMediator.OnRollRequested -= _moveMediator.CommandRoll;
+            if (_skillMediator && _spawnMediator) _skillMediator.OnFireRequested -= _spawnMediator.CommandSpawnBullet;
+            if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
+            if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
         }
         #endregion
     }
