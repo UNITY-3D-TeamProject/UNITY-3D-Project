@@ -5,6 +5,9 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-04** — 플레이어 SO의 CurrentHp 0 적용 방식과 저장값 복원 순서, Effect 대안 확인: [플레이어 Current 초기값 검토](./2026-10-04/player-current-attribute-initialization-clarification.md)
+- **2026-10-04** — Attribute Effect 가이드와 코드 대조로 플레이어 스폰 시 Effect SO 필수 여부 확인: [플레이어 스폰 Effect SO 검토](./2026-10-04/player-spawn-effect-so-guide-review.md)
+- **2026-10-04** — AttributeSet 자체 초기화 잔존·Mediator InitValue 호출 중단 확인 및 SO 기반 스포너 상속 검토: [스포너 SO 초기화 구조 검토](./2026-10-04/spawner-so-initialization-review.md)
 - **2026-10-03** — 시스템·UI 설계 과제 문안용 구현 현황과 미구현 계획 검토: [시스템·UI 설계 과제 문안 검토](./2026-10-03/system-ui-design-assignment-outline.md)
 - **2026-10-03** — intent 공용 목차의 병합 충돌을 정리하고 SungJun 폴더의 중복 목차를 통합: [Intent 목차 병합 충돌 정리](./2026-10-03/intent-pointer-merge-resolution.md)
 - **2026-10-02** — 현재 작업 트리 변경사항의 커밋 메시지 분류: [커밋 메시지 검토](./2026-10-02/commit-message-review.md)
