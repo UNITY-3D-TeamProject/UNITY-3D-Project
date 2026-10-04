@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Attribute.Core;
+using Attribute.ProjectSpecific;
 
 namespace Mediator.SubMediators
 {
@@ -12,6 +13,7 @@ namespace Mediator.SubMediators
         #region Serialized Fields
         [Header("References")]
         [SerializeField] private AttributeSet _attributeSet;
+        [SerializeField] private AttributeClamper _clamper;
         #endregion
 
         #region Properties
@@ -29,17 +31,26 @@ namespace Mediator.SubMediators
         {
             base.Awake();
             ResolveComponent(ref _attributeSet);
+            ResolveComponent(ref _clamper);
         }
 
         protected override void OnEnable()
         {
             if (_attributeSet) _attributeSet.AddOnAttributeChangedCallback(RelayAttributeChanged);
+            if (_attributeSet && _clamper)
+            {
+                _attributeSet.SetPreAttributeChangedCallback(ClampAttribute);
+            }
             base.OnEnable();
         }
 
         private void OnDisable()
         {
             if (_attributeSet) _attributeSet.RemoveOnAttributeChangedCallback(RelayAttributeChanged);
+            if (_attributeSet && _clamper)
+            {
+                _attributeSet.ClearPreAttributeChangedCallback();
+            }
         }
         #endregion
 
@@ -100,6 +111,14 @@ namespace Mediator.SubMediators
         private void RelayAttributeChanged(string attributeName, float newValue, float oldValue)
         {
             OnAttributeChanged?.Invoke(attributeName, newValue, oldValue);
+        }
+
+        /// <summary>
+        /// 값이 반영되기 전에 AttributeClamper 규칙으로 보정한다.
+        /// </summary>
+        private void ClampAttribute(string attributeName, ref float newValue, float oldValue)
+        {
+            _clamper.Clamp(_attributeSet, attributeName, ref newValue);
         }
         #endregion
     }
