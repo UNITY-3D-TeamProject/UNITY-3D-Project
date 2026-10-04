@@ -774,6 +774,10 @@ MonoBehaviour:
   _eye: {fileID: 3470848541682707936}
   _sightRange: 5
   _sightAngle: 90
+  _detectTimeNear: 0.2
+  _detectTimeFar: 1.5
+  _awarenessDecayTime: 2
+  _loseGraceTime: 3
   _targetLayers:
     serializedVersion: 2
     m_Bits: 64
@@ -2837,15 +2841,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5867411805211298302, guid: fbd750ef9c6308c4392b2cc4046b773a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.074610025
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5867411805211298302, guid: fbd750ef9c6308c4392b2cc4046b773a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.10393
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5867411805211298302, guid: fbd750ef9c6308c4392b2cc4046b773a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.024799347
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5867411805211298302, guid: fbd750ef9c6308c4392b2cc4046b773a, type: 3}
       propertyPath: m_LocalRotation.w
