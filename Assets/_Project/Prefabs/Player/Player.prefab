@@ -3644,10 +3644,6 @@ PrefabInstance:
       propertyPath: _initData
       value: 
       objectReference: {fileID: 11400000, guid: d4b38094582f9f74c90a215c2c50aafc, type: 2}
-    - target: {fileID: 6189931616501849748, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
-      propertyPath: _clamper
-      value: 
-      objectReference: {fileID: 5524260724084792523}
     - target: {fileID: 7614214959895791978, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.9907742
@@ -3688,53 +3684,85 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8174806103750842125, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8174806103750842125, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[0].Effect
+      value: 
+      objectReference: {fileID: 11400000, guid: 9d93e0c6710362e4790d162055830930, type: 2}
+    - target: {fileID: 8174806103750842125, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[0].Duration
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8174806103750842125, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[0].ResumeDelay
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[0].MaxKey
+      value: MaxHp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[0].MinKey
+      value: MinHp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[1].MaxKey
+      value: MaxBattery
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[1].MinKey
+      value: MinBattery
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[2].MaxKey
+      value: MaxHeat
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[2].MinKey
+      value: MinHeat
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[0].TargetKey
+      value: CurrentHp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[1].TargetKey
+      value: CurrentBattery
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[2].TargetKey
+      value: CurrentHeat
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[0].FallbackMax
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[1].FallbackMax
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
+      propertyPath: _rules.Array.data[2].FallbackMax
+      value: 100
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3301070057904148300, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5524260724084792523}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
---- !u!1 &4161502039740230051 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3301070057904148300, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
-  m_PrefabInstance: {fileID: 1445481431916193519}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5524260724084792523
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4161502039740230051}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ede254966af5fd4fbffbcdc9c64ebb0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Attribute.ProjectSpecific.AttributeClamper
-  _rules:
-  - TargetKey: CurrentHp
-    MinKey: MinHp
-    MaxKey: MaxHp
-    FallbackMin: 0
-    FallbackMax: 100
-  - TargetKey: CurrentBattery
-    MinKey: MinBattery
-    MaxKey: MaxBattery
-    FallbackMin: 0
-    FallbackMax: 100
-  - TargetKey: CurrentHeat
-    MinKey: MinHeat
-    MaxKey: MaxHeat
-    FallbackMin: 0
-    FallbackMax: 100
 --- !u!114 &4749168636135274619 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6189931616501849748, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
   m_PrefabInstance: {fileID: 1445481431916193519}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4161502039740230051}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 669d3abc422b41a2a63f89bfcd2eb599, type: 3}

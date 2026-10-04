@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 7614214959895791978}
   - component: {fileID: 3447264470831731540}
   - component: {fileID: 6189931616501849748}
+  - component: {fileID: 8656628617756701993}
+  - component: {fileID: 8174806103750842125}
   m_Layer: 0
   m_Name: AttributePrefab
   m_TagString: Untagged
@@ -59,3 +61,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.AttributeMediator
   _attributeSet: {fileID: 3447264470831731540}
+  _clamper: {fileID: 8656628617756701993}
+  _regenerator: {fileID: 8174806103750842125}
+--- !u!114 &8656628617756701993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3301070057904148300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ede254966af5fd4fbffbcdc9c64ebb0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Attribute.ProjectSpecific.AttributeClamper
+  _rules: []
+--- !u!114 &8174806103750842125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3301070057904148300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f51d7e77796928f43ae8f177f1a60beb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Attribute.ProjectSpecific.AttributeRegenerator
+  _rules: []

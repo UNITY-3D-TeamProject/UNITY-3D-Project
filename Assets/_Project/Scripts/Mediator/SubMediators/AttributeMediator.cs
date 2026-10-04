@@ -14,6 +14,7 @@ namespace Mediator.SubMediators
         [Header("References")]
         [SerializeField] private AttributeSet _attributeSet;
         [SerializeField] private AttributeClamper _clamper;
+        [SerializeField] private AttributeRegenerator _regenerator;
         #endregion
 
         #region Properties
@@ -32,6 +33,7 @@ namespace Mediator.SubMediators
             base.Awake();
             ResolveComponent(ref _attributeSet);
             ResolveComponent(ref _clamper);
+            ResolveComponent(ref _regenerator);
         }
 
         protected override void OnEnable()
@@ -41,6 +43,7 @@ namespace Mediator.SubMediators
             {
                 _attributeSet.SetPreAttributeChangedCallback(ClampAttribute);
             }
+            if (_attributeSet && _regenerator) _regenerator.SetTarget(_attributeSet);
             base.OnEnable();
         }
 
@@ -51,6 +54,7 @@ namespace Mediator.SubMediators
             {
                 _attributeSet.ClearPreAttributeChangedCallback();
             }
+            if (_regenerator) _regenerator.ClearTarget();
         }
         #endregion
 
