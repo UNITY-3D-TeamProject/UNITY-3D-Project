@@ -30,7 +30,7 @@ namespace Core
 
 
 
-        public GameState CurrentState {  get; private set; }
+        public GameState CurrentState { get; private set; } = GameState.Playing;
 
         // 저장할 능력치 이름 목록을 확인하기 위해 (playerState를 초기화 할 때 넣어줄 매개변수 값)
         [SerializeField] private SOAttributeData _playerSOAttributeData;
@@ -63,6 +63,7 @@ namespace Core
             }
             // 인스펙터에서 받은 SO를 인자로 넣어준다.
             playerState = new PlayerState(_playerSOAttributeData);
+            SetCursorVisible(false);
         }
 
         // 플레이어의 상태 처리를 완료하고 스폰 이벤트를 알린다.
@@ -127,12 +128,25 @@ namespace Core
         {
             CurrentState = GameState.Pause;
             Time.timeScale = 0f;
+            SetCursorVisible(true);
         }
 
         public void ResumeGame()
         {
             CurrentState = GameState.Playing;
             Time.timeScale = 1f;
+            SetCursorVisible(false);
+        }
+
+
+        private void SetCursorVisible(bool isVisible)
+        {
+            Cursor.lockState = isVisible
+                ? CursorLockMode.None
+                : CursorLockMode.Locked;
+
+            Cursor.visible = isVisible;
+            Debug.Log(isVisible ? "[GameManager] 마우스 커서 켜짐" : "[GameManager] 마우스 커서 꺼짐", this);
         }
 
         private void OnEnable()
