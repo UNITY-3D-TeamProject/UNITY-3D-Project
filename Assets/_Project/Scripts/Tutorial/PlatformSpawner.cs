@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Tutorial
@@ -29,6 +30,9 @@ namespace Tutorial
         [Tooltip("발판이 생성될 수 있는 원형 단면의 반지름 (파이프 안쪽 반지름 - 발판 크기 여유)")]
         [SerializeField, Min(0.0f)] private float _spawnRadius = 1.5f;
 
+        [Tooltip("켜면 발판이 위아래로는 흩어지지 않고 같은 높이에서만 생성된다. 좌우 랜덤은 유지된다.")]
+        [SerializeField] private bool _isHeightFixed = true;
+
         [Header("Spawn Gap")]
         [Tooltip("직전 발판과의 최소 이동 방향 간격")]
         [SerializeField, Min(0.1f)] private float _minGap = 3.0f;
@@ -51,9 +55,13 @@ namespace Tutorial
 
         [Header("Options")]
         [SerializeField] private bool _autoStart = true;
+
+        [Tooltip("켜면 시작할 때 이동 경로 전체에 발판을 미리 깔아 둔다. (이미 흘러가고 있던 것처럼 보인다)")]
+        [SerializeField] private bool _shouldPrewarm = true;
         #endregion
 
         #region Private Fields
+        private readonly List<PlatformMover> _activePlatforms = new List<PlatformMover>();
         private bool    _isSpawning;
         private bool    _hasLastPlatform;
         private Vector3 _lastPlatformPosition;
@@ -99,7 +107,7 @@ namespace Tutorial
 
             if (_distanceSinceLastSpawn >= _nextGap)
             {
-                SpawnPlatform();
+                SpawnPlatform(0.0f);
             }
         }
 
@@ -146,6 +154,11 @@ namespace Tutorial
             _hasLastPlatform = false;
             _distanceSinceLastSpawn = 0.0f;
             _nextGap = 0.0f;
+
+            if (_shouldPrewarm)
+            {
+                Prewarm();
+            }
         }
 
         /// <summary>
@@ -155,20 +168,64 @@ namespace Tutorial
         {
             _isSpawning = false;
         }
+
+        /// <summary>
+        /// 플레이어가 올라탈 발판의 현재 위치를 돌려준다.
+        /// 출구에서 preferredDistance 만큼 나아간 지점에 가장 가까운 발판을 고르고, 발판이 하나도 없으면 새로 만든다.
+        /// </summary>
+        /// <param name="preferredDistance">출구에서 이만큼 떨어진 지점의 발판을 고른다.</param>
+        /// <returns>올라탈 발판의 중심 위치(월드 좌표)</returns>
+        public Vector3 GetBoardingPosition(float preferredDistance)
+        {
+            PlatformMover nearest = null;
+            float nearestGap = float.MaxValue;
+
+            foreach (PlatformMover platform in _activePlatforms)
+            {
+                float travelledDistance = Vector3.Dot(platform.transform.position - transform.position, transform.forward);
+                float gap = Mathf.Abs(travelledDistance - preferredDistance);
+                if (gap < nearestGap)
+                {
+                    nearest = platform;
+                    nearestGap = gap;
+                }
+            }
+
+            if (nearest != null) return nearest.transform.position;
+
+            SpawnPlatform(0.0f);
+            return _lastPlatformPosition;
+        }
         #endregion
 
         #region Private Methods
-        private void SpawnPlatform()
+        // 삭제 지점 쪽부터 출구 쪽으로 거슬러 오며, 평소와 같은 간격 규칙으로 발판을 미리 놓는다.
+        private void Prewarm()
         {
-            Vector3 spawnPosition = FindSpawnPosition();
+            float travelledDistance = _maxTravelDistance;
+
+            while (true)
+            {
+                travelledDistance -= Random.Range(_minGap, _maxGap);
+                if (travelledDistance <= 0.0f) break;
+
+                SpawnPlatform(travelledDistance);
+            }
+        }
+
+        // travelledDistance: 출구에서 이미 이만큼 나아간 자리에 생성한다. 평소에는 0.
+        private void SpawnPlatform(float travelledDistance)
+        {
+            Vector3 spawnPosition = FindSpawnPosition(travelledDistance);
 
             // TODO: 오브젝트 풀 도입 시 풀에서 꺼내는 코드로 교체
             PlatformMover platform = Instantiate(_platformPrefab, spawnPosition, _platformPrefab.transform.rotation);
-            platform.Initialize(transform.forward, _platformSpeed, _maxTravelDistance, ReleasePlatform);
+            platform.Initialize(transform.forward, _platformSpeed, _maxTravelDistance - travelledDistance, ReleasePlatform);
+            _activePlatforms.Add(platform);
 
             _hasLastPlatform = true;
             _lastPlatformPosition = spawnPosition;
-            _distanceSinceLastSpawn = 0.0f;
+            _distanceSinceLastSpawn = travelledDistance;
             _nextGap = Random.Range(_minGap, _maxGap);
 
             OnPlatformSpawned?.Invoke(spawnPosition);
@@ -177,13 +234,20 @@ namespace Tutorial
         private void ReleasePlatform(PlatformMover platform)
         {
             OnPlatformReleased?.Invoke(platform.transform.position);
+            _activePlatforms.Remove(platform);
 
             // TODO: 오브젝트 풀 도입 시 풀에 반환하는 코드로 교체
             Destroy(platform.gameObject);
         }
 
-        private Vector3 FindSpawnPosition()
+        private Vector3 FindSpawnPosition(float travelledDistance)
         {
+            if (_isHeightFixed)
+            {
+                _lastSpawnOffset = FindFlatOffset(travelledDistance);
+                return ToWorldPosition(_lastSpawnOffset, travelledDistance);
+            }
+
             // 재시도가 모두 실패하면 직전 발판과 같은 단면 위치를 사용한다.
             Vector2 chosenOffset = _lastSpawnOffset;
 
@@ -191,7 +255,7 @@ namespace Tutorial
             {
                 Vector2 candidateOffset = Random.insideUnitCircle * _spawnRadius;
 
-                if (!_hasLastPlatform || IsReachable(ToWorldPosition(candidateOffset)))
+                if (!_hasLastPlatform || IsReachable(ToWorldPosition(candidateOffset, travelledDistance)))
                 {
                     chosenOffset = candidateOffset;
                     break;
@@ -199,7 +263,24 @@ namespace Tutorial
             }
 
             _lastSpawnOffset = chosenOffset;
-            return ToWorldPosition(chosenOffset);
+            return ToWorldPosition(chosenOffset, travelledDistance);
+        }
+
+        // 높이 고정일 때의 좌우 위치. 직전 발판에서 닿을 수 있는 좌우 범위 안에서 고르므로 재시도가 필요 없다.
+        private Vector2 FindFlatOffset(float travelledDistance)
+        {
+            if (!_hasLastPlatform)
+            {
+                return new Vector2(Random.Range(-_spawnRadius, _spawnRadius), 0.0f);
+            }
+
+            // 최대 수평 거리에서 앞뒤 간격을 뺀 나머지가 좌우로 벌릴 수 있는 거리다.
+            Vector3 center = ToWorldPosition(Vector2.zero, travelledDistance);
+            float forwardGap = Vector3.Dot(_lastPlatformPosition - center, transform.forward);
+            float lateralLimit = Mathf.Sqrt(Mathf.Max(0.0f, (_maxHorizontalDistance * _maxHorizontalDistance) - (forwardGap * forwardGap)));
+
+            float lateral = _lastSpawnOffset.x + Random.Range(-lateralLimit, lateralLimit);
+            return new Vector2(Mathf.Clamp(lateral, -_spawnRadius, _spawnRadius), 0.0f);
         }
 
         private bool IsReachable(Vector3 candidatePosition)
@@ -214,9 +295,12 @@ namespace Tutorial
             return isHorizontalReachable && isHeightReachable;
         }
 
-        private Vector3 ToWorldPosition(Vector2 offset)
+        private Vector3 ToWorldPosition(Vector2 offset, float travelledDistance)
         {
-            return transform.position + (transform.right * offset.x) + (transform.up * offset.y);
+            return transform.position +
+                (transform.right * offset.x) +
+                (transform.up * offset.y) +
+                (transform.forward * travelledDistance);
         }
 
         private static void DrawCircle(Vector3 center, Vector3 axisA, Vector3 axisB, float radius)

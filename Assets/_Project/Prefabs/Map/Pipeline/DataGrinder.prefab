@@ -50,6 +50,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Project.Platform.DataGrinder
   _appSpawner: {fileID: 0}
+  _sortingFlow: {fileID: 0}
   _shakeTarget: {fileID: 5498383821915534572}
   _arrivalBits: {fileID: 170036860037506309}
   _arrivalFlash: {fileID: 3265667524526977504}
@@ -195,10 +196,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 735e16da4e4bafb41b6143acb862bce2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Project.Platform.PlatformSpawner
-  _platformPrefab: {fileID: 9047686351105276665, guid: f47371fe751b3964b85ea61af65b2669, type: 3}
+  _platformPrefab: {fileID: 5766788875885215906, guid: 80408fdbcfbe09044930da5efce30455, type: 3}
   _platformSpeed: 3
   _maxTravelDistance: 40
   _spawnRadius: 1.5
+  _isHeightFixed: 1
   _minGap: 3
   _maxGap: 5
   _maxHorizontalDistance: 5
@@ -206,6 +208,7 @@ MonoBehaviour:
   _maxDropHeight: 3
   _maxPlacementTries: 10
   _autoStart: 1
+  _shouldPrewarm: 1
 --- !u!114 &6384216561653746712
 MonoBehaviour:
   m_ObjectHideFlags: 0
