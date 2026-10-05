@@ -5,6 +5,14 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-05** — 새 Markdown 파일을 SungJun 폴더로 통합하고 작업 트리의 커밋 메시지를 분류: [문서 이동 및 커밋 메시지 분류](./2026-10-05/pending-changes-commit-message-split.md)
+- **2026-10-05** — Test 저장소 변경 내용의 커밋 메시지와 `.gitignore` 경고 원인 확인: [Test 저장소 Git 확인](./2026-10-05/test-repo-commit-message-gitignore-review.md)
+- **2026-10-05** — 프로토타입 첫 씬 프리팹·씬 배치와 Inspector 참조 검토: [첫 씬 배치 검토](./2026-10-05/prototype-first-scene-setup-review.md)
+- **2026-10-05** — 설정창 임시 진단 로그 제거, GameManager 커서 켜짐/꺼짐 로그만 유지: [커서 ON/OFF 로그만 유지](./2026-10-05/cursor-log-only.md)
+- **2026-10-05** — 설정창 패널 및 커서 ON/OFF 진단 로그 추가, 저장된 Canvas 참조 누락 확인: [설정창 패널·커서 진단 로그](./2026-10-05/settings-panel-debug-logs.md)
+- **2026-10-05** — 기본 Playing과 GameManager 커서 처리, UIManager의 CloseSettings 액션 구독 구현·컴파일 확인: [설정창 입력 흐름 구현](./2026-10-05/settings-input-flow-implementation.md)
+- **2026-10-05** — 설정창 코드 경로 확인, Playing 진입과 저장된 UI 배치·참조 누락 확인: [설정창 흐름 연결 누락 검토](./2026-10-05/settings-flow-gap-review.md)
+- **2026-10-05** — 설정창 입력맵·커서 전환 설계 검토: [설정창 입력 전환 검토](./2026-10-05/settings-input-transition-review.md)
 - **2026-10-05** — 새 intent 문서를 SungJun 폴더로 모으고 현재 작업 트리의 커밋 메시지 분류: [문서 위치 및 커밋 메시지 정리](./2026-10-05/commit-messages-and-intent-move.md)
 - **2026-10-04** — 몬스터 Init Data Missing 참조 원인과 재설정 방법 확인: [몬스터 Init Data 누락 참조 확인](./2026-10-04/monster-init-data-missing-reference.md)
 - **2026-10-04** — MonsterSpawner 기본 생성과 SpawnerBase 공통 처리 추가: [몬스터 스포너 기본 생성](./2026-10-04/monster-spawner-foundation.md)

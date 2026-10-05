@@ -14,6 +14,7 @@
 - **[AI]** 시야 감지·해제가 즉시 일어나 등 뒤로 돌면 엉뚱한 곳을 수색함. 발견 게이지 + 놓친 뒤 유예(실제 위치 추적)를 도입, 코드 완료·Play 검증 남음 → [문서](./intent-011-sensor-awareness.md)
 
 ## 해결됨 (Resolved)
+- **[UI / Game State]** 초기 Playing, GameManager 커서 처리, 설정창 열기·닫기 액션 구독 구현 → [문서](../HANDOVER/SungJun/intent/intent-013-settings-input-flow.md) (resolved: 2026-10-05)
 <!-- 형식: - **[파트]** 문제 한 줄 요약 → [문서](./clear/intent-NNN-slug.md) (resolved: YYYY-MM-DD) -->
 - **[Monster Spawner]** 몬스터 프리팹 생성과 시작 능력치 설정 기반 부재 → [문서](../HANDOVER/SungJun/intent/intent-012-monster-spawner-foundation.md) (resolved: 2026-10-04)
 - **[Scene Test]** 박스 접촉으로 Home/Lobby 씬 전환 테스트 → [문서](../HANDOVER/SungJun/2026-09-26/intent-008-test-scene-transition-box.md) (resolved: 2026-09-26)
