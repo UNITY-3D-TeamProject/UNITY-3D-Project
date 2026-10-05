@@ -35,6 +35,7 @@ namespace Core.ObjectPool
         #endregion
 
         #region Properties
+        // 현재 등록된 Pool 종류 개수를 알려준다.
         public int RegisteredPoolCount => _pools?.Count ?? 0;
         #endregion
 
