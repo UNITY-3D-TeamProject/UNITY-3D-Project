@@ -63,7 +63,7 @@ namespace Core
             }
             // 인스펙터에서 받은 SO를 인자로 넣어준다.
             playerState = new PlayerState(_playerSOAttributeData);
-            SetCursorVisible(false);
+            SetCursorLocked(true);
         }
 
         // 플레이어의 상태 처리를 완료하고 스폰 이벤트를 알린다.
@@ -128,25 +128,25 @@ namespace Core
         {
             CurrentState = GameState.Pause;
             Time.timeScale = 0f;
-            SetCursorVisible(true);
+            SetCursorLocked(false);
         }
 
         public void ResumeGame()
         {
             CurrentState = GameState.Playing;
             Time.timeScale = 1f;
-            SetCursorVisible(false);
+            SetCursorLocked(true);
         }
 
 
-        private void SetCursorVisible(bool isVisible)
+        private void SetCursorLocked(bool isLocked)
         {
-            Cursor.lockState = isVisible
-                ? CursorLockMode.None
-                : CursorLockMode.Locked;
+            Cursor.lockState = isLocked
+                ? CursorLockMode.Locked
+                : CursorLockMode.None;
 
-            Cursor.visible = isVisible;
-            Debug.Log(isVisible ? "[GameManager] 마우스 커서 켜짐" : "[GameManager] 마우스 커서 꺼짐", this);
+            Cursor.visible = !isLocked;
+            Debug.Log(isLocked ? "[GameManager] 마우스 커서 화면 중앙에 고정됨" : "[GameManager] 마우스 커서 제한 해제됨", this);
         }
 
         private void OnEnable()
