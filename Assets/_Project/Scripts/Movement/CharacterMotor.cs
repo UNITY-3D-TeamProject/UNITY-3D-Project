@@ -60,6 +60,13 @@ namespace Movement
             set => _jumpPower = value;
         }
 
+        /// <summary>중력 가속도 크기(양수). 아래 방향으로 적용된다.</summary>
+        public float Gravity
+        {
+            get => _gravity;
+            set => _gravity = value;
+        }
+
         /// <summary>지면에 닿아 있는지 여부.</summary>
         public bool IsGrounded => _controller.isGrounded;
         #endregion
