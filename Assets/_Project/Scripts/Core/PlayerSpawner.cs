@@ -1,15 +1,29 @@
 using Attribute.Core;
+using Attribute.Effect;
 using Core;
 using Core.Stage;
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-public class PlayerSpawner : MonoBehaviour
+public class PlayerSpawner : SpawnerBase
 {
     [SerializeField]
+    // 플레이어 프리팹
     private GameObject _playerPrefab;
 
+    // PlayerEffects SO 배열
+    [SerializeField]
+    private SOAttributeEffect[] _playerEffects;
+
+
+    // 로비 씬에서만 체크한다.
+    [SerializeField] private bool _isLobbySpawner;
+
+    // 로비에서 스테이지 타입별 복귀 위치를 연결한다.
+    // 타입의 길이 0짜리 빈 배열을 반환한다.
+    [SerializeField]
+    private SLobbySpawnPoint[] _lobbySpawnPoints;
 
     // 직접 만든 구조체의 데이터를 Unity가 저장하고 인스펙터에서 편집할 수 있음
     [Serializable]
@@ -25,13 +39,9 @@ public class PlayerSpawner : MonoBehaviour
         public Transform Point => _point;
     }
 
-    // 로비 씬에서만 체크한다.
-    [SerializeField] private bool _isLobbySpawner;
 
-    // 로비에서 스테이지 타입별 복귀 위치를 연결한다.
-    // 타입의 길이 0짜리 빈 배열을 반환한다.
-    [SerializeField]
-    private SLobbySpawnPoint[] _lobbySpawnPoints;
+
+
 
     private void Start()
     {
@@ -59,27 +69,33 @@ public class PlayerSpawner : MonoBehaviour
             ? GetLobbySpawnPoint(gameManager.SpawnStage)
             : transform;
 
-        GameObject player = Instantiate(
+        if (!TrySpawnWithAttributes(
             _playerPrefab,
-            spawnPoint.position,
-            spawnPoint.rotation);
-
-        // 데이터 요청해서 가져와서 플레이어의 SO값(딕셔너리)에 넣어주기
-
-        // 방금 생성한 플레이어 인스턴스의 어트리뷰트셋 가져오기
-        // AttributeSet은 Dictionary <string,AttributeData> 형식
-        AttributeSet _spawnedPlayerattributeSet = player.GetComponent<AttributeSet>();
-
-
-        if (_spawnedPlayerattributeSet == null)
+            spawnPoint,
+            out GameObject player,
+            out AttributeSet _spawnedPlayerattributeSet))
         {
-            Debug.LogError("Player에 AttributeSet이 없습니다.", player);
-            Destroy(player);
             return;
         }
 
+        // TODO: 지연 활성화가 필요하면 프리팹을 비활성 상태로 생성하고 AttributeSet의 Awake 초기화를 분리한다.
+        // 활성 프리팹을 Instantiate한 뒤 SetActive(false)하면 Awake/OnEnable은 이미 실행된 상태다.
+        // player.SetActive(false);
+
+        // 새 게임과 부활에서는 저장값 대신 Effect SO의 초기값을 사용한다.
+        bool shouldInitialize =
+            gameManager.SpawnReason == GameManager.EPlayerSpawnReason.NewGame ||
+            gameManager.SpawnReason == GameManager.EPlayerSpawnReason.Respawn;
+
+        if (shouldInitialize)
+        {
+            ApplySpawnEffects(_spawnedPlayerattributeSet, _playerEffects);
+        }
+
+        // player.SetActive(true);
+
         // GameManager 하나에만 알린다. UI도 모르고 PlayerState에서도 모른다. (GameManager가 모두 직접 알려준다.)
-        gameManager.RegisterPlayer(_spawnedPlayerattributeSet);
+        gameManager.CompletePlayerSpawn(_spawnedPlayerattributeSet);
 
         // 로비에서 생성·등록을 완료했을 때만 기록을 비운다.
         if (_isLobbySpawner)

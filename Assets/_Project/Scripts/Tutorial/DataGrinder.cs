@@ -10,9 +10,9 @@ namespace Tutorial
     public class DataGrinder : MonoBehaviour
     {
         #region Serialized Fields
-        [Header("References")]
-        [Tooltip("앱 도착 이벤트를 발생시키는 AppSpawner. 비워두면 씬에서 자동으로 찾는다.")]
-        [SerializeField] private AppSpawner _appSpawner;
+
+        [Tooltip("그라인더로 들어오는 발판 흐름 (선택). 연결하면 발판이 도착할 때도 앱 도착과 같은 반응을 한다.")]
+        [SerializeField] private PlatformSortingFlow _sortingFlow;
 
         [Tooltip("진동시킬 오브젝트. 스포너 출구는 흔들리면 안 되므로 포함하지 않는다.")]
         [SerializeField] private Transform _shakeTarget;
@@ -42,12 +42,6 @@ namespace Tutorial
         #region Unity Lifecycle
         private void Awake()
         {
-            if (_appSpawner == null)
-            {
-                _appSpawner = FindFirstObjectByType<AppSpawner>();
-            }
-
-            Debug.Assert(_appSpawner != null, $"[{name}] AppSpawner를 찾지 못했습니다. 씬에 최초 생성 파이프를 배치하거나 직접 연결하세요.");
 
             _spinners = GetComponentsInChildren<SelfSpinner>();
 
@@ -59,17 +53,18 @@ namespace Tutorial
 
         private void OnEnable()
         {
-            if (_appSpawner != null)
+            if (_sortingFlow != null)
             {
-                _appSpawner.OnAppArrived += HandleAppArrived;
+                _sortingFlow.OnPlatformConsumed += HandleAppArrived;
             }
         }
 
         private void OnDisable()
         {
-            if (_appSpawner != null)
+
+            if (_sortingFlow != null)
             {
-                _appSpawner.OnAppArrived -= HandleAppArrived;
+                _sortingFlow.OnPlatformConsumed -= HandleAppArrived;
             }
         }
 

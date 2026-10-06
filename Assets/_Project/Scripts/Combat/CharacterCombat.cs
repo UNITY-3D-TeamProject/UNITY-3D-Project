@@ -28,14 +28,16 @@ namespace Combat
                 bool isDamaged = value < _health;
                 _health = value;
 
-                if (_isDead) return;
+                
+                //if (_isDead) return;
+                //if (_health <= 0) return;
 
                 if (isDamaged) OnHit?.Invoke();
                 CheckDeath();
             }
         }
 
-        public bool IsDead => _isDead;
+        public bool IsDead => _health <= 0;
         #endregion
 
         #region Events
@@ -49,10 +51,10 @@ namespace Combat
         /// </summary>
         private void CheckDeath()
         {
-            if (_isDead) return;
+            //if (_isDead) return;
             if (_health > 0.0f) return;
 
-            _isDead = true;
+            //_isDead = true;
             OnDeath?.Invoke();
         }
         #endregion

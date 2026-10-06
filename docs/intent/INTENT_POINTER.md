@@ -15,7 +15,9 @@
 - **[AI / Combat]** 적이 근거리 한 종류뿐. 프로토타입용으로 `EnemyRangedAttack`(스킬이 총알을 직접 생성) 구현. 풀링 도입 시 Factory 경로로 옮기는 것이 기술 부채. 코드 완료, 에디터 배선(`[USER]`)과 Play 검증 남음 → [문서](./intent-012-enemy-ranged-attack.md)
 
 ## 해결됨 (Resolved)
+- **[UI / Game State]** 초기 Playing, GameManager 커서 처리, 설정창 열기·닫기 액션 구독 구현 → [문서](../HANDOVER/SungJun/intent/intent-013-settings-input-flow.md) (resolved: 2026-10-05)
 <!-- 형식: - **[파트]** 문제 한 줄 요약 → [문서](./clear/intent-NNN-slug.md) (resolved: YYYY-MM-DD) -->
+- **[Monster Spawner]** 몬스터 프리팹 생성과 시작 능력치 설정 기반 부재 → [문서](../HANDOVER/SungJun/intent/intent-012-monster-spawner-foundation.md) (resolved: 2026-10-04)
 - **[Scene Test]** 박스 접촉으로 Home/Lobby 씬 전환 테스트 → [문서](../HANDOVER/SungJun/2026-09-26/intent-008-test-scene-transition-box.md) (resolved: 2026-09-26)
 - **[UI]** 플레이어 Attribute를 표시할 HUD MVP 기반이 없음 → [문서](./clear/intent-006-player-hud-mvp-foundation.md) (resolved: 2026-09-25)
 - **[Stage System]** 앱별 `StageBase` 구현체가 없음 → [문서](./clear/intent-005-stage-implementations.md) (resolved: 2026-09-24)
