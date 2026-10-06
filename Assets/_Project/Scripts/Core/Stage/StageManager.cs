@@ -1,11 +1,16 @@
 using JetBrains.Annotations;
 using System;
 using UnityEngine;
+using Attribute.Core;
+using Mediator.SubMediators;
 
 namespace Core.Stage
 {
     public class StageManager : MonoBehaviour
     {
+        private GameManager _gameManager;
+        private CombatMediator _playerCombatMediator;
+
         // 현재 스테이지의 clear 완성도 => 각 스테이지의 clear 완성도와 같은 값을 공유
         public int CurrentClearProgress { get; private set; }
         // 1.튜토리얼,2.인스타,3.파일,4.보안,5.라이브앱
@@ -49,28 +54,114 @@ namespace Core.Stage
 
         }
 
-        void StartStage()
+        public void StartStage()
         {
-            if (_currentStageBaseInstance == null)
+            if (IsRunning)
             {
-                Debug.LogError("실행할 스테이지가 설정되지 않았습니다.");
                 return;
             }
 
+            if (_currentStageBaseInstance == null)
+            {
+                Debug.LogError("현재 스테이지가 설정되지 않았습니다.", this);
+                return;
+            }
+
+            IsSuccess = false;
             IsRunning = true;
 
             _currentStageBaseInstance.StartStage();
             OnStageStarted?.Invoke();
         }
 
-        void EndStage()
+        private void EndStage()
         {
-            if (_currentStageBaseInstance == null)
-                return;
-
-            _currentStageBaseInstance.EndStage();
             IsRunning = false;
+
+            StageBase stage = _currentStageBaseInstance;
             _currentStageBaseInstance = null;
+
+            if (stage != null)
+            {
+                stage.EndStage();
+            }
+        }
+
+        private void OnEnable()
+        {
+            _gameManager = GameManager.Instance;
+
+            if (_gameManager == null)
+            {
+                return;
+            }
+
+            _gameManager.OnPlayerSpawned += HandlePlayerSpawned;
+
+            // 이미 생성된 플레이어가 있다면 바로 연결한다.
+            HandlePlayerSpawned(_gameManager.CurrentPlayerState);
+        }
+
+        private void OnDisable()
+        {
+            if (_gameManager != null)
+            {
+                _gameManager.OnPlayerSpawned -= HandlePlayerSpawned;
+            }
+
+            UnbindPlayerDeath();
+            _gameManager = null;
+        }
+
+        // 새로 생성된 플레이어의 사망이벤트를 StageManager에 연결하는 함수
+        private void HandlePlayerSpawned(AttributeSet attributeSet)
+        {
+            // 재스폰된 경우 이전 플레이어의 구독부터 해제한다.
+            UnbindPlayerDeath();
+
+            if (attributeSet == null)
+            {
+                return;
+            }
+
+            // AttributeSet과 CombatMediator가 각각 자식에 있으므로
+            // 현재 플레이어 루트 아래에서 찾는다.
+            _playerCombatMediator = attributeSet.transform.root
+                .GetComponentInChildren<CombatMediator>();
+
+            if (_playerCombatMediator == null)
+            {
+                Debug.LogError("플레이어의 CombatMediator가 없습니다.", this);
+                return;
+            }
+
+            _playerCombatMediator.OnDeath += HandlePlayerDeath;
+        }
+
+        private void UnbindPlayerDeath()
+        {
+            if (_playerCombatMediator != null)
+            {
+                _playerCombatMediator.OnDeath -= HandlePlayerDeath;
+            }
+
+            _playerCombatMediator = null;
+        }
+
+        // 플레이어가 죽었다는 이벤트를 받았을 때, 현재 스테이지를 실패로 끝내는 함수
+        private void HandlePlayerDeath()
+        {
+            // 진행 중인 스테이지만 실패 처리한다.
+            // 사망 이벤트가 반복되어도 실패는 한 번만 처리된다.
+            if (!IsRunning)
+            {
+                return;
+            }
+
+            IsSuccess = false;
+
+            EndStage();
+            OnStageFailed?.Invoke();
         }
 
     }

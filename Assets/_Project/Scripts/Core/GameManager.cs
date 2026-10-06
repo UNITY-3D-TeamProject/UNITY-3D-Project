@@ -172,15 +172,25 @@ namespace Core
 
         // Scene => 방금 로드된 씬의 정보가 들어가 있다. scene.name으로 씬 이름 확인 가능
         // LoadSceneMode => 씬을 어떻게 로드 했는지에 대한 enum 타입 => Single(새 씬만), Additive(기존 씬 유지)
-        private void HandleSceneLoaded(Scene scene,LoadSceneMode mode)
+        private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            // scene.name이 스테이지 씬인지 확인
             _stageManager = FindAnyObjectByType<StageManager>();
 
             if (_stageManager == null)
+            {
                 return;
+            }
 
-            // stageManager.TakeCurrentStatge(stageType);
+            StageBase stage = FindAnyObjectByType<StageBase>();
+
+            if (stage == null)
+            {
+                Debug.LogError("현재 씬에 StageBase가 없습니다.", this);
+                return;
+            }
+
+            _stageManager.TakeCurrentStage(stage.StageType);
+            _stageManager.StartStage();
         }
 
         // SceneLoader의 일반 씬 이동 직전에 현재 능력치를 저장한다.

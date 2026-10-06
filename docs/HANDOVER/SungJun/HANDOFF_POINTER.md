@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-06** — 현재 코드 diff 기준 스테이지 시작·사망 실패 처리 커밋 메시지 작성: [커밋 메시지 검토](./2026-10-06/stage-death-commit-message.md)
 - **2026-10-06** — GameManager의 Playing 커서 중앙 고정과 Pause 표시 상태 수정: [커서 표시와 중앙 고정 수정](./2026-10-06/game-manager-cursor-visibility-check.md)
 - **2026-10-05** — GameManager 커서를 Confined로 시범 변경한 뒤 플레이 요구에 맞춰 원상 복구: [커서 Confined 시범 적용 및 복구](./2026-10-05/game-manager-confined-trial.md)
 - **2026-10-05** — GameManager의 커서 잠금 방식과 호출 시점 확인: [커서 잠금 확인](./2026-10-05/game-manager-cursor-lock-review.md)
