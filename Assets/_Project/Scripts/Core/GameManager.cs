@@ -186,16 +186,42 @@ namespace Core
         // SceneLoader의 일반 씬 이동 직전에 현재 능력치를 저장한다.
         private void HandleBeforeSceneChange(ESceneType previous, ESceneType destination)
         {
-            if (CurrentPlayerState == null)
+            if(CurrentPlayerState!=null)
+                PrepareSpawn(EPlayerSpawnReason.SceneTransition);
+
+            // 로비로 돌아올 때만 "어디서 왔는지" 기록
+            if(destination == ESceneType.Lobby)
             {
-                return;
+                SpawnStage = ToStageType(previous); // ESceneType -> EStageType? 변환
+            }
+            else
+            {
+                SpawnStage = null;
             }
 
-            PrepareSpawn(EPlayerSpawnReason.SceneTransition);
+
 
             // 여기서 무슨 씬으로 바꿀건지도 가져온다.
             // SpawnStage = destinationStage.Value;
         }
+
+        private EStageType? ToStageType(ESceneType sceneType)
+        {
+            return sceneType switch
+            {
+                ESceneType.Tutorial => EStageType.Tutorial,
+                ESceneType.Feed => EStageType.FeedApp,
+                ESceneType.File => EStageType.FileApp,
+                ESceneType.Security => EStageType.SecurityApp,
+                ESceneType.Live => EStageType.LiveApp,
+                _ => null,
+            };
+        }
+
+
+
+
+
         //private void HandleBeforeSceneChange(EStageType? destinationStage)
         //{
         //    playerState.SaveCurrentAttributes();
