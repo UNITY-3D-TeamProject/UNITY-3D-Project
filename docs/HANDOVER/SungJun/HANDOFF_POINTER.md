@@ -5,6 +5,9 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-06** — GameManager의 Playing 커서 중앙 고정과 Pause 표시 상태 수정: [커서 표시와 중앙 고정 수정](./2026-10-06/game-manager-cursor-visibility-check.md)
+- **2026-10-05** — GameManager 커서를 Confined로 시범 변경한 뒤 플레이 요구에 맞춰 원상 복구: [커서 Confined 시범 적용 및 복구](./2026-10-05/game-manager-confined-trial.md)
+- **2026-10-05** — GameManager의 커서 잠금 방식과 호출 시점 확인: [커서 잠금 확인](./2026-10-05/game-manager-cursor-lock-review.md)
 - **2026-10-05** — 새 Markdown 파일을 SungJun 폴더로 통합하고 작업 트리의 커밋 메시지를 분류: [문서 이동 및 커밋 메시지 분류](./2026-10-05/pending-changes-commit-message-split.md)
 - **2026-10-05** — Test 저장소 변경 내용의 커밋 메시지와 `.gitignore` 경고 원인 확인: [Test 저장소 Git 확인](./2026-10-05/test-repo-commit-message-gitignore-review.md)
 - **2026-10-05** — 프로토타입 첫 씬 프리팹·씬 배치와 Inspector 참조 검토: [첫 씬 배치 검토](./2026-10-05/prototype-first-scene-setup-review.md)

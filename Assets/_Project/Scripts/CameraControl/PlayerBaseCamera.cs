@@ -23,9 +23,9 @@ namespace CameraControl
         [FormerlySerializedAs("sensitivity")]
         [SerializeField, Range(0.01f, 1f)] private float _sensitivity;
         [FormerlySerializedAs("yawMin")]
-        [SerializeField] private float _yawMin = -90f;
+        //[SerializeField] private float _yawMin = -90f;
         [FormerlySerializedAs("yawMax")]
-        [SerializeField] private float _yawMax = 90f;
+        //[SerializeField] private float _yawMax = 90f;
         [FormerlySerializedAs("pitchMin")]
         [SerializeField] private float _pitchMin = -50f;
         [FormerlySerializedAs("pitchMax")]
@@ -73,7 +73,7 @@ namespace CameraControl
             Vector2 delta = look * _sensitivity;
 
             _yaw += delta.x;
-            _yaw = Mathf.Clamp(_yaw, _yawMin, _yawMax);
+            //_yaw = Mathf.Clamp(_yaw, _yawMin, _yawMax);
             _pitch += _shouldInvertY ? delta.y : -delta.y;
             _pitch = Mathf.Clamp(_pitch, _pitchMin, _pitchMax);
 
