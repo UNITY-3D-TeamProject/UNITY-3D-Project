@@ -23,6 +23,7 @@ namespace Rotation
         #region Private Fields
         private Vector3 _lookDirection;
         private bool _hasLookDirection;
+        private Vector3 _viewForward;
         // 회전 대상의 기준 자세(yaw 제외 X/Z). 예: SK_ZMike 의 로컬 X(-90).
         // 여기 저장해 두고 매 프레임 yaw 만 갈아끼운다 — Quaternion.LookRotation 을 그대로 대입하면
         // 기준 자세가 사라지고 몸통이 눕거나 뒤집힌다.
@@ -60,6 +61,9 @@ namespace Rotation
 
         private void Update()
         {
+            // 카메라 시점이 있으면 입력과 무관하게 그 정면을 바라본다 (수평 투영은 SetLookDirection 내부에서 처리)
+            if (_viewForward != Vector3.zero) SetLookDirection(_viewForward);
+
             if (!_hasLookDirection) return;
 
             // 목표 yaw 는 _body 의 부모 공간 기준으로 계산한다 — 부모가 이미 회전해 있어도
@@ -86,6 +90,15 @@ namespace Rotation
 
             _lookDirection = flatDirection;
             _hasLookDirection = true;
+        }
+
+        /// <summary>
+        /// 카메라가 보는 방향을 설정한다. 설정되면 SetLookDirection 입력보다 우선해 그 정면을 바라본다.
+        /// </summary>
+        /// <param name="viewForward">카메라가 보는 방향 (월드 기준)</param>
+        public void SetViewForward(Vector3 viewForward)
+        {
+            _viewForward = viewForward;
         }
         #endregion
     }

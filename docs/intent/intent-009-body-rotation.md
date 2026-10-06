@@ -41,6 +41,7 @@ CharacterRotator  (실행 — 실제 Transform yaw 회전, 기준 자세 보존)
 | D7 | 회전 대상은 자기 `transform`이 아니라 캐릭터 루트다. `CharacterMotor`와 같은 "명시적 참조 + 부모 탐색 fallback" 방식을 쓴다 | 회전 스크립트는 `MovePrefab`처럼 루트 아래 자식 프리팹에 놓일 수 있다. `CharacterMotor.Awake`가 이미 `GetComponentInParent<CharacterController>()`로 같은 문제를 해결해 뒀다 |
 | D9 | 몸통 회전 기준은 **이동 입력 방향**이다(AI). 카메라 기준 변환은 이번 범위에 포함하지 않는다 | 카메라 연동(과거 D8·D12)은 재작성 메모 참고 — 재도입 시 별도 문서 |
 | D14 | (2026-09-29) 카메라 추종 복원 — `RotateMediator.SetViewForward(Vector3)`로 시점 방향을 받으면 입력과 무관하게 그 정면을 바라보고, 받지 않았으면(AI) D9대로 월드 기준 입력 방향을 바라본다. 배선은 `CharacterMediator.SendViewForward`가 `CameraMediator.OnViewForwardChanged`를 이동·회전 중재자에 함께 전달 | 과거 `e65fe11`의 동작(카메라 피벗 정면 추종)을 되살리되, 옛 `ReferenceFrame` API 대신 현재 develop의 이벤트 구조에 맞춘다. D9는 AI에 한해 유효 |
+| D15 | (2026-10-04) 시점 방향/입력 방향 우선순위 판단을 `RotateMediator.Update`에서 `CharacterRotator.Update`로 옮긴다. `RotateMediator`는 `Update` 없이 `SetLookDirection`/`SetViewForward`로 값만 전달한다(동작 동일) | 회전 대상 방향을 고르는 건 회전 실행 정책이다. `MoveMediator`가 판단 없이 하위 컴포넌트에 전달만 하는 구성과 대칭 |
 | D13 | `CharacterRotator`는 로컬 X/Z(기준 자세)를 보존하고 yaw(Y)만 회전시킨다. `Awake`에서 `_restRotation`/`_yaw`를 저장해 두고 `Update`에서 yaw만 갱신한다 | 플레이어처럼 스킨 메시 루트의 평상시 로컬 회전이 0이 아닌 캐릭터에도 재사용 가능해야 한다. AI는 `_body`가 루트이고 X/Z가 0이라 `_restRotation`이 identity가 되어 기존 `LookRotation` 거동과 결과가 동일하다 |
 
 ## 영향 범위 (Affected users and systems)
