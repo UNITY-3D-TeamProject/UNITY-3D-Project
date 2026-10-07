@@ -27,13 +27,14 @@ namespace Mediator.SubMediators
         [Header("Settings")]
         [Tooltip("CharacterMotor.Speed 로 연결할 어트리뷰트 이름")]
         [SerializeField] private string _speedValueKey;
-        [Tooltip("CharacterMotor.JumpSpeed 로 연결할 어트리뷰트 이름")]
+        [Tooltip("점프력으로 사용할 어트리뷰트 이름")]
         [SerializeField] private string _jumpSpeedValueKey;
         #endregion
         
         #region Private Fields
         private IMoveController _moveController;
         private Vector3 _lastDirection;
+        private float _jumpPower;
         #endregion
 
         #region Properties
@@ -134,7 +135,7 @@ namespace Mediator.SubMediators
 
             AttributeCallback.TryAdd(_jumpSpeedValueKey, (float newValue, float oldValue) =>
             {
-                if (_motor != null) _motor.JumpSpeed = newValue;
+                _jumpPower = newValue;
             });
         }
 
@@ -146,7 +147,7 @@ namespace Mediator.SubMediators
             if (_motor == null || AttributeGetter == null) return;
 
             _motor.Speed = AttributeGetter.Invoke(_speedValueKey);
-            _motor.JumpSpeed = AttributeGetter.Invoke(_jumpSpeedValueKey);
+            _jumpPower = AttributeGetter.Invoke(_jumpSpeedValueKey);
         }
         #endregion
 
@@ -178,13 +179,15 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 점프 명령을 전달한다. 구르는 중에는 무시한다.
+        /// 점프 명령을 전달한다. 구르는 중이거나 공중이면 무시한다.
         /// </summary>
         private void CommandJump()
         {
+            if (!_motor) return;
             if (_rollMover && _rollMover.IsRolling) return;
+            if (!_motor.IsGrounded) return;
 
-            _motor?.Jump();
+            _motor.Jump(_jumpPower);
         }
         
         /// <summary>
