@@ -12,7 +12,10 @@ namespace Core.Stage
         [Serializable]
         private struct SCheckpoint
         {
+            // 이 체크포인트에 도달했는지 감지할 영역
             [SerializeField] private BoxCollider _area;
+
+            // 이 체크포인트로 돌아올 때 사용할 위치와 회전
             [SerializeField] private Transform _respawnPoint;
 
             public BoxCollider Area => _area;
@@ -21,10 +24,23 @@ namespace Core.Stage
 
         [Header("Checkpoints")]
         [SerializeField] private SCheckpoint[] _checkpoints;
+        [Header("Round Checkpoints")]
+        [Tooltip("배열 순서는 라운드 순서이며, 각 값은 Checkpoints 배열의 인덱스입니다.")]
+        [SerializeField] private int[] _roundCheckpointIndices;
 
         [Header("Fall")]
         [SerializeField] private BoxCollider[] _fallZones;
         [SerializeField, Min(0f)] private float _fallDamage = 10f;
+
+        // 현재 라운드. 0부터 시작하며 -1은 아직 시작하지 않은 상태.
+        private int _currentRoundIndex = -1;
+
+        // 도달한 체크포인트 중 가장 높은 인덱스.
+        // 사망으로 라운드를 재시작하면 해당 라운드 시작점까지 되돌린다.
+        private int _currentCheckpointIndex = -1;
+
+        public int CurrentRoundIndex => _currentRoundIndex;
+        public int CurrentCheckpointIndex => _currentCheckpointIndex;
 
         private Transform _playerTransform;
         private Collider _playerBodyCollider;
@@ -32,11 +48,6 @@ namespace Core.Stage
 
         private Vector3 _initialSpawnPosition;
         private Quaternion _initialSpawnRotation;
-
-        private int _currentCheckpointIndex = -1;
-        private bool _isHandlingFall;
-
-
 
 
 
