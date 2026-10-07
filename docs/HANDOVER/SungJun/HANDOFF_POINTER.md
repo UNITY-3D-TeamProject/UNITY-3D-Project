@@ -5,6 +5,11 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-08** — StageManager와 문서 커밋 분리, 본문 작업자는 김성준·Git 작성자는 기존 KimSungJun으로 정정: [커밋 구성 및 현재 상태](./2026-10-08/checkpoint-data-and-docs-commits.md)
+- **2026-10-08** — 1단계 체크포인트 데이터 구성 코드 안내, 런타임 파일 미수정: [체크포인트 데이터 안내](./2026-10-08/checkpoint-data-step1-guide.md)
+- **2026-10-08** — 다른 로컬 Codex용 단일 인수인계: 확정 요구사항·플레이어 재사용·사망 판정을 포함한 최신 9단계 구현 순서 통합: [Codex 인수인계](./2026-10-08/CODEX_HANDOFF_PLAYER_RECOVERY.md)
+- **2026-10-08** — 사망 시 기존 플레이어 이동·상태 복구 권장 및 재생성 비용 비교: [플레이어 재사용 검토](./2026-10-08/player-reuse-on-death.md)
+- **2026-10-08** — Core 기준 생존 낙하/라운드 사망 복귀, 최초 능력치 스냅샷과 사망 시 일반 진행도 초기화 설계: [라운드 복구 설계](./2026-10-08/stage-round-recovery-design.md)
 - **2026-10-07** — Core만 검토하고 별도 구역 스크립트 없이 StageManager가 체크포인트·낙하를 관리하는 설계 제안: [체크포인트·낙하 설계](./2026-10-07/stage-checkpoint-fall-design.md)
 - **2026-10-06** — 현재 코드 diff 기준 스테이지 시작·사망 실패 처리 커밋 메시지 작성: [커밋 메시지 검토](./2026-10-06/stage-death-commit-message.md)
 - **2026-10-06** — GameManager의 Playing 커서 중앙 고정과 Pause 표시 상태 수정: [커서 표시와 중앙 고정 수정](./2026-10-06/game-manager-cursor-visibility-check.md)

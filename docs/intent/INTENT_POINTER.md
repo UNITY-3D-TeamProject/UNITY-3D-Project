@@ -16,6 +16,7 @@
 - **[Movement System]** 점프력이 모터에 고정되고 공중 점프 불가, 시작/착지 이벤트 없음. `Jump(float jumpPower)` 무조건 실행 + `OnJumpStarted`/`OnJumpEnded` 추가, 접지 정책은 MoveMediator로. 코드 완료·컴파일 0에러, Play 검증 남음 → [문서](./intent-015-jump-power-param-and-events.md)
 
 ## 해결됨 (Resolved)
+- **[Stage / Player State]** Core 기준 생존 낙하 복귀와 라운드 사망 복구 설계 완료, 구현 전 → [문서](../HANDOVER/SungJun/intent/clear/intent-015-stage-round-recovery-design.md) (resolved: 2026-10-08)
 - **[UI / Game State]** 초기 Playing, GameManager 커서 처리, 설정창 열기·닫기 액션 구독 구현 → [문서](../HANDOVER/SungJun/intent/intent-013-settings-input-flow.md) (resolved: 2026-10-05)
 <!-- 형식: - **[파트]** 문제 한 줄 요약 → [문서](./clear/intent-NNN-slug.md) (resolved: YYYY-MM-DD) -->
 - **[Monster Spawner]** 몬스터 프리팹 생성과 시작 능력치 설정 기반 부재 → [문서](../HANDOVER/SungJun/intent/intent-012-monster-spawner-foundation.md) (resolved: 2026-10-04)
