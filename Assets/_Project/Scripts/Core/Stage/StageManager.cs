@@ -1,13 +1,46 @@
+using Attribute.Core;
 using JetBrains.Annotations;
+using Map.Gimmicks;
+using Mediator.SubMediators;
 using System;
 using UnityEngine;
-using Attribute.Core;
-using Mediator.SubMediators;
 
 namespace Core.Stage
 {
     public class StageManager : MonoBehaviour
     {
+        [Serializable]
+        private struct SCheckpoint
+        {
+            [SerializeField] private BoxCollider _area;
+            [SerializeField] private Transform _respawnPoint;
+
+            public BoxCollider Area => _area;
+            public Transform RespawnPoint => _respawnPoint;
+        }
+
+        [Header("Checkpoints")]
+        [SerializeField] private SCheckpoint[] _checkpoints;
+
+        [Header("Fall")]
+        [SerializeField] private BoxCollider[] _fallZones;
+        [SerializeField, Min(0f)] private float _fallDamage = 10f;
+
+        private Transform _playerTransform;
+        private Collider _playerBodyCollider;
+        private AttributeSet _playerAttributeSet;
+
+        private Vector3 _initialSpawnPosition;
+        private Quaternion _initialSpawnRotation;
+
+        private int _currentCheckpointIndex = -1;
+        private bool _isHandlingFall;
+
+
+
+
+
+
         private GameManager _gameManager;
         private CombatMediator _playerCombatMediator;
 
@@ -162,6 +195,8 @@ namespace Core.Stage
 
             EndStage();
             OnStageFailed?.Invoke();
+
+            // 씬로더에 이벤트 보내기?
         }
 
     }
