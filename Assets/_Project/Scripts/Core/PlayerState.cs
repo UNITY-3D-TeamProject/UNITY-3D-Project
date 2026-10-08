@@ -7,6 +7,26 @@ namespace Core
 {
     public class PlayerState
     {
+        private const string CURRENT_HP_KEY = "CurrentHp";
+        private const string CURRENT_BATTERY_KEY = "CurrentBattery";
+
+        private readonly struct SRoundSnapshot
+        {
+            public float Health { get; }
+            public float Battery { get; }
+
+            public SRoundSnapshot(float health, float battery)
+            {
+                Health = health;
+                Battery = battery;
+            }
+        }
+
+        // Key: 라운드 인덱스, Value: 해당 라운드의 최초 능력치.
+        // 기존 씬 전환용 _playerAttributesForSaving과 별도로 관리한다.
+        private readonly Dictionary<int, SRoundSnapshot> _roundSnapshots = new();
+
+
         // SO 에셋원본에 정의된 어트리뷰트 이름이 필요함 (SO 원본을 읽기만함)
         private readonly SOAttributeData _playerSOAttributeData;
 
@@ -37,6 +57,82 @@ namespace Core
             }
             // 플레이어 SO 원본 데이터를 알 수 있게 된다.
             _playerSOAttributeData = playerSOattributeData;
+        }
+
+        // 해당 라운드의 최초 저장값이 있는지 확인한다.
+        public bool HasRoundSnapshot(int roundIndex)
+        {
+            return _roundSnapshots.ContainsKey(roundIndex);
+        }
+
+        // 해당 라운드에 처음 진입했을 때만 저장한다.
+        public void SaveRoundSnapshot(int roundIndex)
+        {
+            if (roundIndex < 0)
+            {
+                Debug.LogError("저장할 라운드 인덱스가 올바르지 않습니다.");
+                return;
+            }
+
+            // 재접촉하거나 사망 후 재시도해도 최초 값을 유지한다.
+            if (HasRoundSnapshot(roundIndex))
+            {
+                return;
+            }
+
+            if (!HasRoundAttributes())
+            {
+                Debug.LogError("라운드 능력치를 저장할 플레이어 또는 능력치가 없습니다.");
+                return;
+            }
+
+            float health = _playerCurrentAttributeSet.GetValue(CURRENT_HP_KEY);
+            float battery = _playerCurrentAttributeSet.GetValue(CURRENT_BATTERY_KEY);
+
+            // 초기화 전 또는 사망한 상태의 체력을 복구 기준으로 저장하지 않는다.
+            if (health <= 0f)
+            {
+                Debug.LogError("라운드 스냅샷은 능력치 초기화 후 생존 상태에서 저장해야 합니다.");
+                return;
+            }
+
+            _roundSnapshots.Add(
+                roundIndex,
+                new SRoundSnapshot(health, battery));
+        }
+
+        // 해당 라운드에 최초 저장했던 체력·배터리를 복원한다.
+        public void RestoreRoundSnapshot(int roundIndex)
+        {
+            if (!_roundSnapshots.TryGetValue(roundIndex, out SRoundSnapshot snapshot))
+            {
+                Debug.LogError($"라운드 {roundIndex}의 스냅샷이 없습니다.");
+                return;
+            }
+
+            if (!HasRoundAttributes())
+            {
+                Debug.LogError("라운드 능력치를 복원할 플레이어 또는 능력치가 없습니다.");
+                return;
+            }
+
+            _playerCurrentAttributeSet.SetValue(CURRENT_HP_KEY, snapshot.Health);
+            _playerCurrentAttributeSet.SetValue(CURRENT_BATTERY_KEY, snapshot.Battery);
+        }
+
+        // 새 스테이지 시도를 시작할 때 기존 라운드 기록을 비운다.
+        // 같은 스테이지에서 사망 후 재시도할 때는 호출하지 않는다.
+        public void ClearRoundSnapshots()
+        {
+            _roundSnapshots.Clear();
+        }
+
+        // 저장·복원에 필요한 플레이어 참조와 능력치가 있는지 확인한다.
+        private bool HasRoundAttributes()
+        {
+            return _playerCurrentAttributeSet != null &&
+                _playerCurrentAttributeSet.IsValidTarget(CURRENT_HP_KEY) &&
+                _playerCurrentAttributeSet.IsValidTarget(CURRENT_BATTERY_KEY);
         }
 
 
