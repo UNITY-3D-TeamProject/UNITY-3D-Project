@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-08** — 범용 피격 설계 논의(코드 변경 없음): 피격 출처 정보 전달 방식으로 A(타격/피해 분리)·B(직전 정보 맡겨두기)·C(GAS식 컨텍스트 관통)를 비교해 **C안 방향**으로 좁힘. `SEffectContext{Instigator, Vector3? Origin}`를 Apply→AttributeSet 콜백→Mediator로 관통, Combat은 무변경·`SHitInfo` 부활 안 함, 조종부는 `CombatMediator`가 `IHitController`로 연결, UI는 AttributeSet 콜백에서 직접 읽음. **미확정·이세훈 협의 필요, intent 미작성**: [피격 컨텍스트 C안 설계](./2026-10-08/hit-context-design-c.md)
 - **2026-10-07** — 점프 API 변경: `CharacterMotor.Jump(float jumpPower)`가 접지 무관하게 즉시 실행되고 `OnJumpStarted`/`OnJumpEnded`(착지) 이벤트를 발행한다. 모터의 `JumpSpeed` 제거, 점프력 보관과 "지상에서만" 정책은 `MoveMediator`로 이동. 컴파일 0에러, **Play 검증 미완, intent-015 `open`**: [점프 API 변경](./2026-10-07/jump-power-param-and-events.md)
 - **2026-10-04** — 원거리 적 사격 예고: 랜덤 대기 → 고정 예비 동작(조준 고정·회전 정지·레이저 조준선) → 발사하는 BT 노드 `AIRangedAttackAction`과 조준선 스킬 `EnemyAimLine`(`AttackWindup`)을 신규 작성했다. `AIController`에 범용 `FaceDirection`/`ExecuteSkill`/`StopSkill`을 추가하고, `Attack()`은 내부만 이를 조합하도록 바꿨다. 컴파일 0에러. **[USER] 프리팹·그래프 배선과 Play 검증 미완, intent-014 `open`**: [원거리 적 사격 예고](./2026-10-04/ranged-enemy-telegraph.md)
 - **2026-10-04** — 원거리 적 행동: NavMesh 후보점 샘플링으로 후퇴/측면 이동(`RetreatPointFinder` + `AIRetreatAction`), 엄폐 뒤로 쏘는 것을 막는 사선 조건(`AIHasLineOfFireCondition`) 추가. AIController에는 `Position` 1줄만 추가하고 Sensor는 무변경. 컴파일 0에러. **[USER] BT 그래프 배선과 Play 검증 미완, intent-013 `open`**: [원거리 적 행동](./2026-10-04/ranged-enemy-behavior.md)
