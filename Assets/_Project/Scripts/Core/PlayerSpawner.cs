@@ -65,9 +65,30 @@ public class PlayerSpawner : SpawnerBase
         }
 
         // 스테이지에서는 자기 위치, 로비에서는 복귀 위치를 사용한다.
-        Transform spawnPoint = _isLobbySpawner
-            ? GetLobbySpawnPoint(gameManager.SpawnStage)
-            : transform;
+        Transform spawnPoint;
+
+        if (_isLobbySpawner)
+        {
+            spawnPoint = GetLobbySpawnPoint(gameManager.SpawnStage);
+        }
+        else
+        {
+            StageManager stageManager = gameManager.CurrentStageManager;
+
+            if (stageManager == null)
+            {
+                Debug.LogError("스폰 위치를 결정할 StageManager가 없습니다.", this);
+                return;
+            }
+
+            spawnPoint = stageManager.GetInitialSpawnPoint();
+        }
+
+        if (spawnPoint == null)
+        {
+            Debug.LogError("플레이어 스폰 위치가 없습니다.", this);
+            return;
+        }
 
         if (!TrySpawnWithAttributes(
             _playerPrefab,

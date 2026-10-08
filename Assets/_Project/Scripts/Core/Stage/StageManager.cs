@@ -49,7 +49,8 @@ namespace Core.Stage
         private Vector3 _initialSpawnPosition;
         private Quaternion _initialSpawnRotation;
 
-
+        // 첫 라운드 스냅샷까지 준비됐는지 확인한다.
+        private bool _isInitialSnapshotReady;
 
 
         private GameManager _gameManager;
@@ -111,6 +112,12 @@ namespace Core.Stage
                 return;
             }
 
+            if (!_isInitialSnapshotReady)
+            {
+                Debug.LogError("첫 라운드 스냅샷이 준비되지 않았습니다.", this);
+                return;
+            }
+
             IsSuccess = false;
             IsRunning = true;
 
@@ -155,6 +162,84 @@ namespace Core.Stage
 
             UnbindPlayerDeath();
             _gameManager = null;
+        }
+
+        // 첫 라운드에 지정된 체크포인트를 최초 스폰 위치로 사용한다.
+        public Transform GetInitialSpawnPoint()
+        {
+            if (_checkpoints == null || _checkpoints.Length == 0)
+            {
+                Debug.LogError("체크포인트 목록이 없습니다.", this);
+                return null;
+            }
+
+            if (_roundCheckpointIndices == null ||
+                _roundCheckpointIndices.Length == 0)
+            {
+                Debug.LogError("라운드 시작 체크포인트 설정이 없습니다.", this);
+                return null;
+            }
+
+            int checkpointIndex = _roundCheckpointIndices[0];
+
+            if (checkpointIndex < 0 || checkpointIndex >= _checkpoints.Length)
+            {
+                Debug.LogError("첫 라운드 체크포인트 인덱스가 올바르지 않습니다.", this);
+                return null;
+            }
+
+            Transform spawnPoint = _checkpoints[checkpointIndex].RespawnPoint;
+
+            if (spawnPoint == null)
+            {
+                Debug.LogError("첫 라운드 체크포인트의 복귀 위치가 없습니다.", this);
+                return null;
+            }
+
+            return spawnPoint;
+        }
+
+        // 최초 스폰의 능력치 적용이 끝난 뒤 호출한다.
+        // 같은 씬의 사망 복구에서는 호출하지 않는다.
+        public void InitializeFirstRound(PlayerState playerState)
+        {
+            if (_isInitialSnapshotReady)
+            {
+                return;
+            }
+
+            if (playerState == null || playerState.CurrentAttributeSet == null)
+            {
+                Debug.LogError("첫 라운드를 준비할 플레이어가 없습니다.", this);
+                return;
+            }
+
+            if (_currentStageBaseInstance == null)
+            {
+                Debug.LogError("첫 라운드를 준비할 스테이지가 없습니다.", this);
+                return;
+            }
+
+            if (GetInitialSpawnPoint() == null)
+            {
+                return;
+            }
+
+            // 새로운 스테이지 진입이므로 이전 스테이지의 라운드 기록을 비운다.
+            // 씬 전환용 능력치 저장값은 건드리지 않는다.
+            playerState.ClearRoundSnapshots();
+            playerState.SaveRoundSnapshot(0);
+
+            // HP 초기화 실패 등으로 저장되지 않았다면 시작하지 않는다.
+            if (!playerState.HasRoundSnapshot(0))
+            {
+                Debug.LogError("첫 라운드 스냅샷 저장에 실패했습니다.", this);
+                return;
+            }
+
+            _currentRoundIndex = 0;
+            _currentCheckpointIndex = _roundCheckpointIndices[0];
+            _isInitialSnapshotReady = true;
         }
 
         // 새로 생성된 플레이어의 사망이벤트를 StageManager에 연결하는 함수

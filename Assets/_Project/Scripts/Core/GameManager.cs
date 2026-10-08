@@ -29,6 +29,7 @@ namespace Core
             = EPlayerSpawnReason.NewGame;
 
 
+        public StageManager CurrentStageManager => _stageManager;
 
         public GameState CurrentState { get; private set; } = GameState.Playing;
 
@@ -66,26 +67,26 @@ namespace Core
             SetCursorLocked(true);
         }
 
-        // 플레이어의 상태 처리를 완료하고 스폰 이벤트를 알린다.
-        public void CompletePlayerSpawn(AttributeSet _spawnedPlayerattributeSet)
-        { 
-            if (_spawnedPlayerattributeSet == null)
+        public void CompletePlayerSpawn(AttributeSet spawnedPlayerAttributeSet)
+        {
+            if (spawnedPlayerAttributeSet == null)
             {
                 Debug.LogError("등록할 플레이어의 AttributeSet이 없습니다.", this);
                 return;
             }
-            // playerState가 있는지
+
             if (!HasPlayerState)
             {
                 Debug.LogError("PlayerState가 초기화되지 않았습니다.", this);
                 return;
             }
 
-            // playerState가 방금 생성한 플레이어 인스턴스의 어트리뷰트를 알게됨
-            playerState.SetCurrentPlayer(_spawnedPlayerattributeSet);
+            playerState.SetCurrentPlayer(spawnedPlayerAttributeSet);
 
-            // 씬 이동은 저장값을 복원하고, 새 게임·부활은 Effect 초기값을 유지한다.
+            // 스포너에서 초기 Effect 적용은 이미 끝난 상태다.
+            // 씬 이동이라면 여기서 이전 씬의 능력치를 복원한다.
             bool shouldRestore = SpawnReason == EPlayerSpawnReason.SceneTransition;
+
             if (shouldRestore)
             {
                 playerState.RestoreSavedAttributes();
@@ -95,8 +96,20 @@ namespace Core
                 playerState.ClearSavedAttributes();
             }
 
-            // UIManager가 이벤트를 받아서 ui와 플레이어 어트리뷰트 셋을 연동함 
-            OnPlayerSpawned?.Invoke(_spawnedPlayerattributeSet);
+            // 최종 능력치가 결정된 다음 첫 라운드 스냅샷을 저장한다.
+            if (_stageManager != null)
+            {
+                _stageManager.InitializeFirstRound(playerState);
+            }
+
+            // HUD 연결과 StageManager의 기존 사망 이벤트 구독을 실행한다.
+            OnPlayerSpawned?.Invoke(spawnedPlayerAttributeSet);
+
+            // 스냅샷 저장과 이벤트 연결이 끝난 뒤 시작한다.
+            if (_stageManager != null)
+            {
+                _stageManager.StartStage();
+            }
         }
 
         public void ClearSpawnStage()
@@ -190,7 +203,7 @@ namespace Core
             }
 
             _stageManager.TakeCurrentStage(stage.StageType);
-            _stageManager.StartStage();
+            //_stageManager.StartStage();
         }
 
         // SceneLoader의 일반 씬 이동 직전에 현재 능력치를 저장한다.
