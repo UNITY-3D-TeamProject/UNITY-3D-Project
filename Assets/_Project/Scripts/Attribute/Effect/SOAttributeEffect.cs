@@ -56,9 +56,10 @@ namespace Attribute.Effect
         /// Effect 적용을 위한 함수
         /// </summary>
         /// <param name="target">effect 를 적용할 객체의 IEffectTarget</param>
-        /// <param name="cursor">effect 를 발생시키는 객체의 IEffectTarget (ValueSource 가 Attribute 일 때 필수)</param>
-        public void Apply(IEffectTarget target, IEffectTarget cursor = null)
+        /// <param name="context">effect 의 출처 정보. Cursor 는 effect 를 발생시키는 객체의 IEffectTarget (ValueSource 가 Attribute 일 때 필수)</param>
+        public void Apply(IEffectTarget target, SEffectContext context = default)
         {
+            IEffectTarget cursor = context.Cursor;
             if (_valueSource == EValueSource.Attribute)
             {
                 if (cursor == null) throw new InvalidOperationException("cursor : is null");
@@ -75,21 +76,21 @@ namespace Attribute.Effect
 
             float amount = (_valueSource == EValueSource.Float) ? _amount : (cursor?.GetValue(_cursorAttribute) ?? 0);
             float newValue = Modifiers.Modify(_modifier, target.GetValue(_targetAttribute), amount);
-            target.SetValue(_targetAttribute, newValue);
+            target.SetValue(_targetAttribute, newValue, context);
         }
 
         /// <summary>
         /// target 과 그 자식에서 IEffectTarget 을 찾아 Effect 를 적용한다.
         /// </summary>
         /// <param name="target">effect 를 적용할 GameObject</param>
-        /// <param name="cursor">effect 를 발생시키는 객체의 IEffectTarget (ValueSource 가 Attribute 일 때 필수)</param>
+        /// <param name="context">effect 의 출처 정보. Cursor 는 effect 를 발생시키는 객체의 IEffectTarget (ValueSource 가 Attribute 일 때 필수)</param>
         /// <returns>대상이 없거나 대상 어트리뷰트를 갖지 않으면 적용하지 않고 false</returns>
-        public bool Apply(GameObject target, IEffectTarget cursor = null)
+        public bool Apply(GameObject target, SEffectContext context = default)
         {
             IEffectTarget effectTarget = target ? target.GetComponentInChildren<IEffectTarget>() : null;
             if (effectTarget == null || !effectTarget.IsValidTarget(_targetAttribute)) return false;
 
-            Apply(effectTarget, cursor);
+            Apply(effectTarget, context);
             return true;
         }
         #endregion

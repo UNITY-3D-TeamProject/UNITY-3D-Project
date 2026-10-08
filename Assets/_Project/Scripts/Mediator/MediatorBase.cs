@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Attribute.Core;
 
 namespace Mediator
 {
@@ -10,12 +11,12 @@ namespace Mediator
     public abstract class MediatorBase : MonoBehaviour
     {
         #region Private Fields
-        private readonly Dictionary<string, Action<float, float>> _attributeCallback = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Action<float, float, SEffectContext>> _attributeCallback = new(StringComparer.OrdinalIgnoreCase);
         private GetAttributeDelegate _getAttribute;
         #endregion
 
         #region Properties
-        protected Dictionary<string, Action<float, float>> AttributeCallback { get=>_attributeCallback; }
+        protected Dictionary<string, Action<float, float, SEffectContext>> AttributeCallback { get=>_attributeCallback; }
 
         protected GetAttributeDelegate AttributeGetter => _getAttribute;
         #endregion
@@ -61,10 +62,11 @@ namespace Mediator
         /// <param name="attributeName">변경된 속성 이름</param>
         /// <param name="newValue">변경 후 값</param>
         /// <param name="oldValue">변경 전 값</param>
-        public void NotifyAttributeChanged(string attributeName, float newValue, float oldValue)
+        /// <param name="context">값 변경의 출처 정보</param>
+        public void NotifyAttributeChanged(string attributeName, float newValue, float oldValue, SEffectContext context)
         {
             if (_attributeCallback.TryGetValue(attributeName, out var callback))
-                callback?.Invoke(newValue, oldValue);
+                callback?.Invoke(newValue, oldValue, context);
         }
         #endregion
 

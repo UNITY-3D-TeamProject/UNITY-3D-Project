@@ -65,7 +65,7 @@ namespace Hit
                 if (!target.IsValidTarget(hitEffect.TargetAttribute)) continue;
                 if (!appliedTargets.Add(target)) continue;
 
-                hitEffect.Apply(target, cursor);
+                hitEffect.Apply(target, new SEffectContext(cursor));
             }
         }
         #endregion

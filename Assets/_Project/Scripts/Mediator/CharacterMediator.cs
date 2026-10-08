@@ -102,11 +102,11 @@ namespace Mediator
         /// <summary>
         /// 중재자들이 원하는 값 변경시 알림 발송
         /// </summary>
-        private void OnAttributeChangeCallback(string attributeName, float newValue, float oldValue)
+        private void OnAttributeChangeCallback(string attributeName, float newValue, float oldValue, SEffectContext context)
         {
             foreach (var mediator in _mediators)
             {
-                mediator.NotifyAttributeChanged(attributeName, newValue, oldValue);
+                mediator.NotifyAttributeChanged(attributeName, newValue, oldValue, context);
             }
         }
         /// <summary>

@@ -1,4 +1,5 @@
 using System;
+using Attribute.Core;
 using Combat;
 using UnityEngine;
 
@@ -54,7 +55,7 @@ namespace Mediator.SubMediators
         #region Protected Methods
         protected override void InitAttributeCallback()
         {
-            AttributeCallback.TryAdd(_healthValueKey, (float newValue, float oldValue) =>
+            AttributeCallback.TryAdd(_healthValueKey, (float newValue, float oldValue, SEffectContext context) =>
             {
                 if (_combatComponent != null) _combatComponent.Health = newValue;
             });
