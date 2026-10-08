@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Movement
@@ -34,8 +35,7 @@ namespace Movement
         private Vector3 _externalDisplacement;
         private Vector3 _direction;
         private float _speed;
-        private float _jumpPower;       // Adapter를 통해 JumPower 값 가져옴.
-        private bool _jumpRequested;
+        private bool _isJumping;
         #endregion
 
         #region Properties
@@ -53,13 +53,6 @@ namespace Movement
             set => _speed = value;
         }
 
-        /// <summary>점프 시 부여되는 초기 상승 속도.</summary>
-        public float JumpSpeed
-        {
-            get => _jumpPower;
-            set => _jumpPower = value;
-        }
-
         /// <summary>중력 가속도 크기(양수). 아래 방향으로 적용된다.</summary>
         public float Gravity
         {
@@ -69,6 +62,14 @@ namespace Movement
 
         /// <summary>지면에 닿아 있는지 여부.</summary>
         public bool IsGrounded => _controller.isGrounded;
+        #endregion
+
+        #region Events
+        /// <summary>점프를 시작했을 때 발생한다. 공중에서 다시 점프해도 매번 발생한다.</summary>
+        public event Action OnJumpStarted;
+
+        /// <summary>점프 후 착지했을 때 발생한다.</summary>
+        public event Action OnJumpEnded;
         #endregion
 
         #region Unity Lifecycle
@@ -93,23 +94,20 @@ namespace Movement
                     this);
             }
         }
-
-        //private void FixedUpdate()
+        
         private void Update()
         {
-            ConsumeJumpRequest();
             Move(Time.deltaTime);
-            //Move(Time.fixedDeltaTime);
         }
         #endregion
 
         #region Public Methods
         /// <summary>
-        /// 외부 요인에 의한 변위를 다음 FixedUpdate 스텝 이동에 합산한다.
+        /// 외부 요인에 의한 변위를 다음 Update 스텝 이동에 합산한다.
         /// 여러 번 호출하면 누적된다.
         /// 이동 Platform 탑승, 컨베이어, 넉백, 바람 등에서 사용
         /// 이 컴포넌트는 변위의 원인을 알지 않는다.
-        /// 누적된 값은 다음 FixedUpdate의 이동 때 적용되고 비워진다.
+        /// 누적된 값은 다음 Update의 이동 때 적용되고 비워진다.
         /// </summary>
         /// <param name="displacement">다음 스텝에 추가로 적용할 위치 변화량.</param>
         public void AddExternalDisplacement(Vector3 displacement)
@@ -118,39 +116,21 @@ namespace Movement
         }
 
         /// <summary>
-        /// 점프를 요청한다. 실제 접지 판정과 발동은 다음 FixedUpdate에서 이루어진다.
-        /// Update 타이밍(입력 이벤트)에 곧바로 isGrounded를 확인하면, 물리 스텝 사이의
-        /// 타이밍 불일치로 인해 실제로는 접지 상태인데도 입력이 씹히는 문제가 있어 분리했다.
+        /// jumpPower 로 즉시 점프한다. 접지 여부와 관계없이 호출되면 반드시 실행된다.
+        /// 지상에서만 점프할지 등의 정책은 호출하는 쪽이 정한다.
         /// </summary>
-        public void Jump()
+        /// <param name="jumpPower">점프 시 부여할 초기 상승 속도</param>
+        public void Jump(float jumpPower)
         {
-            // Debug.Log($"[JumpDebug] Jump() called. _jumpSpeed={_jumpSpeed}, _controller.enabled={_controller.enabled}");
             if (!_controller.enabled) return;
 
-            _jumpRequested = true;
+            _verticalVelocity = jumpPower;
+            _isJumping = true;
+            OnJumpStarted?.Invoke();
         }
         #endregion
 
         #region Private Methods
-        /// <summary>
-        /// 요청된 점프를 FixedUpdate 타이밍의 접지 판정으로 소비한다.
-        /// 접지가 아니어도 요청은 이번 호출로 소멸한다(다음 FixedUpdate까지만 유효).
-        /// </summary>
-        private void ConsumeJumpRequest()
-        {
-            // if (_jumpRequested)
-            // {
-            //     Debug.Log($"[JumpDebug] ConsumeJumpRequest(). isGrounded={_controller.isGrounded}, _jumpSpeed={_jumpPower}");
-            // }
-
-            if (_jumpRequested && _controller.isGrounded)
-            {
-                _verticalVelocity = _jumpPower;
-            }
-
-            _jumpRequested = false;
-        }
-
         /// <summary>
         /// Direction/Speed와 중력으로 이번 스텝의 이동을 적용한다.
         /// </summary>
@@ -172,6 +152,14 @@ namespace Movement
             Physics.SyncTransforms();
             
             _controller.Move((velocity * deltaTime) + displacementToApply);
+
+            // 점프 후 하강하다 지면에 닿으면 착지
+            bool hasLanded = _isJumping && _controller.isGrounded && (_verticalVelocity <= 0.0f);
+            if (hasLanded)
+            {
+                _isJumping = false;
+                OnJumpEnded?.Invoke();
+            }
         }
 
         /// <summary>
