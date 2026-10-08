@@ -9,11 +9,13 @@ namespace Core.Stage
 {
     public class StageManager : MonoBehaviour
     {
+
         [Header("Checkpoints")]
         [Tooltip("진행 경로 순서로 체크포인트를 연결합니다. 씬 전환으로 스테이지에 진입하면 " +
             "Round Checkpoint Indices의 첫 값이 가리키는 체크포인트의 RespawnPoint에 최초 스폰합니다. " +
             "이 배열의 0번을 최초 스폰 위치로 사용하려면 해당 첫 값을 0으로 설정하세요.")]
         [SerializeField] private CheckpointTrigger[] _checkpoints;
+
         [Header("Round Checkpoints")]
         [Tooltip("배열 순서는 라운드 순서이며, 각 값은 Checkpoints 배열의 인덱스입니다.")]
         [SerializeField] private int[] _roundCheckpointIndices;
@@ -29,9 +31,6 @@ namespace Core.Stage
         // 사망으로 라운드를 재시작하면 해당 라운드 시작점까지 되돌린다.
         private int _currentCheckpointIndex = -1;
 
-        public int CurrentRoundIndex => _currentRoundIndex;
-        public int CurrentCheckpointIndex => _currentCheckpointIndex;
-
         private Transform _playerTransform;
         private Collider _playerBodyCollider;
         private AttributeSet _playerAttributeSet;
@@ -42,14 +41,20 @@ namespace Core.Stage
         // 첫 라운드 스냅샷까지 준비됐는지 확인한다.
         private bool _isInitialSnapshotReady;
 
-
         private GameManager _gameManager;
         private CombatMediator _playerCombatMediator;
 
+        private StageBase _currentStageBaseInstance;
+
+        public int CurrentRoundIndex => _currentRoundIndex;
+        public int CurrentCheckpointIndex => _currentCheckpointIndex;
+
         // 현재 스테이지의 clear 완성도 => 각 스테이지의 clear 완성도와 같은 값을 공유
         public int CurrentClearProgress { get; private set; }
+
         // 1.튜토리얼,2.인스타,3.파일,4.보안,5.라이브앱
         public bool IsSuccess { get; private set; }
+
         // 현재 스테이지
         public EStageType CurrentStage { get; private set; }
 
@@ -64,7 +69,36 @@ namespace Core.Stage
         public event Action OnAllStagesCompleted;
         public event Action OnStageFailed;
 
-        private StageBase _currentStageBaseInstance;
+        private void OnEnable()
+        {
+            _gameManager = GameManager.Instance;
+
+            if (_gameManager == null)
+            {
+                return;
+            }
+
+            BindCheckpoints();
+            _gameManager.OnPlayerSpawned += HandlePlayerSpawned;
+
+            // 이미 생성된 플레이어가 있다면 바로 연결한다.
+            HandlePlayerSpawned(_gameManager.CurrentPlayerState);
+        }
+
+        private void OnDisable()
+        {
+            UnbindCheckpoints();
+
+            if (_gameManager != null)
+            {
+                _gameManager.OnPlayerSpawned -= HandlePlayerSpawned;
+            }
+
+            UnbindPlayerDeath();
+            _playerAttributeSet = null;
+            _playerBodyCollider = null;
+            _gameManager = null;
+        }
 
         public void TakeCurrentStage(EStageType currentStage)
         {
@@ -113,50 +147,6 @@ namespace Core.Stage
 
             _currentStageBaseInstance.StartStage();
             OnStageStarted?.Invoke();
-        }
-
-        private void EndStage()
-        {
-            IsRunning = false;
-
-            StageBase stage = _currentStageBaseInstance;
-            _currentStageBaseInstance = null;
-
-            if (stage != null)
-            {
-                stage.EndStage();
-            }
-        }
-
-        private void OnEnable()
-        {
-            _gameManager = GameManager.Instance;
-
-            if (_gameManager == null)
-            {
-                return;
-            }
-
-            BindCheckpoints();
-            _gameManager.OnPlayerSpawned += HandlePlayerSpawned;
-
-            // 이미 생성된 플레이어가 있다면 바로 연결한다.
-            HandlePlayerSpawned(_gameManager.CurrentPlayerState);
-        }
-
-        private void OnDisable()
-        {
-            UnbindCheckpoints();
-
-            if (_gameManager != null)
-            {
-                _gameManager.OnPlayerSpawned -= HandlePlayerSpawned;
-            }
-
-            UnbindPlayerDeath();
-            _playerAttributeSet = null;
-            _playerBodyCollider = null;
-            _gameManager = null;
         }
 
         // 첫 라운드에 지정된 체크포인트를 최초 스폰 위치로 사용한다.
@@ -242,6 +232,19 @@ namespace Core.Stage
             _currentRoundIndex = 0;
             _currentCheckpointIndex = _roundCheckpointIndices[0];
             _isInitialSnapshotReady = true;
+        }
+
+        private void EndStage()
+        {
+            IsRunning = false;
+
+            StageBase stage = _currentStageBaseInstance;
+            _currentStageBaseInstance = null;
+
+            if (stage != null)
+            {
+                stage.EndStage();
+            }
         }
 
         // 새로 생성된 플레이어의 사망이벤트를 StageManager에 연결하는 함수
