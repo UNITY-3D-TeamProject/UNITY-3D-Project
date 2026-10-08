@@ -49,6 +49,8 @@ namespace Mediator
         public event Action OnHit;
         /// <summary>캐릭터가 사망했을 때 GameObject 파괴 직전에 발생한다.</summary>
         public event Action OnDeath;
+        /// <summary>스킬이 사용되었을 때 (스킬 이름, 쿨타임)을 알린다. 요청 1회당 1번 발생한다.</summary>
+        public event Action<string, float> OnSkillUsed;
         #endregion
 
         #region Unity Lifecycle
@@ -219,6 +221,11 @@ namespace Mediator
             return true;
         }
 
+        private void OnSkillUsedCallback(string skillName, float cooldown)
+        {
+            OnSkillUsed?.Invoke(skillName, cooldown);
+        }
+
         private void OnHitCallback()
         {
             Debug.Log($"{name} is hit!");
@@ -249,6 +256,7 @@ namespace Mediator
             if (_skillMediator && _moveMediator) _skillMediator.OnRollRequested += _moveMediator.CommandRoll;
             if (_skillMediator && _spawnMediator) _skillMediator.OnFireRequested += _spawnMediator.CommandSpawnBullet;
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested += OnFireCallback;
+            if (_skillMediator) _skillMediator.OnSkillUsed += OnSkillUsedCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
         }
@@ -262,6 +270,7 @@ namespace Mediator
             if (_skillMediator && _moveMediator) _skillMediator.OnRollRequested -= _moveMediator.CommandRoll;
             if (_skillMediator && _spawnMediator) _skillMediator.OnFireRequested -= _spawnMediator.CommandSpawnBullet;
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested -= OnFireCallback;
+            if (_skillMediator) _skillMediator.OnSkillUsed -= OnSkillUsedCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
         }

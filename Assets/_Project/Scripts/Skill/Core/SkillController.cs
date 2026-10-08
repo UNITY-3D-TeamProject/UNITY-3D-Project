@@ -151,6 +151,18 @@ namespace Skill.Core
         }
 
         /// <summary>
+        /// 스킬의 쿨타임을 반환한다.
+        /// </summary>
+        /// <param name="skillName">대상 스킬 이름</param>
+        /// <returns>스킬의 쿨타임(초). 스킬이 없으면 0</returns>
+        public float GetSkillCooldown(string skillName)
+        {
+            if (!TryGetSkill(skillName, out var skill)) return 0.0f;
+
+            return skill.Cooldown;
+        }
+
+        /// <summary>
         /// 등록된 모든 스킬의 진행 중인 동작을 중지한다.
         /// </summary>
         public void StopAllSkills()

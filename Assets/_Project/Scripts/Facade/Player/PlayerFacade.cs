@@ -45,6 +45,8 @@ namespace Facade.Player
         public event Action OnHit;
         /// <summary>플레이어가 사망했을 때 발생한다.</summary>
         public event Action OnDeath;
+        /// <summary>플레이어가 스킬을 사용했을 때 (스킬 이름, 쿨타임)을 알린다. 사용 1회당 1번 발생한다.</summary>
+        public event Action<string, float> OnSkillUsed;
         /// <summary>설정창 열기 입력이 들어왔을 때 발생한다.</summary>
         public event Action OnOpenSettingsRequested;
         /// <summary>설정창 닫기 입력이 들어왔을 때 발생한다.</summary>
@@ -152,6 +154,7 @@ namespace Facade.Player
                 _characterMediator.OnAttributeChanged += RelayAttributeChanged;
                 _characterMediator.OnHit += RelayHit;
                 _characterMediator.OnDeath += RelayDeath;
+                _characterMediator.OnSkillUsed += RelaySkillUsed;
             }
 
             if (!_playerInput || _playerInput.actions == null) return;
@@ -173,6 +176,7 @@ namespace Facade.Player
                 _characterMediator.OnAttributeChanged -= RelayAttributeChanged;
                 _characterMediator.OnHit -= RelayHit;
                 _characterMediator.OnDeath -= RelayDeath;
+                _characterMediator.OnSkillUsed -= RelaySkillUsed;
             }
 
             if (_openSettingsAction != null) _openSettingsAction.performed -= HandleOpenSettings;
@@ -195,6 +199,11 @@ namespace Facade.Player
         private void RelayDeath()
         {
             OnDeath?.Invoke();
+        }
+
+        private void RelaySkillUsed(string skillName, float cooldown)
+        {
+            OnSkillUsed?.Invoke(skillName, cooldown);
         }
 
         private void HandleOpenSettings(InputAction.CallbackContext context)

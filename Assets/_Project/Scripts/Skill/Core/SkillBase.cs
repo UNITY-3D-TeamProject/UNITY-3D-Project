@@ -25,6 +25,22 @@ namespace Skill.Core
         
         #region Properties
         public string SkillName => _skillName;
+
+        /// <summary>스킬의 쿨타임(초). ICooldownCost 코스트 중 가장 긴 값이며, 없으면 0.</summary>
+        public float Cooldown
+        {
+            get
+            {
+                float cooldown = 0.0f;
+                if (_costs == null) return cooldown;
+
+                foreach (ISkillCost cost in _costs)
+                {
+                    if (cost is ICooldownCost cooldownCost) cooldown = Mathf.Max(cooldown, cooldownCost.Cooldown);
+                }
+                return cooldown;
+            }
+        }
         #endregion
 
         #region Unity Lifecycle
