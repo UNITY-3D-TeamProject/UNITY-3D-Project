@@ -3,8 +3,13 @@ using UnityEngine;
 
 namespace Map.Maze
 {
+    /// <summary>
+    /// 격자 미로를 만드는 순수 C# 클래스. 재귀 백트래킹으로 모든 칸이 한 덩어리로 이어진 미로(갈림길은 있지만 순환은 없음)를 만든다.
+    /// 좌표는 (x, y)이고 북쪽이 +y, 동쪽이 +x 다. 씬 배치는 각 맵 생성기가 맡는다.
+    /// </summary>
     public class MazeGenerator
     {
+        // 북쪽이 +y, 동쪽이 +x
         public enum EDirection
         {
             North = 0,
@@ -13,19 +18,21 @@ namespace Map.Maze
             West = 3
         }
 
+        /// <summary>미로의 한 칸. 네 방향의 통로 여부를 담는다.</summary>
         public struct SCell
         {
             public int X;
             public int Y;
-            public bool IsVisited;
+            public bool IsVisited;   // 생성 중에만 쓰는 방문 표시
             
-            // True if there is a passage (no wall) in that direction
+            // 해당 방향으로 통로가 열려 있으면(벽이 없으면) true
             public bool OpenNorth;
             public bool OpenEast;
             public bool OpenSouth;
             public bool OpenWest;
         }
 
+        // GenerateMaze 가 실행되는 동안 재귀 함수가 함께 쓰는 작업용 값
         private int _width;
         private int _height;
         private SCell[,] _grid;
@@ -53,6 +60,7 @@ namespace Map.Maze
             return _grid;
         }
 
+        // 현재 칸에서 아직 가 보지 않은 이웃으로 무작위 순서로 길을 뚫고 들어간다. 막히면 되돌아온다.
         private void RecursiveBacktracking(int x, int y)
         {
             _grid[x, y].IsVisited = true;
@@ -62,7 +70,7 @@ namespace Map.Maze
                 EDirection.North, EDirection.East, EDirection.South, EDirection.West
             };
             
-            // Shuffle directions (Fisher-Yates)
+            // 방향 순서를 섞는다 (피셔-예이츠 셔플)
             for (int i = dirs.Count - 1; i > 0; i--)
             {
                 int rnd = _random.Next(i + 1);
@@ -86,7 +94,7 @@ namespace Map.Maze
 
                 if (nx >= 0 && nx < _width && ny >= 0 && ny < _height && !_grid[nx, ny].IsVisited)
                 {
-                    // Remove walls
+                    // 두 칸 사이의 벽을 양쪽 칸에서 모두 없앤다
                     switch (dir)
                     {
                         case EDirection.North:
@@ -149,6 +157,9 @@ namespace Map.Maze
             return distances;
         }
 
+        /// <summary>
+        /// start 에서 end 까지의 최단 경로를 A* 로 구한다. 경로가 없으면 null.
+        /// </summary>
         public List<Vector2Int> FindPathAStar(SCell[,] grid, Vector2Int start, Vector2Int end)
         {
             int w = grid.GetLength(0);
@@ -198,7 +209,7 @@ namespace Map.Maze
                 {
                     if (closedSet.Contains(neighbor)) continue;
 
-                    float tentative_gScore = gScore[current] + 1; // All steps cost 1
+                    float tentative_gScore = gScore[current] + 1; // 한 칸 이동 비용은 항상 1
 
                     if (!openSet.Contains(neighbor))
                     {
@@ -215,9 +226,10 @@ namespace Map.Maze
                 }
             }
 
-            return null; // No path found
+            return null; // 경로 없음
         }
 
+        // 도착 칸에서 온 길을 거슬러 올라가 시작 칸부터의 경로로 만든다.
         private List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int current)
         {
             List<Vector2Int> totalPath = new List<Vector2Int> { current };
@@ -229,6 +241,7 @@ namespace Map.Maze
             return totalPath;
         }
 
+        // 통로로 이어진 이웃 칸들
         private List<Vector2Int> GetNeighbors(SCell[,] grid, Vector2Int pos)
         {
             List<Vector2Int> neighbors = new List<Vector2Int>();

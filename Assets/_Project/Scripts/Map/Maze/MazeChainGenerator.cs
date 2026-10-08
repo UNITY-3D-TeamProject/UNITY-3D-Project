@@ -14,8 +14,8 @@ namespace Map.Maze
     public class MazeChainGenerator : MapGeneratorBase
     {
         #region Constants
-        private const float START_HEIGHT_OFFSET = 0.1f;
-        private const float FLOOR_THICKNESS     = 0.5f;
+        private const float START_HEIGHT_OFFSET = 0.1f;   // 플레이어가 바닥에 파묻히지 않도록 시작 위치를 띄우는 높이
+        private const float FLOOR_THICKNESS     = 0.5f;   // 바닥 두께. 윗면이 y = 0 이 되도록 아래로 내려 놓는다
         #endregion
 
         #region Serialized Fields
@@ -101,6 +101,7 @@ namespace Map.Maze
         #endregion
 
         #region Private Methods
+        // 생성에 꼭 필요한 프리팹이 모두 연결되어 있는지 확인한다. (입구 표시 프리팹은 선택)
         private bool HasAllPrefabs()
         {
             if ((_themes == null) || (_themes.Length == 0)) return false;
@@ -131,6 +132,7 @@ namespace Map.Maze
             return new Vector2Int(farthestColumn, exitRow);
         }
 
+        // 미로 하나의 바닥·벽·출구·입구 표시를 mazeRoot 아래에 놓는다. 칸 (x, y) 의 중앙은 (x * 칸 크기, 0, y * 칸 크기) 이다.
         private void BuildMaze(
             Transform mazeRoot,
             MazeGenerator.SCell[,] grid,
@@ -236,11 +238,13 @@ namespace Map.Maze
             }
         }
 
+        // 칸의 바닥 중앙 (월드 좌표)
         private Vector3 GetCellCenter(Transform mazeRoot, Vector2Int cell)
         {
             return mazeRoot.TransformPoint(new Vector3(cell.x * _tileSize, 0.0f, cell.y * _tileSize));
         }
 
+        // 프리팹을 parent 아래 지정한 로컬 위치·회전으로 놓는다.
         private static void PlaceObject(
             GameObject prefab,
             Transform parent,

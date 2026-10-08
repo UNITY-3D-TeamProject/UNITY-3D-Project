@@ -12,6 +12,7 @@ namespace Map.Maze
     public class MazeMapGenerator : MapGeneratorBase
     {
         #region Constants
+        // 플레이어가 바닥에 파묻히지 않도록 시작 위치를 띄우는 높이
         private const float START_HEIGHT_OFFSET = 0.1f;
         #endregion
 
@@ -89,6 +90,7 @@ namespace Map.Maze
         #endregion
 
         #region Private Methods
+        // 네 변 가운데 하나를 고르고 그 변 위의 칸 하나를 무작위로 고른다.
         private Vector2Int PickEdgeCell(System.Random random)
         {
             switch (random.Next(4))
@@ -100,6 +102,7 @@ namespace Map.Maze
             }
         }
 
+        // 시작 칸에서 가장 먼 칸 (걸어가야 하는 칸 수 기준)
         private Vector2Int FindFarthestCell(int[,] distances)
         {
             Vector2Int farthest = Vector2Int.zero;
@@ -120,11 +123,13 @@ namespace Map.Maze
             return farthest;
         }
 
+        // 칸의 바닥 중앙 (월드 좌표)
         private Vector3 GetCellCenter(Transform root, Vector2Int cell)
         {
             return root.TransformPoint(new Vector3(cell.x * _tileSize, 0.0f, cell.y * _tileSize));
         }
 
+        // 칸 하나에 맞는 타일을 골라 놓는다.
         private void CreateTile(MazeGenerator.SCell cell, Transform root)
         {
             SelectTile(cell, out GameObject prefab, out float rotationY);
