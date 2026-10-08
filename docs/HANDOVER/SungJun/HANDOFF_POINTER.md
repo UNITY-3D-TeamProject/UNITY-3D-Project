@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-09** — 폰 주인 노래 컷씬의 영상 재생과 실시간 연출 방식 검토: [컷씬 구현 방식 검토](./2026-10-09/phone-owner-cutscene-options.md)
 - **2026-10-08** — GameManager 코드·주석 보존, 목적별 선언 및 함수 순서만 정리: [배치 정리](./2026-10-08/game-manager-member-order.md)
 - **2026-10-08** — 체크포인트 최초 스폰 선택 기준 툴팁 추가, 플레이어 몸체 캐싱 코드 존재 확인: [툴팁 및 캐싱 확인](./2026-10-08/checkpoint-initial-spawn-tooltip.md)
 - **2026-10-08** — StageManager의 CheckpointTrigger 관리·도달 처리 구현, 빌드 오류 0, 사용자 코드 검토 및 Inspector 검증 대기: [구현 기록](./2026-10-08/stage-checkpoint-events-implementation.md)
