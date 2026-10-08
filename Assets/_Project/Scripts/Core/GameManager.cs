@@ -17,31 +17,34 @@ namespace Core
             Pause,
         }
 
+        // 지금은 실험을 위해 CurrentState의 초기값을 Playing으로 설정
         public GameState CurrentState { get; private set; } = GameState.Playing;
 
         // 플레이어 스폰 이유
         public enum EPlayerSpawnReason
-        {
-            NewGame,
-            SceneTransition,
+        { 
+            NewGame, // 새 게임 
+            SceneTransition, // 씬 변경될 때
         }
 
+        // 플레이어 스폰 이유는 초기값은 당연히 NewGame으로 설정 
         public EPlayerSpawnReason SpawnReason { get; private set; }
             = EPlayerSpawnReason.NewGame;
 
 
-        // 저장할 능력치 이름 목록을 확인하기 위해 (playerState를 초기화 할 때 넣어줄 매개변수 값)
+        // 저장할 능력치 이름 목록을 확인하기 위한 플레이어 SO 원본 (playerState를 초기화 할 때 넣어줄 매개변수 값)
         [SerializeField] private SOAttributeData _playerSOAttributeData;
 
+        // 게임중에 바뀔 플레이어 데이터에 관련해서 만들 스크립트 변수
         public PlayerState playerState { get; private set; }
 
         // playerState가 아직 초기화되지 않았다면 null 반환
         public AttributeSet CurrentPlayerState => playerState?.CurrentAttributeSet;
 
-        // GameManager의 초기화가 완료됐는지 확인한다.
+
         // playerState가 new를 통해 생성되면 그 후 부터 true
         public bool HasPlayerState => playerState != null;
-
+        // playerState가 저장된 어트리뷰트값을 가지고 있는지
         public bool HasSavedPlayerAttributes => playerState?.HasSavedAttributes ?? false;
 
         // 플레이어를 스폰할 때 이벤트 
@@ -51,7 +54,7 @@ namespace Core
 
         public StageManager CurrentStageManager => _stageManager;
 
-        // 스폰할 때 위치마다 다 달라서 저장해둘 값
+        // 어떤 스테이지에서 넘어왔는지를 체크해서 그에 따라 다르게 스폰하게 저장할 값
         public EStageType? SpawnStage { get; private set; }
 
         public override void Awake()
@@ -61,8 +64,9 @@ namespace Core
             {
                 return;
             }
-            // 인스펙터에서 받은 SO를 인자로 넣어준다.
+            // 인스펙터에서 받은 SO를 인자로 넣어줘서 playerState를 만들어준다.
             playerState = new PlayerState(_playerSOAttributeData);
+            // 게임 시작하면 마우스를 현재는 꺼놓았는데 메인메뉴씬 만들면 false로 해야한다.
             SetCursorLocked(true);
         }
 
@@ -73,7 +77,7 @@ namespace Core
                 return;
             }
 
-            // 씬 로딩 완료 시점을 알리는 이벤트 구독 => 새 씬에 배치된 StageManager 탐색
+            // 씬 로딩 완료 시점을 알리는 이벤트 구독 => 새 씬에 배치된 StageManager 탐색 => 플레이어 스폰...
             SceneManager.sceneLoaded += HandleSceneLoaded;
             
             // 씬 전환 직전 시점을 알리는 이벤트 구독 => 기존 플레이어가 파괴되기전 현재 
@@ -88,8 +92,10 @@ namespace Core
         }
 
         // 새 게임 시작
+        // 맨처음 첫 게임 시작
         public void StartGame()
         {
+            // NewGame으로 설정한다.
             PrepareSpawn(EPlayerSpawnReason.NewGame);
             CurrentState = GameState.Playing;
         }
