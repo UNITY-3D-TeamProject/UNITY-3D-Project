@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Attribute.Core;
 using Movement;
 
 namespace Mediator.SubMediators
@@ -128,12 +129,12 @@ namespace Mediator.SubMediators
         /// </summary>
         protected override void InitAttributeCallback()
         {
-            AttributeCallback.TryAdd(_speedValueKey, (float newValue, float oldValue) =>
+            AttributeCallback.TryAdd(_speedValueKey, (float newValue, float oldValue, SEffectContext context) =>
             {
                 if (_motor != null) _motor.Speed = newValue;
             });
 
-            AttributeCallback.TryAdd(_jumpSpeedValueKey, (float newValue, float oldValue) =>
+            AttributeCallback.TryAdd(_jumpSpeedValueKey, (float newValue, float oldValue, SEffectContext context) =>
             {
                 _jumpPower = newValue;
             });

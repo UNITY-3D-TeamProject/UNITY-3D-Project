@@ -25,6 +25,7 @@ namespace Attribute.Core
         /// </summary>
         /// <param name="targetName">수정을 원하는 targetName</param>
         /// <param name="value">수정될 값</param>
-        void SetValue(string targetName, float value);
+        /// <param name="context">값 변경의 출처 정보. 값 변경 콜백에 함께 전달된다.</param>
+        void SetValue(string targetName, float value, SEffectContext context = default);
     }
 }
