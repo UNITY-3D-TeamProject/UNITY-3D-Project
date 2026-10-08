@@ -103,10 +103,9 @@ public class PlayerSpawner : SpawnerBase
         // 활성 프리팹을 Instantiate한 뒤 SetActive(false)하면 Awake/OnEnable은 이미 실행된 상태다.
         // player.SetActive(false);
 
-        // 새 게임과 부활에서는 저장값 대신 Effect SO의 초기값을 사용한다.
+        // 새 게임에서 최초 생성할 때만 Effect SO의 초기값을 사용한다.
         bool shouldInitialize =
-            gameManager.SpawnReason == GameManager.EPlayerSpawnReason.NewGame ||
-            gameManager.SpawnReason == GameManager.EPlayerSpawnReason.Respawn;
+            gameManager.SpawnReason == GameManager.EPlayerSpawnReason.NewGame;
 
         if (shouldInitialize)
         {

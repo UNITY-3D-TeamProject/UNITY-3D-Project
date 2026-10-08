@@ -21,7 +21,6 @@ namespace Core
         public enum EPlayerSpawnReason
         {
             NewGame,
-            Respawn,
             SceneTransition,
         }
 
@@ -124,7 +123,7 @@ namespace Core
             CurrentState = GameState.Playing;
         }
 
-        // 씬 이동이나 재생성을 시작하기 전에 호출한다.
+        // 새 게임 또는 씬 전환으로 플레이어를 생성하기 전에 호출한다.
         public void PrepareSpawn(EPlayerSpawnReason reason)
         {
             // 씬 이동일 때만 현재 능력치를 저장한다.
