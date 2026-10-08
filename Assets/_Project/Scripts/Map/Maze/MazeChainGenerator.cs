@@ -81,7 +81,8 @@ namespace Map.Maze
                 Vector2Int exitCell = FindFarthestExitCell(generator.ComputeDistances(grid, entranceCell));
 
                 bool isFirstMaze = i == 0;
-                BuildMaze(mazeRoot, grid, _themes[i], entranceCell, exitCell, isFirstMaze);
+                bool isLastMaze = i == _themes.Length - 1;
+                BuildMaze(mazeRoot, grid, _themes[i], entranceCell, exitCell, isFirstMaze, isLastMaze);
                 BuildBridge(mazeRoot, exitCell.x);
                 CollectPlacementPoints(mazeRoot, entranceCell, exitCell, placementPoints);
 
@@ -139,7 +140,8 @@ namespace Map.Maze
             SMazeTheme theme,
             Vector2Int entranceCell,
             Vector2Int exitCell,
-            bool isFirstMaze)
+            bool isFirstMaze,
+            bool isLastMaze)
         {
             BuildFloor(mazeRoot);
 
@@ -160,7 +162,10 @@ namespace Map.Maze
                     {
                         if (cellPosition == exitCell)
                         {
-                            PlaceObject(theme.GatePrefab.gameObject, mazeRoot, center, alongX, $"Gate_{x}_{y}");
+                            GameObject gate = PlaceObject(theme.GatePrefab.gameObject, mazeRoot, center, alongX, $"Gate_{x}_{y}");
+
+                            // 마지막 미로의 문은 라운드를 클리어해야 열린다
+                            gate.GetComponent<MazeExitGate>().ShouldRequireRoundClear = isLastMaze;
                         }
                         else
                         {
@@ -245,7 +250,7 @@ namespace Map.Maze
         }
 
         // 프리팹을 parent 아래 지정한 로컬 위치·회전으로 놓는다.
-        private static void PlaceObject(
+        private static GameObject PlaceObject(
             GameObject prefab,
             Transform parent,
             Vector3 localPosition,
@@ -256,6 +261,7 @@ namespace Map.Maze
             instance.name = objectName;
             instance.transform.localPosition = localPosition;
             instance.transform.localRotation = localRotation;
+            return instance;
         }
         #endregion
     }
