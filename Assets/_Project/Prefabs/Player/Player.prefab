@@ -2647,6 +2647,7 @@ GameObject:
   - component: {fileID: 395644190692172783}
   - component: {fileID: 8819838127059369083}
   - component: {fileID: 4805851590264281338}
+  - component: {fileID: -5684068917259078666}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -2789,6 +2790,22 @@ MonoBehaviour:
   _skillMediator: {fileID: 8471388793956935183}
   _rotateMediator: {fileID: 8808901908423996939}
   _spawnMediator: {fileID: 3514931562783129404}
+--- !u!114 &-5684068917259078666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7287643752218865281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 046cba8ffb333e14a9f3af9e233dffb7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Facade.Player.PlayerFacade
+  _characterMediator: {fileID: 4805851590264281338}
+  _playerInput: {fileID: -1892316726996385229}
+  _openSettingsActionName: Player/OpenSettings
+  _closeSettingsActionName: UI/CloseSettings
 --- !u!1 &7343216831179619095
 GameObject:
   m_ObjectHideFlags: 0
