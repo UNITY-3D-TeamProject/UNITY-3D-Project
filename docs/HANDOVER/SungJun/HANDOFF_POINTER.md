@@ -5,6 +5,11 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-08** — GameManager 코드·주석 보존, 목적별 선언 및 함수 순서만 정리: [배치 정리](./2026-10-08/game-manager-member-order.md)
+- **2026-10-08** — 체크포인트 최초 스폰 선택 기준 툴팁 추가, 플레이어 몸체 캐싱 코드 존재 확인: [툴팁 및 캐싱 확인](./2026-10-08/checkpoint-initial-spawn-tooltip.md)
+- **2026-10-08** — StageManager의 CheckpointTrigger 관리·도달 처리 구현, 빌드 오류 0, 사용자 코드 검토 및 Inspector 검증 대기: [구현 기록](./2026-10-08/stage-checkpoint-events-implementation.md)
+- **2026-10-08** — CheckpointTrigger 적용 확인 및 StageManager 연결부터 복구 완료까지 순서 정리, 이동 초기화 API 부재 확인: [체크포인트 스크립트 안내](./2026-10-08/checkpoint-trigger-guide.md)
+- **2026-10-08** — 4단계 체크포인트 도달·라운드 최초 저장 코드 안내, CharacterController 몸체 및 겹침 API 확인, 런타임 미수정: [체크포인트 도달 안내](./2026-10-08/checkpoint-reach-step4-guide.md)
 - **2026-10-08** — 3단계 연결·검증 안내 및 이전 Respawn 사유 제거 적용, 빌드 오류 0개: [최초 스폰 연결 안내](./2026-10-08/initial-spawn-step3-guide.md)
 - **2026-10-08** — 2단계 PlayerState 스냅샷 코드 안내 및 사용자 적용 확인, 코드 커밋 135acc6 및 문서 커밋 분리: [라운드 스냅샷 안내](./2026-10-08/round-snapshot-step2-guide.md)
 - **2026-10-08** — 현재 Core 코드와 인수인계 대조, 1단계 데이터 반영 및 남은 2~9단계 순서 재확인: [남은 복구 구현 순서](./2026-10-08/player-recovery-remaining-order.md)
