@@ -127,6 +127,30 @@ namespace Skill.Core
         }
 
         /// <summary>
+        /// 스킬 컴포넌트를 활성화/비활성화한다. 비활성화되면 진행 중인 동작은 스킬의 OnDisable 에서 중지된다.
+        /// </summary>
+        /// <param name="skillName">대상 스킬 이름</param>
+        /// <param name="isEnabled">활성화 여부</param>
+        public void SetSkillEnabled(string skillName, bool isEnabled)
+        {
+            if (!TryGetSkill(skillName, out var skill)) return;
+
+            skill.enabled = isEnabled;
+        }
+
+        /// <summary>
+        /// 스킬 컴포넌트의 활성화 여부를 반환한다.
+        /// </summary>
+        /// <param name="skillName">대상 스킬 이름</param>
+        /// <returns>등록된 스킬이 활성화되어 있으면 true</returns>
+        public bool IsSkillEnabled(string skillName)
+        {
+            if (!TryGetSkill(skillName, out var skill)) return false;
+
+            return skill.enabled;
+        }
+
+        /// <summary>
         /// 등록된 모든 스킬의 진행 중인 동작을 중지한다.
         /// </summary>
         public void StopAllSkills()

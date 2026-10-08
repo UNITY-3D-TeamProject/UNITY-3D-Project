@@ -88,6 +88,9 @@ namespace Skill.Core
         /// /// <returns>사용 가능하다면 true</returns>
         public bool CanExecute()
         {
+            // 컴포넌트가 비활성화된 스킬은 사용할 수 없다
+            if (!isActiveAndEnabled) return false;
+
             foreach (var condition in _conditions)
             {
                 if (!condition.IsCanExecute()) return false;

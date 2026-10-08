@@ -62,6 +62,30 @@ namespace Mediator.SubMediators
             UnBindRequest();
         }
         #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// 스킬을 활성화/비활성화한다.
+        /// </summary>
+        /// <param name="skillName">대상 스킬 이름</param>
+        /// <param name="isEnabled">활성화 여부</param>
+        public void SetSkillEnabled(string skillName, bool isEnabled)
+        {
+            if (!_skillController) return;
+
+            _skillController.SetSkillEnabled(skillName, isEnabled);
+        }
+
+        /// <summary>
+        /// 스킬의 활성화 여부를 반환한다.
+        /// </summary>
+        /// <param name="skillName">대상 스킬 이름</param>
+        /// <returns>스킬이 활성화되어 있으면 true</returns>
+        public bool IsSkillEnabled(string skillName)
+        {
+            return _skillController && _skillController.IsSkillEnabled(skillName);
+        }
+        #endregion
         
         #region Protected Methods
         protected override void InitAttributeCallback()

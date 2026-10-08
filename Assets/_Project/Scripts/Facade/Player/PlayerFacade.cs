@@ -103,6 +103,28 @@ namespace Facade.Player
         }
 
         /// <summary>
+        /// 스킬을 활성화/비활성화한다.
+        /// </summary>
+        /// <param name="skillName">대상 스킬 이름</param>
+        /// <param name="isEnabled">활성화 여부</param>
+        public void SetSkillEnabled(string skillName, bool isEnabled)
+        {
+            if (!_characterMediator) return;
+
+            _characterMediator.SetSkillEnabled(skillName, isEnabled);
+        }
+
+        /// <summary>
+        /// 스킬의 활성화 여부를 반환한다.
+        /// </summary>
+        /// <param name="skillName">대상 스킬 이름</param>
+        /// <returns>스킬이 활성화되어 있으면 true</returns>
+        public bool IsSkillEnabled(string skillName)
+        {
+            return _characterMediator && _characterMediator.IsSkillEnabled(skillName);
+        }
+
+        /// <summary>
         /// 입력 맵을 UI 용으로 전환한다.
         /// </summary>
         public void SwitchToUIInput()
