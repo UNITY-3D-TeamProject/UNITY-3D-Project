@@ -262,6 +262,7 @@ namespace Mediator
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged += _animationMediator.SetMoveDirection;
+            if (_skillMediator && _animationMediator) _skillMediator.OnFireRequested += _animationMediator.NotifyFire;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -277,6 +278,7 @@ namespace Mediator
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged -= _animationMediator.SetMoveDirection;
+            if (_skillMediator && _animationMediator) _skillMediator.OnFireRequested -= _animationMediator.NotifyFire;
         }
         #endregion
     }

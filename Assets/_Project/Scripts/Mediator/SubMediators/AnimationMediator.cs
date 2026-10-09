@@ -48,6 +48,17 @@ namespace Mediator.SubMediators
 
             _characterAnimator.SetViewForward(viewForward);
         }
+
+        /// <summary>
+        /// 사격 요청을 CharacterAnimator 로 전달해 사격 상체 애니메이션을 재생한다.
+        /// </summary>
+        /// <param name="firePosition">총알 생성 위치 (사용하지 않음)</param>
+        public void NotifyFire(Vector3 firePosition)
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.PlayFire();
+        }
         #endregion
 
         #region Protected Methods
