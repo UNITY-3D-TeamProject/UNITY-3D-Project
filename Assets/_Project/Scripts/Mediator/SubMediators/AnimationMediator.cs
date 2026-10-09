@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using CharacterAnimation;
 
@@ -47,6 +48,27 @@ namespace Mediator.SubMediators
             if (!_characterAnimator) return;
 
             _characterAnimator.SetViewForward(viewForward);
+        }
+
+        /// <summary>
+        /// 조준점 델리게이트를 CharacterAnimator 로 전달한다.
+        /// </summary>
+        /// <param name="getAimPoint">조준점을 반환하는 함수</param>
+        public void SetGetAimPoint(Func<Vector3> getAimPoint)
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.SetGetAimPoint(getAimPoint);
+        }
+
+        /// <summary>
+        /// CharacterAnimator 의 조준점 델리게이트를 제거한다.
+        /// </summary>
+        public void ClearGetAimPoint()
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.ClearGetAimPoint();
         }
 
         /// <summary>

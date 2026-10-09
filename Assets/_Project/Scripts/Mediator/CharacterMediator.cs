@@ -160,7 +160,9 @@ namespace Mediator
                 if (_attributeMediator) _spawnMediator.SetEffectCursor(_attributeMediator.EffectTarget);
                 else if (_attributeSet) _spawnMediator.SetEffectCursor(_attributeSet);
                 if (_moveMediator) _spawnMediator.SetGetFireDirection(_moveMediator.GetViewDirection);
+                if (_cameraMediator) _spawnMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
             }
+            if (_animationMediator && _cameraMediator) _animationMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
         }
         /// <summary>
         /// 등록된 바인딩 해제
@@ -177,7 +179,9 @@ namespace Mediator
             {
                 _spawnMediator.ClearEffectCursor();
                 _spawnMediator.ClearGetFireDirection();
+                _spawnMediator.ClearGetAimPoint();
             }
+            if (_animationMediator) _animationMediator.ClearGetAimPoint();
         }
         /// <summary>
         /// 중재자들이 원하는 값 변경시 알림 발송

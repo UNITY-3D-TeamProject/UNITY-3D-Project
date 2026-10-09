@@ -25,6 +25,12 @@ namespace Mediator.SubMediators
         [Header("References")]
         [FormerlySerializedAs("targetCamera")]
         [SerializeField] private PlayerBaseCamera _targetCamera;
+
+        [Header("Aim")]
+        [Tooltip("조준점을 찾을 최대 거리. 아무것도 맞지 않으면 이 거리의 지점을 조준점으로 쓴다.")]
+        [SerializeField, Min(0.0f)] private float _aimMaxDistance = 100.0f;
+        [Tooltip("조준점 레이캐스트에 맞을 레이어. 자기 몸에 맞지 않도록 캐릭터 레이어는 뺀다.")]
+        [SerializeField] private LayerMask _aimLayers = Physics.DefaultRaycastLayers;
         #endregion
 
         #region Private Fields
@@ -71,6 +77,37 @@ namespace Mediator.SubMediators
             if (_targetCamera == null || !_targetCamera.Pivot) return;
 
             OnViewForwardChanged?.Invoke(_targetCamera.Pivot.forward);
+        }
+
+        /// <summary>
+        /// 화면 중앙 조준점이 가리키는 월드 위치를 반환한다.
+        /// 카메라와 캐릭터 사이의 물체는 무시하도록, 레이캐스트를 캐릭터(피벗) 깊이에서 시작한다.
+        /// 아무것도 맞지 않으면 최대 거리 지점을 반환한다.
+        /// </summary>
+        /// <returns>조준점 (월드 기준)</returns>
+        public Vector3 GetAimPoint()
+        {
+            if (_targetCamera == null) return transform.position + (transform.forward * _aimMaxDistance);
+
+            Ray aimRay = _targetCamera.GetAimRay();
+
+            // 피벗을 레이에 투영한 거리만큼 시작점을 앞당긴다 — 카메라 뒤쪽이면 카메라 위치에서 시작
+            float startDistance = 0.0f;
+            if (_targetCamera.Pivot)
+            {
+                startDistance = Mathf.Max(0.0f, Vector3.Dot(_targetCamera.Pivot.position - aimRay.origin, aimRay.direction));
+            }
+
+            float castDistance = Mathf.Max(0.0f, _aimMaxDistance - startDistance);
+            bool hasHit = Physics.Raycast(
+                aimRay.GetPoint(startDistance),
+                aimRay.direction,
+                out RaycastHit hit,
+                castDistance,
+                _aimLayers,
+                QueryTriggerInteraction.Ignore);
+
+            return hasHit ? hit.point : aimRay.GetPoint(_aimMaxDistance);
         }
         #endregion
 
