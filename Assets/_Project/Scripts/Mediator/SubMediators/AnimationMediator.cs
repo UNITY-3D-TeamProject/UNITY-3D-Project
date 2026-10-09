@@ -27,7 +27,7 @@ namespace Mediator.SubMediators
 
         #region Public Methods
         /// <summary>
-        /// 이동 방향을 받아 이동 중 여부를 CharacterAnimator 에 전달한다.
+        /// 이동 방향을 받아 이동 중 여부와 이동 방향을 CharacterAnimator 에 전달한다.
         /// </summary>
         /// <param name="direction">이동 입력으로 계산된 월드 이동 방향</param>
         public void SetMoveDirection(Vector3 direction)
@@ -35,6 +35,18 @@ namespace Mediator.SubMediators
             if (!_characterAnimator) return;
 
             _characterAnimator.SetMoving(direction.sqrMagnitude > MIN_SQR_MAGNITUDE);
+            _characterAnimator.SetMoveDirection(direction);
+        }
+
+        /// <summary>
+        /// 카메라가 보는 방향을 CharacterAnimator 로 전달한다. 이동 방향 블렌드의 기준이 된다.
+        /// </summary>
+        /// <param name="viewForward">카메라가 보는 방향 (월드 기준)</param>
+        public void SetViewForward(Vector3 viewForward)
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.SetViewForward(viewForward);
         }
         #endregion
 

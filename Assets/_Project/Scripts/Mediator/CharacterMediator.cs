@@ -191,12 +191,13 @@ namespace Mediator
             OnAttributeChanged?.Invoke(attributeName, newValue, oldValue);
         }
         /// <summary>
-        /// 카메라 중재자가 알린 시점 방향을 이동·회전 중재자로 전달
+        /// 카메라 중재자가 알린 시점 방향을 이동·회전·애니메이션 중재자로 전달
         /// </summary>
         private void SendViewForward(Vector3 viewForward)
         {
             if (_moveMediator) _moveMediator.SetViewForward(viewForward);
             if (_rotateMediator) _rotateMediator.SetViewForward(viewForward);
+            if (_animationMediator) _animationMediator.SetViewForward(viewForward);
         }
         /// <summary>
         /// 스킬 중재자의 코스트 지불 요청을 어트리뷰트에 반영
