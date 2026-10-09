@@ -59,6 +59,26 @@ namespace Mediator.SubMediators
 
             _characterAnimator.PlayFire();
         }
+
+        /// <summary>
+        /// 점프 시작을 CharacterAnimator 로 전달한다.
+        /// </summary>
+        public void NotifyJumpStarted()
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.PlayJump();
+        }
+
+        /// <summary>
+        /// 착지를 CharacterAnimator 로 전달한다.
+        /// </summary>
+        public void NotifyJumpEnded()
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.PlayLand();
+        }
         #endregion
 
         #region Protected Methods

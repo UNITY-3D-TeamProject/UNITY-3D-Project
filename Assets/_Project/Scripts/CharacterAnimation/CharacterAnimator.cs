@@ -135,6 +135,29 @@ namespace CharacterAnimation
             _animator.SetBool(AnimHash.IsFiring, true);
             _animator.SetTrigger(AnimHash.Fire);
         }
+
+        /// <summary>
+        /// 점프 시작을 알린다. 점프 시작 → 상승 → 공중 순서로 재생된다. 공중에서 다시 점프하면 처음부터 재생한다.
+        /// </summary>
+        public void PlayJump()
+        {
+            if (!enabled) return;
+
+            _animator.SetBool(AnimHash.IsJumping, true);
+            _animator.SetTrigger(AnimHash.Jump);
+        }
+
+        /// <summary>
+        /// 착지를 알린다. 어느 점프 단계에 있든 바로 착지 애니메이션으로 전환된다.
+        /// </summary>
+        public void PlayLand()
+        {
+            if (!enabled) return;
+
+            _animator.SetBool(AnimHash.IsJumping, false);
+            // 착지 직전 프레임에 들어온 점프 Trigger 가 남아 착지 후 다시 점프 애니메이션이 재생되지 않게 한다
+            _animator.ResetTrigger(AnimHash.Jump);
+        }
         #endregion
 
         #region Private Methods
@@ -167,6 +190,8 @@ namespace CharacterAnimation
             public static readonly int MoveY = Animator.StringToHash("MoveY");
             public static readonly int IsFiring = Animator.StringToHash("IsFiring");
             public static readonly int Fire = Animator.StringToHash("Fire");
+            public static readonly int IsJumping = Animator.StringToHash("IsJumping");
+            public static readonly int Jump = Animator.StringToHash("Jump");
         }
         #endregion
     }

@@ -54,6 +54,10 @@ namespace Mediator.SubMediators
         #region Events
         /// <summary>이동 입력으로 계산된 이동 방향이 갱신되었을 때 발생한다. 구르는 중에도 발생한다.</summary>
         public event Action<Vector3> OnMoveDirectionChanged;
+        /// <summary>점프를 시작했을 때 발생한다. 공중에서 다시 점프해도 매번 발생한다.</summary>
+        public event Action OnJumpStarted;
+        /// <summary>점프 후 착지했을 때 발생한다.</summary>
+        public event Action OnJumpEnded;
         #endregion
 
         #region Unity Lifecycle
@@ -231,6 +235,22 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// CharacterMotor 의 점프 시작을 외부로 알린다.
+        /// </summary>
+        private void NotifyJumpStarted()
+        {
+            OnJumpStarted?.Invoke();
+        }
+
+        /// <summary>
+        /// CharacterMotor 의 착지를 외부로 알린다.
+        /// </summary>
+        private void NotifyJumpEnded()
+        {
+            OnJumpEnded?.Invoke();
+        }
+
+        /// <summary>
         /// RollMover 가 계산한 구르기 이동량을 CharacterMotor 로 전달한다.
         /// </summary>
         /// <param name="displacement">이번 물리 스텝에 적용할 이동량</param>
@@ -240,11 +260,16 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// MoveDirectionCalculator, RollMover 이벤트 구독
+        /// MoveDirectionCalculator, RollMover, CharacterMotor 이벤트 구독
         /// </summary>
         private void Subscribe()
         {
             if (_moveDirectionCalculator) _moveDirectionCalculator.OnDirectionCalculated += ApplyDirection;
+            if (_motor)
+            {
+                _motor.OnJumpStarted += NotifyJumpStarted;
+                _motor.OnJumpEnded += NotifyJumpEnded;
+            }
             if (_rollMover)
             {
                 _rollMover.OnRollStarted += OnRollStarted;
@@ -254,11 +279,16 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// MoveDirectionCalculator, RollMover 이벤트 구독 해지
+        /// MoveDirectionCalculator, RollMover, CharacterMotor 이벤트 구독 해지
         /// </summary>
         private void Unsubscribe()
         {
             if (_moveDirectionCalculator) _moveDirectionCalculator.OnDirectionCalculated -= ApplyDirection;
+            if (_motor)
+            {
+                _motor.OnJumpStarted -= NotifyJumpStarted;
+                _motor.OnJumpEnded -= NotifyJumpEnded;
+            }
             if (_rollMover)
             {
                 _rollMover.OnRollStarted -= OnRollStarted;
