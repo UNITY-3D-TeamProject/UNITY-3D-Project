@@ -22,6 +22,7 @@ namespace Mediator
         [SerializeField] private SkillMediator _skillMediator;
         [SerializeField] private RotateMediator _rotateMediator;
         [SerializeField] private SpawnMediator _spawnMediator;
+        [SerializeField] private AnimationMediator _animationMediator;
         #endregion
 
         #region Private Fields
@@ -259,6 +260,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnSkillUsed += OnSkillUsedCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
+            if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged += _animationMediator.SetMoveDirection;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -273,6 +275,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnSkillUsed -= OnSkillUsedCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
+            if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged -= _animationMediator.SetMoveDirection;
         }
         #endregion
     }

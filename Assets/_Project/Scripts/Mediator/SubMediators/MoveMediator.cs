@@ -51,6 +51,11 @@ namespace Mediator.SubMediators
         }
         #endregion
 
+        #region Events
+        /// <summary>이동 입력으로 계산된 이동 방향이 갱신되었을 때 발생한다. 구르는 중에도 발생한다.</summary>
+        public event Action<Vector3> OnMoveDirectionChanged;
+        #endregion
+
         #region Unity Lifecycle
 
         protected override void Awake()
@@ -172,6 +177,7 @@ namespace Mediator.SubMediators
         private void ApplyDirection(Vector3 direction)
         {
             _lastDirection = direction;
+            OnMoveDirectionChanged?.Invoke(direction);
             //모터가 없거나 구르는 중일경우 return
             if (!_motor || (_rollMover && _rollMover.IsRolling)) return;
 
