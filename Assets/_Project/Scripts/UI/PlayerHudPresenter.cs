@@ -121,27 +121,26 @@ namespace UI
         // 변경 이벤트를 발생시킬 때 전달한 값이 이 함수의 매개변수로 들어온다.
 
         // AttributeSet.cs의 public void AddOnAttributeChangedCallback(OnAttributeChange callback)에서 OnAttributeChange는 아래와 같음.
-        // public delegate void OnAttributeChange(string attributeName, float newValue, float oldValue, SEffectContext context);
+        // public delegate void OnAttributeChange(SAttributeChangeData data);
 
-        // 1. attributeName => 어떤 능력치가 변경됐는지
-        // 2. newValue => 변경된 새로운 값
-        // 3. oldValue => 변경되기 전 값
-        // 4. context => 값 변경의 출처 정보 (누가, 어디서). 현재 사용하지 않음
-        private void HandlePlayerAttributeChanged(string attributeName, float newValue, float oldValue, SEffectContext context)
+        // 1. data.AttributeName => 어떤 능력치가 변경됐는지
+        // 2. data.NewValue => 변경된 새로운 값
+        // 3. data.OldValue => 변경되기 전 값
+        private void HandlePlayerAttributeChanged(SAttributeChangeData data)
         {
             if ((_playerCurrentAttributeSet == null) || (_view == null))
             {
                 return;
             }
-            if (IsMatchingKey(attributeName, _currentHpKey, _maxHpKey))
+            if (IsMatchingKey(data.AttributeName, _currentHpKey, _maxHpKey))
             {
                 UpdateHpHud();
             }
-            else if (IsMatchingKey(attributeName, _currentBatteryKey, _maxBatteryKey))
+            else if (IsMatchingKey(data.AttributeName, _currentBatteryKey, _maxBatteryKey))
             {
                 UpdateBatteryHud();
             }
-            else if (IsMatchingKey(attributeName, _currentHeatKey, _maxHeatKey))
+            else if (IsMatchingKey(data.AttributeName, _currentHeatKey, _maxHeatKey))
             {
                 UpdateHeatHud();
             }

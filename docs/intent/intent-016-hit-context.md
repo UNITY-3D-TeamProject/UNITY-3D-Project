@@ -23,17 +23,18 @@ GAS의 `FGameplayEffectContext`처럼 `SEffectContext{Cursor, Origin}`를 `Apply
 세부 결정:
 - 이름은 `Cursor`로 한다. GAS의 `Instigator`에 해당하지만, 프로젝트가 이미 효과를 일으키는 주체를 cursor로 불러왔으므로 통일한다. `Apply`의 `cursor` 인자는 `SEffectContext.Cursor`로 흡수한다.
 - `Origin`은 `Vector3?`로 둔다. (0,0,0)을 실제 원점으로 잘못 읽는 실수를 컴파일 단계에서 막기 위해서다.
-- `AttributeSet` 내부에서는 context를 지역 보관한다. `SetValue`가 context를 잠깐 들고 있다가 콜백이 발행되면 곧바로 비운다. GAS의 `CurrentModcallbackData` 방식과 같고, `AttributeData`는 바꾸지 않는다.
+- `AttributeSet` 내부에서는 context를 지역 보관한다. `SetValue`가 context를 잠깐 들고 있다가 대입이 끝나면 이전 값으로 되돌린다. 콜백 안에서 같은 세트의 `SetValue`가 다시 호출돼도 바깥 호출의 context가 지워지지 않게 하고, 구독자가 예외를 던져도 context가 남지 않도록 `try/finally`를 쓴다(2026-10-09). GAS의 `CurrentModcallbackData` 방식과 같고, `AttributeData`는 바꾸지 않는다.
 - 구독자에게는 델리게이트 매개변수로 넘긴다. `CurrentContext` 프로퍼티를 공개하는 방식은 "콜백 중에만 유효하다"는 숨은 규칙이 생겨서 채택하지 않았다.
 - `SetValue`와 `Apply`의 context에는 `= default`(출처 없음) 기본값을 둔다. 코스트 지불, 값 복원, 기믹 같은 호출부는 수정하지 않는다.
+- 콜백 인자는 `SAttributeChangeData{AttributeName, NewValue, OldValue, Context}`로 묶는다(GAS `FOnAttributeChangeData`). context를 쓰지 않는 구독자가 4번째 인자를 받지 않아도 되게 하기 위해서다(2026-10-09). `CharacterMediator.OnAttributeChanged`와 `PlayerFacade`는 `Action<string, float, float>`을 유지한다.
 
 ### 1차 (전달 경로) — 이번 작업
 - 신규 `Attribute.Core.SEffectContext`
 - `IEffectTarget.SetValue(string, float, SEffectContext context = default)`
-- `AttributeSet.OnAttributeChange(string, float, float, SEffectContext)` (On/Post 공용, Pre는 무변경)
+- `AttributeSet.OnAttributeChange(SAttributeChangeData)` (On/Post 공용, Pre는 무변경). 처음에는 `(string, float, float, SEffectContext)`였고 2026-10-09에 구조체로 묶었다.
 - `SOAttributeEffect.Apply(IEffectTarget | GameObject, SEffectContext context = default)`
-- `MediatorBase.AttributeCallback`을 `Action<float, float, SEffectContext>`로, `NotifyAttributeChanged(..., context)`
-- `AttributeMediator.OnAttributeChanged`를 `Action<string, float, float, SEffectContext>`로
+- `MediatorBase.AttributeCallback`을 `Action<SAttributeChangeData>`로, `NotifyAttributeChanged(SAttributeChangeData)`
+- `AttributeMediator.OnAttributeChanged`를 `Action<SAttributeChangeData>`로
 - `CharacterMediator`, `MoveMediator`, `CombatMediator`, `PlayerHudPresenter`는 매개변수만 맞춘다.
 - 호출부(`BulletController`, `MeleeHitController`, `AttributeRegenerator`)는 `new SEffectContext(cursor)`로 바꾼다. 원점은 아직 넣지 않는다.
 

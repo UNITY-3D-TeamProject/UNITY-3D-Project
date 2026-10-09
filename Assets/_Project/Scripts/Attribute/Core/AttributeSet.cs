@@ -18,8 +18,8 @@ namespace Attribute.Core
         /// <summary>값 변경 전 호출. newValue 를 수정하면 실제 반영되는 값이 바뀐다.</summary>
         public delegate void OnAttributeChangeWithRef(string attributeName, ref float newValue, float oldValue);
 
-        /// <summary>값 변경 시 / 변경 후 호출. context 는 값 변경의 출처 정보다.</summary>
-        public delegate void OnAttributeChange(string attributeName, float newValue, float oldValue, SEffectContext context);
+        /// <summary>값 변경 시 / 변경 후 호출. data 에 이름, 변경 후/전 값, 출처 정보가 담긴다.</summary>
+        public delegate void OnAttributeChange(SAttributeChangeData data);
         #endregion
 
         #region Serialized Fields
@@ -94,10 +94,18 @@ namespace Attribute.Core
                 return;
             }
 
-            // 값 변경 콜백은 대입 중에 동기로 발생하므로, 그동안만 context 를 보관하고 바로 비운다
+            // 값 변경 콜백은 대입 중에 동기로 발생하므로, 그동안만 context 를 보관한다.
+            // 콜백 안에서 SetValue 가 다시 호출될 수 있으므로 끝나면 이전 context 로 되돌린다.
+            SEffectContext previousContext = _currentContext;
             _currentContext = context;
-            _attributes[targetName].Value = value;
-            _currentContext = default;
+            try
+            {
+                _attributes[targetName].Value = value;
+            }
+            finally
+            {
+                _currentContext = previousContext;
+            }
         }
         #endregion
 
@@ -124,7 +132,7 @@ namespace Attribute.Core
         /// <summary>
         /// Value 변경 시 발생할 콜백 Add
         /// </summary>
-        /// <param name="callback">void(string, float, float, SEffectContext) 시그니쳐 callback</param>
+        /// <param name="callback">void(SAttributeChangeData) 시그니쳐 callback</param>
         public void AddOnAttributeChangedCallback(OnAttributeChange callback)
         {
             if (callback == null) return;
@@ -134,7 +142,7 @@ namespace Attribute.Core
         /// <summary>
         /// Value 변경 시 발생할 콜백 Remove
         /// </summary>
-        /// <param name="callback">void(string, float, float, SEffectContext) 시그니쳐 callback</param>
+        /// <param name="callback">void(SAttributeChangeData) 시그니쳐 callback</param>
         public void RemoveOnAttributeChangedCallback(OnAttributeChange callback)
         {
             if (callback == null) return;
@@ -144,7 +152,7 @@ namespace Attribute.Core
         /// <summary>
         /// Value 변경 후 발생할 콜백 Add
         /// </summary>
-        /// <param name="callback">void(string, float, float, SEffectContext) 시그니쳐 callback</param>
+        /// <param name="callback">void(SAttributeChangeData) 시그니쳐 callback</param>
         public void AddPostAttributeChangedCallback(OnAttributeChange callback)
         {
             if (callback == null) return;
@@ -154,7 +162,7 @@ namespace Attribute.Core
         /// <summary>
         /// Value 변경 후 발생할 콜백 Remove
         /// </summary>
-        /// <param name="callback">void(string, float, float, SEffectContext) 시그니쳐 callback</param>
+        /// <param name="callback">void(SAttributeChangeData) 시그니쳐 callback</param>
         public void RemovePostAttributeChangedCallback(OnAttributeChange callback)
         {
             if (callback == null) return;
@@ -170,12 +178,12 @@ namespace Attribute.Core
 
         private void NativeOnAttributeChanged(AttributeData target, float newValue, float oldValue)
         {
-            _onAttributeChangedEvent?.Invoke(target.Name, newValue, oldValue, _currentContext);
+            _onAttributeChangedEvent?.Invoke(new SAttributeChangeData(target.Name, newValue, oldValue, _currentContext));
         }
 
         private void NativePostAttributeChanged(AttributeData target, float newValue, float oldValue)
         {
-            _postAttributeChangedEvent?.Invoke(target.Name, newValue, oldValue, _currentContext);
+            _postAttributeChangedEvent?.Invoke(new SAttributeChangeData(target.Name, newValue, oldValue, _currentContext));
         }
         #endregion
     }
