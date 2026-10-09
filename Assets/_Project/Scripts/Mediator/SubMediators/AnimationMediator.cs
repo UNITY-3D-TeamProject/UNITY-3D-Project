@@ -79,6 +79,27 @@ namespace Mediator.SubMediators
 
             _characterAnimator.PlayLand();
         }
+
+        /// <summary>
+        /// 구르기 시작을 CharacterAnimator 로 전달한다.
+        /// </summary>
+        /// <param name="direction">구르기 방향 (사용하지 않음)</param>
+        public void NotifyRollStarted(Vector3 direction)
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.PlayRoll();
+        }
+
+        /// <summary>
+        /// 구르기 종료를 CharacterAnimator 로 전달한다.
+        /// </summary>
+        public void NotifyRollEnded()
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.StopRoll();
+        }
         #endregion
 
         #region Protected Methods

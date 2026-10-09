@@ -35,6 +35,7 @@ namespace CharacterAnimation
         private bool _isFiring;
         private float _lastFireTime;
         private float _aimWeight;
+        private bool _isRolling;
         #endregion
 
         #region Unity Lifecycle
@@ -68,7 +69,8 @@ namespace CharacterAnimation
                 _animator.SetBool(AnimHash.IsFiring, false);
             }
 
-            float targetWeight = _isFiring ? 1.0f : 0.0f;
+            // 구르는 동안에는 몸이 시점과 다른 방향을 보므로 시점 기준 조준 회전을 끈다
+            float targetWeight = (_isFiring && !_isRolling) ? 1.0f : 0.0f;
             float blendSpeed = (_aimBlendTime > 0.0f) ? (deltaTime / _aimBlendTime) : 1.0f;
             _aimWeight = Mathf.MoveTowards(_aimWeight, targetWeight, blendSpeed);
         }
@@ -158,6 +160,30 @@ namespace CharacterAnimation
             // 착지 직전 프레임에 들어온 점프 Trigger 가 남아 착지 후 다시 점프 애니메이션이 재생되지 않게 한다
             _animator.ResetTrigger(AnimHash.Jump);
         }
+
+        /// <summary>
+        /// 구르기 시작을 알린다. 구르는 동안 구르기 애니메이션을 재생한다.
+        /// </summary>
+        public void PlayRoll()
+        {
+            if (!enabled) return;
+
+            _isRolling = true;
+            _animator.SetBool(AnimHash.IsRolling, true);
+            _animator.SetTrigger(AnimHash.Roll);
+        }
+
+        /// <summary>
+        /// 구르기 종료를 알린다. 이동 중이면 Locomotion, 아니면 Idle 로 돌아간다. 공중이면 공중 애니메이션으로 돌아간다.
+        /// </summary>
+        public void StopRoll()
+        {
+            if (!enabled) return;
+
+            _isRolling = false;
+            _animator.SetBool(AnimHash.IsRolling, false);
+            _animator.ResetTrigger(AnimHash.Roll);
+        }
         #endregion
 
         #region Private Methods
@@ -192,6 +218,8 @@ namespace CharacterAnimation
             public static readonly int Fire = Animator.StringToHash("Fire");
             public static readonly int IsJumping = Animator.StringToHash("IsJumping");
             public static readonly int Jump = Animator.StringToHash("Jump");
+            public static readonly int IsRolling = Animator.StringToHash("IsRolling");
+            public static readonly int Roll = Animator.StringToHash("Roll");
         }
         #endregion
     }
