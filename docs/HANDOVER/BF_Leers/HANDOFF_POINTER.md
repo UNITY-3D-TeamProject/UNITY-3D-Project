@@ -7,6 +7,9 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-10** — 군중 레이어 축소: `Pedestrian`/`Vehicle`을 `Crowd`로 합쳐 `Crowd`, `VehicleBody` 2개로(횡단보도 없어 동작 동일). 툴팁·intent-017·기획 문서만 수정. **레이어는 팀 공지 후 USER-2에서 추가**: [군중 레이어 축소](./2026-10-10/crowd-layer-merge.md)
+- **2026-10-10** — 군중 세션 B: `CrowdLane`(스플라인 레인 + 시작 시 균등 간격 생성, `SetLane` + `SetAttribute`로 속도 주입) 신규, 컴파일 0에러. **Play 검증은 USER-2~4 이후 USER-5, 다음은 사용자 작업 후 세션 C**: [군중 세션 B](./2026-10-10/crowd-session-b-lane.md)
+- **2026-10-10** — 군중 세션 A: `CrowdController`(스플라인 순환 추종 + 앞쪽 SphereCast 정지) 신규, 컴파일 0에러. **Play 검증은 USER-4 프리팹 이후(USER-5), 다음은 세션 B(`CrowdLane`)**: [군중 세션 A](./2026-10-10/crowd-session-a-controller.md)
 - **2026-10-08** — 피격 컨텍스트 1차(전달 경로): `SEffectContext{Cursor, Origin}` 신규, `Apply(target, context)`(cursor 흡수) → `IEffectTarget.SetValue(..., context)` → `AttributeSet`(지역 보관) → `OnAttributeChange(..., context)` → `MediatorBase.NotifyAttributeChanged(..., context)`까지 관통. Origin 기록·CombatMediator 연결·AI 반응은 2차. 배치 컴파일 0에러, **Combat 테스트는 asmdef 부재로 0건 실행, Play 회귀 미검증, intent-016 `open`**: [피격 컨텍스트 1차](./2026-10-08/hit-context-phase1-propagation.md)
 - **2026-10-08** — 범용 피격 설계 논의(코드 변경 없음): 피격 출처 정보 전달 방식으로 A(타격/피해 분리)·B(직전 정보 맡겨두기)·C(GAS식 컨텍스트 관통)를 비교해 **C안 방향**으로 좁힘. `SEffectContext{Instigator, Vector3? Origin}`를 Apply→AttributeSet 콜백→Mediator로 관통, Combat은 무변경·`SHitInfo` 부활 안 함, 조종부는 `CombatMediator`가 `IHitController`로 연결, UI는 AttributeSet 콜백에서 직접 읽음. **미확정·이세훈 협의 필요, intent 미작성**: [피격 컨텍스트 C안 설계](./2026-10-08/hit-context-design-c.md)
 - **2026-10-07** — 점프 API 변경: `CharacterMotor.Jump(float jumpPower)`가 접지 무관하게 즉시 실행되고 `OnJumpStarted`/`OnJumpEnded`(착지) 이벤트를 발행한다. 모터의 `JumpSpeed` 제거, 점프력 보관과 "지상에서만" 정책은 `MoveMediator`로 이동. 컴파일 0에러, **Play 검증 미완, intent-015 `open`**: [점프 API 변경](./2026-10-07/jump-power-param-and-events.md)
