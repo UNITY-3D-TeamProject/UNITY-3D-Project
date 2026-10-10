@@ -90,6 +90,19 @@ namespace CameraControl
 
             _aimCamera.enabled = isAiming;
         }
+
+        /// <summary>
+        /// 화면 중앙(조준점)을 지나는 레이를 반환한다. 메인 카메라 기준이며, 메인 카메라가 없으면 피벗 기준 레이를 반환한다.
+        /// </summary>
+        /// <returns>조준 레이 (월드 기준)</returns>
+        public Ray GetAimRay()
+        {
+            Camera mainCamera = Camera.main;
+            if (mainCamera) return new Ray(mainCamera.transform.position, mainCamera.transform.forward);
+
+            Transform origin = _cameraPivot ? _cameraPivot : transform;
+            return new Ray(origin.position, origin.forward);
+        }
         #endregion
     }
 }

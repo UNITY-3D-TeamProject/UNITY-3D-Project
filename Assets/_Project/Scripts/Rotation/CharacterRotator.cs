@@ -24,6 +24,8 @@ namespace Rotation
         private Vector3 _lookDirection;
         private bool _hasLookDirection;
         private Vector3 _viewForward;
+        private Vector3 _lockedDirection;
+        private bool _isLookDirectionLocked;
         // 회전 대상의 기준 자세(yaw 제외 X/Z). 예: SK_ZMike 의 로컬 X(-90).
         // 여기 저장해 두고 매 프레임 yaw 만 갈아끼운다 — Quaternion.LookRotation 을 그대로 대입하면
         // 기준 자세가 사라지고 몸통이 눕거나 뒤집힌다.
@@ -61,20 +63,18 @@ namespace Rotation
 
         private void Update()
         {
+            // 고정 방향이 있으면 그 방향을 유지한다 (LockLookDirection 에서 이미 돌려 둠)
+            if (_isLookDirectionLocked) return;
+
             // 카메라 시점이 있으면 입력과 무관하게 그 정면을 바라본다 (수평 투영은 SetLookDirection 내부에서 처리)
             if (_viewForward != Vector3.zero) SetLookDirection(_viewForward);
 
             if (!_hasLookDirection) return;
 
-            // 목표 yaw 는 _body 의 부모 공간 기준으로 계산한다 — 부모가 이미 회전해 있어도
-            // (예: 이동 중 기울어진 루트) localRotation 에 맞는 각도가 나온다.
-            Vector3 localDirection = _body.parent
-                ? _body.parent.InverseTransformDirection(_lookDirection)
-                : _lookDirection;
-            float targetYaw = Mathf.Atan2(localDirection.x, localDirection.z) * Mathf.Rad2Deg;
+            float targetYaw = CalculateTargetYaw(_lookDirection);
 
             _yaw = Mathf.MoveTowardsAngle(_yaw, targetYaw, _rotateSpeed * Time.deltaTime);
-            _body.localRotation = Quaternion.AngleAxis(_yaw, Vector3.up) * _restRotation;
+            ApplyYaw();
         }
         #endregion
 
@@ -99,6 +99,55 @@ namespace Rotation
         public void SetViewForward(Vector3 viewForward)
         {
             _viewForward = viewForward;
+        }
+
+        /// <summary>
+        /// 바라볼 월드 방향을 고정하고 즉시 그 방향으로 돌린다. 고정되어 있는 동안 시점 방향과 SetLookDirection 입력을 무시한다.
+        /// 수평 성분이 없으면 무시한다.
+        /// </summary>
+        /// <param name="worldDirection">고정할 월드 방향</param>
+        public void LockLookDirection(Vector3 worldDirection)
+        {
+            Vector3 flatDirection = Vector3.ProjectOnPlane(worldDirection, Vector3.up);
+            if (flatDirection.sqrMagnitude <= Mathf.Epsilon) return;
+
+            _lockedDirection = flatDirection;
+            _isLookDirectionLocked = true;
+            _yaw = CalculateTargetYaw(_lockedDirection);
+            ApplyYaw();
+        }
+
+        /// <summary>
+        /// 고정한 방향을 해제한다. 이후에는 다시 시점 방향(없으면 SetLookDirection 입력)을 회전 속도에 맞춰 따라간다.
+        /// </summary>
+        public void UnlockLookDirection()
+        {
+            _isLookDirectionLocked = false;
+        }
+        #endregion
+
+        #region Private Methods
+        /// <summary>
+        /// 월드 방향을 _body 의 localRotation 기준 yaw 로 변환한다.
+        /// </summary>
+        /// <param name="worldDirection">바라볼 월드 방향</param>
+        /// <returns>목표 yaw (도)</returns>
+        private float CalculateTargetYaw(Vector3 worldDirection)
+        {
+            // 목표 yaw 는 _body 의 부모 공간 기준으로 계산한다 — 부모가 이미 회전해 있어도
+            // (예: 이동 중 기울어진 루트) localRotation 에 맞는 각도가 나온다.
+            Vector3 localDirection = _body.parent
+                ? _body.parent.InverseTransformDirection(worldDirection)
+                : worldDirection;
+            return Mathf.Atan2(localDirection.x, localDirection.z) * Mathf.Rad2Deg;
+        }
+
+        /// <summary>
+        /// 현재 yaw 를 기준 자세에 적용한다.
+        /// </summary>
+        private void ApplyYaw()
+        {
+            _body.localRotation = Quaternion.AngleAxis(_yaw, Vector3.up) * _restRotation;
         }
         #endregion
     }

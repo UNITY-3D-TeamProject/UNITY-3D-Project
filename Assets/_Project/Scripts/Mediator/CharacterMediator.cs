@@ -22,6 +22,7 @@ namespace Mediator
         [SerializeField] private SkillMediator _skillMediator;
         [SerializeField] private RotateMediator _rotateMediator;
         [SerializeField] private SpawnMediator _spawnMediator;
+        [SerializeField] private AnimationMediator _animationMediator;
         #endregion
 
         #region Private Fields
@@ -159,7 +160,9 @@ namespace Mediator
                 if (_attributeMediator) _spawnMediator.SetEffectCursor(_attributeMediator.EffectTarget);
                 else if (_attributeSet) _spawnMediator.SetEffectCursor(_attributeSet);
                 if (_moveMediator) _spawnMediator.SetGetFireDirection(_moveMediator.GetViewDirection);
+                if (_cameraMediator) _spawnMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
             }
+            if (_animationMediator && _cameraMediator) _animationMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
         }
         /// <summary>
         /// 등록된 바인딩 해제
@@ -176,7 +179,9 @@ namespace Mediator
             {
                 _spawnMediator.ClearEffectCursor();
                 _spawnMediator.ClearGetFireDirection();
+                _spawnMediator.ClearGetAimPoint();
             }
+            if (_animationMediator) _animationMediator.ClearGetAimPoint();
         }
         /// <summary>
         /// 중재자들이 원하는 값 변경시 알림 발송
@@ -190,12 +195,13 @@ namespace Mediator
             OnAttributeChanged?.Invoke(data.AttributeName, data.NewValue, data.OldValue);
         }
         /// <summary>
-        /// 카메라 중재자가 알린 시점 방향을 이동·회전 중재자로 전달
+        /// 카메라 중재자가 알린 시점 방향을 이동·회전·애니메이션 중재자로 전달
         /// </summary>
         private void SendViewForward(Vector3 viewForward)
         {
             if (_moveMediator) _moveMediator.SetViewForward(viewForward);
             if (_rotateMediator) _rotateMediator.SetViewForward(viewForward);
+            if (_animationMediator) _animationMediator.SetViewForward(viewForward);
         }
         /// <summary>
         /// 스킬 중재자의 코스트 지불 요청을 어트리뷰트에 반영
@@ -259,6 +265,14 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnSkillUsed += OnSkillUsedCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
+            if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged += _animationMediator.SetMoveDirection;
+            if (_skillMediator && _animationMediator) _skillMediator.OnFireRequested += _animationMediator.NotifyFire;
+            if (_moveMediator && _animationMediator) _moveMediator.OnJumpStarted += _animationMediator.NotifyJumpStarted;
+            if (_moveMediator && _animationMediator) _moveMediator.OnJumpEnded += _animationMediator.NotifyJumpEnded;
+            if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted += _animationMediator.NotifyRollStarted;
+            if (_moveMediator && _animationMediator) _moveMediator.OnRollEnded += _animationMediator.NotifyRollEnded;
+            if (_moveMediator && _rotateMediator) _moveMediator.OnRollStarted += _rotateMediator.LockLookDirection;
+            if (_moveMediator && _rotateMediator) _moveMediator.OnRollEnded += _rotateMediator.UnlockLookDirection;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -273,6 +287,14 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnSkillUsed -= OnSkillUsedCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
+            if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged -= _animationMediator.SetMoveDirection;
+            if (_skillMediator && _animationMediator) _skillMediator.OnFireRequested -= _animationMediator.NotifyFire;
+            if (_moveMediator && _animationMediator) _moveMediator.OnJumpStarted -= _animationMediator.NotifyJumpStarted;
+            if (_moveMediator && _animationMediator) _moveMediator.OnJumpEnded -= _animationMediator.NotifyJumpEnded;
+            if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted -= _animationMediator.NotifyRollStarted;
+            if (_moveMediator && _animationMediator) _moveMediator.OnRollEnded -= _animationMediator.NotifyRollEnded;
+            if (_moveMediator && _rotateMediator) _moveMediator.OnRollStarted -= _rotateMediator.LockLookDirection;
+            if (_moveMediator && _rotateMediator) _moveMediator.OnRollEnded -= _rotateMediator.UnlockLookDirection;
         }
         #endregion
     }
