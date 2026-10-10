@@ -5,7 +5,7 @@
 ## 현재 준비된 것 (Core 쪽, 완료)
 - `Core.Scanning.WeakPoint` : 약점 부위 콜라이더가 있는 오브젝트에 붙이는 컴포넌트. `DamageMultiplier`(기본 2, 최소 1)를 가진다.
 - `WeakPoint.GetMultiplier(Collider hitCollider)` : 맞은 콜라이더가 약점이면 그 배율, 아니면 `1`을 돌려준다.
-- 배율은 **스캔과 무관하게 항상 적용**된다고 가정했다(스캔은 약점 위치를 보여주는 정보 역할). 스캔으로 드러났을 때만 적용해야 하면 `WeakPointReaction`이 켠 표시 상태를 `WeakPoint`가 알도록 바꿔야 한다. (intent-019 열린 질문)
+- **[2026-10-11 정정]** 배율은 **스캔 중에만** 적용된다. `WeakPointReaction`이 스캔 중에만 약점 오브젝트를 활성화(`SetActive`)하므로, 평소에는 약점 콜라이더가 꺼져 총알이 맞히지 못하고 몸통으로 판정되어 배율 1이다. 그래서 `WeakPoint`나 피격 코드에서 스캔 여부를 따로 확인할 필요가 없다. (이전 문서의 "항상 적용" 가정은 폐기)
 
 ## 요청 1 — Attribute (이세훈 영역): 피해량에 배율을 실을 통로
 피해는 `SOAttributeEffect.Apply(target, SEffectContext)`에서 계산된다 (`float amount = ... _amount ...` 후 `Modifiers.Modify`). 지금은 배율을 실을 곳이 없다.
@@ -24,5 +24,8 @@
   - 어느 쪽을 택할지는 Projectile 담당과 협의 필요.
 
 ## 요청 3 — 레벨/적 프리팹 작업자: 약점 배치
-- 적 프리팹에 약점 위치의 자식 오브젝트를 만들고 `Collider`(레이어 `Enemy`, 총알 `_hitLayers`에 포함) + `WeakPoint`를 붙인다.
-- 같은 적 루트에 `ScanTarget` + `WeakPointReaction`(`_markers`에 약점 표시 오브젝트 연결)을 붙인다. 표시용 메시/머티리얼이 벽 뒤에서도 보이게 하려면 깊이 테스트가 꺼진 머티리얼(`M_ScanRevealXRay` 계열)을 쓴다.
+- 적 프리팹에 약점 위치의 자식 오브젝트를 만들고, **그 한 오브젝트에** `Collider`(레이어 `Enemy`, 총알 `_hitLayers`에 포함) + `WeakPoint` + 눈에 보이는 렌더러(메시 등)를 붙인다. 평소에 켜져 있어도 된다. 스캔 반응이 평소에는 꺼 두고 스캔 중에만 켠다.
+- 같은 적 루트에 `ScanTarget` + `WeakPointReaction`을 붙인다. **연결할 필드는 없다.** `WeakPointReaction`이 적 아래의 `WeakPoint`를 자동으로 찾는다.
+- 약점 오브젝트의 `localScale`은 스캔 반응이 바꾸지 않는다(콜라이더 크기가 변하지 않도록).
+- 표시용 메시/머티리얼이 벽 뒤에서도 보이게 하려면 깊이 테스트가 꺼진 머티리얼(`M_ScanRevealXRay` 계열)을 쓴다.
+- 주의: 약점은 `SetActive`로 꺼지므로, 약점 오브젝트 자체에 다른 기능(AI 스크립트 등)을 붙이지 않는다. 필요하면 약점 오브젝트의 자식이 아닌 별도 오브젝트에 둔다.

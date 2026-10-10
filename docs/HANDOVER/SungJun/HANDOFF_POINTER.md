@@ -5,6 +5,8 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-11** — 약점을 스캔 중에만 활성화(보이기 + 피격 판정)하도록 `WeakPointReaction`을 자동 탐색·SetActive 방식으로 변경하고, "배율 항상 적용" 가정을 "스캔 중에만"으로 정정. Play 검증 완료: [약점 스캔 활성화](./2026-10-11/weakpoint-scan-activation.md)
+- **2026-10-10** — TempScene 스캔 표지판 앞에 반응 종류별 시험 오브젝트 4종과 ScanWave 발사(T키) 구성, Play에서 반응 확인: [스캔 시험 씬 구성](./2026-10-10/scan-test-scene-setup.md)
 - **2026-10-10** — 스캔 코드 10개(동작 9개·약점 피해 1개)와 입력·HUD 연결 2곳의 역할 확인: [코드 현황](./2026-10-10/scan-code-inventory.md)
 - **2026-10-10** — 스캔 대상 반응 구조(IScannable + ScanTarget/반응 컴포넌트) 작성. `Scan.cs`·`Scan.prefab`은 이세훈 코드라 원본으로 복구했고, 스킬/Player 연결은 후속. 지금은 R키 `TerrainScanner`(Assets/Test) 기준으로 대상 반응만 연결 예정. 약점 배율은 타 파트 요청 대기: [작업 기록](./2026-10-10/scan-system-implementation.md), [약점 배율 요청](./2026-10-10/scan-weakpoint-handoff-requests.md)
 - **2026-10-10** — HUD를 PlayerFacade 기반으로 전환, 스킬 쿨(Roll·SpawnVehicle·Scan) 로직 추가, 낙하 데미지를 Effect SO로 변경. 컴파일·슬라이더 배선·Play 검증 대기: [작업 기록](./2026-10-10/hud-facade-skill-cooldown.md)
