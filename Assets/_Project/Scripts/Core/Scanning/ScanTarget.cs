@@ -53,7 +53,10 @@ namespace Core.Scanning
         {
             if (_state == EScanState.Active)
             {
+                // 활성 중에는 세기를 1 로 끌어올린다(짧은 페이드 인).
                 _fade = StepFade(1.0f, _fadeInTime);
+
+                // 활성 시간이 끝나면 사라지는 단계로 넘어간다.
                 if (Time.time >= _activeUntil)
                 {
                     _state = EScanState.FadingOut;
@@ -61,11 +64,14 @@ namespace Core.Scanning
             }
             else if (_state == EScanState.FadingOut)
             {
+                // 사라지는 중에는 세기를 0 으로 내린다.
                 _fade = StepFade(0.0f, _fadeOutTime);
             }
 
+            // 갱신된 세기를 모든 반응에 전달한다.
             NotifyFade();
 
+            // 완전히 사라졌으면 반응을 끝내고 Update 를 다시 끈다.
             if ((_state == EScanState.FadingOut) && (_fade <= 0.0f))
             {
                 EndScan();
@@ -86,6 +92,8 @@ namespace Core.Scanning
         /// <inheritdoc />
         public void OnScanned(in SScanHit hit)
         {
+            // 대기 중이거나, 직전과 다른 번호의 스캔이면 새 스캔으로 본다.
+            // 같은 번호는 파동이 닿아 있는 동안 매 프레임 들어오는 반복 호출이다.
             bool isNewScan = (_state == EScanState.Idle) || (hit.ScanId != _lastScanId);
             if (isNewScan)
             {
@@ -97,6 +105,7 @@ namespace Core.Scanning
                 return;
             }
 
+            // 닿아 있는 동안 파동 반경 같은 최신 값을 각 반응에 넘긴다.
             foreach (ScanReactionBase reaction in _reactions)
             {
                 reaction.OnScanUpdate(hit);
@@ -113,13 +122,18 @@ namespace Core.Scanning
         {
             bool wasIdle = _state == EScanState.Idle;
 
+            // 마지막 스캔 번호와 종료 시각을 갱신한다. 이미 진행 중이었다면 이 값만 바뀌어 시간이 연장된다.
             _lastScanId = hit.ScanId;
             _activeUntil = Time.time + hit.Duration;
             _state = EScanState.Active;
+
+            // 이제부터 Update 에서 페이드와 타이머를 처리한다.
             enabled = true;
 
+            // 진행 중이던 반응은 다시 시작하지 않는다(화면이 튀지 않게).
             if (!wasIdle) return;
 
+            // 처음 닿은 경우만 세기를 0 에서 시작하고 각 반응에 시작을 알린다.
             _fade = 0.0f;
             foreach (ScanReactionBase reaction in _reactions)
             {
@@ -135,11 +149,13 @@ namespace Core.Scanning
             _state = EScanState.Idle;
             _fade = 0.0f;
 
+            // 각 반응이 원래 상태로 되돌아가게 한다.
             foreach (ScanReactionBase reaction in _reactions)
             {
                 reaction.OnScanEnd();
             }
 
+            // 다음 스캔에 닿을 때까지 Update 비용을 쓰지 않는다.
             enabled = false;
         }
 
@@ -160,8 +176,10 @@ namespace Core.Scanning
         /// <returns>갱신된 fade</returns>
         private float StepFade(float target, float time)
         {
+            // 시간이 0 이하면 0 나눗셈을 피하고 즉시 목표로 보낸다.
             if (time <= 0.0f) return target;
 
+            // 프레임 시간 / 총 시간 만큼 이동하므로 time 초 뒤에 정확히 목표에 닿는다.
             return Mathf.MoveTowards(_fade, target, Time.deltaTime / time);
         }
         #endregion

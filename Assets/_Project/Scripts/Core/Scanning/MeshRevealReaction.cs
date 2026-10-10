@@ -33,13 +33,16 @@ namespace Core.Scanning
         #region Unity Lifecycle
         private void Awake()
         {
+            // 머티리얼을 복제하지 않고 렌더러별로 셰이더 값만 덮어쓰기 위한 블록이다.
             _propertyBlock = new MaterialPropertyBlock();
 
+            // 렌더러를 지정하지 않았으면 자식 렌더러 전부를 대상으로 한다.
             if ((_renderers == null) || (_renderers.Length == 0))
             {
                 _renderers = GetComponentsInChildren<Renderer>(true);
             }
 
+            // 스캔에 닿기 전에는 보이지 않게 렌더러를 끈다(콜라이더는 그대로라 부딪힐 수 있다).
             if (_shouldHideWhenIdle)
             {
                 SetRenderersEnabled(false);
@@ -51,8 +54,11 @@ namespace Core.Scanning
         /// <inheritdoc />
         public override void OnScanBegin(in SScanHit hit)
         {
+            // 파동 중심과 현재 반경을 저장한다(사라지는 단계에서도 이 값을 쓴다).
             _origin = hit.Origin;
             _waveRadius = hit.Radius;
+
+            // 렌더러를 켜고, 첫 프레임부터 반경 안쪽만 드러나게 셰이더 값을 넣는다.
             SetRenderersEnabled(true);
             ApplyProperties(_waveRadius);
         }
@@ -60,6 +66,7 @@ namespace Core.Scanning
         /// <inheritdoc />
         public override void OnScanUpdate(in SScanHit hit)
         {
+            // 파동이 커지는 동안 반경을 매 프레임 갱신해 메시가 점점 드러나게 한다.
             _origin = hit.Origin;
             _waveRadius = hit.Radius;
             ApplyProperties(_waveRadius);
@@ -71,8 +78,13 @@ namespace Core.Scanning
             // 드러나는 동안은 파동 반경 그대로 두고, 사라질 때만 보이는 범위를 접는다.
             if (!isFadingOut) return;
 
+            // 파동 중심에서 이 메시의 가장 가까운 점과 가장 먼 점까지의 거리를 구한다.
             GetDistanceRange(out float nearDistance, out float farDistance);
+
+            // 메시 전체가 드러난 뒤에는 파동이 더 커져도 의미가 없으므로 가장 먼 점까지로 제한한다.
             float visibleRadius = Mathf.Min(farDistance, _waveRadius);
+
+            // fade 1 -> 0 에 따라 보이는 반경을 바깥에서 가장 가까운 점 쪽으로 접어 사라지게 한다.
             ApplyProperties(Mathf.Lerp(nearDistance, visibleRadius, fade));
         }
 
@@ -98,8 +110,10 @@ namespace Core.Scanning
         {
             foreach (Renderer targetRenderer in _renderers)
             {
+                // 파괴된 렌더러는 건너뛴다.
                 if (!targetRenderer) continue;
 
+                // 렌더러에 이미 있던 값을 유지한 채 스캔 값만 덮어쓴다.
                 targetRenderer.GetPropertyBlock(_propertyBlock);
                 _propertyBlock.SetVector(ScanOriginId, _origin);
                 _propertyBlock.SetFloat(ScanRadiusId, radius);
@@ -122,6 +136,7 @@ namespace Core.Scanning
         /// <param name="farDistance">가장 먼 지점까지의 거리(바운드 중심 거리 + 반 대각선)</param>
         private void GetDistanceRange(out float nearDistance, out float farDistance)
         {
+            // 비교를 위해 가까운 쪽은 큰 값, 먼 쪽은 0 에서 시작한다. 제곱 거리로 비교하다 마지막에 한 번만 제곱근을 구한다.
             float nearSqr = float.MaxValue;
             float far = 0.0f;
 
@@ -129,11 +144,13 @@ namespace Core.Scanning
             {
                 if (!targetRenderer) continue;
 
+                // 렌더러가 여러 개면 전체 중 가장 가까운 점과 가장 먼 점을 찾는다.
                 Bounds bounds = targetRenderer.bounds;
                 nearSqr = Mathf.Min(nearSqr, bounds.SqrDistance(_origin));
                 far = Mathf.Max(far, Vector3.Distance(bounds.center, _origin) + bounds.extents.magnitude);
             }
 
+            // 유효한 렌더러가 하나도 없었다면 0 으로 돌려준다.
             nearDistance = (nearSqr == float.MaxValue) ? 0.0f : Mathf.Sqrt(nearSqr);
             farDistance = far;
         }

@@ -28,11 +28,13 @@ namespace Core.Scanning
         /// <returns>약점이면 그 배율, 아니면 1</returns>
         public static float GetMultiplier(Collider hitCollider)
         {
+            // 맞은 콜라이더에 WeakPoint 가 붙어 있으면 약점을 맞힌 것이다.
             if (hitCollider && hitCollider.TryGetComponent(out WeakPoint weakPoint))
             {
                 return weakPoint.DamageMultiplier;
             }
 
+            // 약점이 아니면 데미지를 그대로 적용한다(1배).
             return 1.0f;
         }
         #endregion

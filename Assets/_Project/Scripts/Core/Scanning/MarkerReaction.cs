@@ -28,9 +28,13 @@ namespace Core.Scanning
             Debug.Assert(_marker != null, $"[{name}] 마커 오브젝트가 연결되지 않았습니다.");
             if (!_marker) return;
 
+            // 스프라이트를 따로 지정하지 않았으면 마커 아래에서 찾는다(꺼져 있어도 찾도록 true).
             if (!_spriteRenderer) _spriteRenderer = _marker.GetComponentInChildren<SpriteRenderer>(true);
+
+            // 페이드 때 알파만 곱해 쓰므로, 원래 색을 미리 저장해 둔다.
             if (_spriteRenderer) _baseColor = _spriteRenderer.color;
 
+            // 스캔에 닿기 전에는 마커가 보이지 않는다.
             _marker.SetActive(false);
         }
         #endregion
@@ -45,8 +49,10 @@ namespace Core.Scanning
         /// <inheritdoc />
         public override void OnFade(float fade, bool isFadingOut)
         {
+            // 스프라이트가 없으면 알파 조절 없이 켜고 끄기만 한다.
             if (!_spriteRenderer) return;
 
+            // 원래 색은 유지하고 알파만 fade(0~1)에 비례해 줄인다.
             Color color = _baseColor;
             color.a = _baseColor.a * fade;
             _spriteRenderer.color = color;
@@ -55,6 +61,7 @@ namespace Core.Scanning
         /// <inheritdoc />
         public override void OnScanEnd()
         {
+            // 다음 스캔을 위해 알파를 원래대로 돌려놓고 마커를 끈다.
             if (_spriteRenderer) _spriteRenderer.color = _baseColor;
             if (_marker) _marker.SetActive(false);
         }
