@@ -93,7 +93,7 @@ namespace Projectile
         {
             if (_hitEffect == null) return;
 
-            _hitEffect.Apply(other.gameObject, _cursor);
+            _hitEffect.Apply(other.gameObject, new SEffectContext(_cursor));
         }
         #endregion
     }

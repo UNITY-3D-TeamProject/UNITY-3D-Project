@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Attribute.Core;
 
 namespace Mediator
 {
@@ -10,12 +11,12 @@ namespace Mediator
     public abstract class MediatorBase : MonoBehaviour
     {
         #region Private Fields
-        private readonly Dictionary<string, Action<float, float>> _attributeCallback = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Action<SAttributeChangeData>> _attributeCallback = new(StringComparer.OrdinalIgnoreCase);
         private GetAttributeDelegate _getAttribute;
         #endregion
 
         #region Properties
-        protected Dictionary<string, Action<float, float>> AttributeCallback { get=>_attributeCallback; }
+        protected Dictionary<string, Action<SAttributeChangeData>> AttributeCallback { get=>_attributeCallback; }
 
         protected GetAttributeDelegate AttributeGetter => _getAttribute;
         #endregion
@@ -58,13 +59,11 @@ namespace Mediator
         /// <summary>
         /// 속성값 변경을 알린다. 등록된 콜백이 있는 속성만 처리한다.
         /// </summary>
-        /// <param name="attributeName">변경된 속성 이름</param>
-        /// <param name="newValue">변경 후 값</param>
-        /// <param name="oldValue">변경 전 값</param>
-        public void NotifyAttributeChanged(string attributeName, float newValue, float oldValue)
+        /// <param name="data">변경된 속성 이름, 변경 후/전 값, 출처 정보</param>
+        public void NotifyAttributeChanged(SAttributeChangeData data)
         {
-            if (_attributeCallback.TryGetValue(attributeName, out var callback))
-                callback?.Invoke(newValue, oldValue);
+            if (_attributeCallback.TryGetValue(data.AttributeName, out var callback))
+                callback?.Invoke(data);
         }
         #endregion
 

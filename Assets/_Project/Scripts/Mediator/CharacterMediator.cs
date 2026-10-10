@@ -181,13 +181,13 @@ namespace Mediator
         /// <summary>
         /// 중재자들이 원하는 값 변경시 알림 발송
         /// </summary>
-        private void OnAttributeChangeCallback(string attributeName, float newValue, float oldValue)
+        private void OnAttributeChangeCallback(SAttributeChangeData data)
         {
             foreach (var mediator in _mediators)
             {
-                mediator.NotifyAttributeChanged(attributeName, newValue, oldValue);
+                mediator.NotifyAttributeChanged(data);
             }
-            OnAttributeChanged?.Invoke(attributeName, newValue, oldValue);
+            OnAttributeChanged?.Invoke(data.AttributeName, data.NewValue, data.OldValue);
         }
         /// <summary>
         /// 카메라 중재자가 알린 시점 방향을 이동·회전 중재자로 전달

@@ -128,14 +128,14 @@ namespace Mediator.SubMediators
         /// </summary>
         protected override void InitAttributeCallback()
         {
-            AttributeCallback.TryAdd(_speedValueKey, (float newValue, float oldValue) =>
+            AttributeCallback.TryAdd(_speedValueKey, data =>
             {
-                if (_motor != null) _motor.Speed = newValue;
+                if (_motor != null) _motor.Speed = data.NewValue;
             });
 
-            AttributeCallback.TryAdd(_jumpSpeedValueKey, (float newValue, float oldValue) =>
+            AttributeCallback.TryAdd(_jumpSpeedValueKey, data =>
             {
-                _jumpPower = newValue;
+                _jumpPower = data.NewValue;
             });
         }
 
