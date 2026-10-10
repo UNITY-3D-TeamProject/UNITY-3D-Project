@@ -1,4 +1,4 @@
-using Attribute.Core;
+using Attribute.Effect;
 using Facade.Player;
 using JetBrains.Annotations;
 using Map.Gimmicks;
@@ -11,24 +11,25 @@ namespace Core.Stage
     {
 
         [Header("Checkpoints")]
-        [Tooltip("ÁøÇà °æ·Î ¼ø¼­·Î Ã¼Å©Æ÷ÀÎÆ®¸¦ ¿¬°áÇÕ´Ï´Ù. ¾À ÀüÈ¯À¸·Î ½ºÅ×ÀÌÁö¿¡ ÁøÀÔÇÏ¸é " +
-            "Round Checkpoint IndicesÀÇ Ã¹ °ªÀÌ °¡¸®Å°´Â Ã¼Å©Æ÷ÀÎÆ®ÀÇ RespawnPoint¿¡ ÃÖÃÊ ½ºÆùÇÕ´Ï´Ù. " +
-            "ÀÌ ¹è¿­ÀÇ 0¹øÀ» ÃÖÃÊ ½ºÆù À§Ä¡·Î »ç¿ëÇÏ·Á¸é ÇØ´ç Ã¹ °ªÀ» 0À¸·Î ¼³Á¤ÇÏ¼¼¿ä.")]
+        [Tooltip("ì§„í–‰ ê²½ë¡œ ìˆœì„œë¡œ ì²´í¬í¬ì¸íŠ¸ë¥¼ ì—°ê²°í•©ë‹ˆë‹¤. ì”¬ ì „í™˜ìœ¼ë¡œ ìŠ¤í…Œì´ì§€ì— ì§„ì…í•˜ë©´ " +
+            "Round Checkpoint Indicesì˜ ì²« ê°’ì´ ê°€ë¦¬í‚¤ëŠ” ì²´í¬í¬ì¸íŠ¸ì˜ RespawnPointì— ìµœì´ˆ ìŠ¤í°í•©ë‹ˆë‹¤. " +
+            "ì´ ë°°ì—´ì˜ 0ë²ˆì„ ìµœì´ˆ ìŠ¤í° ìœ„ì¹˜ë¡œ ì‚¬ìš©í•˜ë ¤ë©´ í•´ë‹¹ ì²« ê°’ì„ 0ìœ¼ë¡œ ì„¤ì •í•˜ì„¸ìš”.")]
         [SerializeField] private CheckpointTrigger[] _checkpoints;
 
         [Header("Round Checkpoints")]
-        [Tooltip("¹è¿­ ¼ø¼­´Â ¶ó¿îµå ¼ø¼­ÀÌ¸ç, °¢ °ªÀº Checkpoints ¹è¿­ÀÇ ÀÎµ¦½ºÀÔ´Ï´Ù.")]
+        [Tooltip("ë°°ì—´ ìˆœì„œëŠ” ë¼ìš´ë“œ ìˆœì„œì´ë©°, ê° ê°’ì€ Checkpoints ë°°ì—´ì˜ ì¸ë±ìŠ¤ì…ë‹ˆë‹¤.")]
         [SerializeField] private int[] _roundCheckpointIndices;
 
         [Header("Fall")]
         [SerializeField] private FallZoneTrigger[] _fallZones;
-        [SerializeField, Min(0f)] private float _fallDamage = 10f;
+        [Tooltip("ë‚™í•˜ êµ¬ì—­ì— ë‹¿ì•˜ì„ ë•Œ í”Œë ˆì´ì–´ì—ê²Œ ì ìš©í•  Effect (ì˜ˆ: CurrentHp ê°ì†Œ)")]
+        [SerializeField] private SOAttributeEffect _fallEffect;
 
-        // ÇöÀç ¶ó¿îµå. 0ºÎÅÍ ½ÃÀÛÇÏ¸ç -1Àº ¾ÆÁ÷ ½ÃÀÛÇÏÁö ¾ÊÀº »óÅÂ.
+        // í˜„ì¬ ë¼ìš´ë“œ. 0ë¶€í„° ì‹œì‘í•˜ë©° -1ì€ ì•„ì§ ì‹œì‘í•˜ì§€ ì•Šì€ ìƒíƒœ.
         private int _currentRoundIndex = -1;
 
-        // µµ´ŞÇÑ Ã¼Å©Æ÷ÀÎÆ® Áß °¡Àå ³ôÀº ÀÎµ¦½º.
-        // »ç¸ÁÀ¸·Î ¶ó¿îµå¸¦ Àç½ÃÀÛÇÏ¸é ÇØ´ç ¶ó¿îµå ½ÃÀÛÁ¡±îÁö µÇµ¹¸°´Ù.
+        // ë„ë‹¬í•œ ì²´í¬í¬ì¸íŠ¸ ì¤‘ ê°€ì¥ ë†’ì€ ì¸ë±ìŠ¤.
+        // ì‚¬ë§ìœ¼ë¡œ ë¼ìš´ë“œë¥¼ ì¬ì‹œì‘í•˜ë©´ í•´ë‹¹ ë¼ìš´ë“œ ì‹œì‘ì ê¹Œì§€ ë˜ëŒë¦°ë‹¤.
         private int _currentCheckpointIndex = -1;
 
         private const string CURRENT_HP_KEY = "CurrentHp";
@@ -40,10 +41,10 @@ namespace Core.Stage
         private Vector3 _initialSpawnPosition;
         private Quaternion _initialSpawnRotation;
 
-        // Ã¹ ¶ó¿îµå ½º³À¼¦±îÁö ÁØºñµÆ´ÂÁö È®ÀÎÇÑ´Ù.
+        // ì²« ë¼ìš´ë“œ ìŠ¤ëƒ…ìƒ·ê¹Œì§€ ì¤€ë¹„ëëŠ”ì§€ í™•ì¸í•œë‹¤.
         private bool _isInitialSnapshotReady;
 
-        // »ç¸Á º¹±¸ ÁßÀÎÁö È®ÀÎÇÑ´Ù. »ç¸Á ÅëÁö Áßº¹ Ã³¸®¿Í º¹±¸ Áß ³«ÇÏ¡¤Ã¼Å©Æ÷ÀÎÆ® ÆÇÁ¤À» ¸·´Â´Ù.
+        // ì‚¬ë§ ë³µêµ¬ ì¤‘ì¸ì§€ í™•ì¸í•œë‹¤. ì‚¬ë§ í†µì§€ ì¤‘ë³µ ì²˜ë¦¬ì™€ ë³µêµ¬ ì¤‘ ë‚™í•˜Â·ì²´í¬í¬ì¸íŠ¸ íŒì •ì„ ë§‰ëŠ”ë‹¤.
         private bool _isRecovering;
 
         private GameManager _gameManager;
@@ -53,27 +54,27 @@ namespace Core.Stage
         public int CurrentRoundIndex => _currentRoundIndex;
         public int CurrentCheckpointIndex => _currentCheckpointIndex;
 
-        // ÇöÀç ½ºÅ×ÀÌÁöÀÇ clear ¿Ï¼ºµµ => °¢ ½ºÅ×ÀÌÁöÀÇ clear ¿Ï¼ºµµ¿Í °°Àº °ªÀ» °øÀ¯
+        // í˜„ì¬ ìŠ¤í…Œì´ì§€ì˜ clear ì™„ì„±ë„ => ê° ìŠ¤í…Œì´ì§€ì˜ clear ì™„ì„±ë„ì™€ ê°™ì€ ê°’ì„ ê³µìœ 
         public int CurrentClearProgress { get; private set; }
 
-        // 1.Æ©Åä¸®¾ó,2.ÀÎ½ºÅ¸,3.ÆÄÀÏ,4.º¸¾È,5.¶óÀÌºê¾Û
+        // 1.íŠœí† ë¦¬ì–¼,2.ì¸ìŠ¤íƒ€,3.íŒŒì¼,4.ë³´ì•ˆ,5.ë¼ì´ë¸Œì•±
         public bool IsSuccess { get; private set; }
 
-        // ÇöÀç ½ºÅ×ÀÌÁö
+        // í˜„ì¬ ìŠ¤í…Œì´ì§€
         public EStageType CurrentStage { get; private set; }
 
-        // ¾îµğ ½ºÅ×ÀÌÁö±îÁö ½ÇÇàÇÑ°ÇÁö
+        // ì–´ë”” ìŠ¤í…Œì´ì§€ê¹Œì§€ ì‹¤í–‰í•œê±´ì§€
 
-        // Áö±İ ½ºÅ×ÀÌÁö ÁßÀÎ°ÇÁö
+        // ì§€ê¸ˆ ìŠ¤í…Œì´ì§€ ì¤‘ì¸ê±´ì§€
         public bool IsRunning { get; private set; }
 
-        // ÀÌº¥Æ®
+        // ì´ë²¤íŠ¸
         public event Action OnStageStarted;
         public event Action OnStageCompleted;
         public event Action OnAllStagesCompleted;
         public event Action OnStageFailed;
 
-        // »ç¸Á ÈÄ ¶ó¿îµå Ã¼Å©Æ÷ÀÎÆ®¿¡¼­ ÇÃ·¹ÀÌ¾î¸¦ ´Ù½Ã ½ºÆùÇØ ´Ş¶ó´Â ¿äÃ». PlayerSpawner°¡ ±¸µ¶ÇÑ´Ù.
+        // ì‚¬ë§ í›„ ë¼ìš´ë“œ ì²´í¬í¬ì¸íŠ¸ì—ì„œ í”Œë ˆì´ì–´ë¥¼ ë‹¤ì‹œ ìŠ¤í°í•´ ë‹¬ë¼ëŠ” ìš”ì²­. PlayerSpawnerê°€ êµ¬ë…í•œë‹¤.
         public event Action OnPlayerRespawnRequested;
 
         private void OnEnable()
@@ -89,7 +90,7 @@ namespace Core.Stage
             BindFallZones();
             _gameManager.OnPlayerSpawned += HandlePlayerSpawned;
 
-            // ÀÌ¹Ì »ı¼ºµÈ ÇÃ·¹ÀÌ¾î°¡ ÀÖ´Ù¸é ¹Ù·Î ¿¬°áÇÑ´Ù.
+            // ì´ë¯¸ ìƒì„±ëœ í”Œë ˆì´ì–´ê°€ ìˆë‹¤ë©´ ë°”ë¡œ ì—°ê²°í•œë‹¤.
             BindPlayer();
         }
 
@@ -108,31 +109,31 @@ namespace Core.Stage
             _gameManager = null;
         }
 
-        // [È£Ãâ] GameManager.HandleSceneLoaded¿¡¼­ ¾À ·Îµå Á÷ÈÄ È£ÃâµÈ´Ù.
+        // [í˜¸ì¶œ] GameManager.HandleSceneLoadedì—ì„œ ì”¬ ë¡œë“œ ì§í›„ í˜¸ì¶œëœë‹¤.
         public void TakeCurrentStage(EStageType currentStage)
         {
-            // ÁØ¹üÀÌ°¡ ¸¸µå´Â ¾À ·Î´õ °°Àº °÷¿¡¼­ ÇöÀç ¾ÀÀÌ ¾îµòÁö °¡Á®¿Â´Ù.
+            // ì¤€ë²”ì´ê°€ ë§Œë“œëŠ” ì”¬ ë¡œë” ê°™ì€ ê³³ì—ì„œ í˜„ì¬ ì”¬ì´ ì–´ë”˜ì§€ ê°€ì ¸ì˜¨ë‹¤.
             CurrentStage = currentStage;
 
             _currentStageBaseInstance = FindAnyObjectByType<StageBase>();
 
             if (_currentStageBaseInstance == null)
             {
-                Debug.LogError($"{CurrentStage} ¾À¿¡¼­ StageBase ÄÄÆ÷³ÍÆ®¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+                Debug.LogError($"{CurrentStage} ì”¬ì—ì„œ StageBase ì»´í¬ë„ŒíŠ¸ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
                 return;
             }
             if (_currentStageBaseInstance.StageType != CurrentStage)
             {
                 Debug.LogError(
-                    $"Àü´Ş¹ŞÀº ½ºÅ×ÀÌÁö´Â {CurrentStage}ÀÌÁö¸¸ " +
-                    $"¾À¿¡¼­ Ã£Àº ½ºÅ×ÀÌÁö´Â {_currentStageBaseInstance.StageType}ÀÔ´Ï´Ù."
+                    $"ì „ë‹¬ë°›ì€ ìŠ¤í…Œì´ì§€ëŠ” {CurrentStage}ì´ì§€ë§Œ " +
+                    $"ì”¬ì—ì„œ ì°¾ì€ ìŠ¤í…Œì´ì§€ëŠ” {_currentStageBaseInstance.StageType}ì…ë‹ˆë‹¤."
                 );
                 _currentStageBaseInstance = null;
             }
 
         }
 
-        // [È£Ãâ] GameManager.CompletePlayerSpawn¿¡¼­ ÇÃ·¹ÀÌ¾î µî·Ï°ú Ã¹ ¶ó¿îµå ÀúÀåÀÌ ³¡³­ µÚ È£ÃâµÈ´Ù.
+        // [í˜¸ì¶œ] GameManager.CompletePlayerSpawnì—ì„œ í”Œë ˆì´ì–´ ë“±ë¡ê³¼ ì²« ë¼ìš´ë“œ ì €ì¥ì´ ëë‚œ ë’¤ í˜¸ì¶œëœë‹¤.
         public void StartStage()
         {
             if (IsRunning)
@@ -142,13 +143,13 @@ namespace Core.Stage
 
             if (_currentStageBaseInstance == null)
             {
-                Debug.LogError("ÇöÀç ½ºÅ×ÀÌÁö°¡ ¼³Á¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.", this);
+                Debug.LogError("í˜„ì¬ ìŠ¤í…Œì´ì§€ê°€ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.", this);
                 return;
             }
 
             if (!_isInitialSnapshotReady)
             {
-                Debug.LogError("Ã¹ ¶ó¿îµå ½º³À¼¦ÀÌ ÁØºñµÇÁö ¾Ê¾Ò½À´Ï´Ù.", this);
+                Debug.LogError("ì²« ë¼ìš´ë“œ ìŠ¤ëƒ…ìƒ·ì´ ì¤€ë¹„ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.", this);
                 return;
             }
 
@@ -159,21 +160,21 @@ namespace Core.Stage
             OnStageStarted?.Invoke();
         }
 
-        // ÇöÀç ¶ó¿îµå¿¡ ÁöÁ¤µÈ Ã¼Å©Æ÷ÀÎÆ®¸¦ ½ºÆù À§Ä¡·Î »ç¿ëÇÑ´Ù.
-        // ÃÖÃÊ ÀÔÀå¿¡¼­´Â Ã¹ ¶ó¿îµå, »ç¸Á ÈÄ Àç½ºÆù¿¡¼­´Â ÇöÀç ¶ó¿îµåÀÇ Ã¼Å©Æ÷ÀÎÆ®¸¦ ¹İÈ¯ÇÑ´Ù.
-        // [È£Ãâ] PlayerSpawner.SpawnPlayer°¡ ÃÖÃÊ ½ºÆù¡¤Àç½ºÆù À§Ä¡¸¦ ¾òÀ» ¶§ È£ÃâÇÑ´Ù. InitializeFirstRoundµµ À§Ä¡ °ËÁõ¿ëÀ¸·Î È£ÃâÇÑ´Ù.
+        // í˜„ì¬ ë¼ìš´ë“œì— ì§€ì •ëœ ì²´í¬í¬ì¸íŠ¸ë¥¼ ìŠ¤í° ìœ„ì¹˜ë¡œ ì‚¬ìš©í•œë‹¤.
+        // ìµœì´ˆ ì…ì¥ì—ì„œëŠ” ì²« ë¼ìš´ë“œ, ì‚¬ë§ í›„ ì¬ìŠ¤í°ì—ì„œëŠ” í˜„ì¬ ë¼ìš´ë“œì˜ ì²´í¬í¬ì¸íŠ¸ë¥¼ ë°˜í™˜í•œë‹¤.
+        // [í˜¸ì¶œ] PlayerSpawner.SpawnPlayerê°€ ìµœì´ˆ ìŠ¤í°Â·ì¬ìŠ¤í° ìœ„ì¹˜ë¥¼ ì–»ì„ ë•Œ í˜¸ì¶œí•œë‹¤. InitializeFirstRoundë„ ìœ„ì¹˜ ê²€ì¦ìš©ìœ¼ë¡œ í˜¸ì¶œí•œë‹¤.
         public Transform GetSpawnPoint()
         {
             if (_checkpoints == null || _checkpoints.Length == 0)
             {
-                Debug.LogError("Ã¼Å©Æ÷ÀÎÆ® ¸ñ·ÏÀÌ ¾ø½À´Ï´Ù.", this);
+                Debug.LogError("ì²´í¬í¬ì¸íŠ¸ ëª©ë¡ì´ ì—†ìŠµë‹ˆë‹¤.", this);
                 return null;
             }
 
             if (_roundCheckpointIndices == null ||
                 _roundCheckpointIndices.Length == 0)
             {
-                Debug.LogError("¶ó¿îµå ½ÃÀÛ Ã¼Å©Æ÷ÀÎÆ® ¼³Á¤ÀÌ ¾ø½À´Ï´Ù.", this);
+                Debug.LogError("ë¼ìš´ë“œ ì‹œì‘ ì²´í¬í¬ì¸íŠ¸ ì„¤ì •ì´ ì—†ìŠµë‹ˆë‹¤.", this);
                 return null;
             }
 
@@ -181,7 +182,7 @@ namespace Core.Stage
 
             if (roundIndex < 0 || roundIndex >= _roundCheckpointIndices.Length)
             {
-                Debug.LogError("ÇöÀç ¶ó¿îµå ÀÎµ¦½º°¡ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.", this);
+                Debug.LogError("í˜„ì¬ ë¼ìš´ë“œ ì¸ë±ìŠ¤ê°€ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.", this);
                 return null;
             }
 
@@ -189,14 +190,14 @@ namespace Core.Stage
 
             if (checkpointIndex < 0 || checkpointIndex >= _checkpoints.Length)
             {
-                Debug.LogError("¶ó¿îµå Ã¼Å©Æ÷ÀÎÆ® ÀÎµ¦½º°¡ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.", this);
+                Debug.LogError("ë¼ìš´ë“œ ì²´í¬í¬ì¸íŠ¸ ì¸ë±ìŠ¤ê°€ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.", this);
                 return null;
             }
 
             CheckpointTrigger checkpoint = _checkpoints[checkpointIndex];
             if (checkpoint == null)
             {
-                Debug.LogError("¶ó¿îµå CheckpointTrigger°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.", this);
+                Debug.LogError("ë¼ìš´ë“œ CheckpointTriggerê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.", this);
                 return null;
             }
 
@@ -204,16 +205,16 @@ namespace Core.Stage
 
             if (spawnPoint == null)
             {
-                Debug.LogError("¶ó¿îµå Ã¼Å©Æ÷ÀÎÆ®ÀÇ º¹±Í À§Ä¡°¡ ¾ø½À´Ï´Ù.", this);
+                Debug.LogError("ë¼ìš´ë“œ ì²´í¬í¬ì¸íŠ¸ì˜ ë³µê·€ ìœ„ì¹˜ê°€ ì—†ìŠµë‹ˆë‹¤.", this);
                 return null;
             }
 
             return spawnPoint;
         }
 
-        // ÃÖÃÊ ½ºÆùÀÇ ´É·ÂÄ¡ Àû¿ëÀÌ ³¡³­ µÚ È£ÃâÇÑ´Ù.
-        // °°Àº ¾ÀÀÇ »ç¸Á º¹±¸¿¡¼­´Â È£ÃâÇÏÁö ¾Ê´Â´Ù.
-        // [È£Ãâ] GameManager.CompletePlayerSpawn¿¡¼­ ÃÖÃÊ ´É·ÂÄ¡ ¼³Á¤ Á÷ÈÄ È£ÃâµÈ´Ù.
+        // ìµœì´ˆ ìŠ¤í°ì˜ ëŠ¥ë ¥ì¹˜ ì ìš©ì´ ëë‚œ ë’¤ í˜¸ì¶œí•œë‹¤.
+        // ê°™ì€ ì”¬ì˜ ì‚¬ë§ ë³µêµ¬ì—ì„œëŠ” í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // [í˜¸ì¶œ] GameManager.CompletePlayerSpawnì—ì„œ ìµœì´ˆ ëŠ¥ë ¥ì¹˜ ì„¤ì • ì§í›„ í˜¸ì¶œëœë‹¤.
         public void InitializeFirstRound(PlayerState playerState)
         {
             if (_isInitialSnapshotReady)
@@ -223,13 +224,13 @@ namespace Core.Stage
 
             if (playerState == null || playerState.CurrentFacade == null)
             {
-                Debug.LogError("Ã¹ ¶ó¿îµå¸¦ ÁØºñÇÒ ÇÃ·¹ÀÌ¾î°¡ ¾ø½À´Ï´Ù.", this);
+                Debug.LogError("ì²« ë¼ìš´ë“œë¥¼ ì¤€ë¹„í•  í”Œë ˆì´ì–´ê°€ ì—†ìŠµë‹ˆë‹¤.", this);
                 return;
             }
 
             if (_currentStageBaseInstance == null)
             {
-                Debug.LogError("Ã¹ ¶ó¿îµå¸¦ ÁØºñÇÒ ½ºÅ×ÀÌÁö°¡ ¾ø½À´Ï´Ù.", this);
+                Debug.LogError("ì²« ë¼ìš´ë“œë¥¼ ì¤€ë¹„í•  ìŠ¤í…Œì´ì§€ê°€ ì—†ìŠµë‹ˆë‹¤.", this);
                 return;
             }
 
@@ -238,15 +239,15 @@ namespace Core.Stage
                 return;
             }
 
-            // »õ·Î¿î ½ºÅ×ÀÌÁö ÁøÀÔÀÌ¹Ç·Î ÀÌÀü ½ºÅ×ÀÌÁöÀÇ ¶ó¿îµå ±â·ÏÀ» ºñ¿î´Ù.
-            // ¾À ÀüÈ¯¿ë ´É·ÂÄ¡ ÀúÀå°ªÀº °Çµå¸®Áö ¾Ê´Â´Ù.
+            // ìƒˆë¡œìš´ ìŠ¤í…Œì´ì§€ ì§„ì…ì´ë¯€ë¡œ ì´ì „ ìŠ¤í…Œì´ì§€ì˜ ë¼ìš´ë“œ ê¸°ë¡ì„ ë¹„ìš´ë‹¤.
+            // ì”¬ ì „í™˜ìš© ëŠ¥ë ¥ì¹˜ ì €ì¥ê°’ì€ ê±´ë“œë¦¬ì§€ ì•ŠëŠ”ë‹¤.
             playerState.ClearRoundSnapshots();
             playerState.SaveRoundSnapshot(0);
 
-            // HP ÃÊ±âÈ­ ½ÇÆĞ µîÀ¸·Î ÀúÀåµÇÁö ¾Ê¾Ò´Ù¸é ½ÃÀÛÇÏÁö ¾Ê´Â´Ù.
+            // HP ì´ˆê¸°í™” ì‹¤íŒ¨ ë“±ìœ¼ë¡œ ì €ì¥ë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì‹œì‘í•˜ì§€ ì•ŠëŠ”ë‹¤.
             if (!playerState.HasRoundSnapshot(0))
             {
-                Debug.LogError("Ã¹ ¶ó¿îµå ½º³À¼¦ ÀúÀå¿¡ ½ÇÆĞÇß½À´Ï´Ù.", this);
+                Debug.LogError("ì²« ë¼ìš´ë“œ ìŠ¤ëƒ…ìƒ· ì €ì¥ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.", this);
                 return;
             }
 
@@ -255,18 +256,18 @@ namespace Core.Stage
             _isInitialSnapshotReady = true;
         }
 
-        // GameManager°¡ ÇÃ·¹ÀÌ¾î »ı¼º ¿Ï·á¸¦ ¾Ë¸± ¶§ È£ÃâµÈ´Ù. (HUD µî AttributeSet »ç¿ëÃ³¸¦ À§ÇÑ ¸Å°³º¯¼ö¶ó »ç¿ëÇÏÁö ¾Ê´Â´Ù.)
-        // [ÀÌº¥Æ®] GameManager.OnPlayerSpawned°¡ ¹ß»ıÇÏ¸é È£ÃâµÈ´Ù. (OnEnable¿¡¼­ ±¸µ¶)
-        private void HandlePlayerSpawned(AttributeSet attributeSet)
+        // GameManagerê°€ í”Œë ˆì´ì–´ ìƒì„± ì™„ë£Œë¥¼ ì•Œë¦´ ë•Œ í˜¸ì¶œëœë‹¤. (HUD ë“± ë‹¤ë¥¸ êµ¬ë…ìì™€ ì‹œê·¸ë‹ˆì²˜ë¥¼ ë§ì¶˜ ë§¤ê°œë³€ìˆ˜ë¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤.)
+        // [ì´ë²¤íŠ¸] GameManager.OnPlayerSpawnedê°€ ë°œìƒí•˜ë©´ í˜¸ì¶œëœë‹¤. (OnEnableì—ì„œ êµ¬ë…)
+        private void HandlePlayerSpawned(PlayerFacade playerFacade)
         {
             BindPlayer();
         }
 
-        // ÇöÀç ÇÃ·¹ÀÌ¾îÀÇ PlayerFacade¸¦ StageManager¿¡ ¿¬°áÇÏ´Â ÇÔ¼ö
-        // [È£Ãâ] OnEnable(ÀÌ¹Ì ÇÃ·¹ÀÌ¾î°¡ ÀÖÀ» ¶§)°ú HandlePlayerSpawned(»õ ÇÃ·¹ÀÌ¾î µî·Ï ½Ã)¿¡¼­ È£ÃâµÈ´Ù.
+        // í˜„ì¬ í”Œë ˆì´ì–´ì˜ PlayerFacadeë¥¼ StageManagerì— ì—°ê²°í•˜ëŠ” í•¨ìˆ˜
+        // [í˜¸ì¶œ] OnEnable(ì´ë¯¸ í”Œë ˆì´ì–´ê°€ ìˆì„ ë•Œ)ê³¼ HandlePlayerSpawned(ìƒˆ í”Œë ˆì´ì–´ ë“±ë¡ ì‹œ)ì—ì„œ í˜¸ì¶œëœë‹¤.
         private void BindPlayer()
         {
-            // Àç½ºÆùµÈ °æ¿ì ÀÌÀü ÇÃ·¹ÀÌ¾îÀÇ ±¸µ¶ºÎÅÍ ÇØÁ¦ÇÑ´Ù.
+            // ì¬ìŠ¤í°ëœ ê²½ìš° ì´ì „ í”Œë ˆì´ì–´ì˜ êµ¬ë…ë¶€í„° í•´ì œí•œë‹¤.
             UnbindPlayer();
 
             _playerFacade = _gameManager != null ? _gameManager.CurrentPlayerFacade : null;
@@ -282,7 +283,7 @@ namespace Core.Stage
 
             _playerFacade.OnDeath += HandlePlayerDeath;
 
-            // »ç¸Á ÈÄ Àç½ºÆùÀÌ¸é »õ ÇÃ·¹ÀÌ¾î¿¡°Ô ÇöÀç ¶ó¿îµå ÃÖÃÊ Ã¼·Â¡¤¹èÅÍ¸®¸¦ º¹¿øÇÑ´Ù.
+            // ì‚¬ë§ í›„ ì¬ìŠ¤í°ì´ë©´ ìƒˆ í”Œë ˆì´ì–´ì—ê²Œ í˜„ì¬ ë¼ìš´ë“œ ìµœì´ˆ ì²´ë ¥Â·ë°°í„°ë¦¬ë¥¼ ë³µì›í•œë‹¤.
             if (_isRecovering)
             {
                 _gameManager.playerState.RestoreRoundSnapshot(_currentRoundIndex);
@@ -303,7 +304,7 @@ namespace Core.Stage
                 {
                     continue;
                 }
-                // °°Àº ÀÌº¥Æ®ÀÇ Áßº¹ ±¸µ¶À» ¹æÁöÇÑ´Ù.
+                // ê°™ì€ ì´ë²¤íŠ¸ì˜ ì¤‘ë³µ êµ¬ë…ì„ ë°©ì§€í•œë‹¤.
                 checkpoint.OnPlayerEntered -= HandleCheckpointEntered;
                 checkpoint.OnPlayerEntered += HandleCheckpointEntered;
             }
@@ -325,7 +326,7 @@ namespace Core.Stage
             }
         }
 
-        // [ÀÌº¥Æ®] CheckpointTrigger.OnPlayerEntered°¡ ¹ß»ıÇÏ¸é È£ÃâµÈ´Ù. (BindCheckpoints¿¡¼­ ±¸µ¶)
+        // [ì´ë²¤íŠ¸] CheckpointTrigger.OnPlayerEnteredê°€ ë°œìƒí•˜ë©´ í˜¸ì¶œëœë‹¤. (BindCheckpointsì—ì„œ êµ¬ë…)
         private void HandleCheckpointEntered(CheckpointTrigger checkpoint, Collider other)
         {
             if (!IsLivingPlayerCollider(other))
@@ -337,17 +338,17 @@ namespace Core.Stage
             {
                 return;
             }
-            // ÀÌº¥Æ®¸¦ º¸³½ Ã¼Å©Æ÷ÀÎÆ®°¡ ¸ñ·ÏÀÇ ¸î ¹øÂ°ÀÎÁö Ã£´Â´Ù.
+            // ì´ë²¤íŠ¸ë¥¼ ë³´ë‚¸ ì²´í¬í¬ì¸íŠ¸ê°€ ëª©ë¡ì˜ ëª‡ ë²ˆì§¸ì¸ì§€ ì°¾ëŠ”ë‹¤.
             int checkpointIndex = Array.IndexOf(_checkpoints, checkpoint);
             if (checkpointIndex < 0)
             {
                 return;
             }
 
-            // ÀÌÀü ÁöÁ¡¿¡ ´Ù½Ã ´ê¾Æµµ ÀÏ¹İ ÁøÇàµµ´Â µÚ·Î °¡Áö ¾Ê´Â´Ù.
+            // ì´ì „ ì§€ì ì— ë‹¤ì‹œ ë‹¿ì•„ë„ ì¼ë°˜ ì§„í–‰ë„ëŠ” ë’¤ë¡œ ê°€ì§€ ì•ŠëŠ”ë‹¤.
             _currentCheckpointIndex = Mathf.Max(_currentCheckpointIndex, checkpointIndex);
 
-            // ÀÏ¹İ ÁøÇàµµ¿Í º°µµ·Î ½ÇÁ¦ µµ´ŞÇÑ ´ÙÀ½ ¶ó¿îµå ½ÃÀÛÁ¡À» °Ë»çÇÑ´Ù.
+            // ì¼ë°˜ ì§„í–‰ë„ì™€ ë³„ë„ë¡œ ì‹¤ì œ ë„ë‹¬í•œ ë‹¤ìŒ ë¼ìš´ë“œ ì‹œì‘ì ì„ ê²€ì‚¬í•œë‹¤.
             int nextRoundIndex = _currentRoundIndex + 1;
             if ((_roundCheckpointIndices == null) ||
                 (nextRoundIndex >= _roundCheckpointIndices.Length) ||
@@ -357,11 +358,11 @@ namespace Core.Stage
             }
 
             PlayerState playerState = _gameManager.playerState;
-            // PlayerState°¡ ÀÌ¹Ì ÀúÀåµÈ ¶ó¿îµåÀÇ ÃÖÃÊ °ªÀ» º¸È£ÇÑ´Ù.
+            // PlayerStateê°€ ì´ë¯¸ ì €ì¥ëœ ë¼ìš´ë“œì˜ ìµœì´ˆ ê°’ì„ ë³´í˜¸í•œë‹¤.
             playerState.SaveRoundSnapshot(nextRoundIndex);
 
-            // ÀúÀå ½ÇÆĞ ½Ã ¶ó¿îµå¸¦ °»½ÅÇÏÁö ¾Ê´Â´Ù. ÀçÁ¢ÃË ½Ã ÃÖÃÊ °ªÀº À¯ÁöµÈ´Ù.
-            // ÀúÀå¿¡ ¼º°øÇßÀ» ¶§¸¸ ÇöÀç ¶ó¿îµå¸¦ º¯°æÇÑ´Ù.
+            // ì €ì¥ ì‹¤íŒ¨ ì‹œ ë¼ìš´ë“œë¥¼ ê°±ì‹ í•˜ì§€ ì•ŠëŠ”ë‹¤. ì¬ì ‘ì´‰ ì‹œ ìµœì´ˆ ê°’ì€ ìœ ì§€ëœë‹¤.
+            // ì €ì¥ì— ì„±ê³µí–ˆì„ ë•Œë§Œ í˜„ì¬ ë¼ìš´ë“œë¥¼ ë³€ê²½í•œë‹¤.
             if (playerState.HasRoundSnapshot(nextRoundIndex))
             {
                 _currentRoundIndex = nextRoundIndex;
@@ -381,7 +382,7 @@ namespace Core.Stage
                 {
                     continue;
                 }
-                // °°Àº ÀÌº¥Æ®ÀÇ Áßº¹ ±¸µ¶À» ¹æÁöÇÑ´Ù.
+                // ê°™ì€ ì´ë²¤íŠ¸ì˜ ì¤‘ë³µ êµ¬ë…ì„ ë°©ì§€í•œë‹¤.
                 fallZone.OnPlayerEntered -= HandleFallZoneEntered;
                 fallZone.OnPlayerEntered += HandleFallZoneEntered;
             }
@@ -403,9 +404,9 @@ namespace Core.Stage
             }
         }
 
-        // ³«ÇÏ µ¥¹ÌÁö¸¦ ÁÖ°í, »ıÁ¸ÇÏ¸é µµ´ŞÇÑ Ã¼Å©Æ÷ÀÎÆ® Áß °¡Àå ³ôÀº °÷À¸·Î ÀÌµ¿½ÃÅ²´Ù.
-        // µ¥¹ÌÁö·Î »ç¸ÁÇÏ¸é »ç¸Á ÀÌº¥Æ®°¡ ¶ó¿îµå º¹±¸¸¦ Ã³¸®ÇÏ¹Ç·Î ¿©±â¼­´Â ÀÌµ¿ÇÏÁö ¾Ê´Â´Ù.
-        // [ÀÌº¥Æ®] FallZoneTrigger.OnPlayerEntered°¡ ¹ß»ıÇÏ¸é È£ÃâµÈ´Ù. (BindFallZones¿¡¼­ ±¸µ¶)
+        // ë‚™í•˜ ë°ë¯¸ì§€ë¥¼ ì£¼ê³ , ìƒì¡´í•˜ë©´ ë„ë‹¬í•œ ì²´í¬í¬ì¸íŠ¸ ì¤‘ ê°€ì¥ ë†’ì€ ê³³ìœ¼ë¡œ ì´ë™ì‹œí‚¨ë‹¤.
+        // ë°ë¯¸ì§€ë¡œ ì‚¬ë§í•˜ë©´ ì‚¬ë§ ì´ë²¤íŠ¸ê°€ ë¼ìš´ë“œ ë³µêµ¬ë¥¼ ì²˜ë¦¬í•˜ë¯€ë¡œ ì—¬ê¸°ì„œëŠ” ì´ë™í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        // [ì´ë²¤íŠ¸] FallZoneTrigger.OnPlayerEnteredê°€ ë°œìƒí•˜ë©´ í˜¸ì¶œëœë‹¤. (BindFallZonesì—ì„œ êµ¬ë…)
         private void HandleFallZoneEntered(FallZoneTrigger fallZone, Collider other)
         {
             if (!IsLivingPlayerCollider(other))
@@ -413,8 +414,15 @@ namespace Core.Stage
                 return;
             }
 
-            float health = _playerFacade.GetAttribute(CURRENT_HP_KEY);
-            _playerFacade.SetAttribute(CURRENT_HP_KEY, health - _fallDamage);
+            // ë°ë¯¸ì§€ëŠ” Effect SOë¡œ ì ìš©í•œë‹¤. ê°’ì´ ì¤„ë©´ PlayerFacade.OnHitì´ ë°œìƒí•œë‹¤.
+            if (_fallEffect == null || _playerFacade.EffectTarget == null)
+            {
+                Debug.LogError("ë‚™í•˜ Effect ë˜ëŠ” í”Œë ˆì´ì–´ EffectTargetì´ ì—†ìŠµë‹ˆë‹¤.", this);
+            }
+            else
+            {
+                _fallEffect.Apply(_playerFacade.EffectTarget);
+            }
 
             if (_isRecovering)
             {
@@ -426,53 +434,53 @@ namespace Core.Stage
                 _currentCheckpointIndex >= _checkpoints.Length ||
                 _checkpoints[_currentCheckpointIndex] == null)
             {
-                Debug.LogError("³«ÇÏ ÈÄ º¹±ÍÇÒ Ã¼Å©Æ÷ÀÎÆ®°¡ ¾ø½À´Ï´Ù.", this);
+                Debug.LogError("ë‚™í•˜ í›„ ë³µê·€í•  ì²´í¬í¬ì¸íŠ¸ê°€ ì—†ìŠµë‹ˆë‹¤.", this);
                 return;
             }
 
             MovePlayerTo(_checkpoints[_currentCheckpointIndex].RespawnPoint);
         }
 
-        // ÇÃ·¹ÀÌ ÁßÀÎ ÇöÀç ÇÃ·¹ÀÌ¾îÀÇ »ì¾ÆÀÖ´Â ¸öÃ¼¿¡ Á¢ÃËÇÑ °ÍÀÎÁö È®ÀÎÇÑ´Ù.
-        // [È£Ãâ] HandleCheckpointEntered, HandleFallZoneEntered¿¡¼­ Ã³¸® ´ë»óÀÎÁö È®ÀÎÇÒ ¶§ È£ÃâÇÑ´Ù.
+        // í”Œë ˆì´ ì¤‘ì¸ í˜„ì¬ í”Œë ˆì´ì–´ì˜ ì‚´ì•„ìˆëŠ” ëª¸ì²´ì— ì ‘ì´‰í•œ ê²ƒì¸ì§€ í™•ì¸í•œë‹¤.
+        // [í˜¸ì¶œ] HandleCheckpointEntered, HandleFallZoneEnteredì—ì„œ ì²˜ë¦¬ ëŒ€ìƒì¸ì§€ í™•ì¸í•  ë•Œ í˜¸ì¶œí•œë‹¤.
         private bool IsLivingPlayerCollider(Collider other)
         {
-            // ÇÃ·¹ÀÌ ÁßÀÌ°í Ã¹ ¶ó¿îµå ÁØºñ°¡ ³¡³µ´ÂÁö È®ÀÎÇÑ´Ù.
+            // í”Œë ˆì´ ì¤‘ì´ê³  ì²« ë¼ìš´ë“œ ì¤€ë¹„ê°€ ëë‚¬ëŠ”ì§€ í™•ì¸í•œë‹¤.
             if ((!isActiveAndEnabled || !IsRunning || !_isInitialSnapshotReady || _isRecovering) ||
                 (_gameManager == null) ||
                 (_gameManager.CurrentState != GameManager.GameState.Playing))
             {
                 return false;
             }
-            // Á¢ÃËÇÑ Collider°¡ ÇöÀç ÇÃ·¹ÀÌ¾î¿¡ ¼ÓÇÏ´ÂÁö È®ÀÎÇÑ´Ù.
+            // ì ‘ì´‰í•œ Colliderê°€ í˜„ì¬ í”Œë ˆì´ì–´ì— ì†í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤.
             if ((_playerFacade == null || other == null) ||
                 (_gameManager.CurrentPlayerFacade != _playerFacade) ||
                 (other.transform.root != _playerFacade.transform.root))
             {
                 return false;
             }
-            // »ç¸Á »óÅÂ¿¡¼­´Â ÆÇÁ¤ÇÏÁö ¾Ê´Â´Ù.
+            // ì‚¬ë§ ìƒíƒœì—ì„œëŠ” íŒì •í•˜ì§€ ì•ŠëŠ”ë‹¤.
             return _playerFacade.HasAttribute(CURRENT_HP_KEY) &&
                 (_playerFacade.GetAttribute(CURRENT_HP_KEY) > 0f);
         }
 
-        // ±âÁ¸ ÇÃ·¹ÀÌ¾î¸¦ destination À§Ä¡¿Í È¸ÀüÀ¸·Î ÀÌµ¿½ÃÅ²´Ù.
-        // [È£Ãâ] HandleFallZoneEntered¿¡¼­ »ıÁ¸ ³«ÇÏ ½Ã Ã¼Å©Æ÷ÀÎÆ®·Î µÇµ¹¸± ¶§ È£ÃâÇÑ´Ù.
+        // ê¸°ì¡´ í”Œë ˆì´ì–´ë¥¼ destination ìœ„ì¹˜ì™€ íšŒì „ìœ¼ë¡œ ì´ë™ì‹œí‚¨ë‹¤.
+        // [í˜¸ì¶œ] HandleFallZoneEnteredì—ì„œ ìƒì¡´ ë‚™í•˜ ì‹œ ì²´í¬í¬ì¸íŠ¸ë¡œ ë˜ëŒë¦´ ë•Œ í˜¸ì¶œí•œë‹¤.
         private void MovePlayerTo(Transform destination)
         {
             if (destination == null || _playerController == null)
             {
-                Debug.LogError("ÇÃ·¹ÀÌ¾î¸¦ ÀÌµ¿½ÃÅ³ À§Ä¡ ¶Ç´Â CharacterController°¡ ¾ø½À´Ï´Ù.", this);
+                Debug.LogError("í”Œë ˆì´ì–´ë¥¼ ì´ë™ì‹œí‚¬ ìœ„ì¹˜ ë˜ëŠ” CharacterControllerê°€ ì—†ìŠµë‹ˆë‹¤.", this);
                 return;
             }
 
-            // CharacterController°¡ ÄÑÁ® ÀÖÀ¸¸é À§Ä¡¸¦ Á÷Á¢ ¹Ù²ãµµ µÇµ¹¾Æ°¥ ¼ö ÀÖ¾î Àá½Ã ²ö´Ù.
+            // CharacterControllerê°€ ì¼œì ¸ ìˆìœ¼ë©´ ìœ„ì¹˜ë¥¼ ì§ì ‘ ë°”ê¿”ë„ ë˜ëŒì•„ê°ˆ ìˆ˜ ìˆì–´ ì ì‹œ ëˆë‹¤.
             _playerController.enabled = false;
             _playerController.transform.SetPositionAndRotation(destination.position, destination.rotation);
             _playerController.enabled = true;
         }
 
-        // [È£Ãâ] OnDisable°ú BindPlayer(»õ ÇÃ·¹ÀÌ¾î·Î ±³Ã¼ Àü)¿¡¼­ È£ÃâµÈ´Ù.
+        // [í˜¸ì¶œ] OnDisableê³¼ BindPlayer(ìƒˆ í”Œë ˆì´ì–´ë¡œ êµì²´ ì „)ì—ì„œ í˜¸ì¶œëœë‹¤.
         private void UnbindPlayer()
         {
             if (_playerFacade != null)
@@ -483,14 +491,14 @@ namespace Core.Stage
             _playerFacade = null;
         }
 
-        // ÇÃ·¹ÀÌ¾î°¡ Á×¾ú´Ù´Â ÀÌº¥Æ®¸¦ ¹Ş¾ÒÀ» ¶§, ÇöÀç ¶ó¿îµåÀÇ Ã¼Å©Æ÷ÀÎÆ®¿¡¼­ ´Ù½Ã ½ºÆùÀ» ¿äÃ»ÇÏ´Â ÇÔ¼ö
-        // »ç¸ÁÇÑ ÇÃ·¹ÀÌ¾î´Â ÆÄ±«µÇ¹Ç·Î ÀÌµ¿ÀÌ ¾Æ´Ï¶ó Àç½ºÆùÇÑ´Ù. ½ºÆù À§Ä¡´Â GetSpawnPoint°¡ ¾Ë·ÁÁØ´Ù.
-        // [ÀÌº¥Æ®] PlayerFacade.OnDeath(ÇÃ·¹ÀÌ¾î »ç¸Á)°¡ ¹ß»ıÇÏ¸é È£ÃâµÈ´Ù. (BindPlayer¿¡¼­ ±¸µ¶)
-        // [ÀÌÈÄ] OnPlayerRespawnRequested ¹ß»ı -> PlayerSpawner.HandleRespawnRequested -> ´ÙÀ½ ÇÁ·¹ÀÓ Àç½ºÆù.
+        // í”Œë ˆì´ì–´ê°€ ì£½ì—ˆë‹¤ëŠ” ì´ë²¤íŠ¸ë¥¼ ë°›ì•˜ì„ ë•Œ, í˜„ì¬ ë¼ìš´ë“œì˜ ì²´í¬í¬ì¸íŠ¸ì—ì„œ ë‹¤ì‹œ ìŠ¤í°ì„ ìš”ì²­í•˜ëŠ” í•¨ìˆ˜
+        // ì‚¬ë§í•œ í”Œë ˆì´ì–´ëŠ” íŒŒê´´ë˜ë¯€ë¡œ ì´ë™ì´ ì•„ë‹ˆë¼ ì¬ìŠ¤í°í•œë‹¤. ìŠ¤í° ìœ„ì¹˜ëŠ” GetSpawnPointê°€ ì•Œë ¤ì¤€ë‹¤.
+        // [ì´ë²¤íŠ¸] PlayerFacade.OnDeath(í”Œë ˆì´ì–´ ì‚¬ë§)ê°€ ë°œìƒí•˜ë©´ í˜¸ì¶œëœë‹¤. (BindPlayerì—ì„œ êµ¬ë…)
+        // [ì´í›„] OnPlayerRespawnRequested ë°œìƒ -> PlayerSpawner.HandleRespawnRequested -> ë‹¤ìŒ í”„ë ˆì„ ì¬ìŠ¤í°.
         private void HandlePlayerDeath()
         {
-            // ÁøÇà ÁßÀÎ ½ºÅ×ÀÌÁö¿¡¼­¸¸ Ã³¸®ÇÑ´Ù.
-            // ³«ÇÏ »ç¸Á°ú ÀüÅõ »ç¸ÁÀÌ °ãÄ¡°Å³ª »ç¸Á ÀÌº¥Æ®°¡ ¹İº¹µÇ¾îµµ º¹±¸´Â ÇÑ ¹ø¸¸ Ã³¸®µÈ´Ù.
+            // ì§„í–‰ ì¤‘ì¸ ìŠ¤í…Œì´ì§€ì—ì„œë§Œ ì²˜ë¦¬í•œë‹¤.
+            // ë‚™í•˜ ì‚¬ë§ê³¼ ì „íˆ¬ ì‚¬ë§ì´ ê²¹ì¹˜ê±°ë‚˜ ì‚¬ë§ ì´ë²¤íŠ¸ê°€ ë°˜ë³µë˜ì–´ë„ ë³µêµ¬ëŠ” í•œ ë²ˆë§Œ ì²˜ë¦¬ëœë‹¤.
             if (!IsRunning || _isRecovering)
             {
                 return;
@@ -500,13 +508,13 @@ namespace Core.Stage
                 _currentRoundIndex < 0 ||
                 _currentRoundIndex >= _roundCheckpointIndices.Length)
             {
-                Debug.LogError("º¹±¸ÇÒ ¶ó¿îµå Ã¼Å©Æ÷ÀÎÆ®°¡ ¾ø½À´Ï´Ù.", this);
+                Debug.LogError("ë³µêµ¬í•  ë¼ìš´ë“œ ì²´í¬í¬ì¸íŠ¸ê°€ ì—†ìŠµë‹ˆë‹¤.", this);
                 return;
             }
 
             _isRecovering = true;
 
-            // »ç¸ÁÇÏ¸é ÀÏ¹İ Ã¼Å©Æ÷ÀÎÆ® ÁøÇàµµµµ ¶ó¿îµå ½ÃÀÛÁ¡À¸·Î µÇµ¹¸°´Ù.
+            // ì‚¬ë§í•˜ë©´ ì¼ë°˜ ì²´í¬í¬ì¸íŠ¸ ì§„í–‰ë„ë„ ë¼ìš´ë“œ ì‹œì‘ì ìœ¼ë¡œ ë˜ëŒë¦°ë‹¤.
             _currentCheckpointIndex = _roundCheckpointIndices[_currentRoundIndex];
 
             _gameManager.PrepareSpawn(GameManager.EPlayerSpawnReason.RoundRecovery);
@@ -516,5 +524,5 @@ namespace Core.Stage
     }
 }
 
-// ÇÃ·¹ÀÌ¾î°¡ ¾À¿¡ ÀÔÀåÇÏ¸é => ½ºÅ×ÀÌÁö ¸Å´ÏÀúÇÑÅ× ¾Ë·Á¼­ ÀÌ ½ºÅ×ÀÌÁö µé¾î°¬´Ù°í
-// ÇÏ´Â°É·Î
+// í”Œë ˆì´ì–´ê°€ ì”¬ì— ì…ì¥í•˜ë©´ => ìŠ¤í…Œì´ì§€ ë§¤ë‹ˆì €í•œí…Œ ì•Œë ¤ì„œ ì´ ìŠ¤í…Œì´ì§€ ë“¤ì–´ê°”ë‹¤ê³ 
+// í•˜ëŠ”ê±¸ë¡œ
