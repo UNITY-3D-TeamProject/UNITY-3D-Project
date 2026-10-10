@@ -43,27 +43,13 @@ namespace Core
         // 현재 플레이어의 PlayerFacade. 플레이어가 없으면 null 반환
         public PlayerFacade CurrentPlayerFacade => playerState?.CurrentFacade;
 
-        // HUD 등 아직 AttributeSet을 쓰는 곳을 위한 조회. 플레이어가 없으면 null 반환
-        public AttributeSet CurrentPlayerState
-        {
-            get
-            {
-                PlayerFacade facade = CurrentPlayerFacade;
-
-                return facade != null
-                    ? facade.transform.root.GetComponentInChildren<AttributeSet>(true)
-                    : null;
-            }
-        }
-
-
         // playerState가 new를 통해 생성되면 그 후 부터 true
         public bool HasPlayerState => playerState != null;
         // playerState가 저장된 어트리뷰트값을 가지고 있는지
         public bool HasSavedPlayerAttributes => playerState?.HasSavedAttributes ?? false;
 
         // 플레이어를 스폰할 때 이벤트 
-        public event Action<AttributeSet> OnPlayerSpawned;
+        public event Action<PlayerFacade> OnPlayerSpawned;
 
         private StageManager _stageManager;
 
@@ -191,7 +177,7 @@ namespace Core
             }
 
             // HUD 연결과 StageManager의 기존 사망 이벤트 구독을 실행한다.
-            OnPlayerSpawned?.Invoke(CurrentPlayerState);
+            OnPlayerSpawned?.Invoke(CurrentPlayerFacade);
 
             // 스냅샷 저장과 이벤트 연결이 끝난 뒤 시작한다.
             if (_stageManager != null)

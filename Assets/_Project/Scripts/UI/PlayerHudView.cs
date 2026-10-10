@@ -13,20 +13,25 @@ namespace UI
         [SerializeField] private Slider _batterySlider;
         [SerializeField] private Slider _heatSlider;
 
-        // ∑Á∆Æ∞° ø¨∞·µ«æÓ¿÷¥¬¡ˆ, »∞º∫»≠ ªÛ≈¬¿Œ¡ˆ √º≈©
+        [Header("Skill Cooldowns")]
+        [SerializeField] private Slider _rollCooldownSlider;
+        [SerializeField] private Slider _bluetoothCooldownSlider;
+        [SerializeField] private Slider _scanCooldownSlider;
+
+        // Î£®Ìä∏Í∞Ä Ïó∞Í≤∞ÎêòÏñ¥ÏûàÎäîÏßÄ, ÌôúÏÑ±Ìôî ÏÉÅÌÉúÏù∏ÏßÄ Ï≤¥ÌÅ¨
         public bool IsVisible => _root != null && _root.activeSelf;
 
-        // HUD ∫∏¿Ã∞‘ «œ¥¬ «‘ºˆ
+        // HUD Î≥¥Ïù¥Í≤å ÌïòÎäî Ìï®Ïàò
         public void Show()
         {
             SetVisible(true);
         }
-        // HUD º˚±‚¥¬ «‘ºˆ
+        // HUD Ïà®Í∏∞Îäî Ìï®Ïàò
         public void Hide()
         {
             SetVisible(false);
         }
-        // Ω«¡¶∑Œ HUD∏¶ ƒ—∞Ì ≤Ù¥¬ «ŸΩ… «‘ºˆ
+        // Ïã§Ï†úÎ°ú HUDÎ•º ÏºúÍ≥† ÎÅÑÎäî ÌïµÏã¨ Ìï®Ïàò
         public void SetVisible(bool isVisible)
         {
             if (_root != null)
@@ -50,17 +55,33 @@ namespace UI
             SetGaugeValue(_heatSlider, currentValue, maxValue);
         }
 
+        // ÎÇ®ÏùÄ Ïø®ÌÉÄÏûÑ ÎπÑÏú®(0~1)ÏùÑ ÌëúÏãúÌïúÎã§. 1 = Î∞©Í∏à ÏÇ¨Ïö©, 0 = ÏÇ¨Ïö© Í∞ÄÎä•
+        public void SetRollCooldown(float remainingRatio)
+        {
+            SetGaugeValue(_rollCooldownSlider, remainingRatio, 1.0f);
+        }
+
+        public void SetBluetoothCooldown(float remainingRatio)
+        {
+            SetGaugeValue(_bluetoothCooldownSlider, remainingRatio, 1.0f);
+        }
+
+        public void SetScanCooldown(float remainingRatio)
+        {
+            SetGaugeValue(_scanCooldownSlider, remainingRatio, 1.0f);
+        }
+
         private void SetGaugeValue(Slider slider, float currentValue, float maxValue)
         {
-            // Slider∞° æ¯¿∏∏È ¡æ∑·
+            // SliderÍ∞Ä ÏóÜÏúºÎ©¥ Ï¢ÖÎ£å
             if (slider == null)
             {
                 return;
             }
-            // «ˆ¿Á ºˆƒ°∏¶ 0~1 ∫Ò¿≤∑Œ ∞ËªÍ 
-            // ex) «ˆ¿Á √º∑¬ 70, √÷¥Î √º∑¬ 100 => 0.7
+            // ÌòÑÏû¨ ÏàòÏπòÎ•º 0~1 ÎπÑÏú®Î°ú Í≥ÑÏÇ∞ 
+            // ex) ÌòÑÏû¨ Ï≤¥Î†• 70, ÏµúÎåÄ Ï≤¥Î†• 100 => 0.7
             slider.normalizedValue = maxValue > 0.0f
-                ? Mathf.Clamp01(currentValue / maxValue) //π´¡∂∞« 0~1ªÁ¿Ã∑Œ ¡¶«—
+                ? Mathf.Clamp01(currentValue / maxValue) //Î¨¥Ï°∞Í±¥ 0~1ÏÇ¨Ïù¥Î°ú Ï†úÌïú
                 : 0.0f;
         }
     }
