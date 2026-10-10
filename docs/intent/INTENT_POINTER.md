@@ -18,6 +18,7 @@
 - **[AI / Combat]** 적이 근거리 한 종류뿐. 프로토타입용으로 `EnemyRangedAttack`(스킬이 총알을 직접 생성) 구현. 풀링 도입 시 Factory 경로로 옮기는 것이 기술 부채. 코드 완료, 에디터 배선(`[USER]`)과 Play 검증 남음 → [문서](./intent-012-enemy-ranged-attack.md)
 - **[Movement System]** 점프력이 모터에 고정되고 공중 점프 불가, 시작/착지 이벤트 없음. `Jump(float jumpPower)` 무조건 실행 + `OnJumpStarted`/`OnJumpEnded` 추가, 접지 정책은 MoveMediator로. 코드 완료·컴파일 0에러, Play 검증 남음 → [문서](./intent-015-jump-power-param-and-events.md)
 - **[Attribute / Mediator / Combat]** 데미지 경로에 출처(누가·어디서)가 없어 피격 반응 불가. `SEffectContext{Cursor, Origin}`를 Apply→어트리뷰트 콜백까지 관통(C안). 1차 전달 경로 진행, 2차(원점 기록·CombatMediator 연결·AI 반응) 남음 → [문서](./intent-016-hit-context.md)
+- **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
 - **[Stage / Player State]** Core 기준 생존 낙하 복귀와 라운드 사망 복구 설계 완료, 구현 전 → [문서](../HANDOVER/SungJun/intent/clear/intent-015-stage-round-recovery-design.md) (resolved: 2026-10-08)
