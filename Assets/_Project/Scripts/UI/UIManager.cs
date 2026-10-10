@@ -1,156 +1,129 @@
-using Attribute.Core;
 using UnityEngine;
 using Core;
-using UnityEngine.InputSystem;
+using Facade.Player;
 
 namespace UI
 {
     public class UIManager : MonoBehaviour
     {
-        // ÇÃ·¹ÀÌ¾î µ¥ÀÌÅÍ¸¦ UI¿¡ º¸¿©Áà¾ßÇÏ´Âµ¥ ±× µ¥ÀÌÅÍ¸¦ Á¶ÀÛÇÏ´Â Presenter¸¦ °®°íÀÖ´Â´Ù.
+        // í”Œë ˆì´ì–´ ë°ì´í„°ë¥¼ UIì— ë³´ì—¬ì¤˜ì•¼í•˜ëŠ”ë° ê·¸ ë°ì´í„°ë¥¼ ì¡°ì‘í•˜ëŠ” Presenterë¥¼ ê°–ê³ ìˆëŠ”ë‹¤.
         [Header("References")]
         [SerializeField] private PlayerHudPresenter _playerHudPresenter;
         [SerializeField] private SettingsPresenter _settingsPresenter;
 
         private SettingsPresenter _activeSettingsPresenter;
-        private UnityEngine.InputSystem.PlayerInput _playerInput;
-        private InputAction _openSettingsAction;
-        private InputAction _closeSettingsAction;
+        // í˜„ì¬ í”Œë ˆì´ì–´ì˜ PlayerFacade. ì„¤ì •ì°½ ì…ë ¥ ì´ë²¤íŠ¸ì™€ ì…ë ¥ ë§µ ì „í™˜ì— ì‚¬ìš©í•œë‹¤.
+        private PlayerFacade _playerFacade;
 
-        // ÀÌº¥Æ® ±¸µ¶¿ë
+        // ì´ë²¤íŠ¸ êµ¬ë…ìš©
         private GameManager _gameManager;
 
         private void OnEnable()
         {
-            // 1. ÇÃ·¹ÀÌ¾î¸¦ ¿¬°áÇÒ HUD°¡ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+            // 1. í”Œë ˆì´ì–´ë¥¼ ì—°ê²°í•  HUDê°€ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
             if (_playerHudPresenter == null)
             {
                 Debug.LogError(
-                    "PlayerHudPresenter°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.", this);
+                    "PlayerHudPresenterê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.", this);
                 return;
             }
 
-            // 2. ÇÃ·¹ÀÌ¾î µî·ÏÀ» ´ã´çÇÏ´Â GameManager¸¦ °¡Á®¿Â´Ù.
+            // 2. í”Œë ˆì´ì–´ ë“±ë¡ì„ ë‹´ë‹¹í•˜ëŠ” GameManagerë¥¼ ê°€ì ¸ì˜¨ë‹¤.
             _gameManager = GameManager.Instance;
 
             if (_gameManager == null)
             {
-                Debug.LogError("¾À¿¡ GameManager°¡ ¾ø½À´Ï´Ù.", this);
+                Debug.LogError("ì”¬ì— GameManagerê°€ ì—†ìŠµë‹ˆë‹¤.", this);
                 return;
             }
 
-            // 3. ¾ÕÀ¸·Î ÇÃ·¹ÀÌ¾î°¡ ½ºÆùµÇ¸é 
-            // HandlePlayerSpawned¸¦ ½ÇÇàÇØ ´Ş¶ó°í µî·ÏÇÑ´Ù. HandlePlayerSpwned ÇÔ¼ö´Â => UI¸¦ ½ºÆùµÈ ÇÃ·¹ÀÌ¾î¿Í µ¿±âÈ­ ½ÃÅ°´Â ÇÔ¼ö
+            // 3. ì•ìœ¼ë¡œ í”Œë ˆì´ì–´ê°€ ìŠ¤í°ë˜ë©´ 
+            // HandlePlayerSpawnedë¥¼ ì‹¤í–‰í•´ ë‹¬ë¼ê³  ë“±ë¡í•œë‹¤. HandlePlayerSpwned í•¨ìˆ˜ëŠ” => UIë¥¼ ìŠ¤í°ëœ í”Œë ˆì´ì–´ì™€ ë™ê¸°í™” ì‹œí‚¤ëŠ” í•¨ìˆ˜
             _gameManager.OnPlayerSpawned += HandlePlayerSpawned;
 
-            // 4. UI°¡ ÄÑÁö±â Àü¿¡ ÀÌ¹Ì µî·ÏµÈ ÇÃ·¹ÀÌ¾î°¡ ÀÖ´Ù¸é
-            //    ±× ÇÃ·¹ÀÌ¾î¸¦ Áö±İ ¹Ù·Î HUD¿¡ ¿¬°áÇÑ´Ù.
-            //    ¾ÆÁ÷ ÇÃ·¹ÀÌ¾î°¡ ¾ø´Ù¸é nullÀÌ Àü´ŞµÈ´Ù.
-            //_playerHudPresenter.SetPlayerAttributes(_gameManager.CurrentPlayerState);
-            HandlePlayerSpawned(_gameManager.CurrentPlayerState);
+            // 4. UIê°€ ì¼œì§€ê¸° ì „ì— ì´ë¯¸ ë“±ë¡ëœ í”Œë ˆì´ì–´ê°€ ìˆë‹¤ë©´
+            //    ê·¸ í”Œë ˆì´ì–´ë¥¼ ì§€ê¸ˆ ë°”ë¡œ HUDì— ì—°ê²°í•œë‹¤.
+            //    ì•„ì§ í”Œë ˆì´ì–´ê°€ ì—†ë‹¤ë©´ nullì´ ì „ë‹¬ëœë‹¤.
+            HandlePlayerSpawned(_gameManager.CurrentPlayerFacade);
         }
         private void OnDisable()
         {
             CloseSettings();
             UnbindPlayerInput();
-            // 1. ¾Ë¸²À» ½ÅÃ»Çß´ø GameManager¿¡¼­ ±¸µ¶À» ÇØÁ¦ÇÑ´Ù.
+            // 1. ì•Œë¦¼ì„ ì‹ ì²­í–ˆë˜ GameManagerì—ì„œ êµ¬ë…ì„ í•´ì œí•œë‹¤.
             if (_gameManager != null)
             {
                 _gameManager.OnPlayerSpawned -= HandlePlayerSpawned;
             }
 
-            // 2. ±â¾ïÇØ µĞ GameManager ÂüÁ¶¸¦ ºñ¿î´Ù.
+            // 2. ê¸°ì–µí•´ ë‘” GameManager ì°¸ì¡°ë¥¼ ë¹„ìš´ë‹¤.
             _gameManager = null;
 
-            // 3. HUD¿Í ÇÃ·¹ÀÌ¾îÀÇ ¿¬°áµµ ÇØÁ¦ÇÑ´Ù.
+            // 3. HUDì™€ í”Œë ˆì´ì–´ì˜ ì—°ê²°ë„ í•´ì œí•œë‹¤.
             if (_playerHudPresenter != null)
             {
-                _playerHudPresenter.SetPlayerAttributes(null);
+                _playerHudPresenter.SetPlayer(null);
             }
         }
 
-        private void HandlePlayerSpawned(AttributeSet attributeSet)
+        private void HandlePlayerSpawned(PlayerFacade playerFacade)
         {
-            // Àü´Ş¹ŞÀº ÇÃ·¹ÀÌ¾î¸¦ HUD¿¡ ¿¬°áÇÑ´Ù.
-            _playerHudPresenter.SetPlayerAttributes(attributeSet);
-            BindPlayerInput(attributeSet);
+            // ì „ë‹¬ë°›ì€ í”Œë ˆì´ì–´ë¥¼ HUDì— ì—°ê²°í•œë‹¤.
+            _playerHudPresenter.SetPlayer(playerFacade);
+            BindPlayerInput(playerFacade);
         }
 
         public void ShowPlayerHud() => _playerHudPresenter.Show();
         public void HidePlayerHud() => _playerHudPresenter.Hide();
 
-        private void BindPlayerInput(AttributeSet attributeSet)
+        private void BindPlayerInput(PlayerFacade playerFacade)
         {
             UnbindPlayerInput();
 
-            if (attributeSet == null) return;
+            if (playerFacade == null) return;
 
-            _playerInput =
-                attributeSet.GetComponentInParent<UnityEngine.InputSystem.PlayerInput>();
+            _playerFacade = playerFacade;
+            _playerFacade.OnOpenSettingsRequested += OpenSettings;
+            _playerFacade.OnCloseSettingsRequested += CloseSettings;
 
-            if (_playerInput == null) return;
-
-            _openSettingsAction =
-                _playerInput.actions.FindAction("Player/OpenSettings");
-            _closeSettingsAction =
-                _playerInput.actions.FindAction("UI/CloseSettings");
-
-            if (_openSettingsAction != null)
-                _openSettingsAction.performed += HandleOpenSettings;
-
-            if (_closeSettingsAction != null)
-                _closeSettingsAction.performed += HandleCloseSettings;
-
-            // ¼³Á¤Ã¢ÀÌ ¿­¸° »óÅÂ¿¡¼­ ÇÃ·¹ÀÌ¾î°¡ ±³Ã¼µÈ °æ¿ì¿¡µµ UI ÀÔ·Â À¯Áö.
+            // ì„¤ì •ì°½ì´ ì—´ë¦° ìƒíƒœì—ì„œ í”Œë ˆì´ì–´ê°€ êµì²´ëœ ê²½ìš°ì—ë„ UI ì…ë ¥ ìœ ì§€.
             if (_activeSettingsPresenter != null)
             {
-                _playerInput.SwitchCurrentActionMap("UI");
+                _playerFacade.SwitchToUIInput();
             }
         }
 
         private void UnbindPlayerInput()
         {
-            if (_openSettingsAction != null)
-                _openSettingsAction.performed -= HandleOpenSettings;
+            if (_playerFacade != null)
+            {
+                _playerFacade.OnOpenSettingsRequested -= OpenSettings;
+                _playerFacade.OnCloseSettingsRequested -= CloseSettings;
+            }
 
-            if (_closeSettingsAction != null)
-                _closeSettingsAction.performed -= HandleCloseSettings;
-
-            _openSettingsAction = null;
-            _closeSettingsAction = null;
-            _playerInput = null;
-        }
-
-        private void HandleOpenSettings(InputAction.CallbackContext context)
-        {
-            OpenSettings();
-        }
-
-        private void HandleCloseSettings(InputAction.CallbackContext context)
-        {
-            CloseSettings();
+            _playerFacade = null;
         }
 
         public void OpenSettings()
         {
             if (_activeSettingsPresenter != null ||
                 _settingsPresenter == null ||
-                _playerInput == null ||
+                _playerFacade == null ||
                 _gameManager == null)
                 return;
 
             if (_gameManager.CurrentState != GameManager.GameState.Playing)
                 return;
 
-            // ÇöÀç UI ÁöÁ¤ ¹× ´İ±â ¿äÃ» ¿¬°á.
+            // í˜„ì¬ UI ì§€ì • ë° ë‹«ê¸° ìš”ì²­ ì—°ê²°.
             _activeSettingsPresenter = _settingsPresenter;
             _activeSettingsPresenter.CloseRequested += CloseSettings;
 
-            // °ÔÀÓ »óÅÂ¿Í ÀÔ·Â ÀüÈ¯.
+            // ê²Œì„ ìƒíƒœì™€ ì…ë ¥ ì „í™˜.
             _gameManager.PauseGame();
-            _playerInput.SwitchCurrentActionMap("UI");
+            _playerFacade.SwitchToUIInput();
 
-            // Presenter¿Í View¸¦ È°¼ºÈ­ÇÑ µÚ È­¸é Ç¥½Ã.
+            // Presenterì™€ Viewë¥¼ í™œì„±í™”í•œ ë’¤ í™”ë©´ í‘œì‹œ.
             _activeSettingsPresenter.gameObject.SetActive(true);
             _activeSettingsPresenter.Open();
         }
@@ -162,13 +135,13 @@ namespace UI
             SettingsPresenter presenter = _activeSettingsPresenter;
             _activeSettingsPresenter = null;
 
-            // ´İ±â ¿äÃ» ÇØÁ¦ ÈÄ È­¸é°ú ÄÄÆ÷³ÍÆ® ºñÈ°¼ºÈ­.
+            // ë‹«ê¸° ìš”ì²­ í•´ì œ í›„ í™”ë©´ê³¼ ì»´í¬ë„ŒíŠ¸ ë¹„í™œì„±í™”.
             presenter.CloseRequested -= CloseSettings;
             presenter.Close();
             presenter.gameObject.SetActive(false);
 
-            if (_playerInput != null)
-                _playerInput.SwitchCurrentActionMap("Player");
+            if (_playerFacade != null)
+                _playerFacade.SwitchToPlayerInput();
 
 
             if (_gameManager != null &&
