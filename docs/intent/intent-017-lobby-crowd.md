@@ -24,7 +24,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   - 신규: `Scripts/AI/Crowd/CrowdController.cs`(조종부), `Scripts/AI/Crowd/CrowdLane.cs`(레인 + 생성)
   - 재사용(수정 없음 목표): `CharacterMediator`, `MoveMediator`, `RotateMediator`, `CharacterMotor`, `CharacterRotator`, `AttributeSet`
   - 패키지: `com.unity.splines` 추가 (`Packages/manifest.json`, `packages-lock.json`)
-  - 프로젝트 설정: 레이어 `Pedestrian`, `Vehicle`, `VehicleBody` 추가와 충돌 행렬
+  - 프로젝트 설정: 레이어 `Crowd`(보행자·차량 캡슐), `VehicleBody`(차 모양 박스) 추가와 충돌 행렬(`Crowd` × `VehicleBody` 무시). 팀 공유 설정이라 추가 전 팀에 공지한다.
   - 에셋: `SOAttributeData_NPC1`(보행자), `SOAttributeData_NPC2`(차량), 보행자·차량 프리팹, 로비 레인 배치
 
 ## 제약 (Constraints)
