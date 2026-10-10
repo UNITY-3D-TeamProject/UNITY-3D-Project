@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-10** — HUD를 PlayerFacade 기반으로 전환, 스킬 쿨(Roll·SpawnVehicle·Scan) 로직 추가, 낙하 데미지를 Effect SO로 변경. 컴파일·슬라이더 배선·Play 검증 대기: [작업 기록](./2026-10-10/hud-facade-skill-cooldown.md)
 - **2026-10-09** — 유니티 ↔ Claude Code MCP 연결 절차와 문제 해결 정리(uv 설치, Claude CLI 경로, 새 세션): [MCP 연결 가이드](./2026-10-09/unity-mcp-setup-guide.md)
 - **2026-10-09** — PlayerFacade 기반 낙하 복귀·사망 후 재스폰 구현(Core), 빌드 오류 0, Inspector 연결·Play 검증 대기: [구현 기록](./2026-10-09/fall-death-recovery-implementation.md)
 - **2026-10-09** — 폰 주인 노래 컷씬의 영상 재생과 실시간 연출 방식 검토: [컷씬 구현 방식 검토](./2026-10-09/phone-owner-cutscene-options.md)
