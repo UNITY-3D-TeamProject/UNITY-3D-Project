@@ -26,8 +26,8 @@ namespace Mediator.SubMediators
         #endregion
 
         #region Events
-        /// <summary>AttributeSet 의 값이 변경될 때 (이름, 변경 후 값, 변경 전 값)을 알린다.</summary>
-        public event Action<string, float, float> OnAttributeChanged;
+        /// <summary>AttributeSet 의 값이 변경될 때 변경 데이터(이름, 변경 후/전 값, 출처 정보)를 알린다.</summary>
+        public event Action<SAttributeChangeData> OnAttributeChanged;
         #endregion
 
         #region Unity Lifecycle
@@ -125,9 +125,9 @@ namespace Mediator.SubMediators
         /// <summary>
         /// AttributeSet 의 값 변경을 OnAttributeChanged 로 중계한다.
         /// </summary>
-        private void RelayAttributeChanged(string attributeName, float newValue, float oldValue)
+        private void RelayAttributeChanged(SAttributeChangeData data)
         {
-            OnAttributeChanged?.Invoke(attributeName, newValue, oldValue);
+            OnAttributeChanged?.Invoke(data);
         }
 
         /// <summary>

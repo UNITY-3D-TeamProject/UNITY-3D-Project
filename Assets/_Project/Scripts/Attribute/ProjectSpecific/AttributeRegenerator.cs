@@ -118,7 +118,7 @@ namespace Attribute.ProjectSpecific
             {
                 yield return wait;
 
-                rule.Effect.Apply(_target, _target);
+                rule.Effect.Apply(_target, new SEffectContext(_target));
             }
         }
 

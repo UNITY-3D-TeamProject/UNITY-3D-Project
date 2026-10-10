@@ -1,5 +1,6 @@
 using Attribute.Core;
 using Core.Stage;
+using Facade.Player;
 using SceneTransition;
 using System;
 using UnityEngine;
@@ -17,42 +18,59 @@ namespace Core
             Pause,
         }
 
+        // 지금은 실험을 위해 CurrentState의 초기값을 Playing으로 설정
+        public GameState CurrentState { get; private set; } = GameState.Playing;
+
         // 플레이어 스폰 이유
         public enum EPlayerSpawnReason
-        {
-            NewGame,
-            Respawn,
-            SceneTransition,
+        { 
+            NewGame, // 새 게임 
+            SceneTransition, // 씬 변경될 때
+            RoundRecovery, // 사망 후 라운드 체크포인트에서 다시 스폰할 때
         }
 
+        // 플레이어 스폰 이유는 초기값은 당연히 NewGame으로 설정 
         public EPlayerSpawnReason SpawnReason { get; private set; }
             = EPlayerSpawnReason.NewGame;
 
 
-
-        public GameState CurrentState { get; private set; } = GameState.Playing;
-
-        // 저장할 능력치 이름 목록을 확인하기 위해 (playerState를 초기화 할 때 넣어줄 매개변수 값)
+        // 저장할 능력치 이름 목록을 확인하기 위한 플레이어 SO 원본 (playerState를 초기화 할 때 넣어줄 매개변수 값)
         [SerializeField] private SOAttributeData _playerSOAttributeData;
 
+        // 게임중에 바뀔 플레이어 데이터에 관련해서 만들 스크립트 변수
         public PlayerState playerState { get; private set; }
 
-        // playerState가 아직 초기화되지 않았다면 null 반환
-        public AttributeSet CurrentPlayerState => playerState?.CurrentAttributeSet;
+        // 현재 플레이어의 PlayerFacade. 플레이어가 없으면 null 반환
+        public PlayerFacade CurrentPlayerFacade => playerState?.CurrentFacade;
 
-        // 스폰할 때 위치마다 다 달라서 저장해둘 값
-        public EStageType? SpawnStage { get; private set; }
+        // HUD 등 아직 AttributeSet을 쓰는 곳을 위한 조회. 플레이어가 없으면 null 반환
+        public AttributeSet CurrentPlayerState
+        {
+            get
+            {
+                PlayerFacade facade = CurrentPlayerFacade;
+
+                return facade != null
+                    ? facade.transform.root.GetComponentInChildren<AttributeSet>(true)
+                    : null;
+            }
+        }
+
+
+        // playerState가 new를 통해 생성되면 그 후 부터 true
+        public bool HasPlayerState => playerState != null;
+        // playerState가 저장된 어트리뷰트값을 가지고 있는지
+        public bool HasSavedPlayerAttributes => playerState?.HasSavedAttributes ?? false;
 
         // 플레이어를 스폰할 때 이벤트 
         public event Action<AttributeSet> OnPlayerSpawned;
 
         private StageManager _stageManager;
 
-        // GameManager의 초기화가 완료됐는지 확인한다.
-        // playerState가 new를 통해 생성되면 그 후 부터 true
-        public bool HasPlayerState => playerState != null;
+        public StageManager CurrentStageManager => _stageManager;
 
-        public bool HasSavedPlayerAttributes => playerState?.HasSavedAttributes ?? false;
+        // 어떤 스테이지에서 넘어왔는지를 체크해서 그에 따라 다르게 스폰하게 저장할 값
+        public EStageType? SpawnStage { get; private set; }
 
         public override void Awake()
         {
@@ -61,68 +79,41 @@ namespace Core
             {
                 return;
             }
-            // 인스펙터에서 받은 SO를 인자로 넣어준다.
+            // 인스펙터에서 받은 SO를 인자로 넣어줘서 playerState를 만들어준다.
             playerState = new PlayerState(_playerSOAttributeData);
+            // 게임 시작하면 마우스를 현재는 꺼놓았는데 메인메뉴씬 만들면 false로 해야한다.
             SetCursorLocked(true);
         }
 
-        // 플레이어의 상태 처리를 완료하고 스폰 이벤트를 알린다.
-        public void CompletePlayerSpawn(AttributeSet _spawnedPlayerattributeSet)
-        { 
-            if (_spawnedPlayerattributeSet == null)
+        private void OnEnable()
+        {
+            if (Instance != this)
             {
-                Debug.LogError("등록할 플레이어의 AttributeSet이 없습니다.", this);
-                return;
-            }
-            // playerState가 있는지
-            if (!HasPlayerState)
-            {
-                Debug.LogError("PlayerState가 초기화되지 않았습니다.", this);
                 return;
             }
 
-            // playerState가 방금 생성한 플레이어 인스턴스의 어트리뷰트를 알게됨
-            playerState.SetCurrentPlayer(_spawnedPlayerattributeSet);
-
-            // 씬 이동은 저장값을 복원하고, 새 게임·부활은 Effect 초기값을 유지한다.
-            bool shouldRestore = SpawnReason == EPlayerSpawnReason.SceneTransition;
-            if (shouldRestore)
-            {
-                playerState.RestoreSavedAttributes();
-            }
-            else
-            {
-                playerState.ClearSavedAttributes();
-            }
-
-            // UIManager가 이벤트를 받아서 ui와 플레이어 어트리뷰트 셋을 연동함 
-            OnPlayerSpawned?.Invoke(_spawnedPlayerattributeSet);
+            // 씬 로딩 완료 시점을 알리는 이벤트 구독 => 새 씬에 배치된 StageManager 탐색 => 플레이어 스폰...
+            SceneManager.sceneLoaded += HandleSceneLoaded;
+            
+            // 씬 전환 직전 시점을 알리는 이벤트 구독 => 기존 플레이어가 파괴되기전 현재 
+            // 능력치를 임시 저장하고 스폰 사유를 Scene Transition으로 설정
+            SceneLoader.OnBeforeSceneChange += HandleBeforeSceneChange;
         }
 
-        public void ClearSpawnStage()
+        private void OnDisable()
         {
-            SpawnStage = null;
+            SceneManager.sceneLoaded -= HandleSceneLoaded;
+            SceneLoader.OnBeforeSceneChange -= HandleBeforeSceneChange;
         }
 
         // 새 게임 시작
+        // 맨처음 첫 게임 시작
         public void StartGame()
         {
+            // NewGame으로 설정한다.
             PrepareSpawn(EPlayerSpawnReason.NewGame);
             CurrentState = GameState.Playing;
         }
-
-        // 씬 이동이나 재생성을 시작하기 전에 호출한다.
-        public void PrepareSpawn(EPlayerSpawnReason reason)
-        {
-            // 씬 이동일 때만 현재 능력치를 저장한다.
-            if (reason == EPlayerSpawnReason.SceneTransition)
-            {
-                playerState.SaveCurrentAttributes();
-            }
-
-            SpawnReason = reason;
-        }
-
 
         public void PauseGame()
         {
@@ -149,44 +140,101 @@ namespace Core
             Debug.Log(isLocked ? "[GameManager] 마우스 커서 화면 중앙에 고정됨" : "[GameManager] 마우스 커서 제한 해제됨", this);
         }
 
-        private void OnEnable()
+        // 새 게임 또는 씬 전환으로 플레이어를 생성하기 전에 호출한다.
+        // [호출] 새 게임은 StartGame, 씬 전환은 HandleBeforeSceneChange, 사망 복구는 StageManager.HandlePlayerDeath에서 호출한다.
+        public void PrepareSpawn(EPlayerSpawnReason reason)
         {
-            if (Instance != this)
+            // 씬 이동일 때만 현재 능력치를 저장한다.
+            if (reason == EPlayerSpawnReason.SceneTransition)
             {
+                playerState.SaveCurrentAttributes();
+            }
+
+            SpawnReason = reason;
+        }
+
+
+        // [호출] PlayerSpawner.SpawnPlayer에서 플레이어 생성과 초기 Effect 적용 직후 호출된다.
+        public void CompletePlayerSpawn(PlayerFacade spawnedPlayerFacade)
+        {
+            if (spawnedPlayerFacade == null)
+            {
+                Debug.LogError("등록할 플레이어의 PlayerFacade가 없습니다.", this);
                 return;
             }
 
-            // 씬 로딩 완료 시점을 알리는 이벤트 구독 => 새 씬에 배치된 StageManager 탐색
-            SceneManager.sceneLoaded += HandleSceneLoaded;
-            
-            // 씬 전환 직전 시점을 알리는 이벤트 구독 => 기존 플레이어가 파괴되기전 현재 
-            // 능력치를 임시 저장하고 스폰 사유를 Scene Transition으로 설정
-            SceneLoader.OnBeforeSceneChange += HandleBeforeSceneChange;
+            if (!HasPlayerState)
+            {
+                Debug.LogError("PlayerState가 초기화되지 않았습니다.", this);
+                return;
+            }
+
+            playerState.SetCurrentPlayer(spawnedPlayerFacade);
+
+            // 스포너에서 초기 Effect 적용은 이미 끝난 상태다.
+            // 씬 이동이라면 여기서 이전 씬의 능력치를 복원한다.
+            bool shouldRestore = SpawnReason == EPlayerSpawnReason.SceneTransition;
+
+            if (shouldRestore)
+            {
+                playerState.RestoreSavedAttributes();
+            }
+            else
+            {
+                playerState.ClearSavedAttributes();
+            }
+
+            // 최종 능력치가 결정된 다음 첫 라운드 스냅샷을 저장한다.
+            if (_stageManager != null)
+            {
+                _stageManager.InitializeFirstRound(playerState);
+            }
+
+            // HUD 연결과 StageManager의 기존 사망 이벤트 구독을 실행한다.
+            OnPlayerSpawned?.Invoke(CurrentPlayerState);
+
+            // 스냅샷 저장과 이벤트 연결이 끝난 뒤 시작한다.
+            if (_stageManager != null)
+            {
+                _stageManager.StartStage();
+            }
         }
 
-        private void OnDisable()
+        // [호출] PlayerSpawner.SpawnPlayer에서 로비 스폰을 마친 뒤 호출된다.
+        public void ClearSpawnStage()
         {
-            SceneManager.sceneLoaded -= HandleSceneLoaded;
-            SceneLoader.OnBeforeSceneChange -= HandleBeforeSceneChange;
+            SpawnStage = null;
         }
 
         // Scene => 방금 로드된 씬의 정보가 들어가 있다. scene.name으로 씬 이름 확인 가능
         // LoadSceneMode => 씬을 어떻게 로드 했는지에 대한 enum 타입 => Single(새 씬만), Additive(기존 씬 유지)
-        private void HandleSceneLoaded(Scene scene,LoadSceneMode mode)
+        // [이벤트] SceneManager.sceneLoaded(씬 로드 완료)가 발생하면 호출된다. (OnEnable에서 구독)
+        private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            // scene.name이 스테이지 씬인지 확인
             _stageManager = FindAnyObjectByType<StageManager>();
 
             if (_stageManager == null)
+            {
                 return;
+            }
 
-            // stageManager.TakeCurrentStatge(stageType);
+            StageBase stage = FindAnyObjectByType<StageBase>();
+
+            if (stage == null)
+            {
+                Debug.LogError("현재 씬에 StageBase가 없습니다.", this);
+                return;
+            }
+
+            _stageManager.TakeCurrentStage(stage.StageType);
+            //_stageManager.StartStage();
         }
 
         // SceneLoader의 일반 씬 이동 직전에 현재 능력치를 저장한다.
+        // [이벤트] SceneLoader.OnBeforeSceneChange(씬 이동 직전)가 발생하면 호출된다. (OnEnable에서 구독)
         private void HandleBeforeSceneChange(ESceneType previous, ESceneType destination)
         {
-            if(CurrentPlayerState!=null)
+            if(CurrentPlayerFacade!=null)
                 PrepareSpawn(EPlayerSpawnReason.SceneTransition);
 
             // 로비로 돌아올 때만 "어디서 왔는지" 기록

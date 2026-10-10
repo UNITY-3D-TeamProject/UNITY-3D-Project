@@ -27,13 +27,15 @@ namespace Mediator.SubMediators
         [Header("Settings")]
         [Tooltip("CharacterMotor.Speed 로 연결할 어트리뷰트 이름")]
         [SerializeField] private string _speedValueKey;
-        [Tooltip("CharacterMotor.JumpSpeed 로 연결할 어트리뷰트 이름")]
+        [Tooltip("점프력으로 사용할 어트리뷰트 이름")]
         [SerializeField] private string _jumpSpeedValueKey;
         #endregion
         
         #region Private Fields
         private IMoveController _moveController;
         private Vector3 _lastDirection;
+        private Vector3 _rollDirection;
+        private float _jumpPower;
         #endregion
 
         #region Properties
@@ -48,6 +50,19 @@ namespace Mediator.SubMediators
                 BindRequest();
             }
         }
+        #endregion
+
+        #region Events
+        /// <summary>이동 입력으로 계산된 이동 방향이 갱신되었을 때 발생한다. 구르는 중에도 발생한다.</summary>
+        public event Action<Vector3> OnMoveDirectionChanged;
+        /// <summary>점프를 시작했을 때 발생한다. 공중에서 다시 점프해도 매번 발생한다.</summary>
+        public event Action OnJumpStarted;
+        /// <summary>점프 후 착지했을 때 발생한다.</summary>
+        public event Action OnJumpEnded;
+        /// <summary>구르기를 시작했을 때 구르기 방향(월드, 정규화되지 않음)과 함께 발생한다.</summary>
+        public event Action<Vector3> OnRollStarted;
+        /// <summary>구르기가 끝났거나 중단되었을 때 발생한다.</summary>
+        public event Action OnRollEnded;
         #endregion
 
         #region Unity Lifecycle
@@ -117,6 +132,7 @@ namespace Mediator.SubMediators
                 ? _lastDirection
                 : _moveDirectionCalculator.ViewDirection;
 
+            _rollDirection = direction;
             _rollMover.Roll(direction, distance, duration);
         }
         #endregion
@@ -127,14 +143,14 @@ namespace Mediator.SubMediators
         /// </summary>
         protected override void InitAttributeCallback()
         {
-            AttributeCallback.TryAdd(_speedValueKey, (float newValue, float oldValue) =>
+            AttributeCallback.TryAdd(_speedValueKey, data =>
             {
-                if (_motor != null) _motor.Speed = newValue;
+                if (_motor != null) _motor.Speed = data.NewValue;
             });
 
-            AttributeCallback.TryAdd(_jumpSpeedValueKey, (float newValue, float oldValue) =>
+            AttributeCallback.TryAdd(_jumpSpeedValueKey, data =>
             {
-                if (_motor != null) _motor.JumpSpeed = newValue;
+                _jumpPower = data.NewValue;
             });
         }
 
@@ -146,7 +162,7 @@ namespace Mediator.SubMediators
             if (_motor == null || AttributeGetter == null) return;
 
             _motor.Speed = AttributeGetter.Invoke(_speedValueKey);
-            _motor.JumpSpeed = AttributeGetter.Invoke(_jumpSpeedValueKey);
+            _jumpPower = AttributeGetter.Invoke(_jumpSpeedValueKey);
         }
         #endregion
 
@@ -171,6 +187,7 @@ namespace Mediator.SubMediators
         private void ApplyDirection(Vector3 direction)
         {
             _lastDirection = direction;
+            OnMoveDirectionChanged?.Invoke(direction);
             //모터가 없거나 구르는 중일경우 return
             if (!_motor || (_rollMover && _rollMover.IsRolling)) return;
 
@@ -178,13 +195,15 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 점프 명령을 전달한다. 구르는 중에는 무시한다.
+        /// 점프 명령을 전달한다. 구르는 중이거나 공중이면 무시한다.
         /// </summary>
         private void CommandJump()
         {
+            if (!_motor) return;
             if (_rollMover && _rollMover.IsRolling) return;
+            if (!_motor.IsGrounded) return;
 
-            _motor?.Jump();
+            _motor.Jump(_jumpPower);
         }
         
         /// <summary>
@@ -208,17 +227,35 @@ namespace Mediator.SubMediators
         /// <summary>
         /// 구르기 시작 시 입력에 의한 이동 정지
         /// </summary>
-        private void OnRollStarted()
+        private void HandleRollStarted()
         {
             if (_motor) _motor.Direction = Vector3.zero;
+            OnRollStarted?.Invoke(_rollDirection);
         }
 
         /// <summary>
         /// 구르기 종료 시 구르는 동안 들어온 최신 입력 방향으로 이동 재개
         /// </summary>
-        private void OnRollEnded()
+        private void HandleRollEnded()
         {
             if (_motor) _motor.Direction = _lastDirection;
+            OnRollEnded?.Invoke();
+        }
+
+        /// <summary>
+        /// CharacterMotor 의 점프 시작을 외부로 알린다.
+        /// </summary>
+        private void NotifyJumpStarted()
+        {
+            OnJumpStarted?.Invoke();
+        }
+
+        /// <summary>
+        /// CharacterMotor 의 착지를 외부로 알린다.
+        /// </summary>
+        private void NotifyJumpEnded()
+        {
+            OnJumpEnded?.Invoke();
         }
 
         /// <summary>
@@ -231,29 +268,39 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// MoveDirectionCalculator, RollMover 이벤트 구독
+        /// MoveDirectionCalculator, RollMover, CharacterMotor 이벤트 구독
         /// </summary>
         private void Subscribe()
         {
             if (_moveDirectionCalculator) _moveDirectionCalculator.OnDirectionCalculated += ApplyDirection;
+            if (_motor)
+            {
+                _motor.OnJumpStarted += NotifyJumpStarted;
+                _motor.OnJumpEnded += NotifyJumpEnded;
+            }
             if (_rollMover)
             {
-                _rollMover.OnRollStarted += OnRollStarted;
-                _rollMover.OnRollEnded += OnRollEnded;
+                _rollMover.OnRollStarted += HandleRollStarted;
+                _rollMover.OnRollEnded += HandleRollEnded;
                 _rollMover.OnDisplacementCalculated += ApplyRollDisplacement;
             }
         }
 
         /// <summary>
-        /// MoveDirectionCalculator, RollMover 이벤트 구독 해지
+        /// MoveDirectionCalculator, RollMover, CharacterMotor 이벤트 구독 해지
         /// </summary>
         private void Unsubscribe()
         {
             if (_moveDirectionCalculator) _moveDirectionCalculator.OnDirectionCalculated -= ApplyDirection;
+            if (_motor)
+            {
+                _motor.OnJumpStarted -= NotifyJumpStarted;
+                _motor.OnJumpEnded -= NotifyJumpEnded;
+            }
             if (_rollMover)
             {
-                _rollMover.OnRollStarted -= OnRollStarted;
-                _rollMover.OnRollEnded -= OnRollEnded;
+                _rollMover.OnRollStarted -= HandleRollStarted;
+                _rollMover.OnRollEnded -= HandleRollEnded;
                 _rollMover.OnDisplacementCalculated -= ApplyRollDisplacement;
             }
         }

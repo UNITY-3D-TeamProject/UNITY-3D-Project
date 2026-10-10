@@ -69,6 +69,23 @@ namespace Mediator.SubMediators
         {
             if (_rotator) _rotator.SetViewForward(viewForward);
         }
+
+        /// <summary>
+        /// 바라볼 방향을 고정하고 즉시 그 방향으로 돌리도록 CharacterRotator 에 전달한다.
+        /// </summary>
+        /// <param name="worldDirection">고정할 월드 방향</param>
+        public void LockLookDirection(Vector3 worldDirection)
+        {
+            if (_rotator) _rotator.LockLookDirection(worldDirection);
+        }
+
+        /// <summary>
+        /// 고정한 방향을 해제하도록 CharacterRotator 에 전달한다.
+        /// </summary>
+        public void UnlockLookDirection()
+        {
+            if (_rotator) _rotator.UnlockLookDirection();
+        }
         #endregion
 
         #region Protected Methods

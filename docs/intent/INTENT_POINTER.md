@@ -4,6 +4,8 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Stage / Player State]** StageManager 체크포인트 컴포넌트 연결 및 도달 처리 → [문서](../HANDOVER/SungJun/intent/intent-016-stage-checkpoint-events.md)
+- **[Stage / Player State]** PlayerFacade 기반 낙하 복귀(이동)·사망 복구(파괴 후 재스폰) 구현, 사망 시 Destroy 전제 확인 필요 → [문서](../HANDOVER/SungJun/intent/intent-017-fall-death-recovery-playerfacade.md)
 <!-- 파트별로 묶어서 나열. 형식: - **[파트]** 문제 한 줄 요약 → [문서](./intent-NNN-slug.md) -->
 - **[Movement System]** 이동 코어에 경로/회전/탑승 정책이 섞여 있음 → [문서](./intent-002-movement-core-scope.md)
 - **[Movement System]** PlayMode 테스트로 발견된 이동 자체 버그 4건 → [문서](./intent-003-movement-playtest-bugfixes.md)
@@ -13,8 +15,11 @@
 - **[AI / Combat]** 적이 추격만 하고 공격하지 않음. 스킬(`EnemyMeleeAttack`) + 근접 판정 매개체 + BT 공격 가지로 구현, 코드 완료·에디터 배선(`[USER]`)과 Play 검증 남음 → [문서](./intent-010-enemy-melee-attack.md)
 - **[AI]** 시야 감지·해제가 즉시 일어나 등 뒤로 돌면 엉뚱한 곳을 수색함. 발견 게이지 + 놓친 뒤 유예(실제 위치 추적)를 도입, 코드 완료·Play 검증 남음 → [문서](./intent-011-sensor-awareness.md)
 - **[AI / Combat]** 적이 근거리 한 종류뿐. 프로토타입용으로 `EnemyRangedAttack`(스킬이 총알을 직접 생성) 구현. 풀링 도입 시 Factory 경로로 옮기는 것이 기술 부채. 코드 완료, 에디터 배선(`[USER]`)과 Play 검증 남음 → [문서](./intent-012-enemy-ranged-attack.md)
+- **[Movement System]** 점프력이 모터에 고정되고 공중 점프 불가, 시작/착지 이벤트 없음. `Jump(float jumpPower)` 무조건 실행 + `OnJumpStarted`/`OnJumpEnded` 추가, 접지 정책은 MoveMediator로. 코드 완료·컴파일 0에러, Play 검증 남음 → [문서](./intent-015-jump-power-param-and-events.md)
+- **[Attribute / Mediator / Combat]** 데미지 경로에 출처(누가·어디서)가 없어 피격 반응 불가. `SEffectContext{Cursor, Origin}`를 Apply→어트리뷰트 콜백까지 관통(C안). 1차 전달 경로 진행, 2차(원점 기록·CombatMediator 연결·AI 반응) 남음 → [문서](./intent-016-hit-context.md)
 
 ## 해결됨 (Resolved)
+- **[Stage / Player State]** Core 기준 생존 낙하 복귀와 라운드 사망 복구 설계 완료, 구현 전 → [문서](../HANDOVER/SungJun/intent/clear/intent-015-stage-round-recovery-design.md) (resolved: 2026-10-08)
 - **[UI / Game State]** 초기 Playing, GameManager 커서 처리, 설정창 열기·닫기 액션 구독 구현 → [문서](../HANDOVER/SungJun/intent/intent-013-settings-input-flow.md) (resolved: 2026-10-05)
 <!-- 형식: - **[파트]** 문제 한 줄 요약 → [문서](./clear/intent-NNN-slug.md) (resolved: YYYY-MM-DD) -->
 - **[Monster Spawner]** 몬스터 프리팹 생성과 시작 능력치 설정 기반 부재 → [문서](../HANDOVER/SungJun/intent/intent-012-monster-spawner-foundation.md) (resolved: 2026-10-04)

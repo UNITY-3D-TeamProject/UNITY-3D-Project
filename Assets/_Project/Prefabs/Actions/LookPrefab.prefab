@@ -45,7 +45,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3117a37340ae4d47966a917bcdc7dbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Scripts.Mediator.CameraMediator
-  targetCamera: {fileID: 4581412529905643267}
+  _targetCamera: {fileID: 4581412529905643267}
+  _aimMaxDistance: 100
+  _aimLayers:
+    serializedVersion: 2
+    m_Bits: 4294967227
 --- !u!114 &4581412529905643267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -58,10 +62,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55b078b33bb3d464aa99f30dfa0b7b11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Scripts.Camera.PlayerBaseCamera
-  cameraPivot: {fileID: 0}
-  sensitivity: 0.01
-  yawMin: -180
-  yawMax: 180
-  pitchMin: -50
-  pitchMax: 50
-  invertY: 0
+  _cameraPivot: {fileID: 0}
+  _aimCamera: {fileID: 0}
+  _sensitivity: 0.01
+  _pitchMin: -50
+  _pitchMax: 50
+  _shouldInvertY: 0
