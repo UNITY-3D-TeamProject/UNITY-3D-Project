@@ -45,6 +45,10 @@ namespace Map.Maze
 
         [Tooltip("입구 칸 표시 프리팹 (선택, 테스트용)")]
         [SerializeField] private GameObject _startMarkerPrefab;
+
+        [Header("Checkpoints")]
+        [Tooltip("씬에 미리 놓아 둔 체크포인트 (선택). 0번은 첫 미로의 입구 칸으로, 그 뒤는 차례대로 각 미로의 출구 밖 다리 가운데로 옮긴다.")]
+        [SerializeField] private Transform[] _checkpointAnchors;
         #endregion
 
         #region Protected Methods
@@ -89,11 +93,13 @@ namespace Map.Maze
                 if (isFirstMaze)
                 {
                     startPosition = GetCellCenter(mazeRoot, entranceCell) + (Vector3.up * START_HEIGHT_OFFSET);
+                    MoveCheckpointAnchor(0, GetCellCenter(mazeRoot, entranceCell));
                 }
 
                 // 마지막 미로에서는 출구 밖 다리의 가운데가 도착 지점이 된다.
                 float bridgeCenterZ = ((_size - 0.5f) * _tileSize) + (bridgeLength * 0.5f);
                 goalPosition = mazeRoot.TransformPoint(new Vector3(exitCell.x * _tileSize, 0.0f, bridgeCenterZ));
+                MoveCheckpointAnchor(i + 1, goalPosition);
 
                 // 다음 미로는 이 미로의 출구와 같은 열에서 시작한다.
                 entranceColumn = exitCell.x;
@@ -247,6 +253,15 @@ namespace Map.Maze
         private Vector3 GetCellCenter(Transform mazeRoot, Vector2Int cell)
         {
             return mazeRoot.TransformPoint(new Vector3(cell.x * _tileSize, 0.0f, cell.y * _tileSize));
+        }
+
+        // index 번째 체크포인트를 position 으로 옮긴다. 연결된 체크포인트가 모자라면 아무것도 하지 않는다.
+        private void MoveCheckpointAnchor(int index, Vector3 position)
+        {
+            if ((_checkpointAnchors == null) || (index >= _checkpointAnchors.Length)) return;
+            if (_checkpointAnchors[index] == null) return;
+
+            _checkpointAnchors[index].position = position;
         }
 
         // 프리팹을 parent 아래 지정한 로컬 위치·회전으로 놓는다.
