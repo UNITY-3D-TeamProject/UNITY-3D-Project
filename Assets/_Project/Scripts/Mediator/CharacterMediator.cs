@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Attribute.Core;
+using Attribute.Effect;
 using Mediator.SubMediators;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -108,6 +109,21 @@ namespace Mediator
         public void SetAttribute(string key, float value)
         {
             EffectTarget?.SetValue(key, value);
+        }
+
+        /// <summary>
+        /// 효과를 캐릭터 어트리뷰트에 적용한다.
+        /// </summary>
+        /// <param name="effect">적용할 효과</param>
+        /// <param name="context">효과의 출처 정보. ValueSource 가 Attribute 이면 Cursor 가 필요하다</param>
+        /// <returns>효과·대상이 없거나 대상 어트리뷰트가 없어 적용하지 않았으면 false</returns>
+        public bool ApplyEffect(SOAttributeEffect effect, SEffectContext context = default)
+        {
+            IEffectTarget target = EffectTarget;
+            if (!effect || (target == null) || !target.IsValidTarget(effect.TargetAttribute)) return false;
+
+            effect.Apply(target, context);
+            return true;
         }
 
         /// <summary>
