@@ -11,10 +11,14 @@ namespace Core.Scanning
     public class ScanWave : MonoBehaviour
     {
         #region Constants
+        // 한 번에 담을 수 있는 콜라이더 최대 수
         private const int MAX_HIT_COUNT = 256;
         #endregion
 
         #region Serialized Fields
+        // Iscannable 붙은것들을 GetComponentInParent로 걸러야하는데 결과 배열이 256칸으로 고정이라
+        // 범위 안에 대상이 아닌 콜라이더가 많으면 칸이 차서 진짜 대상이 누락될 수 있다.
+        // 레이어를 만들면 대상이 아닌 콜라이더들은 배열에 안들어온다.
         [Header("Settings")]
         [Tooltip("스캔에 닿을 수 있는 대상이 속한 레이어. 필요한 레이어만 고르면 판정 비용이 줄어든다.")]
         [SerializeField] private LayerMask _scannableLayers = ~0;
@@ -25,14 +29,20 @@ namespace Core.Scanning
         #endregion
 
         #region Private Fields
+        // 스캔 번호 발급기. static 이라 ScanWave 가 여러 개여도 번호가 겹치지 않는다.
         private static int _nextScanId;
 
+        // 범위 판정 결과를 담는 배열. 미리 만들어 재사용해 매 프레임 메모리 할당이 없다.
         private readonly Collider[] _hitColliders = new Collider[MAX_HIT_COUNT];
+        // 콜라이더에서 찾은 IScannable 을 저장해 두는 캐시. 못 찾은 콜라이더는 null 로 저장한다.
         private readonly Dictionary<Collider, IScannable> _scannableCache = new Dictionary<Collider, IScannable>();
+        // 파동 파티클 1개의 상태를 읽어 오는 배열(구가 하나뿐이라 크기 1).
         private readonly ParticleSystem.Particle[] _particles = new ParticleSystem.Particle[1];
+        // 아래 세 값은 Begin 때 정해져 스캔이 끝날 때까지 바뀌지 않는다.
         private Vector3 _origin;
         private float _duration;
         private int _scanId;
+        // 콜라이더 수 초과 경고를 스캔당 한 번만 내기 위한 플래그
         private bool _hasWarnedOverflow;
         #endregion
 
@@ -72,6 +82,7 @@ namespace Core.Scanning
             // 이번 프레임에 닿는 모든 대상에게 같은 정보를 전달한다.
             SScanHit hit = new SScanHit(_scanId, _origin, radius, _duration);
 
+            // 일반 Physics.OverlapSphere는 호출할 때마다 결과 배열을 새로 만들어서 GC 부담이 생긴다.
             // 파동 중심에서 현재 반경 안에 있는 콜라이더를 미리 만든 배열에 담는다(GC 할당 없음).
             // 트리거 콜라이더도 스캔 대상이 될 수 있도록 Collide 로 둔다.
             int hitCount = Physics.OverlapSphereNonAlloc(
@@ -122,6 +133,7 @@ namespace Core.Scanning
             _scannableCache.Clear();
 
             // 진행 중이던 파동이 있으면 지우고 처음부터 다시 시작한다.
+            // true => 자식 파티클까지 포함 
             _scanParticle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             // 파티클 수명이 곧 확산 시간, 파티클 크기가 곧 최대 지름이 된다.
@@ -152,6 +164,7 @@ namespace Core.Scanning
         /// <param name="collider">닿은 콜라이더</param>
         /// <param name="scannable">찾은 대상</param>
         /// <returns>스캔 가능한 대상이면 true</returns>
+        /// 전에 한번 조사한 콜라이더면 다시 조사하지말고 메모해둔 답을 쓰기
         private bool TryGetScannable(Collider collider, out IScannable scannable)
         {
             // 이미 찾아 둔 콜라이더면 캐시에서 바로 꺼내 쓴다.

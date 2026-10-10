@@ -26,6 +26,7 @@ namespace Core.Scanning
         /// </summary>
         /// <param name="hitCollider">맞은 콜라이더</param>
         /// <returns>약점이면 그 배율, 아니면 1</returns>
+        // 내가 맞힌 콜라이더가 약점인가?
         public static float GetMultiplier(Collider hitCollider)
         {
             // 맞은 콜라이더에 WeakPoint 가 붙어 있으면 약점을 맞힌 것이다.

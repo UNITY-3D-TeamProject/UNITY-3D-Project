@@ -10,10 +10,14 @@ namespace Core.Scanning
     public class ScanTarget : MonoBehaviour, IScannable
     {
         #region Enums
+        // 스캔 반응의 진행 단계. Idle -> Active -> FadingOut -> Idle 순으로 돈다.
         private enum EScanState
         {
+            // 스캔에 닿지 않은 평소 상태. Update 가 꺼져 있다.
             Idle,
+            // 닿은 뒤 활성 시간 동안. 세기가 0 에서 1 로 올라간다.
             Active,
+            // 활성 시간이 끝나 사라지는 중. 세기가 1 에서 0 으로 내려간다.
             FadingOut,
         }
         #endregion
@@ -27,13 +31,19 @@ namespace Core.Scanning
 
         [Header("References")]
         [Tooltip("이 대상의 반응 목록. 비어 있으면 Awake 에서 자식의 ScanReactionBase 를 모두 찾는다.")]
+        // 스캔에 닿았을 때 눈에 보이는 반응 하나를 만드는 부모 클래스 
+        // 여러 반응이 필요한경우를 대비해서 배열로 만든다.
         [SerializeField] private ScanReactionBase[] _reactions;
         #endregion
 
         #region Private Fields
+        // 현재 진행 단계
         private EScanState _state = EScanState.Idle;
+        // 마지막으로 받은 스캔 번호. 새 스캔인지 같은 스캔의 반복인지 구분하는 데 쓴다.
         private int _lastScanId;
+        // 활성 상태가 끝나는 시각(Time.time 기준)
         private float _activeUntil;
+        // 현재 반응 세기(0~1). 모든 반응에 전달된다.
         private float _fade;
         #endregion
 
@@ -46,6 +56,7 @@ namespace Core.Scanning
             }
 
             // 닿기 전에는 Update 비용을 쓰지 않는다.
+            // 이 컴포넌트를 끈다.
             enabled = false;
         }
 
@@ -159,8 +170,12 @@ namespace Core.Scanning
             enabled = false;
         }
 
+        /// <summary>
+        /// 현재 세기와 사라지는 중인지 여부를 모든 반응에 전달한다.
+        /// </summary>
         private void NotifyFade()
         {
+            // 올라가는 중과 내려가는 중을 반응이 구분할 수 있게 같이 넘긴다.
             bool isFadingOut = _state == EScanState.FadingOut;
             foreach (ScanReactionBase reaction in _reactions)
             {
