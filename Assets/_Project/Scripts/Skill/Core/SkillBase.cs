@@ -41,6 +41,11 @@ namespace Skill.Core
                 return cooldown;
             }
         }
+
+        /// <summary>
+        /// true 면 TryExecute 에서 코스트를 지불한다. false 면 TryExecute 는 판정만 하고, 스킬이 원하는 시점에 PayCosts 로 지불한다.
+        /// </summary>
+        protected virtual bool IsPayOnExecute => true;
         #endregion
 
         #region Unity Lifecycle
@@ -121,18 +126,15 @@ namespace Skill.Core
         }
 
         /// <summary>
-        /// 사용 가능할 때만 코스트를 지불하고 스킬을 발동한다.
+        /// 사용 가능할 때만 코스트를 지불하고 스킬을 발동한다. IsPayOnExecute 가 false 면 지불은 스킬에 맡긴다.
         /// </summary>
         /// <returns>실제로 발동했으면 true</returns>
         public bool TryExecute()
         {
             if (!CanExecute()) return false;
 
-            foreach (var cost in _costs)
-            {
-                // 지불 실패 시 발동하지 않는다. 앞서 지불된 코스트는 되돌리지 않는다.
-                if (!cost.Pay()) return false;
-            }
+            // 지불 실패 시 발동하지 않는다
+            if (IsPayOnExecute && !PayCosts()) return false;
 
             Execute();
             return true;
@@ -161,6 +163,20 @@ namespace Skill.Core
         protected virtual void Execute()
         {
             _notifyExecuted?.Invoke(this);
+        }
+
+        /// <summary>
+        /// 모든 코스트를 지불한다. 지불에 실패하면 그 자리에서 멈추며, 앞서 지불된 코스트는 되돌리지 않는다.
+        /// </summary>
+        /// <returns>모두 지불했으면 true</returns>
+        protected bool PayCosts()
+        {
+            foreach (var cost in _costs)
+            {
+                if (!cost.Pay()) return false;
+            }
+
+            return true;
         }
         #endregion
     }
