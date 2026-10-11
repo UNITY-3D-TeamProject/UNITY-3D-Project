@@ -9,6 +9,10 @@
 ## 현재 상황
 - 대쉬 = `Roll` 스킬 (확정). `Roll.cs` 는 거리/시간 설정, 실제 이동은 `RollMover.cs`.
 - 접지 판정: `CharacterMotor.IsGrounded` (`CharacterController.isGrounded`, `Assets/_Project/Scripts/Movement/CharacterMotor.cs:64`).
+- 스킬 상태 초기화 (02 멀티점프에서 추가): `SkillBase.ResetState()`(virtual, 기본 동작 없음)와 `SkillController.ResetSkill(string skillName)` 이 있다. `StopSkill` / `Stop()` 과 같은 패턴이다.
+- 착지 경로 (02 멀티점프에서 추가): `CharacterMotor.OnJumpEnded` → `MoveMediator.OnJumpEnded` → `CharacterMediator` → `SkillMediator.NotifyLanded()` → `SkillController.ResetSkill("MultiJump")`. 현재는 멀티점프만 초기화한다.
+  - `OnJumpEnded` 는 점프한 뒤 착지할 때만 발생한다. 점프 없이 걸어서 떨어진 뒤 착지하면 발생하지 않는다.
+- 공중 점프는 `MultiJump` 스킬이 판단하고 `MoveMediator.CommandAirJump` 가 실행한다. 공중 점프를 할 때도 `OnJumpStarted` 가 발생한다.
 
 ## 작업 범위 (예상)
 - 공중 사용 횟수를 세고 착지 시 초기화.
