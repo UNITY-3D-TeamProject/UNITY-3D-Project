@@ -270,6 +270,7 @@ namespace Mediator
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged += _animationMediator.SetMoveDirection;
             if (_skillMediator && _animationMediator) _skillMediator.OnFireRequested += _animationMediator.NotifyFire;
+            if (_skillMediator && _animationMediator) _skillMediator.OnFireChargeChanged += _animationMediator.NotifyFireCharge;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpStarted += _animationMediator.NotifyJumpStarted;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpEnded += _animationMediator.NotifyJumpEnded;
             if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted += _animationMediator.NotifyRollStarted;
@@ -296,6 +297,7 @@ namespace Mediator
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged -= _animationMediator.SetMoveDirection;
             if (_skillMediator && _animationMediator) _skillMediator.OnFireRequested -= _animationMediator.NotifyFire;
+            if (_skillMediator && _animationMediator) _skillMediator.OnFireChargeChanged -= _animationMediator.NotifyFireCharge;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpStarted -= _animationMediator.NotifyJumpStarted;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpEnded -= _animationMediator.NotifyJumpEnded;
             if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted -= _animationMediator.NotifyRollStarted;

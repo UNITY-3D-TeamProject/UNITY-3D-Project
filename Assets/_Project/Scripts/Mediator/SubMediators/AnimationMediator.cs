@@ -84,6 +84,17 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 사격 차지 상태를 CharacterAnimator 로 전달한다. 차지 중에는 사격 자세를 유지한다.
+        /// </summary>
+        /// <param name="isCharging">차지 중이면 true</param>
+        public void NotifyFireCharge(bool isCharging)
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.SetCharging(isCharging);
+        }
+
+        /// <summary>
         /// 점프 시작을 CharacterAnimator 로 전달한다.
         /// </summary>
         public void NotifyJumpStarted()
