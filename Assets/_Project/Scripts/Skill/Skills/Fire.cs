@@ -30,6 +30,8 @@ namespace Skill.Skills
         [Header("Fire")]
         [Tooltip("차지샷이 자동 발사되기까지 누르고 있어야 하는 시간(초)")]
         [SerializeField, Min(0.0f)] private float _chargeTime = 1.0f;
+        [Tooltip("차지샷 발사 시 배수를 적용할 수 있는 코스트(IScalableCost)에 곱할 배수")]
+        [SerializeField, Min(0.0f)] private float _chargedCostScale = 2.0f;
 
         [Header("References")]
         [Tooltip("총알이 생성될 위치. 비어 있을 때 발동을 막으려면 NotNullCondition 에 연결한다.")]
@@ -108,7 +110,8 @@ namespace Skill.Skills
         {
             EndCharge();
             IsCharged = isCharged;
-            Phase = PayCosts() ? EFirePhase.Fired : EFirePhase.Canceled;
+            float costScale = isCharged ? _chargedCostScale : 1.0f;
+            Phase = PayCosts(costScale) ? EFirePhase.Fired : EFirePhase.Canceled;
 
             base.Execute();
         }

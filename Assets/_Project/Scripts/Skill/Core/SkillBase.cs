@@ -178,6 +178,33 @@ namespace Skill.Core
 
             return true;
         }
+
+        /// <summary>
+        /// IScalableCost 코스트에 배수를 적용해 모든 코스트를 지불한다. 지불 후 배수를 1로 되돌린다.
+        /// </summary>
+        /// <param name="scale">이번 지불에 적용할 배수</param>
+        /// <returns>모두 지불했으면 true</returns>
+        protected bool PayCosts(float scale)
+        {
+            SetCostScale(scale);
+            bool isPaid = PayCosts();
+            SetCostScale(1.0f);
+
+            return isPaid;
+        }
+        #endregion
+
+        #region Private Methods
+        /// <summary>
+        /// IScalableCost 코스트에 배수를 설정한다.
+        /// </summary>
+        private void SetCostScale(float scale)
+        {
+            foreach (var cost in _costs)
+            {
+                if (cost is IScalableCost scalableCost) scalableCost.SetScale(scale);
+            }
+        }
         #endregion
     }
 }

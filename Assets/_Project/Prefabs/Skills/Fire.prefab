@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 3756347830307143739}
   - component: {fileID: 8827643837087973989}
-  - component: {fileID: 5751343608836102321}
   - component: {fileID: 9051118714484636340}
   - component: {fileID: 1201751039384459375}
+  - component: {fileID: 7001990963830209991}
   m_Layer: 0
   m_Name: Fire
   m_TagString: Untagged
@@ -49,21 +49,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Skill.Skills.Fire
   _skillName: Attack
   _chargeTime: 1
+  _chargedCostScale: 2
   _firePoint: {fileID: 0}
---- !u!114 &5751343608836102321
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7012313840834341081}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8fc734381ee5c2d43850843ff3bfe3c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.ResourceCost
-  _cost: 1
-  _resourceKey: CurrentHeat
 --- !u!114 &9051118714484636340
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -91,3 +78,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.CooldownCost
   _cooldown: 0.1
+--- !u!114 &7001990963830209991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7012313840834341081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a5aa679e129ad488429bb21827ff85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.HeatCost
+  _heat: 5
+  _heatKey: CurrentHeat
+  _maxHeatKey: MaxHeat
