@@ -1,4 +1,5 @@
 using UnityEngine;
+using Attribute.Effect;
 
 namespace Attribute.Core
 {
@@ -14,12 +15,17 @@ namespace Attribute.Core
         /// <summary>효과가 시작된 월드 위치. null 이면 위치 없음(독, 회복 등).</summary>
         public readonly Vector3? Origin;
 
+        /// <summary>값을 바꾼 효과 에셋. SOAttributeEffect.Apply 가 채운다. null 이면 효과 없이 바뀐 값(코스트 지불, 값 복원 등).</summary>
+        public readonly SOAttributeEffect Effect;
+
         /// <param name="cursor">효과를 발생시킨 주체</param>
         /// <param name="origin">효과가 시작된 월드 위치</param>
-        public SEffectContext(IEffectTarget cursor, Vector3? origin = null)
+        /// <param name="effect">값을 바꾼 효과 에셋. 호출부는 넣지 않는다(Apply 가 덮어씀)</param>
+        public SEffectContext(IEffectTarget cursor, Vector3? origin = null, SOAttributeEffect effect = null)
         {
             Cursor = cursor;
             Origin = origin;
+            Effect = effect;
         }
     }
 }

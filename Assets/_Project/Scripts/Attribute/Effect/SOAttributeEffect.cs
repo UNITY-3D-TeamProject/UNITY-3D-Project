@@ -56,9 +56,12 @@ namespace Attribute.Effect
         /// Effect 적용을 위한 함수
         /// </summary>
         /// <param name="target">effect 를 적용할 객체의 IEffectTarget</param>
-        /// <param name="context">effect 의 출처 정보. Cursor 는 effect 를 발생시키는 객체의 IEffectTarget (ValueSource 가 Attribute 일 때 필수)</param>
+        /// <param name="context">effect 의 출처 정보. Cursor 는 effect 를 발생시키는 객체의 IEffectTarget (ValueSource 가 Attribute 일 때 필수). Effect 는 이 메서드가 this 로 채운다</param>
         public void Apply(IEffectTarget target, SEffectContext context = default)
         {
+            // 호출부가 넣은 Effect 는 무시하고 실제로 적용하는 자신으로 덮어쓴다
+            context = new SEffectContext(context.Cursor, context.Origin, this);
+
             IEffectTarget cursor = context.Cursor;
             if (_valueSource == EValueSource.Attribute)
             {
