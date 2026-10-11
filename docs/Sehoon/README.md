@@ -22,7 +22,7 @@
 | 순서 | 기능 | 문서 | 상태 |
 |---|---|---|---|
 | 05 | 대쉬 중 사격·Aim 규칙 | [05-dash-fire-aim-rules.md](done/05-dash-fire-aim-rules.md) | 완료 |
-| 06 | Heat 게이지 구조 수정 | [06-heat-gauge-fix.md](06-heat-gauge-fix.md) | 대기 |
+| 06 | Heat 게이지 구조 수정 | [06-heat-gauge-fix.md](done/06-heat-gauge-fix.md) | 완료 |
 | 07 | 스킬 구현 (블루투스, 상호작용) | [07-skill-implementation.md](07-skill-implementation.md) | 대기 |
 | 08 | 블루투스 모션 추가 | [08-bluetooth-motion.md](08-bluetooth-motion.md) | 대기 |
 | 09 | Hit 시 방향별 모션 | [09-directional-hit-motion.md](09-directional-hit-motion.md) | 대기 |
