@@ -75,11 +75,23 @@ namespace Mediator.SubMediators
         /// 사격 요청을 CharacterAnimator 로 전달해 사격 상체 애니메이션을 재생한다.
         /// </summary>
         /// <param name="firePosition">총알 생성 위치 (사용하지 않음)</param>
-        public void NotifyFire(Vector3 firePosition)
+        /// <param name="isCharged">차지샷 여부 (사용하지 않음)</param>
+        public void NotifyFire(Vector3 firePosition, bool isCharged)
         {
             if (!_characterAnimator) return;
 
             _characterAnimator.PlayFire();
+        }
+
+        /// <summary>
+        /// 사격 차지 상태를 CharacterAnimator 로 전달한다. 차지 중에는 사격 자세를 유지한다.
+        /// </summary>
+        /// <param name="isCharging">차지 중이면 true</param>
+        public void NotifyFireCharge(bool isCharging)
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.SetCharging(isCharging);
         }
 
         /// <summary>

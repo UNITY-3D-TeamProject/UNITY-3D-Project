@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67f2e5e264e40c74c8da1c75e48ea06b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.SpawnMediator
-  _bulletSpawner: {fileID: 8022144537374413043}
+  _bulletFactory: {fileID: 8022144537374413043}
 --- !u!114 &8022144537374413043
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -59,4 +59,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Projectile.BulletSpawner
   _bulletPrefab: {fileID: 4555850187240467820, guid: e9c7c98f57efe734c8cfe056d3122412, type: 3}
-  _hitEffect: {fileID: 0}
+  _chargedBulletPrefab: {fileID: 4958102510058266200, guid: 142fb822af43d844f8b9350d058622d4, type: 3}

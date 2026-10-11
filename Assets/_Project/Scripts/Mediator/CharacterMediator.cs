@@ -250,7 +250,8 @@ namespace Mediator
         /// 사격 요청을 어트리뷰트 중재자에 전달해 회복을 정지한다.
         /// </summary>
         /// <param name="position">총알 생성 위치 (사용하지 않음)</param>
-        private void OnFireCallback(Vector3 position)
+        /// <param name="isCharged">차지샷 여부 (사용하지 않음)</param>
+        private void OnFireCallback(Vector3 position, bool isCharged)
         {
             _attributeMediator.PauseRegenOnFire();
         }
@@ -269,6 +270,7 @@ namespace Mediator
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged += _animationMediator.SetMoveDirection;
             if (_skillMediator && _animationMediator) _skillMediator.OnFireRequested += _animationMediator.NotifyFire;
+            if (_skillMediator && _animationMediator) _skillMediator.OnFireChargeChanged += _animationMediator.NotifyFireCharge;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpStarted += _animationMediator.NotifyJumpStarted;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpEnded += _animationMediator.NotifyJumpEnded;
             if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted += _animationMediator.NotifyRollStarted;
@@ -279,6 +281,10 @@ namespace Mediator
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested += _moveMediator.CommandAirJump;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded += _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted += _skillMediator.NotifyJumpStarted;
+            if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted += _skillMediator.NotifyRollStarted;
+            if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded += _skillMediator.NotifyRollEnded;
+            if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted += _cameraMediator.NotifyRollStarted;
+            if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded += _cameraMediator.NotifyRollEnded;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -295,6 +301,7 @@ namespace Mediator
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged -= _animationMediator.SetMoveDirection;
             if (_skillMediator && _animationMediator) _skillMediator.OnFireRequested -= _animationMediator.NotifyFire;
+            if (_skillMediator && _animationMediator) _skillMediator.OnFireChargeChanged -= _animationMediator.NotifyFireCharge;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpStarted -= _animationMediator.NotifyJumpStarted;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpEnded -= _animationMediator.NotifyJumpEnded;
             if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted -= _animationMediator.NotifyRollStarted;
@@ -305,6 +312,10 @@ namespace Mediator
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested -= _moveMediator.CommandAirJump;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded -= _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted -= _skillMediator.NotifyJumpStarted;
+            if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted -= _skillMediator.NotifyRollStarted;
+            if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded -= _skillMediator.NotifyRollEnded;
+            if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted -= _cameraMediator.NotifyRollStarted;
+            if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded -= _cameraMediator.NotifyRollEnded;
         }
         #endregion
     }
