@@ -2,7 +2,7 @@
 
 - **우선순위**: 높음
 - **상태**: 대기
-- **관련 작업**: [04. Fire 차지샷](04-fire-charge-shot.md), [13. 과열 색상 변경](13-overheat-color.md)
+- **관련 작업**: [04. Fire 차지샷](done/04-fire-charge-shot.md), [13. 과열 색상 변경](13-overheat-color.md)
 
 ## 목표
 지금은 사격하면 Heat 가 줄어든다(버그). 이를 아래 구조로 바로잡는다.

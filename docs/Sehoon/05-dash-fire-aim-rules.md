@@ -2,7 +2,7 @@
 
 - **우선순위**: 높음
 - **상태**: 대기
-- **관련 작업**: [03. 점프 중 대쉬 1회 제약](done/03-air-dash-limit.md), [04. Fire 차지샷](04-fire-charge-shot.md)
+- **관련 작업**: [03. 점프 중 대쉬 1회 제약](done/03-air-dash-limit.md), [04. Fire 차지샷](done/04-fire-charge-shot.md)
 
 ## 목표
 대쉬(`Roll`) 중 사격과 Aim 이 어떻게 동작하는지 규칙을 정해 적용한다.
@@ -17,6 +17,7 @@
 - Aim 입력이 지금 눌려 있는지 따로 기억하는 곳은 없다. 입력을 받으면 바로 카메라에 전달한다.
 - 대쉬 시작/종료 신호: `MoveMediator.OnRollStarted` / `OnRollEnded`. `CharacterMediator` 에서 애니메이션·회전에 연결되어 있다 (`Assets/_Project/Scripts/Mediator/CharacterMediator.cs:274-277`).
 - 대쉬 중 사격을 막는 처리는 없다. `CharacterAnimator` 는 구르는 동안 조준 회전(상체 보정)만 끈다.
+- 차지샷([04](done/04-fire-charge-shot.md)): 차지는 `Fire` 스킬이 갖는다. 누름(실행 요청)에 차지 시작, 1초가 차면 차지샷 자동 발사, 그 전에 뗌(Stop 요청)이면 비차지샷. `Fire` 를 비활성화(`SetSkillEnabled`)하면 쏘지 않고 차지를 취소한다. 코스트는 발사 시점에 지불한다.
 
 ## 작업 범위 (예상)
 - Aim 입력 상태(눌림 여부) 보관 + 대쉬 시작 시 Aim 해제, 종료 시 입력이 눌려 있으면 Aim 복구.

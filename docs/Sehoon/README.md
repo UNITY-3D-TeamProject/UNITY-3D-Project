@@ -16,7 +16,7 @@
 | 01 | SO Apply 함수 퍼사드에 추가 | [01-facade-so-apply.md](01-facade-so-apply.md) | 대기 |
 | 02 | 멀티점프 | [02-multi-jump.md](done/02-multi-jump.md) | 완료 |
 | 03 | 점프 중 대쉬 1회 제약 | [03-air-dash-limit.md](done/03-air-dash-limit.md) | 완료 |
-| 04 | Fire 구조 차지샷으로 변경 | [04-fire-charge-shot.md](04-fire-charge-shot.md) | 대기 |
+| 04 | Fire 구조 차지샷으로 변경 | [04-fire-charge-shot.md](done/04-fire-charge-shot.md) | 완료 |
 
 ### 우선순위 높음
 | 순서 | 기능 | 문서 | 상태 |
@@ -38,6 +38,7 @@
 | 순서 | 기능 | 문서 | 상태 |
 |---|---|---|---|
 | 13 | 총기 과열 색상 변경 | [13-overheat-color.md](13-overheat-color.md) | 대기 |
+| 14 | 사격·조준 중 이동 속도 감소 | [14-fire-aim-move-slow.md](14-fire-aim-move-slow.md) | 대기 |
 
 ## 같은 우선순위 안에서 순서를 정한 근거
 - **최우선** (사용자 지정, 고정)
