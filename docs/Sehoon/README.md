@@ -37,7 +37,7 @@
 ### 우선순위 낮음
 | 순서 | 기능 | 문서 | 상태 |
 |---|---|---|---|
-| 13 | 총기 과열 색상 변경 | [13-overheat-color.md](13-overheat-color.md) | 대기 |
+| 13 | 총기 과열 색상 변경 | [13-overheat-color.md](done/13-overheat-color.md) | 완료 |
 | 14 | 사격·조준 중 이동 속도 감소 | [14-fire-aim-move-slow.md](14-fire-aim-move-slow.md) | 대기 |
 
 ## 같은 우선순위 안에서 순서를 정한 근거
