@@ -6,7 +6,8 @@ using Mediator.SubMediators;
 namespace AI.Crowd
 {
     /// <summary>
-    /// 로비 군중(보행자·차량)을 닫힌 스플라인 레인을 따라 순환시키는 조종부.
+    /// 로비 군중(보행자·차량)을 스플라인 레인을 따라 이동시키는 조종부.
+    /// 닫힌 스플라인은 계속 돌고, 열린 스플라인은 끝에 닿으면 멈추고 OnLaneEndReached 를 알린다.
     /// AIController 와 같은 방식으로 이동·회전 요청만 중재자에게 보내며, 앞이 막히면 이동을 멈춘다.
     /// 이동 속도는 이 컴포넌트가 아니라 CharacterMediator 의 속도 어트리뷰트(레인이 생성 직후 넣는 값)가 정한다.
     /// 중재자가 Awake 에서 GetComponentInParent 로 찾으므로 프리팹 루트에 붙인다.
@@ -42,14 +43,23 @@ namespace AI.Crowd
 
         private SplineContainer _lane;
         private float _laneLength;
+        private bool _isLaneClosed;
         private float _progress;
         private Vector3 _lastPosition;
+        #endregion
+
+        #region Properties
+        /// <summary>멈춰야 하는 대상의 레이어. 레인이 시작점 막힘 검사에도 같은 값을 쓴다.</summary>
+        public LayerMask DetectLayers => _detectLayers;
         #endregion
 
         #region Events
         private event Action<Vector2> _onMoveRequested;
         private event Action _onJumpRequested;
         private event Action<Vector2> _onBodyRotateRequested;
+
+        /// <summary>열린 레인의 끝에 닿았을 때 매 프레임 알린다. 레인이 받아서 개체를 회수한다.</summary>
+        public event Action<CrowdController> OnLaneEndReached;
         #endregion
 
         #region Unity Lifecycle
@@ -62,6 +72,13 @@ namespace AI.Crowd
             }
 
             AdvanceProgress();
+
+            if (HasReachedLaneEnd())
+            {
+                RequestMove(Vector2.zero);
+                OnLaneEndReached?.Invoke(this);
+                return;
+            }
 
             Vector3 direction = GetDirectionToTarget();
             if (direction.sqrMagnitude <= MIN_DIRECTION_SQR_MAGNITUDE)
@@ -139,7 +156,7 @@ namespace AI.Crowd
         /// <summary>
         /// 따라갈 레인과 시작 진행 거리를 지정한다. 레인 오브젝트의 스케일은 1 이어야 한다.
         /// </summary>
-        /// <param name="lane">닫힌 스플라인을 가진 레인</param>
+        /// <param name="lane">스플라인을 가진 레인. 닫혀 있으면 순환하고, 열려 있으면 끝에서 멈춘다.</param>
         /// <param name="startDistance">스플라인 시작점으로부터의 진행 거리(m)</param>
         public void SetLane(SplineContainer lane, float startDistance)
         {
@@ -152,7 +169,8 @@ namespace AI.Crowd
                 return;
             }
 
-            _progress = Mathf.Repeat(startDistance, _laneLength);
+            _isLaneClosed = lane.Splines.Count > 0 && lane.Splines[0].Closed;
+            _progress = WrapDistance(startDistance);
             _lastPosition = transform.position;
         }
         #endregion
@@ -178,7 +196,7 @@ namespace AI.Crowd
 
         /// <summary>
         /// 지난 프레임 이후 실제로 움직인 거리를 스플라인 접선에 투영해 진행 거리를 늘린다.
-        /// 멈춰 있으면 움직임이 0이라 진행 거리도 늘지 않는다. 길이를 넘으면 0으로 감는다.
+        /// 멈춰 있으면 움직임이 0이라 진행 거리도 늘지 않는다. 길이를 넘으면 닫힌 레인은 0으로 감고, 열린 레인은 끝에 멈춘다.
         /// </summary>
         private void AdvanceProgress()
         {
@@ -190,7 +208,28 @@ namespace AI.Crowd
             if (tangent.sqrMagnitude <= MIN_DIRECTION_SQR_MAGNITUDE) return;
 
             float advance = Mathf.Max(0.0f, Vector3.Dot(moved, tangent.normalized));
-            _progress = Mathf.Repeat(_progress + advance, _laneLength);
+            _progress = WrapDistance(_progress + advance);
+        }
+
+        /// <summary>
+        /// 열린 레인에서 남은 거리가 앞쪽 목표점 거리 이하이면 끝에 닿은 것으로 본다.
+        /// </summary>
+        /// <returns>열린 레인의 끝에 닿았으면 true</returns>
+        private bool HasReachedLaneEnd()
+        {
+            return !_isLaneClosed && (_laneLength - _progress <= _lookAheadDistance);
+        }
+
+        /// <summary>
+        /// 진행 거리를 레인 범위 안으로 맞춘다. 닫힌 레인은 길이로 감고, 열린 레인은 0~길이로 자른다.
+        /// </summary>
+        /// <param name="distance">진행 거리(m)</param>
+        /// <returns>레인 범위 안의 진행 거리(m)</returns>
+        private float WrapDistance(float distance)
+        {
+            return _isLaneClosed
+                ? Mathf.Repeat(distance, _laneLength)
+                : Mathf.Clamp(distance, 0.0f, _laneLength);
         }
 
         /// <summary>
@@ -199,7 +238,7 @@ namespace AI.Crowd
         /// <returns>수평 방향 벡터</returns>
         private Vector3 GetDirectionToTarget()
         {
-            float targetDistance = Mathf.Repeat(_progress + _lookAheadDistance, _laneLength);
+            float targetDistance = WrapDistance(_progress + _lookAheadDistance);
             Vector3 target = _lane.EvaluatePosition(DistanceToNormalized(targetDistance));
 
             return Vector3.ProjectOnPlane(target - transform.position, Vector3.up);
