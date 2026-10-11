@@ -17,7 +17,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 스캔을 쓰면 `duration` 동안 파동이 확산한다. (~~파동은 플레이어 프리팹 하위 `Scan` 아래에 상주~~ — 철회)
 - 파동이 닿은 대상은 `IScannable.OnScanned(SScanHit)`를 통해 자기 반응을 수행한다. **닿은 시점부터 `duration`만큼 활성화**되고, 이후 `fade`(1→0)로 서서히 사라진다.
   1. 적: 약점 부위 노출 (+ 약점 데미지 배율, Phase B)
-  2. 아이템: 벽에 가려져도 실루엣/위치가 보임
+  2. 아이템: 벽에 가려져도 실루엣/위치가 보임. (정정 2026-10-11) 아이템은 **평소에도 보이는** 오브젝트라 `MeshRevealReaction`+X-Ray 머티리얼로는 맞지 않는다(평소 숨겨지거나, 원래 외형을 잃고 스캔과 무관하게 벽 너머로 보임). 원래 렌더러는 그대로 두고, 스캔 중에만 자식 실루엣 렌더러(`M_ScanSilhouette`, ZTest Greater = 가려진 부분만)를 켜는 `SilhouetteReaction`으로 처리한다. 미로맵용.
   3. 플랫폼: 메시가 투명 상태에서 파동처럼 점점 보임 (충돌은 항상 유지). (정정 2026-10-11) 파동이 닿은 범위만 보이지 않고, **닿으면 닿은 지점부터 메시 전체가 `_revealSpeed`(m/s)로 끝까지 드러난다.** 파동이 더 빠르면 파동을 따라간다.
   4. 상호작용 오브젝트: 위치 마커 표시
 - 구조: `IScannable` + `ScanTarget`(타이머·상태) + `ScanReactionBase`(Strategy) 조합. 상세는 설계 계획(`C:\Users\inha\.claude\plans\declarative-snuggling-haven.md`)을 따른다.
@@ -38,6 +38,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - ~~약점이 켜져 있는 시간~~ → **해결(2026-10-11): 스캔 유지 시간이 끝나면 즉시 끔.** 페이드아웃 구간에는 꺼져 있고, 재스캔으로 다시 활성이 되면 켠다.
 - 범위: `Scan.cs`/프리팹 연결(6번)과 피격 코드의 약점 배율 조회(7번)는 타 파트 작업이다. 스캔 발사는 `Assets/Test`의 `ScanTestTrigger`(2026-10-11부터 R키, 옛 `TerrainScanner`는 `Test_Player`에서 비활성)로 시험한다.
 - ~~플랫폼이 파동이 닿은 범위만큼만 보여 반만 드러난 채 남는 문제~~ → **해결(2026-10-11): 닿았는지만 판단하고, 닿으면 닿은 지점부터 전체를 드러낸다.** 속도는 대상별 Inspector 값(`MeshRevealReaction._revealSpeed`).
+- ~~아이템 벽 너머 표시 방식~~ → **해결(2026-10-11): A안(자식 실루엣 오버레이).** 머티리얼 런타임 추가(B), URP Render Objects + 레이어 전환(C)은 머티리얼 인스턴스·서브메시 처리와 줍기/물리 레이어 영향 때문에 채택하지 않음. 실루엣 색은 머티리얼 `_Color`로 정한다.
 - "Core 스크립트 안에서" 작성한다는 범위를 `Scripts/Core/Scanning/`(`Core.Scanning`)으로 이해함. 다른 의미면 폴더만 조정
 - `fadeOutTime`(제안 1.0초), fade-in 평활 시간(제안 0.2초) 튜닝값
 - 숨은 플랫폼이 충돌은 있는데 안 보이는 상태가 레벨 디자인상 의도에 맞는지
