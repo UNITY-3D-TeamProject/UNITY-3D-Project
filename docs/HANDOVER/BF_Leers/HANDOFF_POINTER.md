@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-11** — `SEffectContext`에 `Effect`(`SOAttributeEffect`) 필드를 추가했다. `SOAttributeEffect.Apply`가 맨 앞에서 `this`로 덮어쓰고, 호출부는 수정하지 않았다. Core ↔ Effect 양방향 참조를 허용했으며, asmdef를 도입하면 Attribute를 asmdef 하나로 묶어야 한다. 컴파일 0에러, Play eval로 3가지 경우를 검증했다. **실제 총알·근접 Play는 미확인, 이세훈 공유 필요, intent-016 `open`**: [Context에 Effect 추가](./2026-10-11/effect-context-effect-field.md)
 - **2026-10-12** — GC 압박 가지: N초 동안 플레이어를 못 보면 가장 가까운 웨이포인트로 이동하는 기능을 BT로 판단하게 했다(범용 노드 `AITimeSinceTargetSeenCondition`·`AIMoveNearTargetAction`, 기본 `Cooldown` 노드). `AIController`에 `TimeSinceTargetSeen`·`MoveToPatrolPointNear`를 추가했고, 스포너가 블랙보드 `Player`를 주입한다. 컴파일 0에러, **[USER] 그래프 조립·Play 검증 미완, 스포너의 SpawnerBase 미사용은 시스템 팀원 확인 필요**: [GC 압박 가지](./2026-10-12/garbage-collector-pressure.md)
 - **2026-10-12** — GC 세션 B 종결 + 세션 C: `GarbageCollectorSpawner` 구현(라운드 인덱스 기준 생성·제거, 재스폰 시 재생성, 가장 먼 웨이포인트에 스폰). 컴파일 0에러, 동작 미검증. **다음: USER-5 후 세션 D**: [GC 세션 C](./2026-10-12/garbage-collector-session-c.md)
 - **2026-10-12** — GC 세션 A 구현: `WaypointPatrolRoute`(순찰 지점 목록) + `AIController` 순찰 분기·`_destinationTimeout` Inspector화, BT 노드 `AIAttackOnceAction`, `SpeedOverTime`. 컴파일 0에러, 동작 미검증. **다음: USER-1 → USER-3 → USER-2, 이후 세션 B**: [GC 세션 A](./2026-10-12/garbage-collector-session-a.md)
