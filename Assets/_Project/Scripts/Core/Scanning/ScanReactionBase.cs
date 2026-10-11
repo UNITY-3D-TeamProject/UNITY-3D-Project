@@ -10,7 +10,8 @@ namespace Core.Scanning
     {
         #region Public Methods
         /// <summary>
-        /// 대상이 스캔에 처음 닿아 반응을 시작할 때 한 번 호출된다.
+        /// 대상이 대기 상태에서 스캔에 처음 닿아 반응을 시작할 때 한 번 호출된다.
+        /// 이미 진행 중인 대상에 새 스캔이 닿는 재스캔에서는 호출되지 않는다(유지 시간만 연장된다).
         /// </summary>
         /// <param name="hit">닿은 스캔의 정보</param>
         public virtual void OnScanBegin(in SScanHit hit)
@@ -18,7 +19,8 @@ namespace Core.Scanning
         }
 
         /// <summary>
-        /// 같은 스캔 파동에 닿아 있는 동안 매 프레임 호출된다. 파동 반경 같은 값을 갱신할 때 쓴다.
+        /// 반응을 시작시킨 스캔 파동에 닿아 있는 동안 매 프레임 호출된다. 파동 반경 같은 값을 갱신할 때 쓴다.
+        /// 재스캔의 정보는 전달되지 않는다.
         /// </summary>
         /// <param name="hit">닿은 스캔의 정보</param>
         public virtual void OnScanUpdate(in SScanHit hit)

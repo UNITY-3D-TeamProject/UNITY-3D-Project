@@ -4,8 +4,9 @@ namespace Core.Scanning
 {
     /// <summary>
     /// IScannable 의 기본 구현. 스캔에 닿은 시점부터 스캔 지속 시간만큼 반응을 유지하고, 이후 서서히 사라지게 한다.
-    /// 어떻게 보일지는 같은 오브젝트(또는 자식)의 ScanReactionBase 들이 결정한다.
+    /// 어떻게 보일지는 같은 오브젝트에 붙은 ScanReactionBase 들이 결정한다(자식의 반응은 찾지 않는다).
     /// 스킬과 파동의 생명주기와 무관하게 대상이 스스로 타이머를 소유하므로, 파동이 사라져도 끝까지 진행한다.
+    /// 재스캔은 유지 시간만 연장하고 처음 스캔의 연출을 그대로 둔다. 스킬 쿨타임으로 스캔이 겹치지 않는 것을 전제로 한다.
     /// </summary>
     public class ScanTarget : MonoBehaviour, IScannable
     {
@@ -30,7 +31,7 @@ namespace Core.Scanning
         [SerializeField, Min(0.0f)] private float _fadeOutTime = 1.0f;
 
         [Header("References")]
-        [Tooltip("이 대상의 반응 목록. 비어 있으면 Awake 에서 자식의 ScanReactionBase 를 모두 찾는다.")]
+        [Tooltip("이 대상의 반응 목록. 비어 있으면 Awake 에서 같은 오브젝트의 ScanReactionBase 를 모두 찾는다.")]
         // 스캔에 닿았을 때 눈에 보이는 반응 하나를 만드는 부모 클래스 
         // 여러 반응이 필요한경우를 대비해서 배열로 만든다.
         [SerializeField] private ScanReactionBase[] _reactions;
@@ -41,6 +42,8 @@ namespace Core.Scanning
         private EScanState _state = EScanState.Idle;
         // 마지막으로 받은 스캔 번호. 새 스캔인지 같은 스캔의 반복인지 구분하는 데 쓴다.
         private int _lastScanId;
+        // 반응을 시작시킨(대기 상태에서 처음 닿은) 스캔 번호. 재스캔은 시간만 연장하므로 이 스캔의 정보만 반응에 전달한다.
+        private int _revealScanId;
         // 활성 상태가 끝나는 시각(Time.time 기준)
         private float _activeUntil;
         // 현재 반응 세기(0~1). 모든 반응에 전달된다.
@@ -50,10 +53,13 @@ namespace Core.Scanning
         #region Unity Lifecycle
         private void Awake()
         {
+            // 자식에 별도 ScanTarget 이 있어도 서로의 반응을 건드리지 않도록 같은 오브젝트의 반응만 찾는다.
             if ((_reactions == null) || (_reactions.Length == 0))
             {
-                _reactions = GetComponentsInChildren<ScanReactionBase>(true);
+                _reactions = GetComponents<ScanReactionBase>();
             }
+
+            Debug.Assert(_reactions.Length > 0, $"[{name}] 스캔 반응(ScanReactionBase)이 없습니다.");
 
             // 닿기 전에는 Update 비용을 쓰지 않는다.
             // 이 컴포넌트를 끈다.
@@ -116,6 +122,9 @@ namespace Core.Scanning
                 return;
             }
 
+            // 재스캔은 시간만 연장하므로, 반응을 시작시킨 스캔이 아니면 연출 값(파동 중심·반경)을 넘기지 않는다.
+            if (hit.ScanId != _revealScanId) return;
+
             // 닿아 있는 동안 파동 반경 같은 최신 값을 각 반응에 넘긴다.
             foreach (ScanReactionBase reaction in _reactions)
             {
@@ -126,7 +135,9 @@ namespace Core.Scanning
 
         #region Private Methods
         /// <summary>
-        /// 새 스캔에 닿았을 때 타이머를 (재)시작한다. 이미 진행 중이면 반응을 새로 시작하지 않고 시간만 연장한다.
+        /// 새 스캔에 닿았을 때 타이머를 (재)시작한다. 이미 진행 중이면(재스캔) 반응을 새로 시작하지 않고 시간만 연장한다.
+        /// 따라서 OnScanBegin 은 새 스캔마다가 아니라 대기 상태에서 처음 닿았을 때만 호출된다.
+        /// 사라지는 중에 재스캔되면 다시 활성 상태로 돌아간다.
         /// </summary>
         /// <param name="hit">닿은 스캔의 정보</param>
         private void BeginScan(in SScanHit hit)
@@ -144,7 +155,8 @@ namespace Core.Scanning
             // 진행 중이던 반응은 다시 시작하지 않는다(화면이 튀지 않게).
             if (!wasIdle) return;
 
-            // 처음 닿은 경우만 세기를 0 에서 시작하고 각 반응에 시작을 알린다.
+            // 처음 닿은 경우만 이 스캔을 연출 기준으로 삼고, 세기를 0 에서 시작하며 각 반응에 시작을 알린다.
+            _revealScanId = hit.ScanId;
             _fade = 0.0f;
             foreach (ScanReactionBase reaction in _reactions)
             {
