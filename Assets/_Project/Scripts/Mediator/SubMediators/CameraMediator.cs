@@ -35,6 +35,10 @@ namespace Mediator.SubMediators
 
         #region Private Fields
         private ICameraController _cameraController;
+        // Aim 입력이 현재 눌려 있는지 여부
+        private bool _isAimInputHeld;
+        // 구르기 중에는 Aim 입력을 카메라에 전달하지 않는다
+        private bool _isAimLocked;
         #endregion
 
         #region Properties
@@ -109,6 +113,29 @@ namespace Mediator.SubMediators
 
             return hasHit ? hit.point : aimRay.GetPoint(_aimMaxDistance);
         }
+
+        /// <summary>
+        /// 구르기 시작을 알린다. 조준을 해제하고 구르기가 끝날 때까지 Aim 입력을 카메라에 전달하지 않는다.
+        /// </summary>
+        /// <param name="direction">구르기 방향 (사용하지 않음)</param>
+        public void NotifyRollStarted(Vector3 direction)
+        {
+            _isAimLocked = true;
+            if (_targetCamera == null) return;
+
+            _targetCamera.SetAim(false);
+        }
+
+        /// <summary>
+        /// 구르기 종료를 알린다. Aim 입력이 눌려 있으면 조준을 다시 켠다.
+        /// </summary>
+        public void NotifyRollEnded()
+        {
+            _isAimLocked = false;
+            if (_targetCamera == null) return;
+
+            _targetCamera.SetAim(_isAimInputHeld);
+        }
         #endregion
 
         #region Protected Methods
@@ -138,12 +165,13 @@ namespace Mediator.SubMediators
             PublishViewForward();
         }
         /// <summary>
-        /// 조준 명령을 전달한다.
+        /// 조준 명령을 전달한다. 구르기 중에는 입력 상태만 기억하고 전달하지 않는다.
         /// </summary>
         /// <param name="isAiming">true 면 조준 시작, false 면 조준 해제</param>
         private void CommandAim(bool isAiming)
         {
-            if (_targetCamera == null) return;
+            _isAimInputHeld = isAiming;
+            if (_isAimLocked || _targetCamera == null) return;
 
             _targetCamera.SetAim(isAiming);
         }

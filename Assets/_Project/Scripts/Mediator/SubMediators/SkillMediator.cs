@@ -19,6 +19,7 @@ namespace Mediator.SubMediators
         #region Constants
         private const string MULTI_JUMP_SKILL_NAME = "MultiJump";
         private const string ROLL_SKILL_NAME = "Roll";
+        private const string FIRE_SKILL_NAME = "Attack";
         #endregion
 
         #region Serialized Fields
@@ -148,6 +149,23 @@ namespace Mediator.SubMediators
 
             if (_skillController.HasSkill(MULTI_JUMP_SKILL_NAME)) _skillController.ResetSkill(MULTI_JUMP_SKILL_NAME);
             ResetRollCount();
+        }
+
+        /// <summary>
+        /// 구르기 시작을 알린다. 구르는 동안 사격할 수 없도록 Fire 를 비활성화한다 (진행 중인 차지는 취소된다).
+        /// </summary>
+        /// <param name="direction">구르기 방향 (사용하지 않음)</param>
+        public void NotifyRollStarted(Vector3 direction)
+        {
+            SetSkillEnabled(FIRE_SKILL_NAME, false);
+        }
+
+        /// <summary>
+        /// 구르기 종료를 알린다. Fire 를 다시 활성화한다.
+        /// </summary>
+        public void NotifyRollEnded()
+        {
+            SetSkillEnabled(FIRE_SKILL_NAME, true);
         }
         #endregion
         

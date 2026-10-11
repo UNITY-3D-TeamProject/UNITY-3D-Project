@@ -281,6 +281,10 @@ namespace Mediator
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested += _moveMediator.CommandAirJump;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded += _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted += _skillMediator.NotifyJumpStarted;
+            if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted += _skillMediator.NotifyRollStarted;
+            if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded += _skillMediator.NotifyRollEnded;
+            if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted += _cameraMediator.NotifyRollStarted;
+            if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded += _cameraMediator.NotifyRollEnded;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -308,6 +312,10 @@ namespace Mediator
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested -= _moveMediator.CommandAirJump;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded -= _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted -= _skillMediator.NotifyJumpStarted;
+            if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted -= _skillMediator.NotifyRollStarted;
+            if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded -= _skillMediator.NotifyRollEnded;
+            if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted -= _cameraMediator.NotifyRollStarted;
+            if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded -= _cameraMediator.NotifyRollEnded;
         }
         #endregion
     }
