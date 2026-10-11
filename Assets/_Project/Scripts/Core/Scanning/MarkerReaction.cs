@@ -20,6 +20,8 @@ namespace Core.Scanning
 
         #region Private Fields
         private Color _baseColor = Color.white;
+        // 마지막으로 적용한 세기. 같은 값이면 다시 쓰지 않기 위해 쓴다. 음수면 다음 값을 반드시 적용한다.
+        private float _appliedFade = -1.0f;
         #endregion
 
         #region Unity Lifecycle
@@ -52,6 +54,10 @@ namespace Core.Scanning
             // 스프라이트가 없으면 알파 조절 없이 켜고 끄기만 한다.
             if (!_spriteRenderer) return;
 
+            // 다 나타난 뒤 유지 시간 동안은 매 프레임 같은 세기가 들어오므로 다시 쓰지 않는다.
+            if (fade == _appliedFade) return;
+            _appliedFade = fade;
+
             // 원래 색은 유지하고 알파만 fade(0~1)에 비례해 줄인다.
             Color color = _baseColor;
             color.a = _baseColor.a * fade;
@@ -64,6 +70,9 @@ namespace Core.Scanning
             // 다음 스캔을 위해 알파를 원래대로 돌려놓고 마커를 끈다.
             if (_spriteRenderer) _spriteRenderer.color = _baseColor;
             if (_marker) _marker.SetActive(false);
+
+            // 색을 직접 되돌렸으므로 다음 스캔의 첫 세기는 반드시 적용되게 한다.
+            _appliedFade = -1.0f;
         }
         #endregion
     }
