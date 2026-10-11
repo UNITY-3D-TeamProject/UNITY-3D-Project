@@ -24,16 +24,23 @@
 - `CrowdLane` 최대 6~9ms 스파이크: 풀에서 다시 꺼낼 때 `SetActive(true)` → LilRobot `Animation` 컴포넌트가 클립 8개마다 "must be marked as Legacy" 경고를 낸다. 에디터 로그 비용이 대부분이다. 프리팹/클립 설정 문제(`[USER]`).
 
 ## 결정 사항
-- 없음(측정만). `CharacterMotor`는 공용 컴포넌트라 수정하지 않았다.
+- USER-5는 150개 측정으로 완료 처리했다(사용자 결정). 성능 대응은 **보류**한다. 해결법 2가지는 아래에 정리했다.
+- `CharacterMotor`는 수정하지 않았다.
+
+## 보류한 해결법 2가지
+1. **`CharacterMotor`의 `SyncTransforms`를 조건부로 바꾸기** (153개 기준 약 -1.9ms 예상)
+   - 그냥 삭제하면 안 된다. Update로 옮긴 지금도 같은 프레임에 "순간이동 → Move"가 되면 되돌아간다. Play 중 임시 CharacterController로 재현했다: 동기화 없이 z=20 순간이동 → Move → z=0 복귀, 동기화하면 z=20 유지, 몇 프레임 뒤 Move하면 정상. 즉 물리 스텝이 사이에 끼는지에 따라 가끔만 터지는 버그다.
+   - 조건: `(_controller.transform.position != _lastMovedPosition) || (displacementToApply != Vector3.zero)`일 때만 `Physics.SyncTransforms()`를 부르고, `Move` 뒤 `_lastMovedPosition`을 갱신한다. 순간이동(StageManager, Monster/NpcPool, CrowdLane 재생성)과 발판 탑승/발판 점프(`PlatformRider`의 외부 변위)를 지금과 같이 처리한다.
+   - 다른 파일 수정은 필요 없다. 차량 `Body` 자식 콜라이더와 카메라 레이는 최대 20ms 늦게 반영되지만 무시할 수준이다.
+   - 공용 컴포넌트라 별도 커밋/PR과 팀 공지(콜라이더를 transform으로 옮기고 같은 프레임에 물리 질의하는 코드가 있으면 알려 달라)를 권장한다. `CharacterMotor` 관련 PlayMode 테스트는 저장소에 없으므로 회귀는 Play로 확인해야 한다(순간이동 4곳, 오르내리는 발판, 군중 150개 재측정).
+2. **군중 전용 경량 이동**: `CharacterController` 없이 스플라인 위치를 직접 쓴다. 감지는 그리드 공간분할 대신 같은 레인의 바로 앞 개체와의 진행 거리 비교, 플레이어는 거리 비교로 충분하다(레인끼리 교차하지 않으므로). 중재자 구조와 맞는지 검토가 필요하다.
+- 1번만으로는 약 5.7ms라 2ms 관문을 통과하지 못한다. 관문을 통과하려면 2번까지 필요할 가능성이 크다.
 
 ## 현재 상태 및 이슈
 - 에디터 측정이라 빌드에서는 줄어들 수 있다. 하지만 `SyncTransforms`/`CharacterController.Move`는 네이티브 비용이라 빌드에서도 2ms 안으로 들어올 가능성은 낮다. PC 빌드 측정은 미실시.
 - HANDOFF_POINTER의 2026-10-11 항목 2개(`lobby-pedestrian-lane.md`, `lobby-vehicle-lane.md`)가 가리키는 파일이 이 폴더에 없다(링크 깨짐).
 
 ## 다음 할 일
-- 세션 C 성능 대응 후보(효과 큰 순):
-  1. `CharacterMotor`의 매 이동 `SyncTransforms` 호출 제거/조건부화(순간이동 시에만). 공용 코드라 담당자 협의 필요.
-  2. 군중은 `CharacterController` 대신 스플라인 위치를 직접 쓰는 가벼운 이동으로 바꾸기(지면 높이는 스플라인이 정함). 중재자 구조와의 정합성 검토 필요.
-  3. intent-017 원안: 감지 주기 분산 → 거리 기반 비활성화.
+- (보류 중) 성능 대응을 재개하면 위 해결법 1 → 2 순서로 진행한다. intent-017 원안(감지 주기 분산 → 거리 기반 비활성화)은 감지 비용이 0.49ms뿐이라 효과가 작다.
 - `[USER]` LilRobot 클립 Legacy 설정 또는 `Animation` 컴포넌트 제거(풀 재활성화 경고 스파이크).
 - 위 대응 후 같은 방식으로 150 → 300개 재측정.
