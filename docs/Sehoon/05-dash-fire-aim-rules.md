@@ -2,7 +2,7 @@
 
 - **우선순위**: 높음
 - **상태**: 대기
-- **관련 작업**: [03. 점프 중 대쉬 1회 제약](03-air-dash-limit.md), [04. Fire 차지샷](04-fire-charge-shot.md)
+- **관련 작업**: [03. 점프 중 대쉬 1회 제약](done/03-air-dash-limit.md), [04. Fire 차지샷](04-fire-charge-shot.md)
 
 ## 목표
 대쉬(`Roll`) 중 사격과 Aim 이 어떻게 동작하는지 규칙을 정해 적용한다.
@@ -15,7 +15,7 @@
 ## 현재 상황
 - Aim 흐름: `PlayerInputComponent.OnAim`(누름/뗌 모두 호출) → `CameraMediator.CommandAim(bool)` → `PlayerBaseCamera.SetAim` (조준 카메라 on/off) (`Assets/_Project/Scripts/PlayerInput/PlayerInputComponent.cs:92`, `Assets/_Project/Scripts/Mediator/SubMediators/CameraMediator.cs:144`).
 - Aim 입력이 지금 눌려 있는지 따로 기억하는 곳은 없다. 입력을 받으면 바로 카메라에 전달한다.
-- 대쉬 시작/종료 신호: `MoveMediator.OnRollStarted` / `OnRollEnded`. `CharacterMediator` 에서 애니메이션·회전에 연결되어 있다 (`Assets/_Project/Scripts/Mediator/CharacterMediator.cs:272-275`).
+- 대쉬 시작/종료 신호: `MoveMediator.OnRollStarted` / `OnRollEnded`. `CharacterMediator` 에서 애니메이션·회전에 연결되어 있다 (`Assets/_Project/Scripts/Mediator/CharacterMediator.cs:274-277`).
 - 대쉬 중 사격을 막는 처리는 없다. `CharacterAnimator` 는 구르는 동안 조준 회전(상체 보정)만 끈다.
 
 ## 작업 범위 (예상)
