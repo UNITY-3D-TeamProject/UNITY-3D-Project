@@ -41,8 +41,11 @@ namespace Mediator.SubMediators
         /// <summary>구르기 요청. (이동 거리, 이동 시간)</summary>
         public event Action<float, float> OnRollRequested;
 
-        /// <summary>사격 요청. (총알 생성 위치)</summary>
-        public event Action<Vector3> OnFireRequested;
+        /// <summary>사격 요청. (총알 생성 위치, 차지샷 여부)</summary>
+        public event Action<Vector3, bool> OnFireRequested;
+
+        /// <summary>사격 차지 상태 변경. 차지 시작이면 true, 발사·취소로 끝나면 false.</summary>
+        public event Action<bool> OnFireChargeChanged;
 
         /// <summary>공중 점프 요청. (점프 파워 비율)</summary>
         public event Action<float> OnMultiJumpRequested;
@@ -225,10 +228,31 @@ namespace Mediator.SubMediators
                     OnRollRequested?.Invoke(roll.Distance, roll.Duration);
                     break;
                 case Fire fire:
-                    OnFireRequested?.Invoke(fire.FirePosition);
+                    NotifyFirePhase(fire);
                     break;
                 case MultiJump multiJump:
                     OnMultiJumpRequested?.Invoke(multiJump.JumpPowerRatio);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Fire 의 진행 단계에 맞는 사격 이벤트 발행
+        /// </summary>
+        /// <param name="fire">발동 알림을 보낸 Fire 스킬</param>
+        private void NotifyFirePhase(Fire fire)
+        {
+            switch (fire.Phase)
+            {
+                case EFirePhase.ChargeStarted:
+                    OnFireChargeChanged?.Invoke(true);
+                    break;
+                case EFirePhase.Fired:
+                    OnFireChargeChanged?.Invoke(false);
+                    OnFireRequested?.Invoke(fire.FirePosition, fire.IsCharged);
+                    break;
+                case EFirePhase.Canceled:
+                    OnFireChargeChanged?.Invoke(false);
                     break;
             }
         }

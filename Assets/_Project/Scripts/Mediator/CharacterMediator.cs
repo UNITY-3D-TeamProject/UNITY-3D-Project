@@ -250,7 +250,8 @@ namespace Mediator
         /// 사격 요청을 어트리뷰트 중재자에 전달해 회복을 정지한다.
         /// </summary>
         /// <param name="position">총알 생성 위치 (사용하지 않음)</param>
-        private void OnFireCallback(Vector3 position)
+        /// <param name="isCharged">차지샷 여부 (사용하지 않음)</param>
+        private void OnFireCallback(Vector3 position, bool isCharged)
         {
             _attributeMediator.PauseRegenOnFire();
         }
