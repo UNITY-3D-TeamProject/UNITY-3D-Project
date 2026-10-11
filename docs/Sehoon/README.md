@@ -15,7 +15,7 @@
 |---|---|---|---|
 | 01 | SO Apply 함수 퍼사드에 추가 | [01-facade-so-apply.md](01-facade-so-apply.md) | 대기 |
 | 02 | 멀티점프 | [02-multi-jump.md](done/02-multi-jump.md) | 완료 |
-| 03 | 점프 중 대쉬 1회 제약 | [03-air-dash-limit.md](03-air-dash-limit.md) | 대기 |
+| 03 | 점프 중 대쉬 1회 제약 | [03-air-dash-limit.md](done/03-air-dash-limit.md) | 완료 |
 | 04 | Fire 구조 차지샷으로 변경 | [04-fire-charge-shot.md](04-fire-charge-shot.md) | 대기 |
 
 ### 우선순위 높음

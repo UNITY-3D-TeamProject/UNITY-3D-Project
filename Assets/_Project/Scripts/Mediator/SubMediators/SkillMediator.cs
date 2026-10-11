@@ -18,6 +18,7 @@ namespace Mediator.SubMediators
     {
         #region Constants
         private const string MULTI_JUMP_SKILL_NAME = "MultiJump";
+        private const string ROLL_SKILL_NAME = "Roll";
         #endregion
 
         #region Serialized Fields
@@ -27,6 +28,7 @@ namespace Mediator.SubMediators
     
         #region Private Fields
         private ISkillRequestController _skillRequestController;
+        private Func<bool> _getGrounded;
         #endregion
 
         #region Events
@@ -100,6 +102,23 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 접지 여부를 얻기 위한 델리게이트 주입
+        /// </summary>
+        public void SetGetGrounded(Func<bool> getGrounded)
+        {
+            if (getGrounded == null) return;
+            _getGrounded = getGrounded;
+        }
+
+        /// <summary>
+        /// 접지 여부 델리게이트 제거
+        /// </summary>
+        public void ClearGetGrounded()
+        {
+            _getGrounded = null;
+        }
+
+        /// <summary>
         /// 공중 점프 스킬 발동을 요청한다. 발동하면 OnMultiJumpRequested 가 발생한다.
         /// </summary>
         public void RequestMultiJump()
@@ -110,13 +129,22 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 착지를 알린다. 공중 점프 횟수를 초기화한다.
+        /// 점프 시작을 알린다. 지상에서 점프했으면 공중 구르기 횟수를 초기화한다.
+        /// </summary>
+        public void NotifyJumpStarted()
+        {
+            if (IsGrounded()) ResetRollCount();
+        }
+
+        /// <summary>
+        /// 착지를 알린다. 공중 점프와 공중 구르기 횟수를 초기화한다.
         /// </summary>
         public void NotifyLanded()
         {
-            if (!_skillController || !_skillController.HasSkill(MULTI_JUMP_SKILL_NAME)) return;
+            if (!_skillController) return;
 
-            _skillController.ResetSkill(MULTI_JUMP_SKILL_NAME);
+            if (_skillController.HasSkill(MULTI_JUMP_SKILL_NAME)) _skillController.ResetSkill(MULTI_JUMP_SKILL_NAME);
+            ResetRollCount();
         }
         #endregion
         
@@ -162,6 +190,10 @@ namespace Mediator.SubMediators
         /// <param name="skillName">실행할 스킬 이름</param>
         private void OnRequestExecuteSkill(string skillName)
         {
+            // 지상 구르기는 공중 횟수와 무관하므로, 걸어서 떨어졌다 착지해 남은 횟수를 발동 전에 지운다
+            bool isRoll = string.Equals(skillName, ROLL_SKILL_NAME, StringComparison.OrdinalIgnoreCase);
+            if (isRoll && IsGrounded()) ResetRollCount();
+
             if (!_skillController.TryExecuteSkill(skillName)) return;
 
             OnSkillUsed?.Invoke(skillName, _skillController.GetSkillCooldown(skillName));
@@ -188,6 +220,8 @@ namespace Mediator.SubMediators
             switch (skill)
             {
                 case Roll roll:
+                    // 지상 구르기는 공중 횟수에서 제외한다
+                    if (IsGrounded()) ResetRollCount();
                     OnRollRequested?.Invoke(roll.Distance, roll.Duration);
                     break;
                 case Fire fire:
@@ -197,6 +231,25 @@ namespace Mediator.SubMediators
                     OnMultiJumpRequested?.Invoke(multiJump.JumpPowerRatio);
                     break;
             }
+        }
+
+        /// <summary>
+        /// 접지 여부를 반환한다. 델리게이트가 없으면 지상으로 간주한다.
+        /// </summary>
+        /// <returns>지면에 닿아 있으면 true</returns>
+        private bool IsGrounded()
+        {
+            return _getGrounded?.Invoke() ?? true;
+        }
+
+        /// <summary>
+        /// 공중 구르기 횟수를 초기화한다.
+        /// </summary>
+        private void ResetRollCount()
+        {
+            if (!_skillController || !_skillController.HasSkill(ROLL_SKILL_NAME)) return;
+
+            _skillController.ResetSkill(ROLL_SKILL_NAME);
         }
         #endregion
     }

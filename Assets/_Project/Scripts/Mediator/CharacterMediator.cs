@@ -163,6 +163,7 @@ namespace Mediator
                 if (_cameraMediator) _spawnMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
             }
             if (_animationMediator && _cameraMediator) _animationMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
+            if (_skillMediator && _moveMediator) _skillMediator.SetGetGrounded(_moveMediator.IsGrounded);
         }
         /// <summary>
         /// 등록된 바인딩 해제
@@ -182,6 +183,7 @@ namespace Mediator
                 _spawnMediator.ClearGetAimPoint();
             }
             if (_animationMediator) _animationMediator.ClearGetAimPoint();
+            if (_skillMediator) _skillMediator.ClearGetGrounded();
         }
         /// <summary>
         /// 중재자들이 원하는 값 변경시 알림 발송
@@ -276,6 +278,7 @@ namespace Mediator
             if (_moveMediator && _skillMediator) _moveMediator.OnAirJumpRequested += _skillMediator.RequestMultiJump;
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested += _moveMediator.CommandAirJump;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded += _skillMediator.NotifyLanded;
+            if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted += _skillMediator.NotifyJumpStarted;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -301,6 +304,7 @@ namespace Mediator
             if (_moveMediator && _skillMediator) _moveMediator.OnAirJumpRequested -= _skillMediator.RequestMultiJump;
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested -= _moveMediator.CommandAirJump;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded -= _skillMediator.NotifyLanded;
+            if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted -= _skillMediator.NotifyJumpStarted;
         }
         #endregion
     }
