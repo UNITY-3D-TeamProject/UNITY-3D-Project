@@ -45,7 +45,8 @@ namespace Map.Gimmicks
         {
             if (_pickupType != EItemPickupType.Interact) return;
 
-            PickUp(interactor.GetComponentInParent<IEffectTarget>());
+            // AttributeSet은 플레이어 루트가 아니라 자식(AttributePrefab)에 있다
+            PickUp(interactor.GetComponentInChildren<IEffectTarget>());
         }
         #endregion
 

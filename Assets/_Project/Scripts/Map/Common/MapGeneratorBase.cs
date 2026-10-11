@@ -39,14 +39,20 @@ namespace Map.Common
 
         // 에디터에서 미리 만들어 둔 맵도 다시 생성할 때 지울 수 있도록 저장한다
         [SerializeField, HideInInspector] private Transform _generatedRoot;
+
+        // 씬을 다시 열거나 스크립트를 다시 컴파일해도 미리 만든 맵의 시드를 알 수 있도록 저장한다
+        [SerializeField, HideInInspector] private int _lastSeed;
         #endregion
 
         #region Properties
         /// <summary>맵이 생성되어 있는지 여부.</summary>
         public bool IsGenerated => _generatedRoot != null;
 
+        /// <summary>생성된 맵의 루트. 맵이 없으면 null. (에디터의 Undo 등록에 쓴다)</summary>
+        public Transform GeneratedRoot => _generatedRoot;
+
         /// <summary>마지막 생성에 쓰인 시드. 같은 맵을 다시 만들려면 이 값을 Seed 에 넣는다.</summary>
-        public int LastSeed { get; private set; }
+        public int LastSeed => _lastSeed;
 
         /// <summary>플레이어가 시작할 위치.</summary>
         public Vector3 StartPosition { get; private set; }
@@ -78,8 +84,8 @@ namespace Map.Common
         {
             Clear();
 
-            LastSeed = _shouldUseRandomSeed ? UnityEngine.Random.Range(int.MinValue, int.MaxValue) : _seed;
-            var random = new System.Random(LastSeed);
+            _lastSeed = _shouldUseRandomSeed ? UnityEngine.Random.Range(int.MinValue, int.MaxValue) : _seed;
+            var random = new System.Random(_lastSeed);
 
             _generatedRoot = new GameObject("GeneratedMap").transform;
             _generatedRoot.SetParent(transform, false);
@@ -146,6 +152,7 @@ namespace Map.Common
         #endregion
 
         #region Private Methods
+        // 배치 목록의 순서대로, 남은 자리 가운데 무작위로 골라 놓는다. 자리가 다 차면 남은 것은 놓지 않는다.
         private void PlaceObjects(List<Vector3> placementPoints, System.Random random)
         {
             if (_placements == null) return;

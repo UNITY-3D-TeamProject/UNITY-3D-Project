@@ -14,8 +14,8 @@ namespace Map.Maze
     public class MazeChainGenerator : MapGeneratorBase
     {
         #region Constants
-        private const float START_HEIGHT_OFFSET = 0.1f;
-        private const float FLOOR_THICKNESS     = 0.5f;
+        private const float START_HEIGHT_OFFSET = 0.1f;   // 플레이어가 바닥에 파묻히지 않도록 시작 위치를 띄우는 높이
+        private const float FLOOR_THICKNESS     = 0.5f;   // 바닥 두께. 윗면이 y = 0 이 되도록 아래로 내려 놓는다
         #endregion
 
         #region Serialized Fields
@@ -45,6 +45,10 @@ namespace Map.Maze
 
         [Tooltip("입구 칸 표시 프리팹 (선택, 테스트용)")]
         [SerializeField] private GameObject _startMarkerPrefab;
+
+        [Header("Checkpoints")]
+        [Tooltip("씬에 미리 놓아 둔 체크포인트 (선택). 0번은 첫 미로의 입구 칸으로, 그 뒤는 차례대로 각 미로의 출구 밖 다리 가운데로 옮긴다.")]
+        [SerializeField] private Transform[] _checkpointAnchors;
         #endregion
 
         #region Protected Methods
@@ -81,18 +85,21 @@ namespace Map.Maze
                 Vector2Int exitCell = FindFarthestExitCell(generator.ComputeDistances(grid, entranceCell));
 
                 bool isFirstMaze = i == 0;
-                BuildMaze(mazeRoot, grid, _themes[i], entranceCell, exitCell, isFirstMaze);
+                bool isLastMaze = i == _themes.Length - 1;
+                BuildMaze(mazeRoot, grid, _themes[i], entranceCell, exitCell, isFirstMaze, isLastMaze);
                 BuildBridge(mazeRoot, exitCell.x);
                 CollectPlacementPoints(mazeRoot, entranceCell, exitCell, placementPoints);
 
                 if (isFirstMaze)
                 {
                     startPosition = GetCellCenter(mazeRoot, entranceCell) + (Vector3.up * START_HEIGHT_OFFSET);
+                    MoveCheckpointAnchor(0, GetCellCenter(mazeRoot, entranceCell));
                 }
 
                 // 마지막 미로에서는 출구 밖 다리의 가운데가 도착 지점이 된다.
                 float bridgeCenterZ = ((_size - 0.5f) * _tileSize) + (bridgeLength * 0.5f);
                 goalPosition = mazeRoot.TransformPoint(new Vector3(exitCell.x * _tileSize, 0.0f, bridgeCenterZ));
+                MoveCheckpointAnchor(i + 1, goalPosition);
 
                 // 다음 미로는 이 미로의 출구와 같은 열에서 시작한다.
                 entranceColumn = exitCell.x;
@@ -101,6 +108,7 @@ namespace Map.Maze
         #endregion
 
         #region Private Methods
+        // 생성에 꼭 필요한 프리팹이 모두 연결되어 있는지 확인한다. (입구 표시 프리팹은 선택)
         private bool HasAllPrefabs()
         {
             if ((_themes == null) || (_themes.Length == 0)) return false;
@@ -131,13 +139,15 @@ namespace Map.Maze
             return new Vector2Int(farthestColumn, exitRow);
         }
 
+        // 미로 하나의 바닥·벽·출구·입구 표시를 mazeRoot 아래에 놓는다. 칸 (x, y) 의 중앙은 (x * 칸 크기, 0, y * 칸 크기) 이다.
         private void BuildMaze(
             Transform mazeRoot,
             MazeGenerator.SCell[,] grid,
             SMazeTheme theme,
             Vector2Int entranceCell,
             Vector2Int exitCell,
-            bool isFirstMaze)
+            bool isFirstMaze,
+            bool isLastMaze)
         {
             BuildFloor(mazeRoot);
 
@@ -158,7 +168,10 @@ namespace Map.Maze
                     {
                         if (cellPosition == exitCell)
                         {
-                            PlaceObject(theme.GatePrefab.gameObject, mazeRoot, center, alongX, $"Gate_{x}_{y}");
+                            GameObject gate = PlaceObject(theme.GatePrefab.gameObject, mazeRoot, center, alongX, $"Gate_{x}_{y}");
+
+                            // 마지막 미로의 문은 라운드를 클리어해야 열린다
+                            gate.GetComponent<MazeExitGate>().ShouldRequireRoundClear = isLastMaze;
                         }
                         else
                         {
@@ -236,12 +249,23 @@ namespace Map.Maze
             }
         }
 
+        // 칸의 바닥 중앙 (월드 좌표)
         private Vector3 GetCellCenter(Transform mazeRoot, Vector2Int cell)
         {
             return mazeRoot.TransformPoint(new Vector3(cell.x * _tileSize, 0.0f, cell.y * _tileSize));
         }
 
-        private static void PlaceObject(
+        // index 번째 체크포인트를 position 으로 옮긴다. 연결된 체크포인트가 모자라면 아무것도 하지 않는다.
+        private void MoveCheckpointAnchor(int index, Vector3 position)
+        {
+            if ((_checkpointAnchors == null) || (index >= _checkpointAnchors.Length)) return;
+            if (_checkpointAnchors[index] == null) return;
+
+            _checkpointAnchors[index].position = position;
+        }
+
+        // 프리팹을 parent 아래 지정한 로컬 위치·회전으로 놓는다.
+        private static GameObject PlaceObject(
             GameObject prefab,
             Transform parent,
             Vector3 localPosition,
@@ -252,6 +276,7 @@ namespace Map.Maze
             instance.name = objectName;
             instance.transform.localPosition = localPosition;
             instance.transform.localRotation = localRotation;
+            return instance;
         }
         #endregion
     }

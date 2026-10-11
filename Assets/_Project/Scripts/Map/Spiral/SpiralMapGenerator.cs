@@ -5,25 +5,29 @@ using Map.Platforms;
 
 namespace Map.Spiral
 {
+    /// <summary>나선 구간 하나에 적용할 발판 기믹 종류.</summary>
     public enum SectionGimmickType
     {
-        Normal,
-        MovingVertical,
-        MovingHorizontal,
-        Disappearing
+        Normal,             // 고정 발판
+        MovingVertical,     // 위아래로 움직이는 발판
+        MovingHorizontal,   // 중심 쪽으로 들어갔다 나오는 발판
+        Disappearing        // 주기적으로 사라졌다 나타나는 발판
     }
 
+    /// <summary>나선 구간(90도) 하나의 설정.</summary>
     [System.Serializable]
     public class SpiralSectionConfig
     {
+        [Tooltip("이 구간의 발판에 적용할 기믹")]
         public SectionGimmickType gimmickType = SectionGimmickType.Normal;
 
-        [Tooltip("The platform prefab to use for this section. If null, uses the generator's default.")]
+        [Tooltip("이 구간에 쓸 발판 프리팹. 비워 두면 생성기의 기본 발판을 쓴다.")]
         public GameObject customPlatformPrefab;
 
+        [Tooltip("이 구간을 지나는 동안 올라가는 높이")]
         public float heightIncrease = 4f;
 
-        [Tooltip("Number of platforms in this 90-degree section. Set to 0 to auto-calculate based on Max Jump Distance/Height.")]
+        [Tooltip("이 구간(90도)의 발판 개수. 0이면 Max Jump Distance / Height 를 기준으로 자동 계산한다.")]
         public int platformCount = 0;
     }
 
@@ -34,21 +38,30 @@ namespace Map.Spiral
     /// </summary>
     public class SpiralMapGenerator : MapGeneratorBase
     {
+        // SectionGimmickType 의 항목 수. 무작위 구간의 기믹을 고를 때 쓴다. enum 을 바꾸면 함께 고친다.
         private const int GIMMICK_TYPE_COUNT = 4;
+
+        // 플레이어가 발판에 파묻히지 않도록 시작 위치를 윗면에서 띄우는 높이
         private const float START_HEIGHT_OFFSET = 0.1f;
 
         [Header("Global Settings")]
+        [Tooltip("나선의 중심 (선택). 비워 두면 이 오브젝트의 위치가 중심이 된다.")]
         public Transform centerPillar;
+
+        [Tooltip("중심에서 발판까지의 거리")]
         public float spiralRadius = 5f;
+
+        [Tooltip("기본 발판 프리팹. 시작·도착 발판과, 전용 프리팹이 없는 구간에 쓴다.")]
         public GameObject defaultPlatformPrefab;
 
         [Header("Player Jump Constraints (For Reference/Validation)")]
-        [Tooltip("Max jump distance player can achieve (used by designer to adjust radius/platform count)")]
+        [Tooltip("플레이어가 뛸 수 있는 최대 거리. 발판 개수 자동 계산에 쓰인다.")]
         public float maxJumpDistance = 4f;
-        [Tooltip("Max jump height player can achieve (used by designer to adjust heightIncrease)")]
+        [Tooltip("플레이어가 뛸 수 있는 최대 높이. 발판 개수 자동 계산에 쓰인다.")]
         public float maxJumpHeight = 2f;
 
         [Header("Sections (Each covers 90 degrees CCW)")]
+        [Tooltip("아래에서 위로 차례대로 이어지는 구간 목록. Random Section Count 가 0일 때만 쓴다.")]
         public List<SpiralSectionConfig> sections = new List<SpiralSectionConfig>();
 
         [Header("Random Sections")]
@@ -71,7 +84,7 @@ namespace Map.Spiral
 
             if (defaultPlatformPrefab == null)
             {
-                Debug.LogError("Default Platform Prefab is missing! Please assign one.");
+                Debug.LogError($"[{name}] 기본 발판 프리팹(Default Platform Prefab)이 연결되지 않았습니다.", this);
                 return;
             }
 
@@ -84,6 +97,7 @@ namespace Map.Spiral
             GameObject startPlatform = CreatePlatform(defaultPlatformPrefab, root, currentAngle, currentHeight, "Platform_Start");
             startPosition = GetSurfacePoint(startPlatform) + (Vector3.up * START_HEIGHT_OFFSET);
 
+            // 구간이 하나도 없을 때 시작 발판과 도착 발판 사이의 각도
             float lastAngleStep = 30f;
 
             for (int i = 0; i < sectionConfigs.Count; i++)
@@ -103,6 +117,7 @@ namespace Map.Spiral
             goalPosition = GetSurfacePoint(goalPlatform);
         }
 
+        // 기믹 종류와 올라가는 높이를 시드로 무작위로 정한 구간 목록을 만든다. 발판 개수는 자동 계산에 맡긴다.
         private List<SpiralSectionConfig> CreateRandomSections(System.Random random)
         {
             var result = new List<SpiralSectionConfig>();
@@ -121,34 +136,37 @@ namespace Map.Spiral
             return result;
         }
 
+        /// <summary>
+        /// 구간 하나(90도)의 발판을 만들고 기믹을 붙인다. currentAngle 과 currentHeight 는 구간 끝 값으로 갱신된다.
+        /// </summary>
         /// <returns>이 구간에서 발판 사이의 각도 간격</returns>
         private float GenerateSection(SpiralSectionConfig config, Transform parent, ref float currentAngle, ref float currentHeight, GameObject prefab, List<Vector3> placementPoints)
         {
             int count = config.platformCount;
 
-            // Auto-calculate if count is 0 or less based on jump constraints
+            // 개수가 0 이하이면 점프 한계를 기준으로 자동 계산한다
             if (count <= 0)
             {
-                float arcLength = (Mathf.PI * 2f * spiralRadius) / 4f; // 90 degrees arc
+                float arcLength = (Mathf.PI * 2f * spiralRadius) / 4f; // 90도 호의 길이
 
-                // Count based on distance
+                // 거리 기준 개수
                 int countByDist = Mathf.CeilToInt(arcLength / Mathf.Max(maxJumpDistance, 0.1f));
 
-                // Count based on height
+                // 높이 기준 개수
                 int countByHeight = Mathf.CeilToInt(config.heightIncrease / Mathf.Max(maxJumpHeight, 0.1f));
 
                 count = Mathf.Max(countByDist, countByHeight);
 
-                // Minimum fallback
+                // 최소 1개
                 if (count < 1) count = 1;
             }
 
-            float angleStep = 90f / count; // 90 degrees total per section
+            float angleStep = 90f / count; // 구간 하나는 90도
             float heightStep = config.heightIncrease / count;
 
             for (int p = 0; p < count; p++)
             {
-                // Advance angle counter-clockwise (positive angle around Y axis)
+                // 반시계 방향으로 나아간다 (Y축 기준 양의 각도)
                 currentAngle += angleStep;
                 currentHeight += heightStep;
 
@@ -174,7 +192,7 @@ namespace Map.Spiral
             Vector3 center = (centerPillar != null) ? centerPillar.position : transform.position;
             float rad = angle * Mathf.Deg2Rad;
 
-            // Counter-clockwise: x = cos, z = sin. Height is relative to the generator base
+            // 반시계 방향: x = cos, z = sin. 높이는 생성기 위치 기준
             Vector3 pos = new Vector3(
                 center.x + (Mathf.Cos(rad) * spiralRadius),
                 transform.position.y + height,
@@ -183,11 +201,11 @@ namespace Map.Spiral
             GameObject platform = Instantiate(prefab, pos, Quaternion.identity, parent);
             platform.name = platformName;
 
-            // Look at center to make platform face inward/outward properly
+            // 발판이 중심을 바라보게 한다
             Vector3 lookTarget = center;
-            lookTarget.y = pos.y; // Keep it level
+            lookTarget.y = pos.y; // 수평 유지
             platform.transform.LookAt(lookTarget);
-            // Rotate 90 degrees so the 'forward' axis points along the path
+            // 90도 돌려 forward 축이 진행 방향을 향하게 한다
             platform.transform.Rotate(0, 90, 0);
 
             return platform;
@@ -207,6 +225,7 @@ namespace Map.Spiral
             return point;
         }
 
+        // 기믹 종류에 맞는 컴포넌트를 발판에 붙인다. 시작 시점은 높이에 따라 어긋나게 해 발판마다 박자가 다르다.
         private void ApplyGimmick(GameObject platform, SectionGimmickType type)
         {
             switch (type)
@@ -216,14 +235,13 @@ namespace Map.Spiral
                     mv.moveAxis = Vector3.up;
                     mv.distance = 1.5f;
                     mv.speed = 2f;
-                    // Offset based on position to create a wave effect
+                    // 높이에 따라 시작 시점을 어긋나게 해 물결처럼 움직이게 한다
                     mv.timeOffset = platform.transform.position.y * 0.5f;
                     MakeRideable(platform);
                     break;
                 case SectionGimmickType.MovingHorizontal:
                     var mh = platform.AddComponent<OscillatingPlatform>();
-                    // Move in / out relative to the center. Since the platform was rotated 90 degrees,
-                    // its 'right' or 'forward' will determine direction. 'right' points to the center.
+                    // 중심 쪽으로 들어갔다 나왔다 한다. 발판을 90도 돌려 두었으므로 right 축이 반지름 방향이다.
                     mh.moveAxis = platform.transform.right;
                     mh.distance = 2f;
                     mh.speed = 1.5f;
