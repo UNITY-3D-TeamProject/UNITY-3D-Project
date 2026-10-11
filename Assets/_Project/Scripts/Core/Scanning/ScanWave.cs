@@ -7,6 +7,8 @@ namespace Core.Scanning
     /// 스캔 파동. 구 모양 파티클이 확산하는 동안, 파티클 크기에서 계산한 반경 안의 콜라이더에서
     /// IScannable 을 찾아 닿았음을 알린다. 스킬 아래에 상주하다가 Begin 으로 재생되고, 스킬과 대상은 서로를 모른다.
     /// 파티클은 월드 공간으로 재생되고 중심은 Begin 시점의 위치로 고정되므로 플레이어가 움직여도 파동은 제자리에 남는다.
+    /// 동시에 하나의 파동만 쓰는 것이 전제다. 대상(ScanTarget)이 마지막 스캔 번호 하나만 기억하므로,
+    /// 두 파동이 같은 대상에 번갈아 닿으면 매번 새 스캔으로 보고 유지 시간이 계속 갱신된다.
     /// </summary>
     public class ScanWave : MonoBehaviour
     {
@@ -36,6 +38,8 @@ namespace Core.Scanning
         private readonly Collider[] _hitColliders = new Collider[MAX_HIT_COUNT];
         // 콜라이더에서 찾은 IScannable 을 저장해 두는 캐시. 못 찾은 콜라이더는 null 로 저장한다.
         private readonly Dictionary<Collider, IScannable> _scannableCache = new Dictionary<Collider, IScannable>();
+        // 이번 프레임에 이미 알린 대상. 콜라이더가 여러 개인 대상에게 같은 프레임에 여러 번 알리지 않기 위해 매 프레임 비워 재사용한다.
+        private readonly HashSet<IScannable> _notifiedScannables = new HashSet<IScannable>();
         // 파동 파티클 1개의 상태를 읽어 오는 배열(구가 하나뿐이라 크기 1).
         private readonly ParticleSystem.Particle[] _particles = new ParticleSystem.Particle[1];
         // 아래 세 값은 Begin 때 정해져 스캔이 끝날 때까지 바뀌지 않는다.
@@ -100,9 +104,12 @@ namespace Core.Scanning
             }
 
             // 스캔 가능한 대상만 골라 닿았음을 알린다. 매 프레임 호출되므로 받는 쪽은 중복 호출에 안전해야 한다.
+            // 한 대상에 콜라이더가 여러 개여도 프레임당 한 번만 알린다.
+            _notifiedScannables.Clear();
             for (int i = 0; i < hitCount; i++)
             {
-                if (TryGetScannable(_hitColliders[i], out IScannable scannable))
+                if (TryGetScannable(_hitColliders[i], out IScannable scannable) &&
+                    _notifiedScannables.Add(scannable))
                 {
                     scannable.OnScanned(hit);
                 }
@@ -116,8 +123,8 @@ namespace Core.Scanning
         /// </summary>
         /// <param name="origin">파동의 중심(월드 좌표)</param>
         /// <param name="duration">파동이 확산하는 시간이자, 닿은 대상이 활성화되는 시간(초)</param>
-        /// <param name="size">파동의 최대 지름(m)</param>
-        public void Begin(Vector3 origin, float duration, float size)
+        /// <param name="maxDiameter">파동의 최대 지름(m)</param>
+        public void Begin(Vector3 origin, float duration, float maxDiameter)
         {
             if (!_scanParticle) return;
 
@@ -139,7 +146,7 @@ namespace Core.Scanning
             // 파티클 수명이 곧 확산 시간, 파티클 크기가 곧 최대 지름이 된다.
             ParticleSystem.MainModule main = _scanParticle.main;
             main.startLifetime = duration;
-            main.startSize = size;
+            main.startSize = maxDiameter;
 
             // 월드 공간 파티클은 재생 시점의 방출 위치에 남으므로, 재생 전에 중심으로 옮긴다.
             _scanParticle.transform.position = origin;
