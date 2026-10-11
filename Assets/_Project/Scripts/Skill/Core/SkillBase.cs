@@ -144,6 +144,13 @@ namespace Skill.Core
         public virtual void Stop()
         {
         }
+
+        /// <summary>
+        /// 스킬 내부 상태를 초기화한다. 초기화할 상태가 있는 스킬만 오버라이드하며 기본 동작은 없다.
+        /// </summary>
+        public virtual void ResetState()
+        {
+        }
         #endregion
         
         #region Protected Methods

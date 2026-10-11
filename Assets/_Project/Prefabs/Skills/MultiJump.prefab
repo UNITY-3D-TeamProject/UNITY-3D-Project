@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 7958016549331973283}
   - component: {fileID: 389906408494507046}
-  - component: {fileID: 5890184706257785721}
+  - component: {fileID: 4797291186830444274}
   m_Layer: 0
-  m_Name: DoubleJump
+  m_Name: MultiJump
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -45,8 +45,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0ba3107aebb15a4dbd047f5859fff4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Skill.Skills.DoubleJump
-  _skillName: DoubleJump
---- !u!114 &5890184706257785721
+  _skillName: MultiJump
+  _jumpPowerRatio: 0.8
+--- !u!114 &4797291186830444274
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -55,7 +56,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8828042709010055761}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4b4bbfb30b27084297015379edf9e4a, type: 3}
+  m_Script: {fileID: 11500000, guid: b8daaeda936023844a7dc8d2631aaa73, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.CooldownCost
-  _cooldown: 1
+  m_EditorClassIdentifier: Assembly-CSharp::Skill.Conditions.UseCountCondition
+  _maxCount: 2

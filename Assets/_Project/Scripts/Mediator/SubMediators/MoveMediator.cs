@@ -59,6 +59,8 @@ namespace Mediator.SubMediators
         public event Action OnJumpStarted;
         /// <summary>점프 후 착지했을 때 발생한다.</summary>
         public event Action OnJumpEnded;
+        /// <summary>공중에서 점프 입력이 들어왔을 때 발생한다. 점프 여부는 구독하는 쪽이 판단해 CommandAirJump 로 요청한다.</summary>
+        public event Action OnAirJumpRequested;
         /// <summary>구르기를 시작했을 때 구르기 방향(월드, 정규화되지 않음)과 함께 발생한다.</summary>
         public event Action<Vector3> OnRollStarted;
         /// <summary>구르기가 끝났거나 중단되었을 때 발생한다.</summary>
@@ -135,6 +137,18 @@ namespace Mediator.SubMediators
             _rollDirection = direction;
             _rollMover.Roll(direction, distance, duration);
         }
+
+        /// <summary>
+        /// 접지 여부와 관계없이 점프한다. 구르는 중이면 무시한다.
+        /// </summary>
+        /// <param name="powerRatio">지상 점프 대비 높이 비율. 높이는 속도의 제곱에 비례하므로 속도에는 제곱근을 곱한다.</param>
+        public void CommandAirJump(float powerRatio)
+        {
+            if (!_motor) return;
+            if (_rollMover && _rollMover.IsRolling) return;
+
+            _motor.Jump(_jumpPower * Mathf.Sqrt(powerRatio));
+        }
         #endregion
 
         #region Protected Methods
@@ -195,13 +209,17 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 점프 명령을 전달한다. 구르는 중이거나 공중이면 무시한다.
+        /// 점프 명령을 전달한다. 구르는 중이면 무시하고, 공중이면 공중 점프를 요청한다.
         /// </summary>
         private void CommandJump()
         {
             if (!_motor) return;
             if (_rollMover && _rollMover.IsRolling) return;
-            if (!_motor.IsGrounded) return;
+            if (!_motor.IsGrounded)
+            {
+                OnAirJumpRequested?.Invoke();
+                return;
+            }
 
             _motor.Jump(_jumpPower);
         }

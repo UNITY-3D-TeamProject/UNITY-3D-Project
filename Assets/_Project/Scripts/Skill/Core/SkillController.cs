@@ -127,6 +127,29 @@ namespace Skill.Core
         }
 
         /// <summary>
+        /// 스킬 내부 상태의 초기화를 요청한다.
+        /// </summary>
+        /// <param name="skillName">초기화할 스킬 이름</param>
+        public void ResetSkill(string skillName)
+        {
+            if (!TryGetSkill(skillName, out var skill)) return;
+
+            skill.ResetState();
+        }
+
+        /// <summary>
+        /// 스킬이 등록되어 있는지 확인한다. 없어도 경고를 남기지 않는다.
+        /// </summary>
+        /// <param name="skillName">확인할 스킬 이름</param>
+        /// <returns>등록되어 있으면 true</returns>
+        public bool HasSkill(string skillName)
+        {
+            if (string.IsNullOrEmpty(skillName)) return false;
+
+            return _skills.TryGetValue(skillName, out var skill) && skill;
+        }
+
+        /// <summary>
         /// 스킬 컴포넌트를 활성화/비활성화한다. 비활성화되면 진행 중인 동작은 스킬의 OnDisable 에서 중지된다.
         /// </summary>
         /// <param name="skillName">대상 스킬 이름</param>

@@ -16,6 +16,10 @@ namespace Mediator.SubMediators
     
     public class SkillMediator : MediatorBase
     {
+        #region Constants
+        private const string MULTI_JUMP_SKILL_NAME = "MultiJump";
+        #endregion
+
         #region Serialized Fields
         [Header("References")]
         [SerializeField] private SkillController _skillController;
@@ -37,6 +41,9 @@ namespace Mediator.SubMediators
 
         /// <summary>사격 요청. (총알 생성 위치)</summary>
         public event Action<Vector3> OnFireRequested;
+
+        /// <summary>공중 점프 요청. (점프 파워 비율)</summary>
+        public event Action<float> OnMultiJumpRequested;
 
         /// <summary>
         /// 실행 요청으로 스킬이 발동했을 때 발생한다. (스킬 이름, 쿨타임)
@@ -90,6 +97,26 @@ namespace Mediator.SubMediators
         public bool IsSkillEnabled(string skillName)
         {
             return _skillController && _skillController.IsSkillEnabled(skillName);
+        }
+
+        /// <summary>
+        /// 공중 점프 스킬 발동을 요청한다. 발동하면 OnMultiJumpRequested 가 발생한다.
+        /// </summary>
+        public void RequestMultiJump()
+        {
+            if (!_skillController || !_skillController.HasSkill(MULTI_JUMP_SKILL_NAME)) return;
+
+            _skillController.TryExecuteSkill(MULTI_JUMP_SKILL_NAME);
+        }
+
+        /// <summary>
+        /// 착지를 알린다. 공중 점프 횟수를 초기화한다.
+        /// </summary>
+        public void NotifyLanded()
+        {
+            if (!_skillController || !_skillController.HasSkill(MULTI_JUMP_SKILL_NAME)) return;
+
+            _skillController.ResetSkill(MULTI_JUMP_SKILL_NAME);
         }
         #endregion
         
@@ -165,6 +192,9 @@ namespace Mediator.SubMediators
                     break;
                 case Fire fire:
                     OnFireRequested?.Invoke(fire.FirePosition);
+                    break;
+                case MultiJump multiJump:
+                    OnMultiJumpRequested?.Invoke(multiJump.JumpPowerRatio);
                     break;
             }
         }
