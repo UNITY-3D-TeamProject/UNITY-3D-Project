@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Core.Scanning
 {
     /// <summary>
-    /// 스캔 파동에 닿으면 닿은 지점부터 메시 전체가 차례로 드러나는 반응. 플랫폼, 아이템처럼 평소엔 보이지 않는 오브젝트에 쓴다.
+    /// 스캔 파동에 닿으면 닿은 지점부터 메시 전체가 차례로 드러나는 반응. 숨은 플랫폼처럼 평소엔 보이지 않는 오브젝트에 쓴다(평소에도 보이는 아이템은 SilhouetteReaction).
     /// 파동이 메시 중간에서 멈추거나 끊겨도 _revealSpeed 로 끝까지 드러나므로 반만 보인 채 남지 않는다.
     /// 렌더러에는 _ScanOrigin, _ScanRadius 프로퍼티를 쓰는 리빌 셰이더(M_ScanReveal 등) 머티리얼을 지정한다.
     /// 사라질 때는 표시 반경을 줄여 바깥쪽부터 접히며 사라진다. 콜라이더는 건드리지 않는다.
@@ -32,6 +32,8 @@ namespace Core.Scanning
         private Vector3 _origin;
         // 현재 드러난 반경. 파동 반경과 _revealSpeed 중 더 앞선 쪽을 따라 메시의 가장 먼 점까지 커진다.
         private float _revealRadius;
+        // 마지막으로 셰이더에 넣은 표시 반경. 같은 값이면 다시 쓰지 않기 위해 쓴다. 음수면 아직 넣지 않은 상태다.
+        private float _appliedRadius = -1.0f;
         #endregion
 
         #region Unity Lifecycle
@@ -63,45 +65,40 @@ namespace Core.Scanning
             _origin = hit.Origin;
             _revealRadius = hit.Radius;
 
-            // 렌더러를 켜고, 첫 프레임부터 반경 안쪽만 드러나게 셰이더 값을 넣는다.
+            // 이전 스캔에서 넣은 값과 중심이 다르므로 같은 반경이어도 다시 넣게 한다.
+            _appliedRadius = -1.0f;
+
+            // 렌더러를 켜고, 세기 0 에서 시작하므로 가장 가까운 점부터 드러나게 셰이더 값을 넣는다.
+            GetDistanceRange(out float nearDistance, out _);
             SetRenderersEnabled(true);
-            ApplyProperties(_revealRadius);
+            ApplyProperties(nearDistance);
         }
 
         /// <inheritdoc />
         public override void OnScanUpdate(in SScanHit hit)
         {
             // 파동이 드러나는 속도보다 빠르면 파동을 따라간다. 이미 더 드러났으면 줄이지 않는다.
-            _origin = hit.Origin;
+            // 셰이더 적용은 매 프레임 호출되는 OnFade 에서 한 번만 한다.
             _revealRadius = Mathf.Max(_revealRadius, hit.Radius);
-            ApplyProperties(_revealRadius);
         }
 
         /// <inheritdoc />
         public override void OnFade(float fade, bool isFadingOut)
         {
             // 파동 중심에서 이 메시의 가장 가까운 점과 가장 먼 점까지의 거리를 구한다.
+            // 움직이는 대상도 있으므로 매 프레임 다시 구한다.
             GetDistanceRange(out float nearDistance, out float farDistance);
 
-            // 활성 중에는 파동이 멈추거나 끊겨도 가장 먼 점까지 계속 드러낸다(매 프레임 호출된다).
-            // 사라지는 중 재스캔으로 활성 상태에 돌아와도 마지막 드러난 반경에서 다시 이어진다.
-            if (!isFadingOut)
+            // 활성 중에는 파동이 멈추거나 끊겨도 가장 먼 점까지 계속 드러낸다. 이미 지났으면 줄이지 않는다.
+            if (!isFadingOut && (_revealRadius < farDistance))
             {
-                // 파동이 이미 가장 먼 점을 지났으면 줄이지 않는다.
-                if (_revealRadius < farDistance)
-                {
-                    _revealRadius = Mathf.MoveTowards(_revealRadius, farDistance, _revealSpeed * Time.deltaTime);
-                }
-
-                ApplyProperties(_revealRadius);
-                return;
+                _revealRadius = Mathf.MoveTowards(_revealRadius, farDistance, _revealSpeed * Time.deltaTime);
             }
 
-            // 사라질 때만 보이는 범위를 접는다.
-            // 메시 전체가 드러난 뒤에는 반경이 더 커도 의미가 없으므로 가장 먼 점까지로 제한한다.
+            // 드러난 반경(가장 먼 점까지로 제한)을 세기만큼 펼쳐 보인다.
+            // 사라질 때는 세기가 1 -> 0 으로 줄며 바깥에서 가장 가까운 점 쪽으로 접히고,
+            // 사라지는 중 재스캔되면 세기가 다시 올라가므로 접힌 지점부터 이어서 펼쳐진다.
             float visibleRadius = Mathf.Min(farDistance, _revealRadius);
-
-            // fade 1 -> 0 에 따라 보이는 반경을 바깥에서 가장 가까운 점 쪽으로 접어 사라지게 한다.
             ApplyProperties(Mathf.Lerp(nearDistance, visibleRadius, fade));
         }
 
@@ -120,14 +117,21 @@ namespace Core.Scanning
         #endregion
 
         #region Private Methods
+        // 스캔의 중심과 현재 표시 반경을 각 렌더러 셰이더에 전달한다.
         private void ApplyProperties(float radius)
         {
+            // 다 드러난 뒤 유지 시간 동안은 매 프레임 같은 값이 들어오므로 다시 쓰지 않는다.
+            if (radius == _appliedRadius) return;
+            _appliedRadius = radius;
+
             foreach (Renderer targetRenderer in _renderers)
             {
                 // 파괴된 렌더러는 건너뛴다.
                 if (!targetRenderer) continue;
 
                 // 렌더러에 이미 있던 값을 유지한 채 스캔 값만 덮어쓴다.
+                // targetRenderer에 설정된 프로퍼티 블록의 값을, 미리 만들어 둔 _propertyBlock 안으로 가져온다.
+                // 그리고 값 2개를 바꿔서 targetRenderer에 설정된 프로터피 블록에다가 저장한다.
                 targetRenderer.GetPropertyBlock(_propertyBlock);
                 _propertyBlock.SetVector(ScanOriginId, _origin);
                 _propertyBlock.SetFloat(ScanRadiusId, radius);
