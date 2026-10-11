@@ -2,7 +2,7 @@
 
 - **우선순위**: 낮음
 - **상태**: 대기
-- **관련 작업**: [04. Fire 차지샷](done/04-fire-charge-shot.md), [05. 대쉬 중 사격·Aim 규칙](05-dash-fire-aim-rules.md)
+- **관련 작업**: [04. Fire 차지샷](done/04-fire-charge-shot.md), [05. 대쉬 중 사격·Aim 규칙](done/05-dash-fire-aim-rules.md)
 
 ## 목표
 사격하거나 조준하는 동안 이동 속도를 줄인다.
@@ -15,6 +15,7 @@
 ## 현재 상황
 - 플레이어 이동 속도는 어트리뷰트 `MoveSpeed` 다 (`Assets/_Project/ScriptableObjects/SOAttributeData_Player.asset`, 현재 값 5).
 - 04 에서 차지 중 이동 감속은 범위에서 제외했다.
+- Aim 입력 눌림 상태는 `CameraMediator` 가 보관한다(`_isAimInputHeld`). 구르기 중에는 조준 카메라를 잠그고, 종료 시 눌림 상태대로 복구한다 ([05](done/05-dash-fire-aim-rules.md)).
 
 ## 열린 질문
 - [ ] "50 / 150 감소" 의 단위: `MoveSpeed` 값 자체의 차감인가(현재 값 5 기준이면 음수가 된다), 비율(%)인가, 다른 기준 값인가?
