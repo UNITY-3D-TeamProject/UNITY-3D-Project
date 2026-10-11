@@ -35,6 +35,12 @@ namespace CharacterAnimation
         [SerializeField, Min(0.0f)] private float _minAimDistance = 1.0f;
         [Tooltip("최소 거리부터 이 거리(m)만큼 멀어지는 구간에서 조준 보정을 서서히 켠다.")]
         [SerializeField, Min(0.0f)] private float _aimFadeDistance = 0.5f;
+
+        [Header("Special Idle")]
+        [Tooltip("Idle 상태에서 입력 없이 이 시간(초)이 지나면 특수 Idle 애니메이션을 재생한다.")]
+        [SerializeField, Min(0.0f)] private float _specialIdleDelay = 10.0f;
+        [Tooltip("Animator 의 특수 Idle 상태 개수. SpecialIdleIndex 를 0 ~ (개수 - 1) 중 랜덤으로 고른다.")]
+        [SerializeField, Min(1)] private int _specialIdleCount = 2;
         #endregion
 
         #region Private Fields
@@ -58,6 +64,8 @@ namespace CharacterAnimation
         private float _lastFireTime;
         private float _aimWeight;
         private bool _isRolling;
+        private float _idleTime;
+        private Vector3 _lastViewForward;
         #endregion
 
         #region Unity Lifecycle
@@ -97,6 +105,8 @@ namespace CharacterAnimation
             float targetWeight = (_isFiring && !_isRolling) ? 1.0f : 0.0f;
             float blendSpeed = (_aimBlendTime > 0.0f) ? (deltaTime / _aimBlendTime) : 1.0f;
             _aimWeight = Mathf.MoveTowards(_aimWeight, targetWeight, blendSpeed);
+
+            UpdateSpecialIdle(deltaTime);
         }
 
         private void LateUpdate()
@@ -144,6 +154,7 @@ namespace CharacterAnimation
         {
             if (!enabled) return;
 
+            if (isMoving) ResetSpecialIdle();
             _animator.SetBool(AnimHash.IsMoving, isMoving);
         }
 
@@ -158,10 +169,15 @@ namespace CharacterAnimation
 
         /// <summary>
         /// 몸이 바라보는 기준인 시점 방향을 설정한다. 수평 성분이 없으면 직전 값을 유지한다.
+        /// 직전 값과 달라졌으면(카메라 회전) 특수 Idle 을 해제한다.
         /// </summary>
         /// <param name="viewForward">카메라가 보는 방향 (월드 기준)</param>
         public void SetViewForward(Vector3 viewForward)
         {
+            // pitch 만 바뀌어도 카메라 회전으로 본다
+            if (enabled && (viewForward != _lastViewForward)) ResetSpecialIdle();
+            _lastViewForward = viewForward;
+
             Vector3 flatForward = Vector3.ProjectOnPlane(viewForward, Vector3.up);
             if (flatForward.sqrMagnitude <= Mathf.Epsilon) return;
 
@@ -193,6 +209,7 @@ namespace CharacterAnimation
         {
             if (!enabled) return;
 
+            ResetSpecialIdle();
             _isFiring = true;
             _lastFireTime = Time.time;
             _animator.SetBool(AnimHash.IsFiring, true);
@@ -212,6 +229,7 @@ namespace CharacterAnimation
             _lastFireTime = Time.time;
             if (!isCharging) return;
 
+            ResetSpecialIdle();
             _isFiring = true;
             _animator.SetBool(AnimHash.IsFiring, true);
         }
@@ -223,6 +241,7 @@ namespace CharacterAnimation
         {
             if (!enabled) return;
 
+            ResetSpecialIdle();
             _animator.SetBool(AnimHash.IsJumping, true);
             _animator.SetTrigger(AnimHash.Jump);
         }
@@ -246,6 +265,7 @@ namespace CharacterAnimation
         {
             if (!enabled) return;
 
+            ResetSpecialIdle();
             _isRolling = true;
             _animator.SetBool(AnimHash.IsRolling, true);
             _animator.SetTrigger(AnimHash.Roll);
@@ -265,6 +285,39 @@ namespace CharacterAnimation
         #endregion
 
         #region Private Methods
+        /// <summary>
+        /// 하체가 Idle(전환 중 아님)이고 사격 상체가 꺼져 있는 동안 무입력 시간을 센다.
+        /// 대기 시간이 지나면 특수 Idle 중 하나를 랜덤으로 재생하고 시간을 다시 센다.
+        /// </summary>
+        /// <param name="deltaTime">이번 프레임 경과 시간</param>
+        private void UpdateSpecialIdle(float deltaTime)
+        {
+            bool isIdle = !_animator.IsInTransition(0) &&
+                (_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == AnimHash.IdleState);
+            if (!isIdle || _isFiring) return;
+
+            _idleTime += deltaTime;
+            if (_idleTime < _specialIdleDelay) return;
+
+            _idleTime = 0.0f;
+            _animator.SetInteger(AnimHash.SpecialIdleIndex, UnityEngine.Random.Range(0, _specialIdleCount));
+            _animator.SetBool(AnimHash.IsSpecialIdle, true);
+            _animator.SetTrigger(AnimHash.SpecialIdle);
+        }
+
+        /// <summary>
+        /// 입력이 들어왔을 때 무입력 시간을 초기화하고, 재생 중인 특수 Idle 을 끊는다.
+        /// </summary>
+        private void ResetSpecialIdle()
+        {
+            _idleTime = 0.0f;
+            // 초기 시점 방향 전달이 Awake 보다 먼저 올 수 있다
+            if (!_animator) return;
+
+            _animator.SetBool(AnimHash.IsSpecialIdle, false);
+            _animator.ResetTrigger(AnimHash.SpecialIdle);
+        }
+
         /// <summary>
         /// Animator 하위에서 조준 뼈와 총구를 이름으로 찾아 캐싱한다.
         /// </summary>
@@ -404,6 +457,9 @@ namespace CharacterAnimation
             public static readonly int Jump = Animator.StringToHash("Jump");
             public static readonly int IsRolling = Animator.StringToHash("IsRolling");
             public static readonly int Roll = Animator.StringToHash("Roll");
+            public static readonly int SpecialIdle = Animator.StringToHash("SpecialIdle");
+            public static readonly int IsSpecialIdle = Animator.StringToHash("IsSpecialIdle");
+            public static readonly int SpecialIdleIndex = Animator.StringToHash("SpecialIdleIndex");
             public static readonly int FireHoldState = Animator.StringToHash("FireHold");
             public static readonly int IdleState = Animator.StringToHash("Idle");
         }
