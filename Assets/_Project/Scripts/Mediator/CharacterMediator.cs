@@ -167,6 +167,7 @@ namespace Mediator
             }
             if (_animationMediator && _cameraMediator) _animationMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
             if (_skillMediator && _moveMediator) _skillMediator.SetGetGrounded(_moveMediator.IsGrounded);
+            if (_attributeMediator && _combatMediator) _attributeMediator.SetIsDamageBlocked(_combatMediator.IsDamageBlocked);
         }
         /// <summary>
         /// 등록된 바인딩 해제
@@ -187,6 +188,7 @@ namespace Mediator
             }
             if (_animationMediator) _animationMediator.ClearGetAimPoint();
             if (_skillMediator) _skillMediator.ClearGetGrounded();
+            if (_attributeMediator) _attributeMediator.ClearIsDamageBlocked();
         }
         /// <summary>
         /// 중재자들이 원하는 값 변경시 알림 발송
@@ -255,6 +257,8 @@ namespace Mediator
             if (_isDead) return;
 
             Debug.Log($"{name} is hit!");
+            // 치명타는 같은 프레임에 OnHit 다음 OnDeath 가 오므로, 이미 죽었으면 깜빡임을 시작하지 않는다
+            if (_animationMediator && !_combatMediator.IsDead()) _animationMediator.NotifyHit();
             OnHit?.Invoke();
         }
 
@@ -346,6 +350,7 @@ namespace Mediator
             if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged += _combatMediator.NotifyFireCharge;
             if (_cameraMediator && _combatMediator) _cameraMediator.OnAimChanged += _combatMediator.NotifyAim;
             if (_cameraMediator && _animationMediator) _cameraMediator.OnAimChanged += _animationMediator.NotifyAim;
+            if (_combatMediator && _animationMediator) _combatMediator.OnInvincibilityEnded += _animationMediator.NotifyInvincibilityEnded;
             if (_combatMediator) _combatMediator.OnMoveSpeedReduceRequested += OnMoveSpeedReduceCallback;
         }
         /// <summary>
@@ -382,6 +387,7 @@ namespace Mediator
             if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged -= _combatMediator.NotifyFireCharge;
             if (_cameraMediator && _combatMediator) _cameraMediator.OnAimChanged -= _combatMediator.NotifyAim;
             if (_cameraMediator && _animationMediator) _cameraMediator.OnAimChanged -= _animationMediator.NotifyAim;
+            if (_combatMediator && _animationMediator) _combatMediator.OnInvincibilityEnded -= _animationMediator.NotifyInvincibilityEnded;
             if (_combatMediator) _combatMediator.OnMoveSpeedReduceRequested -= OnMoveSpeedReduceCallback;
         }
         #endregion

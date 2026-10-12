@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using CharacterAnimation;
+using Visual;
 
 namespace Mediator.SubMediators
 {
@@ -16,6 +17,8 @@ namespace Mediator.SubMediators
         #region Serialized Fields
         [Header("References")]
         [SerializeField] private CharacterAnimator _characterAnimator;
+        [Tooltip("피격 후 무적 동안 캐릭터를 깜빡이게 하는 컴포넌트")]
+        [SerializeField] private RendererBlinker _blinker;
         [Header("Settings")]
         [Tooltip("CharacterAnimator.SetMoveSpeed 로 연결할 이동속도 어트리뷰트 이름")]
         [SerializeField] private string _speedValueKey;
@@ -31,6 +34,7 @@ namespace Mediator.SubMediators
         {
             base.Awake();
             ResolveComponent(ref _characterAnimator);
+            ResolveComponent(ref _blinker);
         }
 
         protected override void OnEnable()
@@ -166,10 +170,31 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 사망을 CharacterAnimator 로 전달해 사망 애니메이션을 재생한다.
+        /// 피격을 전달받아 깜빡임을 시작한다. 이미 깜빡이는 중이면 그대로 이어간다.
+        /// </summary>
+        public void NotifyHit()
+        {
+            if (!_blinker) return;
+
+            _blinker.Play();
+        }
+
+        /// <summary>
+        /// 피격 후 무적이 끝났음을 전달받아 깜빡임을 멈춘다.
+        /// </summary>
+        public void NotifyInvincibilityEnded()
+        {
+            if (!_blinker) return;
+
+            _blinker.Stop();
+        }
+
+        /// <summary>
+        /// 사망을 CharacterAnimator 로 전달해 사망 애니메이션을 재생한다. 깜빡임은 멈춘다.
         /// </summary>
         public void NotifyDeath()
         {
+            if (_blinker) _blinker.Stop();
             if (!_characterAnimator) return;
 
             _characterAnimator.PlayDeath();
