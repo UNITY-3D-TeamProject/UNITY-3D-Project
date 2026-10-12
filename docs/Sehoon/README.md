@@ -30,7 +30,7 @@
 ### 우선순위 중간
 | 순서 | 기능 | 문서 | 상태 |
 |---|---|---|---|
-| 10 | 피격 시 깜빡임 + 무적 | [10-hit-blink-invincibility.md](10-hit-blink-invincibility.md) | 대기 |
+| 10 | 피격 시 깜빡임 + 무적 | [10-hit-blink-invincibility.md](done/10-hit-blink-invincibility.md) | 완료 |
 | 11 | 플레이어 회전 속도 체크 | [11-rotation-speed-check.md](11-rotation-speed-check.md) | 대기 |
 | 12 | Idle 특수 애니메이션 | [12-idle-special-animation.md](done/12-idle-special-animation.md) | 완료 |
 
