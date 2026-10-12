@@ -1,0 +1,313 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50f516a47cf785243ac852aa8c8a546b, type: 3}
+  m_Name: SOSpiralMapSettings_PatternTest
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SOSpiralMapSettings
+  _spiralRadius: 30
+  _defaultPlatformPrefab: {fileID: 802234085989582166, guid: 7e5e9bcf01a5e014ab0282b74e8d44b8, type: 3}
+  _maxJumpDistance: 4.5
+  _maxJumpHeight: 1.2
+  _platformGap: 2
+  _randomHeightRange: {x: 4, y: 6.5}
+  _sectionPatterns: []
+  _connectorCount: 0
+  _isConnectorInsideSection: 0
+  _tags:
+  - tagName: Fixed
+    platformPrefabs:
+    - {fileID: 3375717596316909301, guid: ee90b9c39f103ea4ab6caa44543a4b50, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: f5195643045a48847a61078e1baaab7d, type: 2}
+    endPlatformPrefab: {fileID: 3327648592854387141, guid: adc8e2a8937f10343870442ffd5fdb1a, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 8837601704894899683, guid: a6eaa2954327b0847aac6972ba8d8abf, type: 3}
+  - tagName: UpDown
+    platformPrefabs:
+    - {fileID: 83670003195219837, guid: 8751a271c6281ed4f89a83a192419218, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 06c276b4b7d69f2478769f41c12473f4, type: 2}
+    endPlatformPrefab: {fileID: 4763514912813391960, guid: 6f17eb996c25ca847b928e1c5e4a0338, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 5379443624061401354, guid: bca723eecb744cb42bd378a46749ee77, type: 3}
+  - tagName: InOut
+    platformPrefabs:
+    - {fileID: 6245120820516444588, guid: 605f1240158f1994ba94dcc32cf6bc44, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 4434c9fd1eabd254f930d33ae108de15, type: 2}
+    endPlatformPrefab: {fileID: 3360222867428850717, guid: 841732daddbb514498fcb3ce2f4c9269, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 199046022330962826, guid: 54860ecf90a74ba428a47e29d8d88e41, type: 3}
+  - tagName: Blink
+    platformPrefabs:
+    - {fileID: 2440756720549883942, guid: e44ed5eea77216740a13161813ca938e, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 295d4077923239540bd77c33515bb6ef, type: 2}
+    endPlatformPrefab: {fileID: 5778879349944386875, guid: 9d72fea689597734393eb876e3f03e44, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 7563375941185123162, guid: 991db055277312f4a84ab4e9de2dd9dc, type: 3}
+  - tagName: AlongPath
+    platformPrefabs:
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: bb55e0a5a6428054f8d413885a144e44, type: 2}
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 6055652754509845893, guid: ec15b2224baff844b93c4db0bc8b5eef, type: 3}
+  - tagName: Diagonal
+    platformPrefabs:
+    - {fileID: 3375717596316909301, guid: ee90b9c39f103ea4ab6caa44543a4b50, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: d873094be33d10c43ad1f24927143370, type: 2}
+    endPlatformPrefab: {fileID: 3327648592854387141, guid: adc8e2a8937f10343870442ffd5fdb1a, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 5491171103526166422, guid: 83b190b647a32f841a44c74bd8c7b3e4, type: 3}
+  - tagName: OffbeatWave
+    platformPrefabs:
+    - {fileID: 83670003195219837, guid: 8751a271c6281ed4f89a83a192419218, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 692f838588116a34ca0447ee1aa49d87, type: 2}
+    endPlatformPrefab: {fileID: 4763514912813391960, guid: 6f17eb996c25ca847b928e1c5e4a0338, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 6840098004449461452, guid: 7a037dfc615be324e845684f440a9f14, type: 3}
+  - tagName: SequentialBlink
+    platformPrefabs:
+    - {fileID: 6245120820516444588, guid: 605f1240158f1994ba94dcc32cf6bc44, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 11c6ca55d022d494eadbdbb245f72bbb, type: 2}
+    endPlatformPrefab: {fileID: 3360222867428850717, guid: 841732daddbb514498fcb3ce2f4c9269, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 4861334867661452212, guid: cf9482267cd514c42811eb99c2f64156, type: 3}
+  - tagName: Zigzag
+    platformPrefabs:
+    - {fileID: 2440756720549883942, guid: e44ed5eea77216740a13161813ca938e, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: f03a193a88f5e1f4b9331050e5efceaf, type: 2}
+    endPlatformPrefab: {fileID: 5778879349944386875, guid: 9d72fea689597734393eb876e3f03e44, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 7521445930906543668, guid: 021c1ab08b2f7d043be1ec7a9e95f24e, type: 3}
+  - tagName: Narrow
+    platformPrefabs:
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 47af562decde39b438014f260278619b, type: 2}
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 2107856771968846193, guid: 157e1c794ea9fb345a38e8c41d1c24af, type: 3}
+  - tagName: Shrinking
+    platformPrefabs:
+    - {fileID: 3375717596316909301, guid: ee90b9c39f103ea4ab6caa44543a4b50, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 2d3a3ae3a3a583b41ba1fd317ed32c15, type: 2}
+    endPlatformPrefab: {fileID: 3327648592854387141, guid: adc8e2a8937f10343870442ffd5fdb1a, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 1772703381806502243, guid: d2890584a3b85c4469e2fa6a976defaf, type: 3}
+  - tagName: Hazards
+    platformPrefabs:
+    - {fileID: 83670003195219837, guid: 8751a271c6281ed4f89a83a192419218, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: bd26410ed4e37af4290432c24693ab6c, type: 2}
+    endPlatformPrefab: {fileID: 4763514912813391960, guid: 6f17eb996c25ca847b928e1c5e4a0338, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 9058029998185898392, guid: f5c6fc0bd6b7c1c4980a431a3fa342f3, type: 3}
+  - tagName: EffectFloor
+    platformPrefabs:
+    - {fileID: 6245120820516444588, guid: 605f1240158f1994ba94dcc32cf6bc44, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 7a7084a4003e0bd4989d9a052bdafd93, type: 2}
+    endPlatformPrefab: {fileID: 3360222867428850717, guid: 841732daddbb514498fcb3ce2f4c9269, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 1275908303033355961, guid: 4f6a063722862dd4a96a97c7d5238587, type: 3}
+  - tagName: Falling
+    platformPrefabs:
+    - {fileID: 2440756720549883942, guid: e44ed5eea77216740a13161813ca938e, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 69a7c8b27d7709f49a478dddbce617c5, type: 2}
+    endPlatformPrefab: {fileID: 5778879349944386875, guid: 9d72fea689597734393eb876e3f03e44, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 41737827218598783, guid: c8e4207f7c37c6941b58f54489695718, type: 3}
+  - tagName: Crumble
+    platformPrefabs:
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 87b60186db123bf4a864f360242a9f15, type: 2}
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 5119918102465530031, guid: d30212755e66bd344adc22fdab9348a5, type: 3}
+  - tagName: Orbit
+    platformPrefabs:
+    - {fileID: 3375717596316909301, guid: ee90b9c39f103ea4ab6caa44543a4b50, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 45f32cc0e2c23de4dadaa940a3ef0e20, type: 2}
+    endPlatformPrefab: {fileID: 3327648592854387141, guid: adc8e2a8937f10343870442ffd5fdb1a, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 9198290096927501681, guid: d087d47d3f20e424d9cd62131b6a8ab2, type: 3}
+  - tagName: BeatBlock
+    platformPrefabs:
+    - {fileID: 83670003195219837, guid: 8751a271c6281ed4f89a83a192419218, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 9e5309a801ff92041b351b9dcccdc91b, type: 2}
+    endPlatformPrefab: {fileID: 4763514912813391960, guid: 6f17eb996c25ca847b928e1c5e4a0338, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 4118394752952591152, guid: 44ae9cf895bbc2b4993b3bfdf48ddf4a, type: 3}
+  - tagName: NarrowUpDown
+    platformPrefabs:
+    - {fileID: 6245120820516444588, guid: 605f1240158f1994ba94dcc32cf6bc44, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: f0209b09a8a67f04f849388a68f3e141, type: 2}
+    endPlatformPrefab: {fileID: 3360222867428850717, guid: 841732daddbb514498fcb3ce2f4c9269, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 1803394004483223011, guid: 337ab7542378fb54caab0a5ac670a4d7, type: 3}
+  - tagName: ZigzagSequentialBlink
+    platformPrefabs:
+    - {fileID: 2440756720549883942, guid: e44ed5eea77216740a13161813ca938e, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 071248822a764db43907b62f53eda14f, type: 2}
+    endPlatformPrefab: {fileID: 5778879349944386875, guid: 9d72fea689597734393eb876e3f03e44, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 2454258481582672346, guid: 28df96b03b1d634428cb0f1043eedb54, type: 3}
+  - tagName: ShrinkingCrumble
+    platformPrefabs:
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: a2fbbc823fb763141a24ca3332c4afdd, type: 2}
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 8617292100219395717, guid: c08bf04f082ed7545996fc12eabe2564, type: 3}
+  - tagName: SteppingUpDown
+    platformPrefabs:
+    - {fileID: 3375717596316909301, guid: ee90b9c39f103ea4ab6caa44543a4b50, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: ad9d87e2b5988b74a918335ca2e89a6a, type: 2}
+    endPlatformPrefab: {fileID: 3327648592854387141, guid: adc8e2a8937f10343870442ffd5fdb1a, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 1844019214983232214, guid: c68203b7beeb0684487d220f682ebe3f, type: 3}
+  - tagName: SteppingFalling
+    platformPrefabs:
+    - {fileID: 83670003195219837, guid: 8751a271c6281ed4f89a83a192419218, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 2390fea2a7b7e764491356a266f7705c, type: 2}
+    endPlatformPrefab: {fileID: 4763514912813391960, guid: 6f17eb996c25ca847b928e1c5e4a0338, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 4482849262501503669, guid: ea5a07d44e8c48a48938222ace23ed41, type: 3}
+  - tagName: NarrowBeatBlock
+    platformPrefabs:
+    - {fileID: 6245120820516444588, guid: 605f1240158f1994ba94dcc32cf6bc44, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: bc0150701ead246488cd88bfb1f3523f, type: 2}
+    endPlatformPrefab: {fileID: 3360222867428850717, guid: 841732daddbb514498fcb3ce2f4c9269, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 4662340507153343164, guid: 60389af17005242408fce5b11179ae4a, type: 3}
+  - tagName: StepMove
+    platformPrefabs:
+    - {fileID: 2440756720549883942, guid: e44ed5eea77216740a13161813ca938e, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 997d9cb909b06b84a8e533b04f07ff77, type: 2}
+    endPlatformPrefab: {fileID: 5778879349944386875, guid: 9d72fea689597734393eb876e3f03e44, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 1511499913647013860, guid: be241c3938c84704fb2d7d8e67dbbf57, type: 3}
+  - tagName: Sink
+    platformPrefabs:
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: b1264d5f38c6f8c46b6491f287c6749b, type: 2}
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 8766870140853931412, guid: 080e04f244973a946a173e3819216363, type: 3}
+  - tagName: Scale
+    platformPrefabs:
+    - {fileID: 3375717596316909301, guid: ee90b9c39f103ea4ab6caa44543a4b50, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: d43a47a11af3a794aba164cc2a3ffae7, type: 2}
+    endPlatformPrefab: {fileID: 3327648592854387141, guid: adc8e2a8937f10343870442ffd5fdb1a, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 7817067433116399409, guid: daaa3c4f4dc032f4a818f9710f3a1076, type: 3}
+  - tagName: ShootReveal
+    platformPrefabs:
+    - {fileID: 83670003195219837, guid: 8751a271c6281ed4f89a83a192419218, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: f744d6d1020b82440bf2d9494d5fa8ba, type: 2}
+    endPlatformPrefab: {fileID: 4763514912813391960, guid: 6f17eb996c25ca847b928e1c5e4a0338, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 1853893324818756606, guid: fced28939e04a7e4c8d8c76d17bf9519, type: 3}
+  - tagName: JumpPad
+    platformPrefabs:
+    - {fileID: 6245120820516444588, guid: 605f1240158f1994ba94dcc32cf6bc44, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 29475b73f7e20ae4bbd40ba198e965c1, type: 2}
+    endPlatformPrefab: {fileID: 3360222867428850717, guid: 841732daddbb514498fcb3ce2f4c9269, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 2922229563445134826, guid: e98a2887befb50a45a57756028230849, type: 3}
+  - tagName: Wheel
+    platformPrefabs:
+    - {fileID: 2440756720549883942, guid: e44ed5eea77216740a13161813ca938e, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 14925ec9450cd3c4f87f2cb880cad2a5, type: 2}
+    endPlatformPrefab: {fileID: 5778879349944386875, guid: 9d72fea689597734393eb876e3f03e44, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 2639857612254824800, guid: be4ddfca239698340a88ec633cd3368e, type: 3}
+  - tagName: Stream
+    platformPrefabs:
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: e1ea940c57481bc43b49ad2252cfffaf, type: 2}
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 6831135770462381623, guid: 9c31cc3bc9344b34b923ba9e80c1187c, type: 3}
+  - tagName: JumpSwap
+    platformPrefabs:
+    - {fileID: 3375717596316909301, guid: ee90b9c39f103ea4ab6caa44543a4b50, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: a304d064aac2cc94c91c0a95cfb80e3c, type: 2}
+    endPlatformPrefab: {fileID: 3327648592854387141, guid: adc8e2a8937f10343870442ffd5fdb1a, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 6819725104700780566, guid: 0b386f8beec236345a38643b31a8b207, type: 3}
+  - tagName: Stretch
+    platformPrefabs:
+    - {fileID: 83670003195219837, guid: 8751a271c6281ed4f89a83a192419218, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 61529a946f104d74da866e28b16ca613, type: 2}
+    endPlatformPrefab: {fileID: 4763514912813391960, guid: 6f17eb996c25ca847b928e1c5e4a0338, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 7511844073722303569, guid: c63cdfb3abdf2a34d8b4d4946da2dee4, type: 3}
+  - tagName: Dip
+    platformPrefabs:
+    - {fileID: 6245120820516444588, guid: 605f1240158f1994ba94dcc32cf6bc44, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 557df1916aea9774ab2b365fea915d58, type: 2}
+    endPlatformPrefab: {fileID: 3360222867428850717, guid: 841732daddbb514498fcb3ce2f4c9269, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 6653963785993781494, guid: 995e4b19a21870d4e8114f649a3095df, type: 3}
+  - tagName: LongGap
+    platformPrefabs:
+    - {fileID: 2440756720549883942, guid: e44ed5eea77216740a13161813ca938e, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: ccba901c46212984ba01da4c5c875f42, type: 2}
+    endPlatformPrefab: {fileID: 5778879349944386875, guid: 9d72fea689597734393eb876e3f03e44, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 4335104932636848809, guid: 8c34ff7bad4472044bd7e0b55b948ad9, type: 3}
+  - tagName: HighSteps
+    platformPrefabs:
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    sectionPatterns:
+    - {fileID: 11400000, guid: 2d53db029ad07aa4e9e564674faab2f5, type: 2}
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 3686082383701367802, guid: 15ed3e6ba61bfe9459a6e24dce2dfd70, type: 3}
+  _sectionsPerTag: 1
+  _checkpointDistance: 1.5
+  _feedDistance: 6
+  _itemDistance: 9
+  _exitStepCount: 0
+  _exitStepHeight: 1
+  _roundPlatformPrefab: {fileID: 0}
+  _roundPlatformRadius: 27
+  _roundCheckpointInset: 3
