@@ -17,6 +17,8 @@ namespace CharacterAnimation
         [Header("Locomotion")]
         [Tooltip("이동 방향 파라미터(MoveX, MoveY)가 목표값에 도달하는 데 걸리는 시간(초).")]
         [SerializeField] private float _moveDirectionDampTime = 0.1f;
+        [Tooltip("이동 애니메이션이 1배속으로 재생될 때의 이동속도. 현재 이동속도 / 이 값이 Locomotion 재생 배율이 된다.")]
+        [SerializeField, Min(0.01f)] private float _referenceMoveSpeed = 5.0f;
 
         [Header("Fire")]
         [Tooltip("마지막 사격 후 사격 상체 애니메이션을 유지하는 시간(초).")]
@@ -165,6 +167,17 @@ namespace CharacterAnimation
         public void SetMoveDirection(Vector3 worldDirection)
         {
             _moveDirection = Vector3.ProjectOnPlane(worldDirection, Vector3.up);
+        }
+
+        /// <summary>
+        /// 현재 이동속도를 설정한다. 기준 속도 대비 비율을 MoveAnimSpeed 에 넣어 Locomotion 재생 속도를 맞춘다.
+        /// </summary>
+        /// <param name="moveSpeed">현재 이동속도</param>
+        public void SetMoveSpeed(float moveSpeed)
+        {
+            if (!enabled) return;
+
+            _animator.SetFloat(AnimHash.MoveAnimSpeed, moveSpeed / _referenceMoveSpeed);
         }
 
         /// <summary>
@@ -451,6 +464,7 @@ namespace CharacterAnimation
             public static readonly int IsMoving = Animator.StringToHash("IsMoving");
             public static readonly int MoveX = Animator.StringToHash("MoveX");
             public static readonly int MoveY = Animator.StringToHash("MoveY");
+            public static readonly int MoveAnimSpeed = Animator.StringToHash("MoveAnimSpeed");
             public static readonly int IsFiring = Animator.StringToHash("IsFiring");
             public static readonly int Fire = Animator.StringToHash("Fire");
             public static readonly int IsJumping = Animator.StringToHash("IsJumping");

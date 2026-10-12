@@ -16,6 +16,9 @@ namespace Mediator.SubMediators
         #region Serialized Fields
         [Header("References")]
         [SerializeField] private CharacterAnimator _characterAnimator;
+        [Header("Settings")]
+        [Tooltip("CharacterAnimator.SetMoveSpeed 로 연결할 이동속도 어트리뷰트 이름")]
+        [SerializeField] private string _speedValueKey;
         #endregion
 
         #region Unity Lifecycle
@@ -139,6 +142,10 @@ namespace Mediator.SubMediators
         #region Protected Methods
         protected override void InitAttributeCallback()
         {
+            AttributeCallback.TryAdd(_speedValueKey, data =>
+            {
+                if (_characterAnimator) _characterAnimator.SetMoveSpeed(data.NewValue);
+            });
         }
 
         protected override void InitValue()
