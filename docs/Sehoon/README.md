@@ -39,7 +39,7 @@
 |---|---|---|---|
 | 13 | 총기 과열 색상 변경 | [13-overheat-color.md](done/13-overheat-color.md) | 완료 |
 | 14 | 사격·조준 중 이동 속도 감소 | [14-fire-aim-move-slow.md](done/14-fire-aim-move-slow.md) | 완료 |
-| 15 | 캐릭터 사망 시 처리 | [15-character-death.md](15-character-death.md) | 대기 |
+| 15 | 캐릭터 사망 시 처리 | [15-character-death.md](done/15-character-death.md) | 완료 |
 | 16 | 이동속도에 맞춘 이동 애니메이션 재생 속도 | [16-move-anim-speed.md](done/16-move-anim-speed.md) | 완료 |
 | 17 | 조준 중 사격 자세 유지 | [17-aim-fire-pose.md](done/17-aim-fire-pose.md) | 완료 |
 
