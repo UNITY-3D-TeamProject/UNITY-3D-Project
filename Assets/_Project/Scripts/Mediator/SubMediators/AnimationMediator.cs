@@ -21,11 +21,27 @@ namespace Mediator.SubMediators
         [SerializeField] private string _speedValueKey;
         #endregion
 
+        #region Events
+        /// <summary>CharacterAnimator 의 사망 애니메이션이 끝났을 때 발생한다.</summary>
+        public event Action OnDeathAnimationEnded;
+        #endregion
+
         #region Unity Lifecycle
         protected override void Awake()
         {
             base.Awake();
             ResolveComponent(ref _characterAnimator);
+        }
+
+        protected override void OnEnable()
+        {
+            if (_characterAnimator) _characterAnimator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
+            base.OnEnable();
+        }
+
+        private void OnDisable()
+        {
+            if (_characterAnimator) _characterAnimator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
         }
         #endregion
 
@@ -148,6 +164,16 @@ namespace Mediator.SubMediators
 
             _characterAnimator.StopRoll();
         }
+
+        /// <summary>
+        /// 사망을 CharacterAnimator 로 전달해 사망 애니메이션을 재생한다.
+        /// </summary>
+        public void NotifyDeath()
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.PlayDeath();
+        }
         #endregion
 
         #region Protected Methods
@@ -161,6 +187,13 @@ namespace Mediator.SubMediators
 
         protected override void InitValue()
         {
+        }
+        #endregion
+
+        #region Private Methods
+        private void OnDeathAnimationEndedCallback()
+        {
+            OnDeathAnimationEnded?.Invoke();
         }
         #endregion
     }
