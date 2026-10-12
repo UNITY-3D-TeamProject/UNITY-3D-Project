@@ -19,32 +19,9 @@ namespace Map.Maze
         #endregion
 
         #region Serialized Fields
-        [Header("Maze")]
-        [Tooltip("미로 한 변의 칸 수")]
-        [SerializeField, Range(2, 50)] private int _size = 15;
-
-        [Tooltip("한 칸의 크기. 벽·출구·다리 프리팹의 크기와 맞아야 한다.")]
-        [SerializeField, Min(0.1f)] private float _tileSize = 5.0f;
-
-        [Tooltip("벽 두께. 바닥이 바깥 벽 밑까지 깔리도록 이만큼 더 넓게 만든다.")]
-        [SerializeField, Min(0.0f)] private float _wallThickness = 0.5f;
-
-        [Header("Chain")]
-        [Tooltip("미로별 겉모습. 여기 넣은 개수만큼 미로가 이어진다.")]
-        [SerializeField] private SMazeTheme[] _themes;
-
-        [Tooltip("미로 사이 다리의 길이(칸 수). 다리 프리팹 하나가 한 칸이다.")]
-        [SerializeField, Min(1)] private int _bridgeTileCount = 4;
-
-        [Header("Prefabs")]
-        [Tooltip("바닥 프리팹. 1 x 1 x 1 크기의 블록이며 미로 크기에 맞춰 늘린다.")]
-        [SerializeField] private GameObject _floorPrefab;
-
-        [Tooltip("다리 한 칸 프리팹. 길이 방향이 Z축, 윗면이 y = 0")]
-        [SerializeField] private GameObject _bridgeSegmentPrefab;
-
-        [Tooltip("입구 칸 표시 프리팹 (선택, 테스트용)")]
-        [SerializeField] private GameObject _startMarkerPrefab;
+        [Header("Settings")]
+        [Tooltip("미로 크기, 미로별 겉모습, 바닥·다리 프리팹을 담은 설정 에셋")]
+        [SerializeField] private SOMazeChainSettings _settings;
 
         [Header("Checkpoints")]
         [Tooltip("씬에 미리 놓아 둔 체크포인트 (선택). 0번은 첫 미로의 입구 칸으로, 그 뒤는 차례대로 각 미로의 출구 밖 다리 가운데로 옮긴다.")]
@@ -63,6 +40,12 @@ namespace Map.Maze
             startPosition = transform.position;
             goalPosition = transform.position;
 
+            if (_settings == null)
+            {
+                Debug.LogError($"[{name}] 설정 에셋(Settings)이 연결되지 않았습니다.", this);
+                return;
+            }
+
             if (!HasAllPrefabs())
             {
                 Debug.LogError($"[{name}] 미로 테마(벽·출구), 바닥, 다리 프리팹이 모두 연결되어야 합니다.", this);
@@ -70,23 +53,23 @@ namespace Map.Maze
             }
 
             var generator = new MazeGenerator();
-            float bridgeLength = _bridgeTileCount * _tileSize;
-            float mazePitch = (_size * _tileSize) + bridgeLength;
-            int entranceColumn = random.Next(_size);
+            float bridgeLength = _settings.BridgeTileCount * _settings.TileSize;
+            float mazePitch = (_settings.Size * _settings.TileSize) + bridgeLength;
+            int entranceColumn = random.Next(_settings.Size);
 
-            for (int i = 0; i < _themes.Length; i++)
+            for (int i = 0; i < _settings.Themes.Count; i++)
             {
                 Transform mazeRoot = new GameObject($"Maze_{i}").transform;
                 mazeRoot.SetParent(root, false);
                 mazeRoot.localPosition = new Vector3(0.0f, 0.0f, i * mazePitch);
 
                 var entranceCell = new Vector2Int(entranceColumn, 0);
-                MazeGenerator.SCell[,] grid = generator.GenerateMaze(_size, _size, entranceCell, random);
+                MazeGenerator.SCell[,] grid = generator.GenerateMaze(_settings.Size, _settings.Size, entranceCell, random);
                 Vector2Int exitCell = FindFarthestExitCell(generator.ComputeDistances(grid, entranceCell));
 
                 bool isFirstMaze = i == 0;
-                bool isLastMaze = i == _themes.Length - 1;
-                BuildMaze(mazeRoot, grid, _themes[i], entranceCell, exitCell, isFirstMaze, isLastMaze);
+                bool isLastMaze = i == _settings.Themes.Count - 1;
+                BuildMaze(mazeRoot, grid, _settings.Themes[i], entranceCell, exitCell, isFirstMaze, isLastMaze);
                 BuildBridge(mazeRoot, exitCell.x);
                 CollectPlacementPoints(mazeRoot, entranceCell, exitCell, placementPoints);
 
@@ -97,8 +80,8 @@ namespace Map.Maze
                 }
 
                 // 마지막 미로에서는 출구 밖 다리의 가운데가 도착 지점이 된다.
-                float bridgeCenterZ = ((_size - 0.5f) * _tileSize) + (bridgeLength * 0.5f);
-                goalPosition = mazeRoot.TransformPoint(new Vector3(exitCell.x * _tileSize, 0.0f, bridgeCenterZ));
+                float bridgeCenterZ = ((_settings.Size - 0.5f) * _settings.TileSize) + (bridgeLength * 0.5f);
+                goalPosition = mazeRoot.TransformPoint(new Vector3(exitCell.x * _settings.TileSize, 0.0f, bridgeCenterZ));
                 MoveCheckpointAnchor(i + 1, goalPosition);
 
                 // 다음 미로는 이 미로의 출구와 같은 열에서 시작한다.
@@ -111,10 +94,10 @@ namespace Map.Maze
         // 생성에 꼭 필요한 프리팹이 모두 연결되어 있는지 확인한다. (입구 표시 프리팹은 선택)
         private bool HasAllPrefabs()
         {
-            if ((_themes == null) || (_themes.Length == 0)) return false;
-            if ((_floorPrefab == null) || (_bridgeSegmentPrefab == null)) return false;
+            if ((_settings.Themes == null) || (_settings.Themes.Count == 0)) return false;
+            if ((_settings.FloorPrefab == null) || (_settings.BridgeSegmentPrefab == null)) return false;
 
-            foreach (SMazeTheme theme in _themes)
+            foreach (SMazeTheme theme in _settings.Themes)
             {
                 if ((theme.WallPrefab == null) || (theme.GatePrefab == null)) return false;
             }
@@ -125,10 +108,10 @@ namespace Map.Maze
         // 출구 면(+Z 쪽 마지막 줄)의 칸 가운데 입구에서 가장 먼 칸을 고른다.
         private Vector2Int FindFarthestExitCell(int[,] distances)
         {
-            int exitRow = _size - 1;
+            int exitRow = _settings.Size - 1;
             int farthestColumn = 0;
 
-            for (int x = 1; x < _size; x++)
+            for (int x = 1; x < _settings.Size; x++)
             {
                 if (distances[x, exitRow] > distances[farthestColumn, exitRow])
                 {
@@ -151,16 +134,16 @@ namespace Map.Maze
         {
             BuildFloor(mazeRoot);
 
-            float halfTile = _tileSize * 0.5f;
+            float halfTile = _settings.TileSize * 0.5f;
             Quaternion alongX = Quaternion.identity;
             Quaternion alongZ = Quaternion.Euler(0.0f, 90.0f, 0.0f);
 
-            for (int x = 0; x < _size; x++)
+            for (int x = 0; x < _settings.Size; x++)
             {
-                for (int y = 0; y < _size; y++)
+                for (int y = 0; y < _settings.Size; y++)
                 {
                     MazeGenerator.SCell cell = grid[x, y];
-                    var center = new Vector3(x * _tileSize, 0.0f, y * _tileSize);
+                    var center = new Vector3(x * _settings.TileSize, 0.0f, y * _settings.TileSize);
                     var cellPosition = new Vector2Int(x, y);
 
                     // 각 칸은 북쪽·동쪽 벽만 세운다. (남쪽·서쪽은 이웃 칸이 세운다)
@@ -199,34 +182,34 @@ namespace Map.Maze
                 }
             }
 
-            if (_startMarkerPrefab != null)
+            if (_settings.StartMarkerPrefab != null)
             {
-                var markerPosition = new Vector3(entranceCell.x * _tileSize, 0.0f, entranceCell.y * _tileSize);
-                PlaceObject(_startMarkerPrefab, mazeRoot, markerPosition, Quaternion.identity, "StartMarker");
+                var markerPosition = new Vector3(entranceCell.x * _settings.TileSize, 0.0f, entranceCell.y * _settings.TileSize);
+                PlaceObject(_settings.StartMarkerPrefab, mazeRoot, markerPosition, Quaternion.identity, "StartMarker");
             }
         }
 
         // 미로 전체를 덮는 바닥 한 장
         private void BuildFloor(Transform mazeRoot)
         {
-            float mazeLength = _size * _tileSize;
-            float centerOffset = (_size - 1) * _tileSize * 0.5f;
+            float mazeLength = _settings.Size * _settings.TileSize;
+            float centerOffset = (_settings.Size - 1) * _settings.TileSize * 0.5f;
 
-            GameObject floor = Instantiate(_floorPrefab, mazeRoot);
+            GameObject floor = Instantiate(_settings.FloorPrefab, mazeRoot);
             floor.name = "Floor";
             floor.transform.localPosition = new Vector3(centerOffset, -FLOOR_THICKNESS * 0.5f, centerOffset);
-            floor.transform.localScale = new Vector3(mazeLength + _wallThickness, FLOOR_THICKNESS, mazeLength + _wallThickness);
+            floor.transform.localScale = new Vector3(mazeLength + _settings.WallThickness, FLOOR_THICKNESS, mazeLength + _settings.WallThickness);
         }
 
         // 출구 밖으로 이어지는 다리. 다음 미로의 입구(또는 도착 지점)까지 간다.
         private void BuildBridge(Transform mazeRoot, int exitColumn)
         {
-            float bridgeStartZ = (_size - 0.5f) * _tileSize;
+            float bridgeStartZ = (_settings.Size - 0.5f) * _settings.TileSize;
 
-            for (int i = 0; i < _bridgeTileCount; i++)
+            for (int i = 0; i < _settings.BridgeTileCount; i++)
             {
-                var position = new Vector3(exitColumn * _tileSize, 0.0f, bridgeStartZ + ((i + 0.5f) * _tileSize));
-                PlaceObject(_bridgeSegmentPrefab, mazeRoot, position, Quaternion.identity, $"Bridge_{i}");
+                var position = new Vector3(exitColumn * _settings.TileSize, 0.0f, bridgeStartZ + ((i + 0.5f) * _settings.TileSize));
+                PlaceObject(_settings.BridgeSegmentPrefab, mazeRoot, position, Quaternion.identity, $"Bridge_{i}");
             }
         }
 
@@ -237,9 +220,9 @@ namespace Map.Maze
             Vector2Int exitCell,
             List<Vector3> placementPoints)
         {
-            for (int x = 0; x < _size; x++)
+            for (int x = 0; x < _settings.Size; x++)
             {
-                for (int y = 0; y < _size; y++)
+                for (int y = 0; y < _settings.Size; y++)
                 {
                     var cell = new Vector2Int(x, y);
                     if ((cell == entranceCell) || (cell == exitCell)) continue;
@@ -252,7 +235,7 @@ namespace Map.Maze
         // 칸의 바닥 중앙 (월드 좌표)
         private Vector3 GetCellCenter(Transform mazeRoot, Vector2Int cell)
         {
-            return mazeRoot.TransformPoint(new Vector3(cell.x * _tileSize, 0.0f, cell.y * _tileSize));
+            return mazeRoot.TransformPoint(new Vector3(cell.x * _settings.TileSize, 0.0f, cell.y * _settings.TileSize));
         }
 
         // index 번째 체크포인트를 position 으로 옮긴다. 연결된 체크포인트가 모자라면 아무것도 하지 않는다.
