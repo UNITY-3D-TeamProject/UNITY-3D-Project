@@ -229,6 +229,16 @@ namespace Mediator
             return true;
         }
 
+        /// <summary>
+        /// 전투 중재자의 이동속도 감속 요청을 어트리뷰트에 반영한다.
+        /// </summary>
+        /// <param name="key">이동속도 어트리뷰트 이름</param>
+        /// <param name="amount">차감량. 음수면 복구</param>
+        private void OnMoveSpeedReduceCallback(string key, float amount)
+        {
+            PayAttribute(key, amount);
+        }
+
         private void OnSkillUsedCallback(string skillName, float cooldown)
         {
             OnSkillUsed?.Invoke(skillName, cooldown);
@@ -285,6 +295,9 @@ namespace Mediator
             if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded += _skillMediator.NotifyRollEnded;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted += _cameraMediator.NotifyRollStarted;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded += _cameraMediator.NotifyRollEnded;
+            if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged += _combatMediator.NotifyFireCharge;
+            if (_cameraMediator && _combatMediator) _cameraMediator.OnAimChanged += _combatMediator.NotifyAim;
+            if (_combatMediator) _combatMediator.OnMoveSpeedReduceRequested += OnMoveSpeedReduceCallback;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -316,6 +329,9 @@ namespace Mediator
             if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded -= _skillMediator.NotifyRollEnded;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted -= _cameraMediator.NotifyRollStarted;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded -= _cameraMediator.NotifyRollEnded;
+            if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged -= _combatMediator.NotifyFireCharge;
+            if (_cameraMediator && _combatMediator) _cameraMediator.OnAimChanged -= _combatMediator.NotifyAim;
+            if (_combatMediator) _combatMediator.OnMoveSpeedReduceRequested -= OnMoveSpeedReduceCallback;
         }
         #endregion
     }
