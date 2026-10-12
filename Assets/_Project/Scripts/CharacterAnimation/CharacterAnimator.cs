@@ -63,6 +63,7 @@ namespace CharacterAnimation
         private Vector3 _holdBarrelLocal;
         private bool _isFiring;
         private bool _isCharging;
+        private bool _isAiming;
         private float _lastFireTime;
         private float _aimWeight;
         private bool _isRolling;
@@ -96,8 +97,8 @@ namespace CharacterAnimation
             _animator.SetFloat(AnimHash.MoveX, localDirection.x, _moveDirectionDampTime, deltaTime);
             _animator.SetFloat(AnimHash.MoveY, localDirection.z, _moveDirectionDampTime, deltaTime);
 
-            // 차지 중에는 사격 자세를 계속 유지한다
-            if (_isFiring && !_isCharging && (Time.time - _lastFireTime >= _fireHoldDuration))
+            // 차지 중·조준 중에는 사격 자세를 계속 유지한다
+            if (_isFiring && !_isCharging && !_isAiming && (Time.time - _lastFireTime >= _fireHoldDuration))
             {
                 _isFiring = false;
                 _animator.SetBool(AnimHash.IsFiring, false);
@@ -241,6 +242,23 @@ namespace CharacterAnimation
             _isCharging = isCharging;
             _lastFireTime = Time.time;
             if (!isCharging) return;
+
+            ResetSpecialIdle();
+            _isFiring = true;
+            _animator.SetBool(AnimHash.IsFiring, true);
+        }
+
+        /// <summary>
+        /// 조준 상태를 설정한다. 조준 중에는 Fire 재생 없이 사격 자세(FireHold)를 유지한다.
+        /// 조준이 끝나면 바로 사격 자세를 내리되, 마지막 사격·차지 후 유지 시간이 남아 있으면 그때까지 유지한다.
+        /// </summary>
+        /// <param name="isAiming">조준 중이면 true</param>
+        public void SetAiming(bool isAiming)
+        {
+            if (!enabled) return;
+
+            _isAiming = isAiming;
+            if (!isAiming) return;
 
             ResetSpecialIdle();
             _isFiring = true;

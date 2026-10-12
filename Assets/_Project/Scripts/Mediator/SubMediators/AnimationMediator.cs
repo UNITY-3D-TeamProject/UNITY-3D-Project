@@ -98,6 +98,17 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 조준 상태를 CharacterAnimator 로 전달한다. 조준 중에는 사격 자세를 유지한다.
+        /// </summary>
+        /// <param name="isAiming">조준 중이면 true</param>
+        public void NotifyAim(bool isAiming)
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.SetAiming(isAiming);
+        }
+
+        /// <summary>
         /// 점프 시작을 CharacterAnimator 로 전달한다.
         /// </summary>
         public void NotifyJumpStarted()
