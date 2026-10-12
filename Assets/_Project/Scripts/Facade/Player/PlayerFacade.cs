@@ -43,8 +43,10 @@ namespace Facade.Player
         public event Action<string, float, float> OnAttributeChanged;
         /// <summary>플레이어가 피격되었을 때 발생한다.</summary>
         public event Action OnHit;
-        /// <summary>플레이어가 사망했을 때 발생한다.</summary>
+        /// <summary>플레이어가 사망한 즉시 발생한다.</summary>
         public event Action OnDeath;
+        /// <summary>플레이어 사망 후 처리(사망 애니메이션)가 끝나 플레이어가 파괴되기 직전에 발생한다.</summary>
+        public event Action OnDeathEnded;
         /// <summary>플레이어가 스킬을 사용했을 때 (스킬 이름, 쿨타임)을 알린다. 사용 1회당 1번 발생한다.</summary>
         public event Action<string, float> OnSkillUsed;
         /// <summary>설정창 열기 입력이 들어왔을 때 발생한다.</summary>
@@ -154,6 +156,7 @@ namespace Facade.Player
                 _characterMediator.OnAttributeChanged += RelayAttributeChanged;
                 _characterMediator.OnHit += RelayHit;
                 _characterMediator.OnDeath += RelayDeath;
+                _characterMediator.OnDeathEnded += RelayDeathEnded;
                 _characterMediator.OnSkillUsed += RelaySkillUsed;
             }
 
@@ -176,6 +179,7 @@ namespace Facade.Player
                 _characterMediator.OnAttributeChanged -= RelayAttributeChanged;
                 _characterMediator.OnHit -= RelayHit;
                 _characterMediator.OnDeath -= RelayDeath;
+                _characterMediator.OnDeathEnded -= RelayDeathEnded;
                 _characterMediator.OnSkillUsed -= RelaySkillUsed;
             }
 
@@ -199,6 +203,11 @@ namespace Facade.Player
         private void RelayDeath()
         {
             OnDeath?.Invoke();
+        }
+
+        private void RelayDeathEnded()
+        {
+            OnDeathEnded?.Invoke();
         }
 
         private void RelaySkillUsed(string skillName, float cooldown)

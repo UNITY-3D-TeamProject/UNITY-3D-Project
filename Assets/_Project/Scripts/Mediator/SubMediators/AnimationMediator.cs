@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using CharacterAnimation;
+using Visual;
 
 namespace Mediator.SubMediators
 {
@@ -16,6 +17,16 @@ namespace Mediator.SubMediators
         #region Serialized Fields
         [Header("References")]
         [SerializeField] private CharacterAnimator _characterAnimator;
+        [Tooltip("피격 후 무적 동안 캐릭터를 깜빡이게 하는 컴포넌트")]
+        [SerializeField] private RendererBlinker _blinker;
+        [Header("Settings")]
+        [Tooltip("CharacterAnimator.SetMoveSpeed 로 연결할 이동속도 어트리뷰트 이름")]
+        [SerializeField] private string _speedValueKey;
+        #endregion
+
+        #region Events
+        /// <summary>CharacterAnimator 의 사망 애니메이션이 끝났을 때 발생한다.</summary>
+        public event Action OnDeathAnimationEnded;
         #endregion
 
         #region Unity Lifecycle
@@ -23,6 +34,18 @@ namespace Mediator.SubMediators
         {
             base.Awake();
             ResolveComponent(ref _characterAnimator);
+            ResolveComponent(ref _blinker);
+        }
+
+        protected override void OnEnable()
+        {
+            if (_characterAnimator) _characterAnimator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
+            base.OnEnable();
+        }
+
+        private void OnDisable()
+        {
+            if (_characterAnimator) _characterAnimator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
         }
         #endregion
 
@@ -95,6 +118,17 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 조준 상태를 CharacterAnimator 로 전달한다. 조준 중에는 사격 자세를 유지한다.
+        /// </summary>
+        /// <param name="isAiming">조준 중이면 true</param>
+        public void NotifyAim(bool isAiming)
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.SetAiming(isAiming);
+        }
+
+        /// <summary>
         /// 점프 시작을 CharacterAnimator 로 전달한다.
         /// </summary>
         public void NotifyJumpStarted()
@@ -134,15 +168,57 @@ namespace Mediator.SubMediators
 
             _characterAnimator.StopRoll();
         }
+
+        /// <summary>
+        /// 피격을 전달받아 깜빡임을 시작한다. 이미 깜빡이는 중이면 그대로 이어간다.
+        /// </summary>
+        public void NotifyHit()
+        {
+            if (!_blinker) return;
+
+            _blinker.Play();
+        }
+
+        /// <summary>
+        /// 피격 후 무적이 끝났음을 전달받아 깜빡임을 멈춘다.
+        /// </summary>
+        public void NotifyInvincibilityEnded()
+        {
+            if (!_blinker) return;
+
+            _blinker.Stop();
+        }
+
+        /// <summary>
+        /// 사망을 CharacterAnimator 로 전달해 사망 애니메이션을 재생한다. 깜빡임은 멈춘다.
+        /// </summary>
+        public void NotifyDeath()
+        {
+            if (_blinker) _blinker.Stop();
+            if (!_characterAnimator) return;
+
+            _characterAnimator.PlayDeath();
+        }
         #endregion
 
         #region Protected Methods
         protected override void InitAttributeCallback()
         {
+            AttributeCallback.TryAdd(_speedValueKey, data =>
+            {
+                if (_characterAnimator) _characterAnimator.SetMoveSpeed(data.NewValue);
+            });
         }
 
         protected override void InitValue()
         {
+        }
+        #endregion
+
+        #region Private Methods
+        private void OnDeathAnimationEndedCallback()
+        {
+            OnDeathAnimationEnded?.Invoke();
         }
         #endregion
     }

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1392782793216760739}
   - component: {fileID: 3994685122273958055}
   - component: {fileID: 1268804171675593987}
+  - component: {fileID: 2265631014711547836}
   m_Layer: 0
   m_Name: CombatPrefab
   m_TagString: Untagged
@@ -46,7 +47,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatMediator
   _combatComponent: {fileID: 1268804171675593987}
+  _moveSpeedReducer: {fileID: 2265631014711547836}
   _healthValueKey: CurrentHp
+  _moveSpeedValueKey: MoveSpeed
 --- !u!114 &1268804171675593987
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -59,3 +62,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00b23bf3b266d738b308e06bf18f211a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Combat.CharacterCombat
+--- !u!114 &2265631014711547836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3329213648932413749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be184d619f572414e81f807cc58e86f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Combat.MoveSpeedReducer
+  _chargeReduction: 1.5
+  _aimReduction: 3

@@ -39,6 +39,8 @@ namespace Mediator.SubMediators
         private bool _isAimInputHeld;
         // 구르기 중에는 Aim 입력을 카메라에 전달하지 않는다
         private bool _isAimLocked;
+        // 조준 카메라가 실제로 켜져 있는지 여부
+        private bool _isAiming;
         #endregion
 
         #region Properties
@@ -58,6 +60,8 @@ namespace Mediator.SubMediators
         #region Events
         /// <summary>회전 명령이 전달될 때 카메라 피벗의 forward 를 알린다.</summary>
         public event Action<Vector3> OnViewForwardChanged;
+        /// <summary>실제 조준 상태가 바뀔 때 발생한다. 조준 중이면 true.</summary>
+        public event Action<bool> OnAimChanged;
         #endregion
 
         #region Unity Lifecycle
@@ -123,7 +127,7 @@ namespace Mediator.SubMediators
             _isAimLocked = true;
             if (_targetCamera == null) return;
 
-            _targetCamera.SetAim(false);
+            ApplyAim(false);
         }
 
         /// <summary>
@@ -134,7 +138,7 @@ namespace Mediator.SubMediators
             _isAimLocked = false;
             if (_targetCamera == null) return;
 
-            _targetCamera.SetAim(_isAimInputHeld);
+            ApplyAim(_isAimInputHeld);
         }
         #endregion
 
@@ -173,7 +177,19 @@ namespace Mediator.SubMediators
             _isAimInputHeld = isAiming;
             if (_isAimLocked || _targetCamera == null) return;
 
+            ApplyAim(isAiming);
+        }
+        /// <summary>
+        /// 조준 카메라를 켜고 끈다. 실제 조준 상태가 바뀌었으면 OnAimChanged 를 발행한다.
+        /// </summary>
+        /// <param name="isAiming">true 면 조준 시작, false 면 조준 해제</param>
+        private void ApplyAim(bool isAiming)
+        {
             _targetCamera.SetAim(isAiming);
+            if (_isAiming == isAiming) return;
+
+            _isAiming = isAiming;
+            OnAimChanged?.Invoke(isAiming);
         }
         /// <summary>
         /// Controller 에 대한 바인딩 실행

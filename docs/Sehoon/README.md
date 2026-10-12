@@ -30,7 +30,7 @@
 ### 우선순위 중간
 | 순서 | 기능 | 문서 | 상태 |
 |---|---|---|---|
-| 10 | 피격 시 깜빡임 + 무적 | [10-hit-blink-invincibility.md](10-hit-blink-invincibility.md) | 대기 |
+| 10 | 피격 시 깜빡임 + 무적 | [10-hit-blink-invincibility.md](done/10-hit-blink-invincibility.md) | 완료 |
 | 11 | 플레이어 회전 속도 체크 | [11-rotation-speed-check.md](11-rotation-speed-check.md) | 대기 |
 | 12 | Idle 특수 애니메이션 | [12-idle-special-animation.md](done/12-idle-special-animation.md) | 완료 |
 
@@ -38,7 +38,10 @@
 | 순서 | 기능 | 문서 | 상태 |
 |---|---|---|---|
 | 13 | 총기 과열 색상 변경 | [13-overheat-color.md](done/13-overheat-color.md) | 완료 |
-| 14 | 사격·조준 중 이동 속도 감소 | [14-fire-aim-move-slow.md](14-fire-aim-move-slow.md) | 대기 |
+| 14 | 사격·조준 중 이동 속도 감소 | [14-fire-aim-move-slow.md](done/14-fire-aim-move-slow.md) | 완료 |
+| 15 | 캐릭터 사망 시 처리 | [15-character-death.md](done/15-character-death.md) | 완료 |
+| 16 | 이동속도에 맞춘 이동 애니메이션 재생 속도 | [16-move-anim-speed.md](done/16-move-anim-speed.md) | 완료 |
+| 17 | 조준 중 사격 자세 유지 | [17-aim-fire-pose.md](done/17-aim-fire-pose.md) | 완료 |
 
 ## 같은 우선순위 안에서 순서를 정한 근거
 - **최우선** (사용자 지정, 고정)

@@ -17,6 +17,8 @@ namespace CharacterAnimation
         [Header("Locomotion")]
         [Tooltip("이동 방향 파라미터(MoveX, MoveY)가 목표값에 도달하는 데 걸리는 시간(초).")]
         [SerializeField] private float _moveDirectionDampTime = 0.1f;
+        [Tooltip("이동 애니메이션이 1배속으로 재생될 때의 이동속도. 현재 이동속도 / 이 값이 Locomotion 재생 배율이 된다.")]
+        [SerializeField, Min(0.01f)] private float _referenceMoveSpeed = 5.0f;
 
         [Header("Fire")]
         [Tooltip("마지막 사격 후 사격 상체 애니메이션을 유지하는 시간(초).")]
@@ -41,6 +43,10 @@ namespace CharacterAnimation
         [SerializeField, Min(0.0f)] private float _specialIdleDelay = 10.0f;
         [Tooltip("Animator 의 특수 Idle 상태 개수. SpecialIdleIndex 를 0 ~ (개수 - 1) 중 랜덤으로 고른다.")]
         [SerializeField, Min(1)] private int _specialIdleCount = 2;
+
+        [Header("Death")]
+        [Tooltip("사망 루프(DeathLoop) 상태를 이 횟수만큼 재생하면 사망 애니메이션 종료를 알린다.")]
+        [SerializeField, Min(0.0f)] private float _deathLoopCount = 2.0f;
         #endregion
 
         #region Private Fields
@@ -61,11 +67,19 @@ namespace CharacterAnimation
         private Vector3 _holdBarrelLocal;
         private bool _isFiring;
         private bool _isCharging;
+        private bool _isAiming;
         private float _lastFireTime;
         private float _aimWeight;
         private bool _isRolling;
         private float _idleTime;
         private Vector3 _lastViewForward;
+        private bool _isDead;
+        private bool _hasDeathEnded;
+        #endregion
+
+        #region Events
+        /// <summary>사망 애니메이션(사망 루프 정해진 횟수 재생)이 끝났을 때 한 번 발생한다.</summary>
+        public event Action OnDeathAnimationEnded;
         #endregion
 
         #region Unity Lifecycle
@@ -94,8 +108,8 @@ namespace CharacterAnimation
             _animator.SetFloat(AnimHash.MoveX, localDirection.x, _moveDirectionDampTime, deltaTime);
             _animator.SetFloat(AnimHash.MoveY, localDirection.z, _moveDirectionDampTime, deltaTime);
 
-            // 차지 중에는 사격 자세를 계속 유지한다
-            if (_isFiring && !_isCharging && (Time.time - _lastFireTime >= _fireHoldDuration))
+            // 차지 중·조준 중에는 사격 자세를 계속 유지한다
+            if (_isFiring && !_isCharging && !_isAiming && (Time.time - _lastFireTime >= _fireHoldDuration))
             {
                 _isFiring = false;
                 _animator.SetBool(AnimHash.IsFiring, false);
@@ -107,6 +121,7 @@ namespace CharacterAnimation
             _aimWeight = Mathf.MoveTowards(_aimWeight, targetWeight, blendSpeed);
 
             UpdateSpecialIdle(deltaTime);
+            UpdateDeath();
         }
 
         private void LateUpdate()
@@ -152,7 +167,7 @@ namespace CharacterAnimation
         /// <param name="isMoving">이동 중이면 true</param>
         public void SetMoving(bool isMoving)
         {
-            if (!enabled) return;
+            if (!enabled || _isDead) return;
 
             if (isMoving) ResetSpecialIdle();
             _animator.SetBool(AnimHash.IsMoving, isMoving);
@@ -165,6 +180,17 @@ namespace CharacterAnimation
         public void SetMoveDirection(Vector3 worldDirection)
         {
             _moveDirection = Vector3.ProjectOnPlane(worldDirection, Vector3.up);
+        }
+
+        /// <summary>
+        /// 현재 이동속도를 설정한다. 기준 속도 대비 비율을 MoveAnimSpeed 에 넣어 Locomotion 재생 속도를 맞춘다.
+        /// </summary>
+        /// <param name="moveSpeed">현재 이동속도</param>
+        public void SetMoveSpeed(float moveSpeed)
+        {
+            if (!enabled) return;
+
+            _animator.SetFloat(AnimHash.MoveAnimSpeed, moveSpeed / _referenceMoveSpeed);
         }
 
         /// <summary>
@@ -207,7 +233,7 @@ namespace CharacterAnimation
         /// </summary>
         public void PlayFire()
         {
-            if (!enabled) return;
+            if (!enabled || _isDead) return;
 
             ResetSpecialIdle();
             _isFiring = true;
@@ -223,7 +249,7 @@ namespace CharacterAnimation
         /// <param name="isCharging">차지 중이면 true</param>
         public void SetCharging(bool isCharging)
         {
-            if (!enabled) return;
+            if (!enabled || _isDead) return;
 
             _isCharging = isCharging;
             _lastFireTime = Time.time;
@@ -235,11 +261,28 @@ namespace CharacterAnimation
         }
 
         /// <summary>
+        /// 조준 상태를 설정한다. 조준 중에는 Fire 재생 없이 사격 자세(FireHold)를 유지한다.
+        /// 조준이 끝나면 바로 사격 자세를 내리되, 마지막 사격·차지 후 유지 시간이 남아 있으면 그때까지 유지한다.
+        /// </summary>
+        /// <param name="isAiming">조준 중이면 true</param>
+        public void SetAiming(bool isAiming)
+        {
+            if (!enabled || _isDead) return;
+
+            _isAiming = isAiming;
+            if (!isAiming) return;
+
+            ResetSpecialIdle();
+            _isFiring = true;
+            _animator.SetBool(AnimHash.IsFiring, true);
+        }
+
+        /// <summary>
         /// 점프 시작을 알린다. 점프 시작 → 상승 → 공중 순서로 재생된다. 공중에서 다시 점프하면 처음부터 재생한다.
         /// </summary>
         public void PlayJump()
         {
-            if (!enabled) return;
+            if (!enabled || _isDead) return;
 
             ResetSpecialIdle();
             _animator.SetBool(AnimHash.IsJumping, true);
@@ -263,7 +306,7 @@ namespace CharacterAnimation
         /// </summary>
         public void PlayRoll()
         {
-            if (!enabled) return;
+            if (!enabled || _isDead) return;
 
             ResetSpecialIdle();
             _isRolling = true;
@@ -282,9 +325,50 @@ namespace CharacterAnimation
             _animator.SetBool(AnimHash.IsRolling, false);
             _animator.ResetTrigger(AnimHash.Roll);
         }
+
+        /// <summary>
+        /// 사망을 알린다. 사격 자세를 내리고 사망 애니메이션(Death → DeathLoop 루프)을 재생한다.
+        /// 이후에는 이동·사격·조준·점프·구르기 알림을 무시한다.
+        /// </summary>
+        public void PlayDeath()
+        {
+            if (!enabled || _isDead) return;
+
+            _isDead = true;
+            ResetSpecialIdle();
+
+            // 사격 상체가 사망 모션을 덮지 않게 내린다. 조준 보정은 Update 에서 서서히 꺼진다
+            _isFiring = false;
+            _isCharging = false;
+            _isAiming = false;
+            _isRolling = false;
+            _animator.SetBool(AnimHash.IsFiring, false);
+            _animator.SetBool(AnimHash.IsRolling, false);
+            _animator.SetBool(AnimHash.IsJumping, false);
+            _animator.ResetTrigger(AnimHash.Fire);
+            _animator.ResetTrigger(AnimHash.Jump);
+            _animator.ResetTrigger(AnimHash.Roll);
+            _animator.SetTrigger(AnimHash.Death);
+        }
         #endregion
 
         #region Private Methods
+        /// <summary>
+        /// 사망 루프 상태(전환 중 아님)가 정해진 횟수만큼 재생되면 사망 애니메이션 종료를 한 번 알린다.
+        /// </summary>
+        private void UpdateDeath()
+        {
+            if (!_isDead || _hasDeathEnded) return;
+            if (_animator.IsInTransition(0)) return;
+
+            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+            if (stateInfo.shortNameHash != AnimHash.DeathLoopState) return;
+            if (stateInfo.normalizedTime < _deathLoopCount) return;
+
+            _hasDeathEnded = true;
+            OnDeathAnimationEnded?.Invoke();
+        }
+
         /// <summary>
         /// 하체가 Idle(전환 중 아님)이고 사격 상체가 꺼져 있는 동안 무입력 시간을 센다.
         /// 대기 시간이 지나면 특수 Idle 중 하나를 랜덤으로 재생하고 시간을 다시 센다.
@@ -451,6 +535,7 @@ namespace CharacterAnimation
             public static readonly int IsMoving = Animator.StringToHash("IsMoving");
             public static readonly int MoveX = Animator.StringToHash("MoveX");
             public static readonly int MoveY = Animator.StringToHash("MoveY");
+            public static readonly int MoveAnimSpeed = Animator.StringToHash("MoveAnimSpeed");
             public static readonly int IsFiring = Animator.StringToHash("IsFiring");
             public static readonly int Fire = Animator.StringToHash("Fire");
             public static readonly int IsJumping = Animator.StringToHash("IsJumping");
@@ -460,8 +545,10 @@ namespace CharacterAnimation
             public static readonly int SpecialIdle = Animator.StringToHash("SpecialIdle");
             public static readonly int IsSpecialIdle = Animator.StringToHash("IsSpecialIdle");
             public static readonly int SpecialIdleIndex = Animator.StringToHash("SpecialIdleIndex");
+            public static readonly int Death = Animator.StringToHash("Death");
             public static readonly int FireHoldState = Animator.StringToHash("FireHold");
             public static readonly int IdleState = Animator.StringToHash("Idle");
+            public static readonly int DeathLoopState = Animator.StringToHash("DeathLoop");
         }
         #endregion
     }
