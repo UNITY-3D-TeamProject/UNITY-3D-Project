@@ -39,6 +39,9 @@ namespace Map.Spiral
 
         [Tooltip("악성 피드 뒤에 놓는 아이템 프리팹 (선택)")]
         public GameObject itemPrefab;
+
+        [Tooltip("이 태그의 주위에 떠다니는 피드 프리팹 (선택). 개수와 거리는 설정 에셋의 Ambient Feeds 에서 정한다.")]
+        public GameObject ambientFeedPrefab;
     }
 
     /// <summary>
@@ -160,6 +163,10 @@ namespace Map.Spiral
                 // 이 태그에서 아이템을 놓을 수 있는 고정 발판들
                 var itemSpots = new List<GameObject>();
 
+                // 주위 피드를 놓을 때 쓰는, 이 태그가 시작하는 각도와 높이
+                float tagStartAngle = _currentAngle;
+                float tagStartHeight = _currentHeight;
+
                 for (int s = 0; s < _settings.SectionsPerTag; s++)
                 {
                     // 구간이 올라가는 높이, 구간 종류, 발판 프리팹을 시드로 무작위로 정한다
@@ -224,6 +231,12 @@ namespace Map.Spiral
 
                 PlaceTagItems(itemSpots, tagRoot, random);
                 PlaceTagEnd(tag, t, lastPlatform, endPrefab, tagRoot);
+
+                if (tag.ambientFeedPrefab != null)
+                {
+                    PlaceAmbientFeeds(tag.ambientFeedPrefab, tagRoot, tagStartAngle, tagStartHeight, _settings.OuterFeedCount, _settings.OuterFeedDistance, 1f, random);
+                    PlaceAmbientFeeds(tag.ambientFeedPrefab, tagRoot, tagStartAngle, tagStartHeight, _settings.InnerFeedCount, _settings.InnerFeedDistance, -1f, random);
+                }
             }
 
             // 도착 발판까지 올라가는 계단
@@ -276,6 +289,40 @@ namespace Map.Spiral
             if (tag.itemPrefab != null)
             {
                 Instantiate(tag.itemPrefab, entry + (forward * _settings.ItemDistance), platform.rotation, tagRoot);
+            }
+        }
+
+        // 태그가 지나온 길(시작 각도·높이 ~ 지금 각도·높이)을 따라 주위 피드를 count 개 띄운다.
+        // side 가 1 이면 나선의 바깥쪽, -1 이면 안쪽이다. 길을 개수만큼 나눈 칸마다 하나씩 놓아 한곳에 몰리지 않게 한다.
+        private void PlaceAmbientFeeds(
+            GameObject prefab,
+            Transform tagRoot,
+            float startAngle,
+            float startHeight,
+            int count,
+            Vector2 distanceRange,
+            float side,
+            System.Random random)
+        {
+            Vector3 center = GetCenter();
+            Vector2 heightRange = _settings.AmbientFeedHeightRange;
+
+            for (int i = 0; i < count; i++)
+            {
+                float progress = (i + (float)random.NextDouble()) / count;
+                float distance = Mathf.Lerp(distanceRange.x, distanceRange.y, (float)random.NextDouble());
+                float lift = Mathf.Lerp(heightRange.x, heightRange.y, (float)random.NextDouble());
+
+                float rad = Mathf.Lerp(startAngle, _currentAngle, progress) * Mathf.Deg2Rad;
+                float radius = _settings.SpiralRadius + (side * distance);
+                float height = Mathf.Lerp(startHeight, _currentHeight, progress) + lift;
+
+                Vector3 position = new Vector3(
+                    center.x + (Mathf.Cos(rad) * radius),
+                    transform.position.y + height,
+                    center.z + (Mathf.Sin(rad) * radius));
+
+                Instantiate(prefab, position, Quaternion.identity, tagRoot);
             }
         }
 

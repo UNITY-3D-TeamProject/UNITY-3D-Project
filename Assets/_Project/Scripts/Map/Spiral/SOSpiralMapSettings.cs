@@ -62,6 +62,22 @@ namespace Map.Spiral
         [Tooltip("아이템을 놓는 거리")]
         [SerializeField, Min(0f)] private float _itemDistance = 9.0f;
 
+        [Header("Ambient Feeds (태그 주위에 떠다니는 피드. 프리팹은 태그마다 지정한다)")]
+        [Tooltip("태그 하나에서 나선의 바깥쪽에 띄우는 피드 수")]
+        [SerializeField, Min(0)] private int _outerFeedCount = 2;
+
+        [Tooltip("태그 하나에서 나선의 안쪽에 띄우는 피드 수")]
+        [SerializeField, Min(0)] private int _innerFeedCount = 2;
+
+        [Tooltip("바깥쪽 피드를 발판이 놓이는 원에서 떨어뜨리는 거리의 범위 (최소, 최대)")]
+        [SerializeField] private Vector2 _outerFeedDistance = new Vector2(7.0f, 11.0f);
+
+        [Tooltip("안쪽 피드를 발판이 놓이는 원에서 떨어뜨리는 거리의 범위 (최소, 최대)")]
+        [SerializeField] private Vector2 _innerFeedDistance = new Vector2(7.0f, 11.0f);
+
+        [Tooltip("피드를 그 자리의 발판 높이에서 띄우는 높이의 범위 (최소, 최대)")]
+        [SerializeField] private Vector2 _ambientFeedHeightRange = new Vector2(1.0f, 5.0f);
+
         [Header("Round Platform (Tags 를 쓸 때만)")]
         [Tooltip("마지막 태그 뒤 도착 발판까지 올라가는 계단 발판 수. 라운드 발판을 마지막 태그 끝 발판보다 높여, 악성 피드를 건너뛰고 올라설 수 없게 한다.")]
         [SerializeField, Min(0)] private int _exitStepCount = 3;
@@ -124,6 +140,21 @@ namespace Map.Spiral
 
         /// <summary>태그 끝 발판의 입구에서 아이템까지의 거리.</summary>
         public float ItemDistance => _itemDistance;
+
+        /// <summary>태그 하나에서 나선의 바깥쪽에 띄우는 주위 피드 수.</summary>
+        public int OuterFeedCount => _outerFeedCount;
+
+        /// <summary>태그 하나에서 나선의 안쪽에 띄우는 주위 피드 수.</summary>
+        public int InnerFeedCount => _innerFeedCount;
+
+        /// <summary>바깥쪽 주위 피드를 나선에서 떨어뜨리는 거리의 범위 (최소, 최대).</summary>
+        public Vector2 OuterFeedDistance => _outerFeedDistance;
+
+        /// <summary>안쪽 주위 피드를 나선에서 떨어뜨리는 거리의 범위 (최소, 최대).</summary>
+        public Vector2 InnerFeedDistance => _innerFeedDistance;
+
+        /// <summary>주위 피드를 발판 높이에서 띄우는 높이의 범위 (최소, 최대).</summary>
+        public Vector2 AmbientFeedHeightRange => _ambientFeedHeightRange;
 
         /// <summary>마지막 태그 뒤의 계단 발판 수.</summary>
         public int ExitStepCount => _exitStepCount;
