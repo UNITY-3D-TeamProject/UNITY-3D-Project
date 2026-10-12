@@ -60,7 +60,9 @@ namespace Hit
             HashSet<IEffectTarget> appliedTargets = new();
             foreach (Collider other in colliders)
             {
+                // 충돌체가 루트에 있고 AttributeSet 이 자식에 있는 캐릭터도 있어서 부모 → 자식 순으로 찾는다
                 IEffectTarget target = other.GetComponentInParent<IEffectTarget>();
+                if (target == null) target = other.GetComponentInChildren<IEffectTarget>();
                 if (target == null || target == cursor) continue;
                 if (!target.IsValidTarget(hitEffect.TargetAttribute)) continue;
                 if (!appliedTargets.Add(target)) continue;
