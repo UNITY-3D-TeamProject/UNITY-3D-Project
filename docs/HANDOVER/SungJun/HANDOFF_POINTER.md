@@ -5,6 +5,17 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-12** — Player 파트용 Scan 스킬 파동 연결 요청문 작성(Scan.cs 코드·프리팹 구성·쿨타임 ≥ 지속시간). TempScene 파동 머티리얼을 `_Project` 사본으로 교체, `Prefabs/Skills/ScanWave.prefab` 생성(ScanTestTrigger는 씬 인스턴스에만, 씬 저장 대기): [Scan 스킬 연결 요청](./2026-10-12/scan-skill-player-request.md)
+- **2026-10-11** — 2차 검토 반영: MeshReveal 사라지는 중 재스캔 튐 수정(식 하나로 통합), 같은 프레임 중복 적용 제거, 실루엣·마커·메시 같은 값 재적용 건너뛰기. 컴파일 OK, Play 검증 대기: [2차 검토 반영](./2026-10-11/scan-review-2-fixes.md)
+- **2026-10-11** — 스캔 설계 2차 정적 검토: 구조 유지, MeshReveal fade-out 중 재스캔 시 전체로 튀는 문제, 스캔 레이어 Everything, 매 프레임 중복 갱신, 미사용 옵션 정리. 런타임 미수정: [2차 검토](./2026-10-11/scan-design-review-2.md)
+- **2026-10-11** — 스캔 4번(아이템 벽 너머 표시)이 누락된 것을 확인하고 `SilhouetteReaction` + `SG_ScanSilhouette` 셰이더 그래프(Depth Test Greater, 가려진 부분만)로 구현, 시험용 약점 연결(`WeakPointTestBinder`). 원래 아이템 렌더러는 그대로. TempScene 시험 오브젝트 추가 + Play(eval) 동작 확인, 씬 저장·R키 확인 대기: [아이템 실루엣](./2026-10-11/item-silhouette-reaction.md)
+- **2026-10-11** — 시험 스캔을 R키로 전환(옛 TerrainScanner 비활성), `MeshRevealReaction`이 닿으면 닿은 지점부터 메시 전체를 `_revealSpeed`로 드러내도록 변경. 컴파일 OK, Play 검증 대기: [R키·전체 드러내기](./2026-10-11/scan-full-reveal-and-r-key.md)
+- **2026-10-11** — 스캔 설계 검토 1~5·8·9 반영(대상별 1회 통지, 같은 오브젝트 반응만 탐색, 재스캔은 시간만 연장, 스캔 값만 복원, 약점은 유지 시간 후 즉시 끔, `maxDiameter` 개명). 6·7번은 타 파트. 컴파일 OK, Play 검증은 게임 루프 정지로 미실시: [검토 반영](./2026-10-11/scan-design-review-fixes.md)
+- **2026-10-11** — 스캔 설계 정적 검토: 책임 분리는 유지 권장, 재스캔·콜라이더 중복 호출·반응 소유 범위·렌더링 값 복원 개선점 정리. 런타임 미수정: [스캔 설계 검토](./2026-10-11/scan-design-review.md)
+- **2026-10-11** — 약점을 스캔 중에만 활성화(보이기 + 피격 판정)하도록 `WeakPointReaction`을 자동 탐색·SetActive 방식으로 변경하고, "배율 항상 적용" 가정을 "스캔 중에만"으로 정정. Play 검증 완료: [약점 스캔 활성화](./2026-10-11/weakpoint-scan-activation.md)
+- **2026-10-10** — TempScene 스캔 표지판 앞에 반응 종류별 시험 오브젝트 4종과 ScanWave 발사(T키) 구성, Play에서 반응 확인: [스캔 시험 씬 구성](./2026-10-10/scan-test-scene-setup.md)
+- **2026-10-10** — 스캔 코드 10개(동작 9개·약점 피해 1개)와 입력·HUD 연결 2곳의 역할 확인: [코드 현황](./2026-10-10/scan-code-inventory.md)
+- **2026-10-10** — 스캔 대상 반응 구조(IScannable + ScanTarget/반응 컴포넌트) 작성. `Scan.cs`·`Scan.prefab`은 이세훈 코드라 원본으로 복구했고, 스킬/Player 연결은 후속. 지금은 R키 `TerrainScanner`(Assets/Test) 기준으로 대상 반응만 연결 예정. 약점 배율은 타 파트 요청 대기: [작업 기록](./2026-10-10/scan-system-implementation.md), [약점 배율 요청](./2026-10-10/scan-weakpoint-handoff-requests.md)
 - **2026-10-10** — HUD를 PlayerFacade 기반으로 전환, 스킬 쿨(Roll·SpawnVehicle·Scan) 로직 추가, 낙하 데미지를 Effect SO로 변경. 컴파일·슬라이더 배선·Play 검증 대기: [작업 기록](./2026-10-10/hud-facade-skill-cooldown.md)
 - **2026-10-09** — 유니티 ↔ Claude Code MCP 연결 절차와 문제 해결 정리(uv 설치, Claude CLI 경로, 새 세션): [MCP 연결 가이드](./2026-10-09/unity-mcp-setup-guide.md)
 - **2026-10-09** — PlayerFacade 기반 낙하 복귀·사망 후 재스폰 구현(Core), 빌드 오류 0, Inspector 연결·Play 검증 대기: [구현 기록](./2026-10-09/fall-death-recovery-implementation.md)

@@ -29,9 +29,6 @@ namespace AI
 
         /// <summary>정체 판정 검사 주기 동안 이 거리(m) 미만으로 이동했으면 정체로 본다.</summary>
         private const float STUCK_DISTANCE_THRESHOLD = 0.1f;
-
-        /// <summary>한 목적지를 향해 이동을 시도할 수 있는 최대 시간(초). 초과하면 정체로 본다.</summary>
-        private const float DESTINATION_TIMEOUT = 10.0f;
         #endregion
 
         #region Serialized Fields
@@ -46,11 +43,18 @@ namespace AI
         [Header("Patrol")]
         [Tooltip("스폰 지점 기준 순찰 반경(m).")]
         [SerializeField] private float _patrolRadius = 10.0f;
+        [Tooltip("순찰 지점 목록. 비워두면 같은 오브젝트에서 찾고, 그래도 없으면 스폰 지점 반경 안 무작위로 순찰한다.")]
+        [SerializeField] private WaypointPatrolRoute _patrolRoute;
+
+        [Header("Stuck")]
+        [Tooltip("한 목적지를 향해 이동을 시도할 수 있는 최대 시간(초). 초과하면 정체로 본다.")]
+        [SerializeField, Min(0.1f)] private float _destinationTimeout = 10.0f;
         #endregion
 
         #region Private Fields
         private Vector3 _spawnPosition;
         private bool _hasDestination;
+        private float _lastTargetSeenTime;
 
         private Vector3 _stuckCheckPosition;
         private float _stuckCheckTimer;
@@ -81,6 +85,9 @@ namespace AI
 
         /// <summary>대상을 마지막으로 본 위치.</summary>
         public Vector3 LastKnownPosition => _sensor ? _sensor.LastKnownPosition : _body.position;
+
+        /// <summary>대상을 마지막으로 본 뒤 지난 시간(초). 한 번도 보지 못했으면 생성 시점부터 잰다.</summary>
+        public float TimeSinceTargetSeen => Time.time - _lastTargetSeenTime;
 
         /// <summary>현재 보이는 대상까지의 수평 거리(m). 보이는 대상이 없으면 양의 무한대.</summary>
         public float DistanceToTarget
@@ -119,6 +126,7 @@ namespace AI
         private void Awake()
         {
             if (!_sensor) _sensor = GetComponent<Sensor>();
+            if (!_patrolRoute) _patrolRoute = GetComponent<WaypointPatrolRoute>();
             if (!_agent) _agent = GetComponent<NavMeshAgent>();
             if (!_body) _body = transform;
 
@@ -137,12 +145,15 @@ namespace AI
         private void Start()
         {
             _spawnPosition = _body.position;
+            _lastTargetSeenTime = Time.time;
             // 방어 코드
             if (_agent) _agent.nextPosition = _body.position;
         }
 
         private void Update()
         {
+            if (HasVisibleTarget) _lastTargetSeenTime = Time.time;
+
             if (!_agent || !_agent.isOnNavMesh)
             {
                 RequestMove(Vector2.zero);
@@ -296,15 +307,34 @@ namespace AI
         }
 
         /// <summary>
-        /// 스폰 지점 기준 순찰 반경 안의 무작위 지점을 목적지로 삼는다.
+        /// 다음 순찰 지점을 목적지로 삼는다. WaypointPatrolRoute 에서 지점을 받을 수 있으면 그 지점을,
+        /// 아니면 스폰 지점 기준 순찰 반경 안의 무작위 지점을 쓴다.
         /// </summary>
         /// <returns>유효한 목적지를 잡았으면 true</returns>
         public bool MoveToRandomPatrolPoint()
         {
+            if (_patrolRoute && _patrolRoute.TryGetNextWaypoint(out Vector3 waypoint))
+            {
+                return MoveTo(waypoint);
+            }
+
             Vector2 offset = UnityEngine.Random.insideUnitCircle * _patrolRadius;
             Vector3 candidate = _spawnPosition + new Vector3(offset.x, 0.0f, offset.y);
 
             return MoveTo(candidate);
+        }
+
+        /// <summary>
+        /// 지정한 위치에서 가장 가까운 순찰 지점을 목적지로 삼는다. 정확한 위치가 아니라 근처 순찰 지점까지만 간다.
+        /// </summary>
+        /// <param name="worldPosition">기준 월드 위치</param>
+        /// <returns>WaypointPatrolRoute 에서 지점을 받아 유효한 목적지를 잡았으면 true</returns>
+        public bool MoveToPatrolPointNear(Vector3 worldPosition)
+        {
+            if (!_patrolRoute) return false;
+            if (!_patrolRoute.TryGetNearestWaypoint(worldPosition, out Vector3 waypoint)) return false;
+
+            return MoveTo(waypoint);
         }
 
         /// <summary>
@@ -415,7 +445,7 @@ namespace AI
             }
 
             _destinationTimer += Time.deltaTime;
-            if (_destinationTimer >= DESTINATION_TIMEOUT)
+            if (_destinationTimer >= _destinationTimeout)
             {
                 _isStuck = true;
                 return;

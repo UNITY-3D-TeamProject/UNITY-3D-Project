@@ -88,12 +88,13 @@ namespace Mediator.SubMediators
         /// 주입된 발사 방향과 효과 주체로 BulletFactory 에 총알 생성을 요청한다.
         /// </summary>
         /// <param name="position">총알 생성 위치</param>
-        public void CommandSpawnBullet(Vector3 position)
+        /// <param name="isCharged">차지샷이면 true</param>
+        public void CommandSpawnBullet(Vector3 position, bool isCharged)
         {
             if (!_bulletFactory) return;
 
             Vector3 direction = CalculateFireDirection(position);
-            _bulletFactory.Create(position, direction, _effectCursor);
+            _bulletFactory.Create(position, direction, isCharged, _effectCursor);
         }
         #endregion
 

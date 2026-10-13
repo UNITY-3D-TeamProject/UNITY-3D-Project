@@ -29,6 +29,7 @@ namespace Mediator
         private MediatorBase[] _mediators;
         // _attributeMediator 가 지정되지 않았을 때 직접 사용할 AttributeSet
         private AttributeSet _attributeSet;
+        private bool _isDead;
         #endregion
 
         #region Properties
@@ -48,8 +49,10 @@ namespace Mediator
         public event Action<string, float, float> OnAttributeChanged;
         /// <summary>캐릭터가 피격되었을 때 발생한다.</summary>
         public event Action OnHit;
-        /// <summary>캐릭터가 사망했을 때 GameObject 파괴 직전에 발생한다.</summary>
+        /// <summary>캐릭터가 사망한 즉시 한 번 발생한다.</summary>
         public event Action OnDeath;
+        /// <summary>사망 후 처리(사망 애니메이션)가 끝나 GameObject 를 파괴하기 직전에 한 번 발생한다.</summary>
+        public event Action OnDeathEnded;
         /// <summary>스킬이 사용되었을 때 (스킬 이름, 쿨타임)을 알린다. 요청 1회당 1번 발생한다.</summary>
         public event Action<string, float> OnSkillUsed;
         #endregion
@@ -164,6 +167,7 @@ namespace Mediator
             }
             if (_animationMediator && _cameraMediator) _animationMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
             if (_skillMediator && _moveMediator) _skillMediator.SetGetGrounded(_moveMediator.IsGrounded);
+            if (_attributeMediator && _combatMediator) _attributeMediator.SetIsDamageBlocked(_combatMediator.IsDamageBlocked);
         }
         /// <summary>
         /// 등록된 바인딩 해제
@@ -184,6 +188,7 @@ namespace Mediator
             }
             if (_animationMediator) _animationMediator.ClearGetAimPoint();
             if (_skillMediator) _skillMediator.ClearGetGrounded();
+            if (_attributeMediator) _attributeMediator.ClearIsDamageBlocked();
         }
         /// <summary>
         /// 중재자들이 원하는 값 변경시 알림 발송
@@ -201,6 +206,9 @@ namespace Mediator
         /// </summary>
         private void SendViewForward(Vector3 viewForward)
         {
+            // 사망 후에는 시점을 돌려도 몸이 따라 돌지 않게 한다
+            if (_isDead) return;
+
             if (_moveMediator) _moveMediator.SetViewForward(viewForward);
             if (_rotateMediator) _rotateMediator.SetViewForward(viewForward);
             if (_animationMediator) _animationMediator.SetViewForward(viewForward);
@@ -229,6 +237,16 @@ namespace Mediator
             return true;
         }
 
+        /// <summary>
+        /// 전투 중재자의 이동속도 감속 요청을 어트리뷰트에 반영한다.
+        /// </summary>
+        /// <param name="key">이동속도 어트리뷰트 이름</param>
+        /// <param name="amount">차감량. 음수면 복구</param>
+        private void OnMoveSpeedReduceCallback(string key, float amount)
+        {
+            PayAttribute(key, amount);
+        }
+
         private void OnSkillUsedCallback(string skillName, float cooldown)
         {
             OnSkillUsed?.Invoke(skillName, cooldown);
@@ -236,21 +254,65 @@ namespace Mediator
 
         private void OnHitCallback()
         {
+            if (_isDead) return;
+
             Debug.Log($"{name} is hit!");
+            // 치명타는 같은 프레임에 OnHit 다음 OnDeath 가 오므로, 이미 죽었으면 깜빡임을 시작하지 않는다
+            if (_animationMediator && !_combatMediator.IsDead()) _animationMediator.NotifyHit();
             OnHit?.Invoke();
         }
 
+        /// <summary>
+        /// 사망을 한 번만 처리한다. 사망 이벤트를 발행하고 조작을 막은 뒤 사망 애니메이션을 재생한다.
+        /// 애니메이션 중재자가 없으면 바로 사망 후 처리를 끝낸다.
+        /// </summary>
         private void OnDeathCallback()
         {
+            if (_isDead) return;
+
+            _isDead = true;
             Debug.Log($"{name} is Death!");
             OnDeath?.Invoke();
+            DisableControl();
+
+            if (!_animationMediator)
+            {
+                EndDeath();
+                return;
+            }
+
+            _animationMediator.NotifyDeath();
+        }
+
+        private void OnDeathAnimationEndedCallback()
+        {
+            EndDeath();
+        }
+
+        /// <summary>
+        /// 사망 후 처리 완료를 알리고 GameObject 를 파괴한다.
+        /// </summary>
+        private void EndDeath()
+        {
+            OnDeathEnded?.Invoke();
             Destroy(gameObject);
+        }
+
+        /// <summary>
+        /// 사망 중 이동·스킬·회전 입력을 막도록 해당 중재자를 끈다.
+        /// </summary>
+        private void DisableControl()
+        {
+            if (_moveMediator) _moveMediator.enabled = false;
+            if (_skillMediator) _skillMediator.enabled = false;
+            if (_rotateMediator) _rotateMediator.enabled = false;
         }
         /// <summary>
         /// 사격 요청을 어트리뷰트 중재자에 전달해 회복을 정지한다.
         /// </summary>
         /// <param name="position">총알 생성 위치 (사용하지 않음)</param>
-        private void OnFireCallback(Vector3 position)
+        /// <param name="isCharged">차지샷 여부 (사용하지 않음)</param>
+        private void OnFireCallback(Vector3 position, bool isCharged)
         {
             _attributeMediator.PauseRegenOnFire();
         }
@@ -267,8 +329,10 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnSkillUsed += OnSkillUsedCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
+            if (_animationMediator) _animationMediator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged += _animationMediator.SetMoveDirection;
             if (_skillMediator && _animationMediator) _skillMediator.OnFireRequested += _animationMediator.NotifyFire;
+            if (_skillMediator && _animationMediator) _skillMediator.OnFireChargeChanged += _animationMediator.NotifyFireCharge;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpStarted += _animationMediator.NotifyJumpStarted;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpEnded += _animationMediator.NotifyJumpEnded;
             if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted += _animationMediator.NotifyRollStarted;
@@ -279,6 +343,15 @@ namespace Mediator
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested += _moveMediator.CommandAirJump;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded += _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted += _skillMediator.NotifyJumpStarted;
+            if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted += _skillMediator.NotifyRollStarted;
+            if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded += _skillMediator.NotifyRollEnded;
+            if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted += _cameraMediator.NotifyRollStarted;
+            if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded += _cameraMediator.NotifyRollEnded;
+            if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged += _combatMediator.NotifyFireCharge;
+            if (_cameraMediator && _combatMediator) _cameraMediator.OnAimChanged += _combatMediator.NotifyAim;
+            if (_cameraMediator && _animationMediator) _cameraMediator.OnAimChanged += _animationMediator.NotifyAim;
+            if (_combatMediator && _animationMediator) _combatMediator.OnInvincibilityEnded += _animationMediator.NotifyInvincibilityEnded;
+            if (_combatMediator) _combatMediator.OnMoveSpeedReduceRequested += OnMoveSpeedReduceCallback;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -293,8 +366,10 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnSkillUsed -= OnSkillUsedCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
+            if (_animationMediator) _animationMediator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged -= _animationMediator.SetMoveDirection;
             if (_skillMediator && _animationMediator) _skillMediator.OnFireRequested -= _animationMediator.NotifyFire;
+            if (_skillMediator && _animationMediator) _skillMediator.OnFireChargeChanged -= _animationMediator.NotifyFireCharge;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpStarted -= _animationMediator.NotifyJumpStarted;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpEnded -= _animationMediator.NotifyJumpEnded;
             if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted -= _animationMediator.NotifyRollStarted;
@@ -305,6 +380,15 @@ namespace Mediator
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested -= _moveMediator.CommandAirJump;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded -= _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted -= _skillMediator.NotifyJumpStarted;
+            if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted -= _skillMediator.NotifyRollStarted;
+            if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded -= _skillMediator.NotifyRollEnded;
+            if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted -= _cameraMediator.NotifyRollStarted;
+            if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded -= _cameraMediator.NotifyRollEnded;
+            if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged -= _combatMediator.NotifyFireCharge;
+            if (_cameraMediator && _combatMediator) _cameraMediator.OnAimChanged -= _combatMediator.NotifyAim;
+            if (_cameraMediator && _animationMediator) _cameraMediator.OnAimChanged -= _animationMediator.NotifyAim;
+            if (_combatMediator && _animationMediator) _combatMediator.OnInvincibilityEnded -= _animationMediator.NotifyInvincibilityEnded;
+            if (_combatMediator) _combatMediator.OnMoveSpeedReduceRequested -= OnMoveSpeedReduceCallback;
         }
         #endregion
     }

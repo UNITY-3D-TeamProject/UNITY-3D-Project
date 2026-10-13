@@ -16,6 +16,8 @@ namespace Projectile
         [Header("Hit")]
         [Tooltip("피격 대상으로 감지할 레이어")]
         [SerializeField] private LayerMask _hitLayers = Physics.DefaultRaycastLayers;
+        [Tooltip("맞힌 대상에 적용할 기본 효과. Initialize 에서 효과를 넘기면 그 효과로 바뀐다.")]
+        [SerializeField] private SOAttributeEffect _hitEffect;
 
         [Header("Movement")]
         [SerializeField] private float _speed = 20.0f;
@@ -26,7 +28,6 @@ namespace Projectile
         private TransformMotor _motor;
         private SphereCollider _sphereCollider;
         private Vector3 _direction = Vector3.forward;
-        private SOAttributeEffect _hitEffect;
         private IEffectTarget _cursor;
         private float _elapsedTime;
         #endregion
@@ -70,6 +71,17 @@ namespace Projectile
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// 생성 직후 호출해 총알의 비행 정보를 설정한다. 피격 효과는 프리팹에 설정된 기본 효과를 쓴다.
+        /// </summary>
+        /// <param name="direction">비행 방향. zero 면 월드 z+ 방향을 사용한다.</param>
+        /// <param name="cursor">발사자의 IEffectTarget. 효과의 ValueSource 가 Attribute 일 때 필요하다.</param>
+        public void Initialize(Vector3 direction, IEffectTarget cursor)
+        {
+            _direction = (direction == Vector3.zero) ? Vector3.forward : direction.normalized;
+            _cursor = cursor;
+        }
+
         /// <summary>
         /// 생성 직후 호출해 총알의 비행 정보를 설정한다.
         /// </summary>
