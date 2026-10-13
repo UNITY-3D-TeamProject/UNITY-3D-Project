@@ -24,6 +24,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   - `AI/AIController.cs`: 범용 API `FaceDirection` / `ExecuteSkill` / `StopSkill` 추가, `Attack()`은 이를 조합하도록 내부만 변경
   - `AI/BT/AIRangedAttackAction.cs` (신규): 대기(랜덤) → 예비 동작(고정, 조준 고정) → 발사
   - `Skill/Skills/EnemyAimLine.cs` (신규): `AttackWindup` 스킬. LineRenderer 조준선
+    - (2026-10-13) 발동 순간 FirePoint를 대상 몸통 중심으로 돌려 고정한다. 총구가 옆에 있어 생기는 어긋남과 높이 차를 보정하며, 총알도 같은 FirePoint를 쓰므로 선 = 탄도가 유지된다
   - [USER] `Ranged.prefab`에 `AttackWindup` 스킬 오브젝트 추가, `EnemyAI_Ranged` 그래프의 공격 노드 교체
 
 ## 제약 (Constraints)

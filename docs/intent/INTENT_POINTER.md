@@ -15,11 +15,12 @@
 - **[Movement System]** Player_test 이동/점프 입력이 CharacterMotor까지 도달하지 않음(프리팹 참조 끊김 + 점프 명령/속도 미구현) → [문서](./intent-007-move-jump-not-reaching-motor.md)
 - **[Character]** 몸통 회전 채널 부재로 AI 시야 부채꼴이 스폰 시점 forward에 고정됨. `feature/Rotation` 브랜치가 팀원 Mediator 리팩터 PR 머지 후 `git reset`으로 이전 구현을 잃어 재작성 → [문서](./intent-009-body-rotation.md)
 - **[AI / Combat]** 적이 추격만 하고 공격하지 않음. 스킬(`EnemyMeleeAttack`) + 근접 판정 매개체 + BT 공격 가지로 구현, 코드 완료·에디터 배선(`[USER]`)과 Play 검증 남음 → [문서](./intent-010-enemy-melee-attack.md)
-- **[AI]** 시야 감지·해제가 즉시 일어나 등 뒤로 돌면 엉뚱한 곳을 수색함. 발견 게이지 + 놓친 뒤 유예(실제 위치 추적)를 도입, 코드 완료·Play 검증 남음 → [문서](./intent-011-sensor-awareness.md)
+- **[AI]** 시야 감지·해제가 즉시 일어나 등 뒤로 돌면 엉뚱한 곳을 수색함. 놓친 뒤 유예(실제 위치 추적)를 도입(발견 게이지는 공격 진입을 늦춰 2026-10-13 제거), 코드 완료·Play 검증 남음 → [문서](./intent-011-sensor-awareness.md)
 - **[AI / Combat]** 적이 근거리 한 종류뿐. 프로토타입용으로 `EnemyRangedAttack`(스킬이 총알을 직접 생성) 구현. 풀링 도입 시 Factory 경로로 옮기는 것이 기술 부채. 코드 완료, 에디터 배선(`[USER]`)과 Play 검증 남음 → [문서](./intent-012-enemy-ranged-attack.md)
 - **[Movement System]** 점프력이 모터에 고정되고 공중 점프 불가, 시작/착지 이벤트 없음. `Jump(float jumpPower)` 무조건 실행 + `OnJumpStarted`/`OnJumpEnded` 추가, 접지 정책은 MoveMediator로. 코드 완료·컴파일 0에러, Play 검증 남음 → [문서](./intent-015-jump-power-param-and-events.md)
 - **[AI / Enemy]** 미로 라운드 2에 시간 압박 요소가 없음. 시간에 따라 빨라지는 무적 추격자 GC(웨이포인트 순찰·추격·공격 1회 + 멈춤, 최대 HP ÷ n 피해)를 기존 적 골격으로 구현. 웨이포인트·NavMesh·벽 레이어는 맵 담당 요청 → [문서](./intent-021-garbage-collector.md)
 - **[Attribute / Mediator / Combat]** 데미지 경로에 출처(누가·어디서)가 없어 피격 반응 불가. `SEffectContext{Cursor, Origin}`를 Apply→어트리뷰트 콜백까지 관통(C안). 1차 전달 경로 진행, 2차(원점 기록·CombatMediator 연결·AI 반응) 남음 → [문서](./intent-016-hit-context.md)
+- **[AI / Enemy]** 적이 같은 목표를 쫓거나 공격할 때 뭉치고 서로 올라탐. Enemy ↔ Enemy 충돌 해제 + `AllySeparationPusher`(약한 밀어내기)로 해결. AIController 조향·BT 간격 벌리기 가지는 차례로 폐기. 적 프리팹 레이어 Obstacle → Enemy 이동(플레이어 총알 판정 레이어 동반 수정). 실제 전투 Play 검증 남음 → [문서](./intent-022-enemy-separation.md)
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
