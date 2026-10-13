@@ -17,31 +17,9 @@ namespace Map.Maze
         #endregion
 
         #region Serialized Fields
-        [Header("Maze")]
-        [Tooltip("가로 칸 수")]
-        [SerializeField, Range(2, 50)] private int _width = 8;
-
-        [Tooltip("세로 칸 수")]
-        [SerializeField, Range(2, 50)] private int _height = 8;
-
-        [Tooltip("타일 한 칸의 크기. 타일 프리팹의 크기와 같아야 한다.")]
-        [SerializeField, Min(0.1f)] private float _tileSize = 10.0f;
-
-        [Header("Tiles (기본 방향: 북쪽이 열림)")]
-        [Tooltip("막다른 길: 북쪽만 열림")]
-        [SerializeField] private GameObject _deadEndPrefab;
-
-        [Tooltip("직선: 북·남이 열림")]
-        [SerializeField] private GameObject _straightPrefab;
-
-        [Tooltip("모퉁이: 북·동이 열림")]
-        [SerializeField] private GameObject _cornerPrefab;
-
-        [Tooltip("세 갈래: 북·동·남이 열림")]
-        [SerializeField] private GameObject _tJunctionPrefab;
-
-        [Tooltip("네 갈래: 모두 열림")]
-        [SerializeField] private GameObject _crossPrefab;
+        [Header("Settings")]
+        [Tooltip("미로 크기와 타일 프리팹 5종을 담은 설정 에셋")]
+        [SerializeField] private SOMazeMapSettings _settings;
         #endregion
 
         #region Protected Methods
@@ -56,8 +34,14 @@ namespace Map.Maze
             startPosition = transform.position;
             goalPosition = transform.position;
 
-            bool hasAllPrefabs = (_deadEndPrefab != null) && (_straightPrefab != null) && (_cornerPrefab != null) &&
-                                 (_tJunctionPrefab != null) && (_crossPrefab != null);
+            if (_settings == null)
+            {
+                Debug.LogError($"[{name}] 설정 에셋(Settings)이 연결되지 않았습니다.", this);
+                return;
+            }
+
+            bool hasAllPrefabs = (_settings.DeadEndPrefab != null) && (_settings.StraightPrefab != null) && (_settings.CornerPrefab != null) &&
+                                 (_settings.TJunctionPrefab != null) && (_settings.CrossPrefab != null);
             if (!hasAllPrefabs)
             {
                 Debug.LogError($"[{name}] 미로 타일 프리팹 5종이 모두 연결되어야 합니다.", this);
@@ -66,12 +50,12 @@ namespace Map.Maze
 
             var generator = new MazeGenerator();
             Vector2Int startCell = PickEdgeCell(random);
-            MazeGenerator.SCell[,] grid = generator.GenerateMaze(_width, _height, startCell, random);
+            MazeGenerator.SCell[,] grid = generator.GenerateMaze(_settings.Width, _settings.Height, startCell, random);
             Vector2Int goalCell = FindFarthestCell(generator.ComputeDistances(grid, startCell));
 
-            for (int x = 0; x < _width; x++)
+            for (int x = 0; x < _settings.Width; x++)
             {
-                for (int y = 0; y < _height; y++)
+                for (int y = 0; y < _settings.Height; y++)
                 {
                     CreateTile(grid[x, y], root);
 
@@ -95,10 +79,10 @@ namespace Map.Maze
         {
             switch (random.Next(4))
             {
-                case 0:  return new Vector2Int(random.Next(_width), 0);             // 아래
-                case 1:  return new Vector2Int(random.Next(_width), _height - 1);   // 위
-                case 2:  return new Vector2Int(0, random.Next(_height));            // 왼쪽
-                default: return new Vector2Int(_width - 1, random.Next(_height));   // 오른쪽
+                case 0:  return new Vector2Int(random.Next(_settings.Width), 0);             // 아래
+                case 1:  return new Vector2Int(random.Next(_settings.Width), _settings.Height - 1);   // 위
+                case 2:  return new Vector2Int(0, random.Next(_settings.Height));            // 왼쪽
+                default: return new Vector2Int(_settings.Width - 1, random.Next(_settings.Height));   // 오른쪽
             }
         }
 
@@ -108,9 +92,9 @@ namespace Map.Maze
             Vector2Int farthest = Vector2Int.zero;
             int maxDistance = -1;
 
-            for (int x = 0; x < _width; x++)
+            for (int x = 0; x < _settings.Width; x++)
             {
-                for (int y = 0; y < _height; y++)
+                for (int y = 0; y < _settings.Height; y++)
                 {
                     if (distances[x, y] > maxDistance)
                     {
@@ -126,7 +110,7 @@ namespace Map.Maze
         // 칸의 바닥 중앙 (월드 좌표)
         private Vector3 GetCellCenter(Transform root, Vector2Int cell)
         {
-            return root.TransformPoint(new Vector3(cell.x * _tileSize, 0.0f, cell.y * _tileSize));
+            return root.TransformPoint(new Vector3(cell.x * _settings.TileSize, 0.0f, cell.y * _settings.TileSize));
         }
 
         // 칸 하나에 맞는 타일을 골라 놓는다.
@@ -137,7 +121,7 @@ namespace Map.Maze
 
             GameObject tile = Instantiate(prefab, root);
             tile.name = $"Tile_{cell.X}_{cell.Y}";
-            tile.transform.localPosition = new Vector3(cell.X * _tileSize, 0.0f, cell.Y * _tileSize);
+            tile.transform.localPosition = new Vector3(cell.X * _settings.TileSize, 0.0f, cell.Y * _settings.TileSize);
             tile.transform.localRotation = Quaternion.Euler(0.0f, rotationY, 0.0f);
         }
 
@@ -158,7 +142,7 @@ namespace Map.Maze
             switch (openCount)
             {
                 case 1:
-                    prefab = _deadEndPrefab;
+                    prefab = _settings.DeadEndPrefab;
                     if (cell.OpenEast) rotationY = 90.0f;
                     else if (cell.OpenSouth) rotationY = 180.0f;
                     else if (cell.OpenWest) rotationY = 270.0f;
@@ -167,16 +151,16 @@ namespace Map.Maze
                 case 2:
                     if (cell.OpenNorth && cell.OpenSouth)
                     {
-                        prefab = _straightPrefab;
+                        prefab = _settings.StraightPrefab;
                     }
                     else if (cell.OpenEast && cell.OpenWest)
                     {
-                        prefab = _straightPrefab;
+                        prefab = _settings.StraightPrefab;
                         rotationY = 90.0f;
                     }
                     else
                     {
-                        prefab = _cornerPrefab;
+                        prefab = _settings.CornerPrefab;
                         if (cell.OpenEast && cell.OpenSouth) rotationY = 90.0f;
                         else if (cell.OpenSouth && cell.OpenWest) rotationY = 180.0f;
                         else if (cell.OpenWest && cell.OpenNorth) rotationY = 270.0f;
@@ -184,14 +168,14 @@ namespace Map.Maze
                     break;
 
                 case 3:
-                    prefab = _tJunctionPrefab;
+                    prefab = _settings.TJunctionPrefab;
                     if (!cell.OpenNorth) rotationY = 90.0f;        // 동·남·서
                     else if (!cell.OpenEast) rotationY = 180.0f;   // 남·서·북
                     else if (!cell.OpenSouth) rotationY = 270.0f;  // 서·북·동
                     break;
 
                 case 4:
-                    prefab = _crossPrefab;
+                    prefab = _settings.CrossPrefab;
                     break;
             }
         }

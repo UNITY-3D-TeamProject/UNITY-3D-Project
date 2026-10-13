@@ -24,6 +24,13 @@ namespace Map.Editor
 
             GUILayout.Space(15);
 
+            if (GUILayout.Button("Open Map Generator Window", GUILayout.Height(25)))
+            {
+                MapGeneratorWindow.Open(generator);
+            }
+
+            GUILayout.Space(5);
+
             if (GUILayout.Button("Generate Map", GUILayout.Height(35)))
             {
                 GenerateWithUndo(generator);
@@ -52,7 +59,7 @@ namespace Map.Editor
         }
 
         // 새 맵을 만들되 Ctrl+Z 로 이전 맵으로 되돌릴 수 있게 한다. 플레이 중에는 Undo 대상이 아니다.
-        private static void GenerateWithUndo(MapGeneratorBase generator)
+        internal static void GenerateWithUndo(MapGeneratorBase generator)
         {
             if (Application.isPlaying)
             {
@@ -70,7 +77,7 @@ namespace Map.Editor
         }
 
         // 맵을 지우되 Ctrl+Z 로 되살릴 수 있게 한다.
-        private static void ClearWithUndo(MapGeneratorBase generator)
+        internal static void ClearWithUndo(MapGeneratorBase generator)
         {
             if (!Application.isPlaying)
             {
@@ -93,7 +100,7 @@ namespace Map.Editor
         }
 
         // 에디터에서 만든 결과가 씬에 저장되도록 변경을 알린다. 플레이 중에는 저장 대상이 아니므로 건너뛴다.
-        private static void MarkChanged(MapGeneratorBase generator)
+        internal static void MarkChanged(MapGeneratorBase generator)
         {
             if (Application.isPlaying) return;
 

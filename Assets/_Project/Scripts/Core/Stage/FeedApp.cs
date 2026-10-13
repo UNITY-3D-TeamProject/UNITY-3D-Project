@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Core.Stage
 {
     public class FeedApp : StageBase
@@ -12,9 +15,31 @@ namespace Core.Stage
         // 해시태그 입구 위치 정하기
 
 
+        private readonly HashSet<EFeedItemType> _collectedItems = new HashSet<EFeedItemType>();
+
+        public event Action<EFeedItemType> OnItemCollected;
+
         public override void StartStage()
         {
             StageProgress = 0;
+            _collectedItems.Clear();
+        }
+
+        public bool HasItem(EFeedItemType itemType)
+        {
+            return _collectedItems.Contains(itemType);
+        }
+
+        // StageProgress = collected item count
+        public void CollectItem(EFeedItemType itemType)
+        {
+            if (!_collectedItems.Add(itemType))
+            {
+                return;
+            }
+
+            StageProgress = _collectedItems.Count;
+            OnItemCollected?.Invoke(itemType);
         }
 
         public override void EndStage()

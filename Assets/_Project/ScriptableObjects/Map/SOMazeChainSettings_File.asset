@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87b9010f4d7f53949bc18f27c6e79fcb, type: 3}
+  m_Name: SOMazeChainSettings_File
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Maze.SOMazeChainSettings
+  _size: 20
+  _tileSize: 5
+  _wallThickness: 0.5
+  _themes:
+  - WallPrefab: {fileID: 8519659671226843633, guid: 7cd21c63dc6f32947b5f1dddb79087b3, type: 3}
+    GatePrefab: {fileID: 6781828260155600193, guid: fbc862a9ca7d2ab4ca502fe4350ad812, type: 3}
+  - WallPrefab: {fileID: 8696989729492793409, guid: 2eb24309eb64fbf429ff1f1c3b873b37, type: 3}
+    GatePrefab: {fileID: 3475270242610638698, guid: 00b148209ba58c84fadf0fab4ef5a0d2, type: 3}
+  - WallPrefab: {fileID: 3120770528389404985, guid: c8b01abff4f56c94499cbf1250a2df3d, type: 3}
+    GatePrefab: {fileID: 3801399245816027665, guid: 5920bfa7eec30704785bff4f40d39b9c, type: 3}
+  _bridgeTileCount: 4
+  _floorPrefab: {fileID: 1653281512355698945, guid: 5dfe75d1020136a46a28103146bf69d1, type: 3}
+  _bridgeSegmentPrefab: {fileID: 9188327980755647466, guid: 3880f65b93c06ae47abb83aa543eb96c, type: 3}
+  _startMarkerPrefab: {fileID: 7201726422711340557, guid: 92618e4148c6f024fb7d3f6d66be58fc, type: 3}
