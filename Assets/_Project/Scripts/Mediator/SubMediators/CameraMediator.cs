@@ -119,6 +119,17 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 화면 중앙(조준점)을 지나는 카메라 레이를 반환한다. 카메라가 없으면 이 오브젝트의 정면 레이를 반환한다.
+        /// </summary>
+        /// <returns>조준 레이 (월드 기준)</returns>
+        public Ray GetAimRay()
+        {
+            if (_targetCamera == null) return new Ray(transform.position, transform.forward);
+
+            return _targetCamera.GetAimRay();
+        }
+
+        /// <summary>
         /// 구르기 시작을 알린다. 조준을 해제하고 구르기가 끝날 때까지 Aim 입력을 카메라에 전달하지 않는다.
         /// </summary>
         /// <param name="direction">구르기 방향 (사용하지 않음)</param>

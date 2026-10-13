@@ -30,6 +30,7 @@ namespace Mediator.SubMediators
         #region Private Fields
         private ISkillRequestController _skillRequestController;
         private Func<bool> _getGrounded;
+        private Interact _interactSkill;
         #endregion
 
         #region Events
@@ -56,6 +57,9 @@ namespace Mediator.SubMediators
         /// 요청 1회당 1번만 발생하며, 연사처럼 스킬 내부에서 반복 발동하는 경우는 알리지 않는다.
         /// </summary>
         public event Action<string, float> OnSkillUsed;
+
+        /// <summary>상호작용 대상을 바라보는지 여부가 바뀔 때 발생한다. 대상이 있으면 true.</summary>
+        public event Action<bool> OnInteractableChanged;
         #endregion
 
         #region Unity Lifecycle
@@ -65,6 +69,7 @@ namespace Mediator.SubMediators
             base.Awake();
             ResolveComponent(ref _skillController);
             _skillRequestController = GetComponentInParent<ISkillRequestController>();
+            if (_skillController) _interactSkill = _skillController.GetComponentInChildren<Interact>(true);
             BindRequest();
         }
 
@@ -120,6 +125,24 @@ namespace Mediator.SubMediators
         public void ClearGetGrounded()
         {
             _getGrounded = null;
+        }
+
+        /// <summary>
+        /// 카메라 조준 레이를 얻기 위한 델리게이트를 상호작용 스킬에 주입
+        /// </summary>
+        public void SetGetAimRay(Func<Ray> getAimRay)
+        {
+            if (getAimRay == null || !_interactSkill) return;
+            _interactSkill.SetGetAimRay(getAimRay);
+        }
+
+        /// <summary>
+        /// 상호작용 스킬의 카메라 조준 레이 델리게이트 제거
+        /// </summary>
+        public void ClearGetAimRay()
+        {
+            if (!_interactSkill) return;
+            _interactSkill.ClearGetAimRay();
         }
 
         /// <summary>
@@ -192,6 +215,7 @@ namespace Mediator.SubMediators
             _skillController.SetGetAttribute(key => AttributeGetter?.Invoke(key) ?? 0.0f);
             _skillController.SetRequestPay(OnRequestPay);
             _skillController.SetNotifyExecuted(OnSkillExecuted);
+            if (_interactSkill) _interactSkill.SetNotifyInteractableChanged(OnInteractableChangedCallback);
         }
 
         /// <summary>
@@ -252,6 +276,15 @@ namespace Mediator.SubMediators
                     OnMultiJumpRequested?.Invoke(multiJump.JumpPowerRatio);
                     break;
             }
+        }
+
+        /// <summary>
+        /// 상호작용 스킬의 대상 유무 변경을 알린다.
+        /// </summary>
+        /// <param name="hasTarget">대상이 있으면 true</param>
+        private void OnInteractableChangedCallback(bool hasTarget)
+        {
+            OnInteractableChanged?.Invoke(hasTarget);
         }
 
         /// <summary>

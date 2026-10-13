@@ -55,6 +55,8 @@ namespace Mediator
         public event Action OnDeathEnded;
         /// <summary>스킬이 사용되었을 때 (스킬 이름, 쿨타임)을 알린다. 요청 1회당 1번 발생한다.</summary>
         public event Action<string, float> OnSkillUsed;
+        /// <summary>상호작용 대상을 바라보는지 여부가 바뀔 때 발생한다. 대상이 있으면 true.</summary>
+        public event Action<bool> OnInteractableChanged;
         #endregion
 
         #region Unity Lifecycle
@@ -167,6 +169,7 @@ namespace Mediator
             }
             if (_animationMediator && _cameraMediator) _animationMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
             if (_skillMediator && _moveMediator) _skillMediator.SetGetGrounded(_moveMediator.IsGrounded);
+            if (_skillMediator && _cameraMediator) _skillMediator.SetGetAimRay(_cameraMediator.GetAimRay);
             if (_attributeMediator && _combatMediator) _attributeMediator.SetIsDamageBlocked(_combatMediator.IsDamageBlocked);
         }
         /// <summary>
@@ -188,6 +191,7 @@ namespace Mediator
             }
             if (_animationMediator) _animationMediator.ClearGetAimPoint();
             if (_skillMediator) _skillMediator.ClearGetGrounded();
+            if (_skillMediator) _skillMediator.ClearGetAimRay();
             if (_attributeMediator) _attributeMediator.ClearIsDamageBlocked();
         }
         /// <summary>
@@ -250,6 +254,11 @@ namespace Mediator
         private void OnSkillUsedCallback(string skillName, float cooldown)
         {
             OnSkillUsed?.Invoke(skillName, cooldown);
+        }
+
+        private void OnInteractableChangedCallback(bool hasTarget)
+        {
+            OnInteractableChanged?.Invoke(hasTarget);
         }
 
         private void OnHitCallback()
@@ -327,6 +336,7 @@ namespace Mediator
             if (_skillMediator && _spawnMediator) _skillMediator.OnFireRequested += _spawnMediator.CommandSpawnBullet;
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested += OnFireCallback;
             if (_skillMediator) _skillMediator.OnSkillUsed += OnSkillUsedCallback;
+            if (_skillMediator) _skillMediator.OnInteractableChanged += OnInteractableChangedCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
             if (_animationMediator) _animationMediator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
@@ -364,6 +374,7 @@ namespace Mediator
             if (_skillMediator && _spawnMediator) _skillMediator.OnFireRequested -= _spawnMediator.CommandSpawnBullet;
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested -= OnFireCallback;
             if (_skillMediator) _skillMediator.OnSkillUsed -= OnSkillUsedCallback;
+            if (_skillMediator) _skillMediator.OnInteractableChanged -= OnInteractableChangedCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
             if (_animationMediator) _animationMediator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
