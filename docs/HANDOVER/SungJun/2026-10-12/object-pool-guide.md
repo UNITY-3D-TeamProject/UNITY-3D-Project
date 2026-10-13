@@ -2,16 +2,17 @@
 
 > 코드 위치: `Assets/_Project/Scripts/Core/ObjectPool/` (네임스페이스 `Core.ObjectPool`)
 > 관련 intent: `docs/HANDOVER/SungJun/intent/intent-012-object-pool-system.md`
+> 2026-10-13 변경: 매니저 참조를 전달하는 방식 대신 `ObjectPoolManager.Instance`로 접근한다. 반납도 `ObjectPoolManager.Instance.Release(gameObject)`로 바뀌었다(`PooledObject.ReleaseOrDestroy` 삭제). 최신 담당별 연결 방법은 [담당별 연결 가이드](../2026-10-13/object-pool-team-integration-guide.md)를 따른다.
 
 ## 한눈에 보기
 
 | 질문 | 답 |
 |---|---|
-| 풀은 어디에 있나? | 로비·각 스테이지 **씬마다** `ObjectPoolManager` 하나. 싱글톤 아님, `DontDestroyOnLoad` 아님 |
-| 꺼내려면 무엇을 알아야 하나? | **매니저 참조 + 키 문자열**만. 프리팹은 몰라도 된다 |
-| 꺼내는 방법은? | `_objectPoolManager.Get("Monster1", position, rotation)` |
-| 매니저 참조는 어떻게 얻나? | 씬 배치 오브젝트는 인스펙터로 연결, 런타임 생성 오브젝트(플레이어·스폰 몬스터)는 생성한 쪽이 넘겨준다 |
-| 반납은? | 매니저 몰라도 됨. `PooledObject.ReleaseOrDestroy(gameObject)` 한 줄 |
+| 풀은 어디에 있나? | 풀이 **필요한 씬에만** `ObjectPoolManager` 하나. `DontDestroyOnLoad` 아님 (씬과 함께 사라짐) |
+| 꺼내려면 무엇을 알아야 하나? | **키 문자열**만. 프리팹은 몰라도 된다 |
+| 꺼내는 방법은? | `ObjectPoolManager.Instance.Get("Monster1", position, rotation)` |
+| 매니저 참조는 어떻게 얻나? | `ObjectPoolManager.Instance`. 매니저가 없는 씬이거나 매니저 Awake 전이면 null |
+| 반납은? | `ObjectPoolManager.Instance.Release(gameObject)` 한 줄. 키는 넘기지 않는다 |
 | 씬이 바뀌면? | 매니저·풀·풀에서 나온 오브젝트가 씬과 함께 정리된다 |
 
 카테고리: `Monster`, `Npc`, `Effect`, `PlayerBullet`, `EnemyBullet`, `BossSkill`
@@ -24,7 +25,7 @@
 |---|---|
 | `ObjectPoolManager` | 씬에 배치. 카테고리별 `PrefabPool` 6개를 들고, `Get(키)` / `Get<T>(키)`로 꺼내 준다 |
 | `PrefabPool` | 카테고리 하나. 인스펙터에 **키-프리팹** 목록, 기본 용량, 최대 개수를 설정 |
-| `PooledObject` | 풀이 만든 인스턴스에 **자동으로 붙는다**. 돌아갈 풀을 기억하고 `Release()` 제공 |
+| `PooledObject` | (풀 내부용) 풀이 만든 인스턴스에 **자동으로 붙어** 돌아갈 풀을 기억한다. 사용하는 쪽은 몰라도 된다 |
 | `IPoolable` | (선택) 재사용 시 상태 초기화/정리용. `OnGet()`, `OnRelease()` |
 
 ## 1. 씬 배치 (씬 담당)
@@ -37,24 +38,10 @@
 
 ## 2. 매니저 참조 얻기
 
-- **씬에 배치된 오브젝트**(MonsterSpawner, 씬에 직접 놓은 적 등): 인스펙터에 `ObjectPoolManager`를 연결한다.
-- **런타임에 생성되는 오브젝트**(플레이어, 스폰된 몬스터): 인스펙터로 씬 오브젝트를 연결할 수 없으므로, 생성한 쪽이 넘겨준다.
+인스펙터 연결이나 전달 없이 `ObjectPoolManager.Instance`를 쓴다. 씬 배치 오브젝트와 런타임 생성 오브젝트 모두 같다.
 
-```csharp
-// PlayerSpawner — 스폰 직후 필요한 컴포넌트에 직접 넘겨준다
-player.GetComponentInChildren<BulletFactory>().SetObjectPoolManager(_objectPoolManager);
-```
-
-받는 쪽은 넘겨받을 메서드만 하나 둔다.
-
-```csharp
-private ObjectPoolManager _objectPoolManager;
-
-public void SetObjectPoolManager(ObjectPoolManager manager)
-{
-    _objectPoolManager = manager;
-}
-```
+- `Instance`는 매니저 Awake에서 채워지고, 씬이 내려가 매니저가 파괴되면 null이 된다.
+- 매니저를 배치하지 않은 씬(로비·피드 등)에서는 null이다.
 
 ## 3. 꺼내기
 
@@ -63,10 +50,9 @@ public void SetObjectPoolManager(ObjectPoolManager manager)
 ```csharp
 // MonsterSpawner
 [Header("Pool")]
-[SerializeField] private ObjectPoolManager _objectPoolManager;
 [SerializeField] private string _monsterKey = "Monster1";
 
-GameObject monster = _objectPoolManager.Get(_monsterKey, transform.position, transform.rotation);
+GameObject monster = ObjectPoolManager.Instance.Get(_monsterKey, transform.position, transform.rotation);
 ```
 
 ```csharp
@@ -75,7 +61,7 @@ GameObject monster = _objectPoolManager.Get(_monsterKey, transform.position, tra
 [SerializeField] private string _chargedBulletKey = "PlayerChargedBullet";
 
 string key = isCharged ? _chargedBulletKey : _bulletKey;
-BulletController bullet = _objectPoolManager.Get<BulletController>(key, position, rotation);
+BulletController bullet = ObjectPoolManager.Instance.Get<BulletController>(key, position, rotation);
 if (bullet == null) return;
 
 bullet.Initialize(direction, cursor);
@@ -85,7 +71,7 @@ bullet.Initialize(direction, cursor);
 - 등록되지 않은 키면 에러 로그를 남기고 null을 돌려준다. **오타는 실행해야 드러나므로** 처음 연결할 때 콘솔을 확인한다.
 - `Get`은 **위치/회전을 먼저 설정한 뒤 활성화**한다. 그래서 `OnEnable`·`IPoolable.OnGet`에서 새 위치를 볼 수 있다.
 - `Initialize(...)` 같은 데이터 설정은 `Get` 직후 호출하면 된다(기존 Instantiate 직후 호출과 동일).
-- 매니저 Awake 이전(다른 컴포넌트의 Awake)에 Get하면 에러가 난다. Start 이후에 사용한다.
+- 매니저 Awake 이전(다른 컴포넌트의 Awake)에는 `Instance`가 null이다. Start 이후에 사용한다.
 
 ## 4. 반납 — 풀에서 나온 오브젝트 쪽 (BulletController, MeleeHitController 등)
 
@@ -96,11 +82,12 @@ bullet.Initialize(direction, cursor);
 Destroy(gameObject);
 
 // 변경 후
-PooledObject.ReleaseOrDestroy(gameObject);
+ObjectPoolManager.Instance.Release(gameObject);
 ```
 
 - 이미 반납된 오브젝트에 다시 호출해도 무시된다(이중 반납 방지).
-- `Destroy(gameObject, 시간)`처럼 **지연 Destroy는 쓰지 않는다.** 코루틴이나 Update 타이머로 시간이 지나면 `ReleaseOrDestroy`를 호출한다.
+- `Destroy(gameObject, 시간)`처럼 **지연 Destroy는 쓰지 않는다.** 코루틴이나 Update 타이머로 시간이 지나면 `Release`를 호출한다.
+- 매니저가 없는 씬에서도 실행될 수 있는 코드(Player와 공용인 사망 처리 등)는 `Instance`가 null인지 먼저 확인하고, null이면 `Destroy(gameObject)`한다.
 
 ## 5. 재사용 초기화 — IPoolable (필요한 경우만)
 
@@ -128,8 +115,8 @@ public class BulletController : MonoBehaviour, IPoolable
 
 | 파일 | 주의점 |
 |---|---|
-| `Projectile/BulletController.cs` | `_elapsedTime`이 리셋되지 않음 → OnGet에서 0으로. `Destroy(gameObject)` 2곳 → ReleaseOrDestroy |
-| `Hit/MeleeHitController.cs` | `Destroy(gameObject, _lifeSpan)` 지연 Destroy → 타이머 후 ReleaseOrDestroy |
+| `Projectile/BulletController.cs` | `_elapsedTime`이 리셋되지 않음 → OnGet에서 0으로. `Destroy(gameObject)` 2곳 → `Instance.Release` |
+| `Hit/MeleeHitController.cs` | `Destroy(gameObject, _lifeSpan)` 지연 Destroy → 타이머 후 `Instance.Release` |
 | `Skill/Skills/EnemyRangedAttack.cs`, `EnemyMeleeAttack.cs` | 프리팹 `Instantiate` → 키로 `Get` |
 
 ## 6. 이펙트 (ParticleSystem) 자동 반납
@@ -138,17 +125,17 @@ public class BulletController : MonoBehaviour, IPoolable
 1. **루트** GameObject의 ParticleSystem → `Stop Action` = **Callback**
 2. `Play On Awake` 켜기 (활성화될 때마다 처음부터 재생)
 
-재생이 끝나면 `PooledObject`가 `OnParticleSystemStopped`를 받아 자동 반납한다. 중간에 끊고 싶으면 `ReleaseOrDestroy`를 직접 호출하면 된다.
+재생이 끝나면 풀 내부 컴포넌트(`PooledObject`)가 `OnParticleSystemStopped`를 받아 자동 반납한다. 중간에 끊고 싶으면 `ObjectPoolManager.Instance.Release(이펙트)`를 직접 호출하면 된다.
 
 ```csharp
-_objectPoolManager.Get("HitSpark", hitPoint, Quaternion.identity);
+ObjectPoolManager.Instance.Get("HitSpark", hitPoint, Quaternion.identity);
 ```
 
 ## 담당별 할 일 요약
 
 | 파트 | 할 일 |
 |---|---|
-| 씬 담당 | 로비·스테이지 씬에 `ObjectPoolManager` 배치, 카테고리별 키-프리팹 등록 |
-| Core (Spawner) | `MonsterSpawner`: 매니저 인스펙터 연결 + 키로 Get. `PlayerSpawner`: 스폰 직후 플레이어의 생성 컴포넌트에 매니저 전달 |
-| Player | `BulletFactory`에 `SetObjectPoolManager` 추가 → 키로 Get. `BulletController` 반납·`IPoolable` 초기화 |
-| AI | `EnemyRangedAttack`/`EnemyMeleeAttack`에 매니저 참조 추가 → 키로 Get. `MeleeHitController` 지연 Destroy 교체 |
+| 씬 담당 | 풀이 필요한 씬에만 `ObjectPoolManager` 배치, 카테고리별 키-프리팹 등록 |
+| Core (Spawner) | `MonsterSpawner`: `ObjectPoolManager.Instance`로 키로 Get |
+| Player | `BulletFactory`: `ObjectPoolManager.Instance`로 키로 Get. `BulletController` 반납·`IPoolable` 초기화 |
+| AI | `EnemyRangedAttack`/`EnemyMeleeAttack`: `ObjectPoolManager.Instance`로 키로 Get. `MeleeHitController` 지연 Destroy 교체 |
