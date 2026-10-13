@@ -23,6 +23,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 구조: `IScannable` + `ScanTarget`(타이머·상태) + `ScanReactionBase`(Strategy) 조합. 상세는 설계 계획(`C:\Users\inha\.claude\plans\declarative-snuggling-haven.md`)을 따른다.
 
 - (추가 2026-10-13) 적 스캔 연출: 몸체는 파란 홀로그램 셸(`Project/ScanHologram` 셰이더 = 바깥 외곽선 + 가장자리 빛 + 흐르는 격자)을 같은 메시 자식 렌더러로 두고 `SilhouetteReaction`으로 켜고 끈다(새 스크립트 없음, `_Color` 알파로 페이드). 약점은 약점 오브젝트 자식에 빨간 레티클 스프라이트 + "WEAK POINT" TextMeshPro + `Billboard`를 두어 `WeakPointReaction`이 약점을 켤 때 함께 보인다. TempScene `ScanTest/Enemy_WeakPoint`에 머리·가슴 약점 2개로 시험 배치. (정정 같은 날) 약점 마커는 월드 Billboard 대신 화면 UI로 전환: 약점 오브젝트에 `UI.ScreenMarkerFollower`를 붙여 HUD 캔버스의 마커를 화면 위치로 옮긴다. (추가 같은 날) 약점 부위만 셸 색을 다르게: 셸 셰이더의 구 마스크 + `WeakPointShellMask`가 약점 SphereCollider의 월드 중심·반경을 넘겨, 구 안의 외곽선·격자를 `_WeakColor`로 칠한다(보이는 범위 = 맞는 범위). 그리퍼 로봇(SkinnedMesh)에 시험 적용. (추가 같은 날) 실제 적 프리팹용: `SilhouetteReaction._autoShellMaterial`로 셸을 런타임 자동 생성, 약점 후보 5곳 중 하나로 콜라이더를 옮기고 끄는 것은 몬스터 파트가 몬스터 `OnEnable`에서 한다(스포너는 소환만). 스캔 쪽은 `WeakPoint` 태그로 약점 콜라이더를 자동으로 찾으므로(`WeakPointReaction`, `WeakPointShellMask` Awake) 몬스터 코드는 스캔 코드를 모른다.
+- (변경 2026-10-14) 적 스캔 구성 확정: **몬스터 루트에는 스캔 스크립트를 달지 않는다.** 약점 오브젝트(`WeakPoint` 태그, 항상 활성)에 `ScanTarget`, `SilhouetteReaction`(`_autoShellMaterial`, `_shellSourceRoot` = 몬스터 루트), `WeakPointReaction`, `WeakPointShellMask`를 모두 붙인다. 약점은 오브젝트를 끄지 않고 **콜라이더만** 끄고 켠다. 파동은 몸체 콜라이더(CharacterController)에 닿고, `ScanWave`가 부모에서 `IScannable`을 못 찾으면 자식 중 `WeakPoint` 태그 오브젝트에서 찾는다(접촉 판정 유지, 결과 캐시). 몬스터 파트는 `OnEnable`에서 약점 위치만 옮기고 `SetActive(false)`는 하지 않는다. 몬스터당 약점 1개 기준. (같은 날 변경) 태그는 **`Scan` 하나로 통일**: 스캔에 반응하는 모든 대상(`ScanTarget` 오브젝트, 약점 포함)은 `Scan` 태그를 달고, `ScanWave`는 이 태그의 대상에만 알린다. `WeakPoint` 태그는 제거. 피격 쪽 약점 판정은 `WeakPointReaction` 컴포넌트 유무로 한다.
 
 ## 영향 범위 (Affected users and systems)
 - 누가 사용하는가: 플레이어(스캔 스킬), 레벨 디자이너(대상 프리팹에 `ScanTarget` 부착)
@@ -35,7 +36,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 플랫폼은 충돌 유지, 외형만 숨긴다.
 
 ## 열린 질문 (Open questions)
-- ~~약점 데미지 배율을 스캔과 무관하게 항상 적용할지, 스캔으로 드러났을 때만 적용할지~~ → **해결(2026-10-11): 스캔 중에만 적용.** 스캔 중에만 약점 오브젝트가 활성화되어 보이고 맞는다. 평소에는 비활성이라 맞춰도 배율 1이다.
+- ~~약점 데미지 배율을 스캔과 무관하게 항상 적용할지, 스캔으로 드러났을 때만 적용할지~~ → **해결(2026-10-11): 스캔 중에만 적용.** 스캔 중에만 약점 오브젝트가 활성화되어 보이고 맞는다. 평소에는 비활성이라 맞춰도 배율 1이다. (2026-10-14) 오브젝트 대신 약점 콜라이더만 끄고 켠다.
 - ~~재스캔(이미 보이는 대상에 새 스캔이 닿음) 시 유지 시간 연장 vs 다시 드러내기~~ → **해결(2026-10-11): 유지 시간만 연장.** 스킬 쿨타임으로 스캔이 겹치지 않게 막을 예정이라, 재스캔은 연출을 건드리지 않고 종료 시각만 늘린다(처음 스캔의 정보만 반응에 전달).
 - ~~약점이 켜져 있는 시간~~ → **해결(2026-10-11): 스캔 유지 시간이 끝나면 즉시 끔.** 페이드아웃 구간에는 꺼져 있고, 재스캔으로 다시 활성이 되면 켠다.
 - 범위: `Scan.cs`/프리팹 연결(6번)과 피격 코드의 약점 배율 조회(7번)는 타 파트 작업이다. 스캔 발사는 `Assets/Test`의 `ScanTestTrigger`(2026-10-11부터 R키, 옛 `TerrainScanner`는 `Test_Player`에서 비활성)로 시험한다.
