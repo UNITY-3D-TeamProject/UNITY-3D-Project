@@ -47,7 +47,7 @@
 ### 2-1. 씬과 Inspector 설정
 
 1. 사용할 씬마다 `ObjectPoolManager`를 하나 배치한다. 현재 매니저는 싱글톤이나 DontDestroyOnLoad 객체가 아니다.
-2. 매니저의 카테고리 목록에 키와 프리팹을 등록한다.
+2. 매니저의 카테고리(`Enemies`, `Player Bullets`, `Enemy Bullets`)마다 `Entries`에 키와 프리팹을 등록한다. `Capacity`·`Max Size`·`Prewarm Count`(키 하나당 씬 시작 시 미리 만들 개수, 기본 10, Max Size까지만)도 카테고리마다 따로 설정한다.
 3. 두 스포너에 아래 매니저 필드를 추가한다.
 4. Hierarchy에서 **씬에 배치된 PlayerSpawner·MonsterSpawner 인스턴스**를 각각 선택한다.
 5. Inspector의 매니저 필드에 같은 씬의 ObjectPoolManager를 드래그해 연결한다.
@@ -245,14 +245,14 @@ GetComponent<PooledObject>().Release();
 
 ### 5-1. 이 가이드의 권장 분담
 
-**탄환의 사용 시작 상태는 Initialize에 모으고, OnRelease에서는 필요한 정리만 한다.** OnGet과 Initialize에서 같은 값을 중복 초기화하지 않는다.
+**기본값 리셋은 OnEnable, 이번 발사 상태는 Initialize, 반납 정리는 OnDisable에 둔다.** 풀은 IPoolable 같은 콜백을 부르지 않고 `SetActive(true/false)`만 한다(IPoolable은 2026-10-13에 삭제됨).
 
 | 함수 | 호출하는 쪽 | 역할 |
 |---|---|---|
 | `Initialize(...)` | BulletFactory 또는 EnemyRangedAttack | 이번 발사 상태 설정 |
-| `IPoolable.OnGet()` | 풀 | 필요할 때 사용하는 획득 콜백. 이번 방식에서는 비워도 됨 |
+| `OnEnable()` | 유니티 (풀이 켤 때) | 재사용 기본값 리셋. 몇 번 불려도 안전한 리셋만 |
 | `PooledObject.Release()` | 사용이 끝난 객체 | 실제 풀 반납 요청 |
-| `IPoolable.OnRelease()` | 풀 | 반납 과정에서 필요한 정리 |
+| `OnDisable()` | 유니티 (풀이 끌 때) | 반납 과정에서 필요한 정리 |
 
 Initialize에서는 매번 다음을 확정한다.
 
@@ -263,24 +263,29 @@ Initialize에서는 매번 다음을 확정한다.
 
 현재 두 Initialize 오버로드에는 타이머 초기화가 없다. 기본 효과용 오버로드는 `_hitEffect`도 복원하지 않으므로 보완해야 한다. 프리팹 기본 Effect는 최초 Awake에서 별도 필드에 보관하고, 명시적으로 Effect를 받은 발사와 구분한다.
 
-IPoolable을 사용하는 경우의 부분 예시:
+부분 예시:
 
 ```csharp
-// 클래스 선언: public class BulletController : MonoBehaviour, IPoolable
-// 기존 Initialize들에서 수명과 발사 상태를 완전히 초기화하는 전제다.
-public void OnGet()
+// 재사용마다 기본값으로 되돌린다. Initialize보다 먼저 불린다.
+private void OnEnable()
 {
+    _elapsedTime = 0.0f;
 }
 
-public void OnRelease()
+// 반납·씬 종료·게임 로직이 끌 때 모두 불린다. 여러 번 불려도 안전하게 둔다.
+private void OnDisable()
 {
     _cursor = null;
 }
 ```
 
-이름만 같은 함수를 만들면 안 되고 `Core.ObjectPool.IPoolable`을 구현해야 풀이 호출한다. 프리팹에 붙어 있는 루트와 자식 컴포넌트 모두 검색 대상이다. 현재 검색 결과는 생성 시 저장하므로 필요한 컴포넌트는 프리팹에 미리 구성한다.
+OnEnable 초기화 규칙:
 
-다른 선택도 가능하다. `_elapsedTime`은 최초 값이 0이고 반납 후 바뀌지 않는다면 OnRelease에서 0으로 만들어도 된다. 그 방식을 선택하면 Initialize에서 같은 리셋을 중복하지 않는다. 정리할 것이 없고 모든 초기화를 Initialize에서 한다면 IPoolable 자체를 생략할 수도 있다.
+- **Awake는 Instantiate할 때 한 번만 불린다.** 재사용마다 초기화할 값은 반드시 OnEnable에 둔다. Awake에는 GetComponent 캐싱 같은 1회성 작업만 둔다.
+- 풀은 위치를 먼저 잡고 켜므로 OnEnable에서 새 위치를 읽을 수 있다. 발사 방향·발사자처럼 호출자가 넘기는 값은 OnEnable 다음의 Initialize에서 설정한다.
+- 켜진 상태로 저장된 프리팹은 처음 생성할 때 Awake → OnEnable → OnDisable이 한 번 먼저 돌고, 첫 Get에서 OnEnable이 다시 불린다. OnEnable에는 몇 번 불려도 문제없는 리셋만 둔다(이벤트 등록·사운드 재생 같은 부수효과 금지).
+- 사용 중 꺼 둔 자식은 부모를 켜도 꺼진 채로 남는다. 루트 OnEnable에서 자식 활성 상태도 되돌린다.
+- 실제 꺼냄/반납인지 구분해야 하면 `PooledObject.IsReleased`를 본다. OnEnable에서는 false, 반납으로 인한 OnDisable에서는 true다. (최초 생성 시에는 PooledObject가 아직 없다.)
 
 ### 5-2. Destroy 두 곳을 반납으로 교체
 
@@ -299,7 +304,7 @@ PooledObject.ReleaseOrDestroy(gameObject);
 
 - `Release()`는 풀 출신 객체의 반납 요청이다. 컴포넌트를 수동으로 붙이기만 한 객체는 풀에 등록된 것이 아니다.
 - `ReleaseOrDestroy()`는 풀 출신이면 반납하고, 일반 생성 객체이면 Destroy하는 편의 함수다.
-- `OnRelease()`를 직접 호출하거나 `SetActive(false)`만 호출해도 풀에 반납되는 것은 아니다.
+- `SetActive(false)`만 호출해도 풀에 반납되는 것은 아니다.
 - 대상은 Get으로 받은 프리팹 루트다. 자식 컴포넌트에서 처리한다면 해당 루트의 PooledObject를 참조한다. `transform.root`는 풀 매니저일 수 있으므로 무조건 사용하지 않는다.
 - PooledObject는 Instantiate 이후 자동 추가될 수 있으므로, 탄환 Awake에서 반드시 존재한다고 가정하지 않는다. 캐싱한다면 Get 이후 Initialize에서 확인할 수 있다.
 - 수명 종료 후에는 return하여 이동 등 나머지 처리를 중단한다. 충돌에서는 Effect 적용 전에 처리 완료 여부를 검사·표시해 중복 피해를 막는다.
@@ -311,21 +316,20 @@ PooledObject.ReleaseOrDestroy(gameObject);
 Get 요청
 → 풀에서 GameObject 획득
 → 위치·회전 설정
+→ PooledObject가 사용 중으로 표시
 → 활성화 / OnEnable
-→ PooledObject가 사용 중으로 표시 / IPoolable.OnGet
 → 호출자에게 반환
 → 호출자가 Initialize 실행
 
 Release 요청
 → 반납 상태로 표시
-→ IPoolable.OnRelease
 → 비활성화 / OnDisable
 → 매니저 아래로 이동
 → 풀에 보관 (보관 한도 초과 시 파괴)
 ```
 
-1. **현재 Get은 초기화 전용 비활성 객체를 반환하는 함수가 아니다.** OnEnable과 OnGet에서는 호출자가 이번에 넘길 발사 정보나 스폰 데이터가 아직 없다. 초기화 완료 전 이동·공격·피격이 실행되지 않게 구성한다.
-2. 최초 생성도 주의한다. 현재 CreateObject는 Instantiate 후 비활성화하므로 활성 프리팹의 Awake/OnEnable은 매니저의 소속 기록 전 실행될 수 있다. OnEnable에서 바로 발사하거나 반납하는 방식은 피한다.
+1. **현재 Get은 초기화 전용 비활성 객체를 반환하는 함수가 아니다.** OnEnable에서는 호출자가 이번에 넘길 발사 정보나 스폰 데이터가 아직 없다. 초기화 완료 전 이동·공격·피격이 실행되지 않게 구성한다.
+2. 최초 생성도 주의한다. PrefabPool은 씬 시작(매니저 Awake) 때 Prewarm Count만큼 미리 Instantiate하고 바로 비활성화한다. 그래서 활성 프리팹의 Awake/OnEnable은 씬 로드 시점에, 풀의 소속 기록 전에 한 번 실행된다. NavMeshAgent가 있는 적은 이때 매니저 위치에서 에이전트를 만들려고 한다. OnEnable에서 바로 발사하거나 반납하는 방식은 피한다.
 3. OnEnable부터 완성된 데이터가 꼭 필요하다면 Core 담당이 비활성 획득·초기화·활성화 경로를 추가해야 한다. 현재는 없는 기능이다. 비활성 중 초기화한다면 능력치 변경 이벤트를 못 받은 컴포넌트의 최종값 동기화도 필요하다. 현재 MediatorBase의 InitValue 호출은 주석 상태다.
 4. Get은 매니저 Awake 초기화 완료 후 호출한다. 현재 스포너의 Start 경로를 활용한다.
 5. `Get<BulletController>(...)`는 **GameObject를 꺼낸 뒤 루트의 BulletController를 반환하는 편의 함수**다. 탄환을 Initialize해서 반환하는 의미가 아니다. 현재는 해당 컴포넌트를 못 찾으면 이미 꺼낸 객체가 남으므로, 이 문서 예시는 Get과 컴포넌트 확인을 나누고 실패 시 반납한다.
@@ -347,7 +351,7 @@ Release 요청
 
 | 영역 | 파일 |
 |---|---|
-| 풀 공통 | `Assets/_Project/Scripts/Core/ObjectPool/ObjectPoolManager.cs`, `PooledObject.cs`, `IPoolable.cs` |
+| 풀 공통 | `Assets/_Project/Scripts/Core/ObjectPool/ObjectPoolManager.cs`, `PrefabPool.cs`, `PooledObject.cs` |
 | 스포너 | `Assets/_Project/Scripts/Core/PlayerSpawner.cs`, `MonsterSpawner.cs`, `SpawnerBase.cs` |
 | Player 발사 | `Assets/_Project/Scripts/Projectile/BulletFactory.cs` |
 | Enemy 발사 | `Assets/_Project/Scripts/Skill/Skills/EnemyRangedAttack.cs` |

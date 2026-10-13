@@ -18,6 +18,8 @@ GC 스파이크 및 프레임 드랍이 발생한다.
 - 카테고리: Enemy(근접·원거리·특수), PlayerBullet, EnemyBullet. 각 카테고리는 키별로 프리팹 여러 종류를 지원한다.
 - 꺼내는 쪽은 매니저 참조 + 키 문자열로 `Get("Monster1", pos, rot)` (프리팹은 매니저 인스펙터에 키와 함께 등록, 쓰는 쪽은 프리팹을 몰라도 됨). 매니저 참조는 씬 배치 오브젝트는 인스펙터, 런타임 생성 오브젝트는 생성한 쪽이 직접 전달.
 - 반납은 오브젝트에 자동으로 붙는 PooledObject로 처리한다 (매니저를 몰라도 됨).
+- 구조는 ObjectPoolManager(키 → 카테고리 라우팅) → PrefabPool(카테고리별 [Serializable], 키별 풀 생성·인스턴스 생성/반납/파괴, Capacity·MaxSize) 2단으로 나눈다. (2026-10-13)
+- ~~재사용 초기화는 IPoolable.OnGet/OnRelease~~ → IPoolable 삭제, 프리팹 컴포넌트가 OnEnable(리셋)·OnDisable(정리)에서 직접 처리한다. (2026-10-13)
 - GC Alloc 없이 오브젝트를 재사용하여 런타임 성능을 안정화한다.
 
 ## 영향 범위 (Affected users and systems)

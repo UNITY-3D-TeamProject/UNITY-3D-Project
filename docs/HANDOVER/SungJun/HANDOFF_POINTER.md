@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-13** — 오브젝트 풀을 ObjectPoolManager(키 라우팅) → PrefabPool([Serializable] 카테고리, 키별 풀·생성·반납) 2단으로 분리, IPoolable 삭제하고 재사용 초기화는 프리팹 OnEnable/OnDisable로. 이어서 internal → public, PrefabPool에 Prewarm Count(키당 기본 10) 추가. 컴파일 OK, eval로 Get·반납·재사용·MaxSize·중복 키 확인. TempScene은 재등록만 하고 미저장: [작업 기록](./2026-10-13/object-pool-prefabpool-split.md)
 - **2026-10-13** — 오브젝트 풀 카테고리를 Enemies(근접·원거리·특수)·PlayerBullets·EnemyBullets 3종으로 축소(Npcs·Effects·BossSkills 삭제, `_monsters`→`_enemies` 개명은 FormerlySerializedAs로 값 유지). 컴파일 OK: [작업 기록](./2026-10-13/object-pool-category-reduction.md)
 - **2026-10-13** — TempScene에 오브젝트 풀 시험 구역 구성(바닥·표지판·풀 매니저·시험 스포너, J/K/L), 시험 코드는 `Assets/Test`에만. eval로 Get·Release·재사용·maxSize 확인, 수명 자동 반납·키 입력은 직접 Play 확인 대기: [작업 기록](./2026-10-13/object-pool-test-scene.md)
 - **2026-10-13** — Spawner·Player·Enemy 담당별 풀 연결 가이드 작성: Inspector 설정, 매니저 전달, 초기화·반납 예시와 검증 항목 정리(런타임 변경 없음): [작업 기록](./2026-10-13/object-pool-team-guide.md), [담당별 가이드](./2026-10-13/object-pool-team-integration-guide.md)
