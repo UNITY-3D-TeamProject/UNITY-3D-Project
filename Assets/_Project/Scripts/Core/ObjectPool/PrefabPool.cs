@@ -131,7 +131,7 @@ namespace Core.ObjectPool
         }
 
         /// <summary>오브젝트를 키의 풀에 돌려놓는다.</summary>
-        // [호출] PooledObject.Release에서 호출된다. 사용하는 쪽은 PooledObject.ReleaseOrDestroy를 쓴다.
+        // [호출] PooledObject.Release에서 호출된다. 사용하는 쪽은 ObjectPoolManager.Release를 쓴다.
         public void Release(string key, PooledObject pooled)
         {
             // 풀이 OnReleaseObject를 불러 끈다. 풀이 꽉 찼으면 OnDestroyObject로 파괴한다.

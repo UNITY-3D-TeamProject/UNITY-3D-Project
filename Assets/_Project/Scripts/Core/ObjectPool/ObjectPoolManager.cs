@@ -4,16 +4,20 @@ using UnityEngine;
 namespace Core.ObjectPool
 {
     /// <summary>
-    /// 씬 단위 오브젝트 풀 매니저. 로비·각 스테이지 씬에 하나씩 배치한다. (싱글톤·DontDestroyOnLoad 아님)
+    /// 씬 단위 오브젝트 풀 매니저. 풀이 필요한 씬에만 하나씩 배치한다.
+    /// 어디서든 ObjectPoolManager.Instance로 접근하지만, DontDestroyOnLoad가 아니라 씬이 내려가면 함께 사라진다.
     /// 카테고리별 PrefabPool을 들고 있고, 사용하는 쪽은 Get(키)로 꺼낸다.
     /// 씬이 내려가면 풀과 풀에서 나온 오브젝트도 함께 정리된다.
+    /// 사용하는 쪽은 이 클래스만 알면 된다. (꺼내기 Get / 반납 Release)
     /// </summary>
     // 사용 흐름
-    // 1. 씬에 이 컴포넌트를 배치하고, 인스펙터의 카테고리(PrefabPool)마다 "키 → 프리팹"을 등록한다.
+    // 1. 풀이 필요한 씬에 이 컴포넌트를 배치하고, 인스펙터의 카테고리(PrefabPool)마다 "키 → 프리팹"을 등록한다.
+    //    풀이 필요 없는 씬(로비·피드 등)에는 배치하지 않는다. 그 씬에서는 Instance가 null이다.
     // 2. Awake에서 각 PrefabPool이 키마다 풀을 만들어 Prewarm Count만큼 미리 채우고, 매니저는 "키 → 카테고리" 표(_poolByKey)를 만든다.
-    // 3. 사용하는 쪽은 이 매니저 참조를 들고 Get("MeleeEnemy", 위치, 회전)으로 꺼낸다.
-    //    (씬 배치 오브젝트는 인스펙터로 연결, 런타임 생성 오브젝트는 생성한 쪽이 넘겨준다.)
-    // 4. 다 쓴 오브젝트는 매니저를 몰라도 PooledObject.ReleaseOrDestroy(gameObject)로 자기 풀에 돌아간다.
+    // 3. 사용하는 쪽은 ObjectPoolManager.Instance.Get("MeleeEnemy", 위치, 회전)으로 꺼낸다.
+    //    Instance는 Awake에서 채워지므로 다른 컴포넌트의 Start 이후에 사용한다.
+    // 4. 다 쓴 오브젝트는 ObjectPoolManager.Instance.Release(gameObject)로 자기 풀에 돌아간다.
+    //    어느 풀에서 왔는지는 풀이 생성할 때 자동으로 붙인 PooledObject가 기억하므로 키를 넘기지 않는다.
     // 5. 재사용 시 초기화는 프리팹 컴포넌트가 OnEnable에서 직접 한다. (Awake는 생성 때 한 번뿐)
     public class ObjectPoolManager : MonoBehaviour
     {
@@ -37,17 +41,38 @@ namespace Core.ObjectPool
         private Dictionary<string, PrefabPool> _poolByKey;
         #endregion
 
+        #region Properties
+        /// <summary>지금 씬의 풀 매니저. 매니저를 배치하지 않은 씬이거나 Awake 전이면 null이다.</summary>
+        // DontDestroyOnLoad를 쓰지 않으므로 공용 Singleton<T>을 상속하지 않는다.
+        public static ObjectPoolManager Instance { get; private set; }
+        #endregion
+
         #region Unity Lifecycle
         // 씬이 로드되면 호출된다. 키마다 풀을 만들고 Prewarm Count만큼 꺼진 오브젝트를 미리 만들어 둔다.
         // (미리 만든 것을 다 쓰면 그 뒤로는 Get할 때 필요한 만큼 추가로 생성된다.)
         private void Awake()
         {
+            // 같은 씬에 매니저가 둘이면 배치 실수다. 키가 어느 매니저에 있는지 헷갈리므로 알린다.
+            // (이전 씬의 매니저가 아직 파괴되지 않은 경우는 실수가 아니므로 씬으로 구분한다.)
+            if ((Instance != null) && (Instance.gameObject.scene == gameObject.scene))
+                Debug.LogError("[ObjectPoolManager] 한 씬에 매니저가 두 개 있습니다. 나중에 Awake된 쪽이 Instance가 됩니다.", this);
+
+            Instance = this;
+
             _poolByKey = new Dictionary<string, PrefabPool>();
 
             // 키가 여러 카테고리에 중복되면 먼저 등록한 쪽이 이긴다. (이 순서대로)
             RegisterPool(_enemies);
             RegisterPool(_playerBullets);
             RegisterPool(_enemyBullets);
+        }
+
+        // 씬이 내려가 매니저가 파괴될 때 Instance를 비운다.
+        // 새 씬의 매니저가 먼저 Instance가 됐다면 그 참조는 지우지 않는다.
+        private void OnDestroy()
+        {
+            if (Instance == this)
+                Instance = null;
         }
         #endregion
 
@@ -95,6 +120,26 @@ namespace Core.ObjectPool
                 Debug.LogError($"[ObjectPoolManager] 키 '{key}'의 프리팹에 {typeof(T).Name}이 없습니다.", obj);
 
             return component;
+        }
+
+        /// <summary>
+        /// 다 쓴 오브젝트를 자기가 나온 풀에 반납한다. 풀에서 나온 게 아니면(씬 배치·Instantiate) Destroy한다.
+        /// </summary>
+        /// <param name="obj">반납할 오브젝트 (Get으로 받은 루트)</param>
+        // [호출] 기존 Destroy(gameObject) 자리에 쓴다. 예: 총알 수명 종료·충돌, 적 사망
+        //        돌아갈 풀은 이 매니저가 아니라 오브젝트에 자동으로 붙은 PooledObject가 기억한다.
+        //        그래서 사용하는 쪽은 키나 PooledObject를 몰라도 된다.
+        //        매니저가 없는 씬에서도 실행될 수 있는 코드라면 Instance가 null인지 먼저 확인한다.
+        public void Release(GameObject obj)
+        {
+            if (obj == null) return;
+
+            // PooledObject가 있고 소속 풀이 기록돼 있으면 풀 출신 → 반납
+            // 그 외(PooledObject가 없거나 풀이 기록되지 않음) → 일반 오브젝트이므로 파괴
+            if (obj.TryGetComponent(out PooledObject pooled) && pooled.IsBound)
+                pooled.Release();
+            else
+                Destroy(obj);
         }
         #endregion
 
