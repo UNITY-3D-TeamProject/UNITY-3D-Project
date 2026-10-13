@@ -6,8 +6,9 @@ namespace Core.ObjectPool
     /// 풀에서 만든 오브젝트에 자동으로 붙어 "돌아갈 풀"을 기억하는 컴포넌트.
     /// 반납하는 쪽은 ObjectPoolManager를 몰라도 Release() 또는 ReleaseOrDestroy()로 자기 풀에 돌아간다.
     /// ParticleSystem의 Stop Action을 Callback으로 두면 재생이 끝날 때 자동으로 반납된다.
+    /// 재사용 시 상태 초기화는 이 컴포넌트가 하지 않는다. 프리팹 컴포넌트가 OnEnable에서 직접 한다.
     /// </summary>
-    // 이 컴포넌트는 직접 붙이지 않아도 된다. ObjectPoolManager.CreateObject가 생성 시 자동으로 붙인다.
+    // 이 컴포넌트는 직접 붙이지 않아도 된다. PrefabPool.CreateObject가 생성 시 자동으로 붙인다.
     //
     // 사용 예 (총알이 무언가에 맞았을 때)
     //   변경 전: Destroy(gameObject);
@@ -18,16 +19,12 @@ namespace Core.ObjectPool
     public class PooledObject : MonoBehaviour
     {
         #region Private Fields
-        // 이 오브젝트를 만든 매니저. 반납할 때 여기로 돌아간다.
+        // 이 오브젝트를 만든 카테고리 풀. 반납할 때 여기로 돌아간다.
         // 풀을 거치지 않고 프리팹에 직접 붙여 둔 경우에는 null이다.
-        private ObjectPoolManager _owner;
+        private PrefabPool _owner;
 
-        // 이 오브젝트가 등록된 키. 매니저 안에서 "어느 풀"로 돌아갈지 찾을 때 쓴다.
+        // 이 오브젝트가 등록된 키. 카테고리 안에서 "어느 풀"로 돌아갈지 찾을 때 쓴다.
         private string      _key;
-
-        // 자신과 자식에 있는 IPoolable 구현 컴포넌트들. 생성 시 한 번 찾아 두고 꺼낼 때마다 재사용한다.
-        // (매번 GetComponents로 찾으면 그때마다 메모리 할당이 생긴다.)
-        private IPoolable[] _poolables;
 
         // 풀에 들어가 있는(반납된) 상태인지. 처음 생성됐을 때는 아직 꺼내지기 전이므로 true.
         // 활성/비활성(activeSelf)으로 판단하지 않는 이유: 사용 중에 게임 로직이 오브젝트를 꺼 둘 수도 있기 때문.
@@ -64,13 +61,13 @@ namespace Core.ObjectPool
             if (_isReleased) return;
 
             // 씬이 내려가는 중이라 매니저가 이미 파괴됐으면 돌아갈 곳이 없으므로 파괴한다.
-            if (_owner == null)
+            if (!_owner.IsAlive)
             {
                 Destroy(gameObject);
                 return;
             }
 
-            // 자기를 만든 매니저에 "이 키의 풀로 돌려보내 줘"라고 요청한다.
+            // 자기를 만든 카테고리 풀에 "이 키의 풀로 돌려보내 줘"라고 요청한다.
             _owner.Release(_key, this);
         }
 
@@ -90,42 +87,29 @@ namespace Core.ObjectPool
             else
                 Destroy(obj);
         }
-        #endregion
 
-        #region Internal Methods
-        /// <summary>매니저가 인스턴스를 만들 때 소속 매니저와 키를 기록한다.</summary>
-        // [호출] ObjectPoolManager.CreateObject에서 생성 직후 한 번 호출된다.
-        internal void Bind(ObjectPoolManager owner, string key)
+        /// <summary>풀이 인스턴스를 만들 때 소속 카테고리 풀과 키를 기록한다.</summary>
+        // [호출] PrefabPool.CreateObject에서 생성 직후 한 번 호출된다.
+        public void Bind(PrefabPool owner, string key)
         {
-            _owner     = owner;
-            _key       = key;
-
-            // true: 비활성 자식까지 포함해서 찾는다. (생성 직후엔 비활성 상태이므로 필요)
-            _poolables = GetComponentsInChildren<IPoolable>(true);
+            _owner = owner;
+            _key   = key;
         }
 
-        /// <summary>ObjectPoolManager.Get에서 활성화 직후 호출한다.</summary>
-        // [호출] ObjectPoolManager.Get에서 위치 설정·활성화 직후 호출된다.
-        internal void PrepareForGet()
+        /// <summary>사용 중 상태로 바꾼다. 이제 Release가 동작한다.</summary>
+        // [호출] PrefabPool.Get에서 위치 설정 후, 활성화 직전에 호출된다.
+        //        활성화 전에 바꾸므로 OnEnable에서 IsReleased는 false로 보인다.
+        public void PrepareForGet()
         {
-            // 사용 중 상태로 바꾼다. 이제 Release가 동작한다.
             _isReleased = false;
-
-            // 재사용 초기화 기회를 준다. (예: 총알 수명 타이머 리셋)
-            foreach (IPoolable poolable in _poolables)
-                poolable.OnGet();
         }
 
-        /// <summary>ObjectPoolManager의 반납 콜백에서 비활성화 직전에 호출한다.</summary>
-        // [호출] ObjectPoolManager.OnReleaseObject에서 비활성화 직전에 호출된다.
-        internal void PrepareForRelease()
+        /// <summary>반납 상태로 바꾼다.</summary>
+        // [호출] PrefabPool.OnReleaseObject에서 비활성화 직전에 호출된다.
+        //        먼저 바꾸므로 OnDisable 도중 Release가 다시 불려도 무시된다.
+        public void PrepareForRelease()
         {
-            // 반납 상태로 먼저 바꾼다. OnRelease 도중 Release가 다시 불려도 무시되도록.
             _isReleased = true;
-
-            // 정리 기회를 준다. (예: 이전 발사자 참조 비우기)
-            foreach (IPoolable poolable in _poolables)
-                poolable.OnRelease();
         }
         #endregion
     }
