@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Core.Scanning
 {
@@ -7,6 +8,7 @@ namespace Core.Scanning
     /// 대상의 원래 렌더러는 건드리지 않고, 같은 메시에 실루엣 머티리얼(M_ScanSilhouette)을 지정한 별도 렌더러를 켜고 끈다.
     /// 실루엣 머티리얼은 가려진 부분만 그리므로 보이는 부분의 외형은 그대로이다.
     /// 사라질 때는 실루엣 알파가 서서히 줄어든다.
+    /// 적처럼 SkinnedMeshRenderer 가 여러 개인 대상은 _autoShellMaterial 을 지정하면 셸 렌더러를 Awake 에서 자동으로 만든다.
     /// </summary>
     public class SilhouetteReaction : ScanReactionBase
     {
@@ -22,6 +24,9 @@ namespace Core.Scanning
         // 아이템이 여러 메시 조각(예: 상자 몸통 + 뚜껑)으로 이루어지면 조각마다 실루엣 렌더러가 하나씩 필요하므로 배열로 받는다.
         // 메시가 하나뿐인 아이템은 1칸만 채우면 된다.
         [SerializeField] private Renderer[] _silhouetteRenderers;
+        [Tooltip("지정하면 실루엣 렌더러를 직접 연결하지 않고, Awake 에서 자식의 모든 SkinnedMeshRenderer 마다 이 머티리얼을 쓰는 복제 렌더러를 만든다. 적의 홀로그램 셸(M_ScanHologram)용")]
+        // 적 프리팹은 메시 조각이 많고(Melee 9개, Ranged 20개) 모델이 바뀔 수 있어, 셸을 손으로 만들지 않고 런타임에 만든다.
+        [SerializeField] private Material _autoShellMaterial;
         #endregion
 
         #region Private Fields
@@ -35,9 +40,17 @@ namespace Core.Scanning
         private float _appliedFade = -1.0f;
         #endregion
 
+        #region Properties
+        /// <summary>스캔 중에 켜지는 실루엣(셸) 렌더러 목록. 자동 생성한 셸도 포함된다.</summary>
+        public Renderer[] SilhouetteRenderers => _silhouetteRenderers;
+        #endregion
+
         #region Unity Lifecycle
         private void Awake()
         {
+            // 셸 자동 생성을 쓰면 아래 처리 전에 렌더러 목록부터 채운다.
+            if (_autoShellMaterial) _silhouetteRenderers = BuildShellRenderers();
+
             // 대상의 원래 렌더러까지 잡히지 않도록 자동 탐색하지 않고 직접 연결받는다.
             Debug.Assert(
                 (_silhouetteRenderers != null) && (_silhouetteRenderers.Length > 0),
@@ -90,6 +103,47 @@ namespace Core.Scanning
         #endregion
 
         #region Private Methods
+        /// <summary>
+        /// 자식의 모든 SkinnedMeshRenderer 마다 같은 메시·본을 쓰고 _autoShellMaterial 을 지정한 셸 렌더러를 만든다.
+        /// 셸은 원본 렌더러 오브젝트의 자식으로 두므로 원본과 함께 켜지고 꺼지며, 같은 본을 따라 애니메이션된다.
+        /// </summary>
+        /// <returns>만든 셸 렌더러 목록</returns>
+        private Renderer[] BuildShellRenderers()
+        {
+            // 새로 만든 셸이 다시 잡히지 않도록 원본 목록을 먼저 모아 둔다.
+            SkinnedMeshRenderer[] sources = GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            Renderer[] shells = new Renderer[sources.Length];
+
+            for (int i = 0; i < sources.Length; i++)
+            {
+                SkinnedMeshRenderer source = sources[i];
+
+                GameObject shellObject = new GameObject("ScanHologram");
+                shellObject.transform.SetParent(source.transform, false);
+
+                SkinnedMeshRenderer shell = shellObject.AddComponent<SkinnedMeshRenderer>();
+                shell.sharedMesh = source.sharedMesh;
+                shell.bones = source.bones;
+                shell.rootBone = source.rootBone;
+                shell.localBounds = source.localBounds;
+                shell.shadowCastingMode = ShadowCastingMode.Off;
+                shell.receiveShadows = false;
+
+                // 서브메시가 여러 개여도 몸 전체가 셸로 덮이도록 서브메시 수만큼 같은 머티리얼을 채운다.
+                int subMeshCount = source.sharedMesh ? Mathf.Max(1, source.sharedMesh.subMeshCount) : 1;
+                Material[] materials = new Material[subMeshCount];
+                for (int j = 0; j < subMeshCount; j++)
+                {
+                    materials[j] = _autoShellMaterial;
+                }
+                shell.sharedMaterials = materials;
+
+                shells[i] = shell;
+            }
+
+            return shells;
+        }
+
         /// <summary>
         /// 모든 실루엣 렌더러의 색을 원래 색에서 알파만 fade 비율로 줄여 적용한다.
         /// </summary>
