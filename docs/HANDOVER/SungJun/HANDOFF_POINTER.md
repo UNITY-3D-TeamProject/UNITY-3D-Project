@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-13** — StageManager가 `PlayerFacade.OnDeath` 대신 `OnDeathEnded`를 구독하도록 변경해, 사망 애니메이션이 끝난 뒤 재스폰. 낙하 사망 시 체크포인트로 이동하지 않도록 `_isRecovering` 대신 체력으로 확인. 플레이어 파괴를 CharacterMediator에서 StageManager로 이동(적·NPC 파괴는 보류). 컴파일 OK, Play 확인 대기: [작업 기록](./2026-10-13/stage-death-on-death-ended.md)
 - **2026-10-13** — 반납 창구를 `ObjectPoolManager.Instance.Release(gameObject)`로 통일(`PooledObject.ReleaseOrDestroy` 삭제, PooledObject는 내부용으로 숨김). 공용 사망 처리는 호출 쪽에서 Instance null 확인. 가이드·intent-012 반영. 컴파일 OK, eval로 반납·이중 반납·일반 오브젝트 Destroy·null 확인: [작업 기록](./2026-10-13/object-pool-manager-release.md), [간단 사용법](./2026-10-13/object-pool-quick-usage.md)
 - **2026-10-13** — ObjectPoolManager에 씬 한정 `Instance` 추가(DontDestroyOnLoad·Singleton<T> 아님, 필요한 씬에만 배치, 같은 씬 중복은 LogError). 매니저 전달·인스펙터 연결 절차를 가이드·intent-012에서 제거. 컴파일 OK, eval로 Get·재사용·씬 재로드·매니저 없는 씬 null 확인. TempScene 매니저 2개 중복 정리 대기: [작업 기록](./2026-10-13/object-pool-scene-instance.md)
 - **2026-10-13** — 오브젝트 풀을 ObjectPoolManager(키 라우팅) → PrefabPool([Serializable] 카테고리, 키별 풀·생성·반납) 2단으로 분리, IPoolable 삭제하고 재사용 초기화는 프리팹 OnEnable/OnDisable로. 이어서 internal → public, PrefabPool에 Prewarm Count(키당 기본 10) 추가. 컴파일 OK, eval로 Get·반납·재사용·MaxSize·중복 키 확인. TempScene은 재등록만 하고 미저장: [작업 기록](./2026-10-13/object-pool-prefabpool-split.md)

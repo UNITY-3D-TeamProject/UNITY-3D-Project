@@ -295,7 +295,7 @@ namespace Mediator
         private void EndDeath()
         {
             OnDeathEnded?.Invoke();
-            Destroy(gameObject);
+            //Destroy(gameObject);
         }
 
         /// <summary>
