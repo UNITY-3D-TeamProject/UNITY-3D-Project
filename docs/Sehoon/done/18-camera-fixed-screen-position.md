@@ -2,7 +2,7 @@
 
 - **우선순위**: 미정
 - **상태**: 완료
-- **후속 작업**: [20. 카메라 가림 처리](../20-camera-occlusion.md) — 이 작업이 20번의 선행 작업이다 (같은 `CinemachineThirdPersonFollow` 를 건드린다).
+- **후속 작업**: [20. 카메라 가림 처리](20-camera-occlusion.md) — 이 작업이 20번의 선행 작업이다 (같은 `CinemachineThirdPersonFollow` 를 건드린다).
 
 ## 목표
 이동·점프·회전 중에도 플레이어가 **항상 화면의 같은 자리**에 보이도록 카메라를 수정한다.
