@@ -2648,6 +2648,7 @@ GameObject:
   - component: {fileID: 8819838127059369083}
   - component: {fileID: 4805851590264281338}
   - component: {fileID: -5684068917259078666}
+  - component: {fileID: 8405905274122422836}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -2809,6 +2810,18 @@ MonoBehaviour:
   _playerInput: {fileID: -1892316726996385229}
   _openSettingsActionName: Player/OpenSettings
   _closeSettingsActionName: UI/CloseSettings
+--- !u!114 &8405905274122422836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7287643752218865281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1cfb913bb065b14082f4b8e4186a007, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Platforms.PlatformRider
 --- !u!1 &7343216831179619095
 GameObject:
   m_ObjectHideFlags: 0
@@ -4297,6 +4310,10 @@ PrefabInstance:
       propertyPath: _body
       value: 
       objectReference: {fileID: 6347157687924870622}
+    - target: {fileID: 4313107193261961781, guid: ddb7337e6e074674c8bc33f618b3b463, type: 3}
+      propertyPath: _rotateSpeed
+      value: 720
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4369,6 +4386,10 @@ PrefabInstance:
     - target: {fileID: 5837350018986070136, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8199077832532000388, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
+      propertyPath: _gravity
+      value: 20
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4534,6 +4555,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7955953769729619003}
     m_Modifications:
+    - target: {fileID: 383052029023243934, guid: 234329bd487a47c4bac980e0b60231e0, type: 3}
+      propertyPath: _specialIdleDelay
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 487081635824483599, guid: 234329bd487a47c4bac980e0b60231e0, type: 3}
       propertyPath: _blinker
       value: 
