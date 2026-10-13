@@ -13,7 +13,7 @@
 | 순서 | 스킬 | 문서 | 상태 |
 |---|---|---|---|
 | 07-1 | 블루투스 (탈것 소환·탑승) | [07-1-bluetooth-skill.md](07-1-bluetooth-skill.md) | 대기 |
-| 07-2 | 상호작용 (카메라 Raycast) | [07-2-interact-skill.md](07-2-interact-skill.md) | 대기 |
+| 07-2 | 상호작용 (카메라 Raycast) | [07-2-interact-skill.md](done/07-2-interact-skill.md) | 완료 |
 | 07-3 | 스캔 (`ScanWave` 연결) | [07-3-scan-skill.md](07-3-scan-skill.md) | 대기 |
 
 - 하위 문서는 하나 끝날 때마다 `done/` 으로 옮기고 위 표의 상태·링크를 갱신한다.
