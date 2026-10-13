@@ -655,7 +655,8 @@ GameObject:
   - component: {fileID: 7616960562340131530}
   - component: {fileID: 1885794734224240061}
   - component: {fileID: 742138176948817436}
-  m_Layer: 7
+  - component: {fileID: 617126785755515221}
+  m_Layer: 8
   m_Name: Melee
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -707,7 +708,7 @@ CharacterController:
   m_Height: 1
   m_Radius: 0.4
   m_SlopeLimit: 45
-  m_StepOffset: 0.3
+  m_StepOffset: 0.15
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.5, z: 0.1}
@@ -740,6 +741,11 @@ MonoBehaviour:
   _agent: {fileID: 1885794734224240061}
   _body: {fileID: 1489965945086412681}
   _patrolRadius: 5
+  _patrolRoute: {fileID: 0}
+  _destinationTimeout: 10
+  _separationLayers:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!114 &7711118245858961342
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -759,6 +765,7 @@ MonoBehaviour:
   _skillMediator: {fileID: 2381989863797654008}
   _rotateMediator: {fileID: 4714147643135432338}
   _spawnMediator: {fileID: 0}
+  _animationMediator: {fileID: 0}
 --- !u!114 &7616960562340131530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -774,9 +781,6 @@ MonoBehaviour:
   _eye: {fileID: 3470848541682707936}
   _sightRange: 5
   _sightAngle: 90
-  _detectTimeNear: 0.2
-  _detectTimeFar: 1.5
-  _awarenessDecayTime: 2
   _loseGraceTime: 3
   _targetLayers:
     serializedVersion: 2
@@ -836,6 +840,22 @@ MonoBehaviour:
           m_Value1: 0
         Name: Self
         m_Value: {fileID: 2851063550565306939}
+--- !u!114 &617126785755515221
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2851063550565306939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 044288ff23e165144900a90e7a4b1b13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.AllySeparationPusher
+  _controller: {fileID: 8168440725051365490}
+  _motor: {fileID: 3767027719511285765}
+  _pushRadius: 0.9
+  _pushSpeed: 1.5
 --- !u!1 &2893440626600557970
 GameObject:
   m_ObjectHideFlags: 0
@@ -3107,6 +3127,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5837350018986070136, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
   m_PrefabInstance: {fileID: 5012455917340089985}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &3767027719511285765 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8199077832532000388, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
+  m_PrefabInstance: {fileID: 5012455917340089985}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c0204b33ccc984f88ec4f9d98a1298, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movement.CharacterMotor
 --- !u!114 &9170824729956214752 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4236341993996040545, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
