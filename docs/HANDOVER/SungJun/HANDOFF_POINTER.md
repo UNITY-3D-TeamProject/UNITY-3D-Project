@@ -5,6 +5,16 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-13** — 반납 창구를 `ObjectPoolManager.Instance.Release(gameObject)`로 통일(`PooledObject.ReleaseOrDestroy` 삭제, PooledObject는 내부용으로 숨김). 공용 사망 처리는 호출 쪽에서 Instance null 확인. 가이드·intent-012 반영. 컴파일 OK, eval로 반납·이중 반납·일반 오브젝트 Destroy·null 확인: [작업 기록](./2026-10-13/object-pool-manager-release.md), [간단 사용법](./2026-10-13/object-pool-quick-usage.md)
+- **2026-10-13** — ObjectPoolManager에 씬 한정 `Instance` 추가(DontDestroyOnLoad·Singleton<T> 아님, 필요한 씬에만 배치, 같은 씬 중복은 LogError). 매니저 전달·인스펙터 연결 절차를 가이드·intent-012에서 제거. 컴파일 OK, eval로 Get·재사용·씬 재로드·매니저 없는 씬 null 확인. TempScene 매니저 2개 중복 정리 대기: [작업 기록](./2026-10-13/object-pool-scene-instance.md)
+- **2026-10-13** — 오브젝트 풀을 ObjectPoolManager(키 라우팅) → PrefabPool([Serializable] 카테고리, 키별 풀·생성·반납) 2단으로 분리, IPoolable 삭제하고 재사용 초기화는 프리팹 OnEnable/OnDisable로. 이어서 internal → public, PrefabPool에 Prewarm Count(키당 기본 10) 추가. 컴파일 OK, eval로 Get·반납·재사용·MaxSize·중복 키 확인. TempScene은 재등록만 하고 미저장: [작업 기록](./2026-10-13/object-pool-prefabpool-split.md)
+- **2026-10-13** — 오브젝트 풀 카테고리를 Enemies(근접·원거리·특수)·PlayerBullets·EnemyBullets 3종으로 축소(Npcs·Effects·BossSkills 삭제, `_monsters`→`_enemies` 개명은 FormerlySerializedAs로 값 유지). 컴파일 OK: [작업 기록](./2026-10-13/object-pool-category-reduction.md)
+- **2026-10-13** — TempScene에 오브젝트 풀 시험 구역 구성(바닥·표지판·풀 매니저·시험 스포너, J/K/L), 시험 코드는 `Assets/Test`에만. eval로 Get·Release·재사용·maxSize 확인, 수명 자동 반납·키 입력은 직접 Play 확인 대기: [작업 기록](./2026-10-13/object-pool-test-scene.md)
+- **2026-10-13** — Spawner·Player·Enemy 담당별 풀 연결 가이드 작성: Inspector 설정, 매니저 전달, 초기화·반납 예시와 검증 항목 정리(런타임 변경 없음): [작업 기록](./2026-10-13/object-pool-team-guide.md), [담당별 가이드](./2026-10-13/object-pool-team-integration-guide.md)
+- **2026-10-13** — Enemy·탄환의 Get 초기화/Release 정리 책임과 현재 연결 지점·활성화 순서·재사용 상태 주의점 설명(런타임 변경 없음): [작업 기록](./2026-10-13/object-pool-get-release-lifecycle.md)
+- **2026-10-13** — 오브젝트 풀 계층 검토: 현재 키별 복수 풀 유지, Hierarchy는 키별 부모로 정리 권장(코드 변경 없음): [작업 기록](./2026-10-13/object-pool-hierarchy-review.md)
+- **2026-10-12** — 현재 오브젝트 풀 코드 구조·사용 흐름과 미연결 상태 확인: [작업 기록](./2026-10-12/object-pool-code-explanation.md)
+- **2026-10-12** — 오브젝트 풀 재설계: 싱글톤·DDOL 제거(씬별 매니저), 카테고리 6종(PrefabPool), 매니저 참조 + 키 문자열로 Get + PooledObject 자동 반납, 옛 풀 4종 삭제. 컴파일 OK, 사용처 연결·Play 검증은 각 파트 대기: [작업 기록](./2026-10-12/object-pool-refactoring.md), [사용 가이드](./2026-10-12/object-pool-guide.md)
 - **2026-10-12** — Player 파트용 Scan 스킬 파동 연결 요청문 작성(Scan.cs 코드·프리팹 구성·쿨타임 ≥ 지속시간). TempScene 파동 머티리얼을 `_Project` 사본으로 교체, `Prefabs/Skills/ScanWave.prefab` 생성(ScanTestTrigger는 씬 인스턴스에만, 씬 저장 대기): [Scan 스킬 연결 요청](./2026-10-12/scan-skill-player-request.md)
 - **2026-10-11** — 2차 검토 반영: MeshReveal 사라지는 중 재스캔 튐 수정(식 하나로 통합), 같은 프레임 중복 적용 제거, 실루엣·마커·메시 같은 값 재적용 건너뛰기. 컴파일 OK, Play 검증 대기: [2차 검토 반영](./2026-10-11/scan-review-2-fixes.md)
 - **2026-10-11** — 스캔 설계 2차 정적 검토: 구조 유지, MeshReveal fade-out 중 재스캔 시 전체로 튀는 문제, 스캔 레이어 Everything, 매 프레임 중복 갱신, 미사용 옵션 정리. 런타임 미수정: [2차 검토](./2026-10-11/scan-design-review-2.md)
