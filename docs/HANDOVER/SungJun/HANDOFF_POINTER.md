@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-13** — develop 머지(TagManager 충돌은 develop 채택) 후 `WeakPoint` 태그 재추가. Play에서 Melee에 임시 부착해 셸 9개 자동 생성·태그 약점 탐색·스캔 시 셸/약점 켜짐·셸 9개에 약점 값 전달·비활성 후 정리 확인: [작업 기록](./2026-10-13/enemy-scan-hologram-weakpoint.md)
 - **2026-10-13** — 약점 초기화(후보 5곳 랜덤·비활성)는 몬스터 파트가 OnEnable에서 하기로 합의 → `WeakPointSelector` 삭제. 스캔 쪽은 `WeakPoint` 태그(신규)로 약점 콜라이더를 Awake에서 자동으로 찾음(`WeakPointReaction`, `WeakPointShellMask`). 몬스터 코드는 스캔 코드를 모름. 컴파일 OK: [작업 기록](./2026-10-13/enemy-scan-hologram-weakpoint.md)
 - **2026-10-13** — `UI.ScreenMarkerFollower` 삭제(약점 화면 UI 마커 폐기, 약점 표시는 셸 셰이더 마스크만). 참조 없음, 컴파일 OK: [작업 기록](./2026-10-13/enemy-scan-hologram-weakpoint.md)
 - **2026-10-13** — 실제 적 프리팹용 스캔 준비(Core 스크립트만): `SilhouetteReaction._autoShellMaterial`로 자식 SkinnedMeshRenderer마다 홀로그램 셸 자동 생성, `WeakPointShellMask`가 반응의 셸 전체에 약점 색 전달, 신규 `WeakPointSelector`가 OnEnable마다 후보(scale = 구 크기) 중 하나로 약점 콜라이더를 옮김. 컴파일 OK, 프리팹 적용·Play 확인 대기: [작업 기록](./2026-10-13/enemy-scan-hologram-weakpoint.md)

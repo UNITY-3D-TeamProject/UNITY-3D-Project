@@ -160,3 +160,22 @@ Melee (루트): ScanTarget, SilhouetteReaction(_autoShellMaterial = M_ScanHologr
 - TempScene 캡슐·그리퍼 약점에는 태그가 없어 `WeakPointReaction` Assert가 뜬다(테스트 바인더가 이후 SetWeakPoint로 지정하므로 동작은 함). 필요하면 약점 오브젝트에 태그 추가.
 - Play 확인 안 함.
 - (같은 날 추가 결정) 약점 식별은 `WeakPoint` 태그로 확정. 마커 컴포넌트(`WeakPoint : MonoBehaviour`) 방식도 검토했으나 사용자 선택으로 태그 유지. `Scan` 태그 하나로 감지·약점을 겸하는 안은 약점 콜라이더가 스캔 전 비활성이라 감지에 못 쓰고, 몸체에 달면 약점과 구분이 안 되어 채택하지 않음(감지는 `ScanTarget` 컴포넌트).
+
+---
+
+## 추가 작업: develop 머지 후 WeakPoint 태그 재추가 + Play 검증
+
+### 작업 요약 및 방법
+- develop 머지 중 TagManager 충돌(내 `WeakPoint` vs develop `Destroyable`·레이어 3개) → develop 버전 채택으로 머지 커밋(de4d06f). 이후 `WeakPoint` 태그를 다시 추가(develop 태그·레이어 유지, diff는 태그 1줄).
+- TempScene(Test 저장소) 약점 3개(`WeakPoint_Head`, `WeakPoint_Chest`, `WeakPoint_Visor`)에 `WeakPoint` 태그 지정, 씬 저장.
+- Play 검증(TempScene `Melee` 인스턴스에 Play 중에만 컴포넌트 추가, 씬·프리팹에는 남지 않음):
+  - `SilhouetteReaction._autoShellMaterial` = M_ScanHologram → 원본 SkinnedMeshRenderer 9개 → 셸 9개 생성, 스캔 전 모두 꺼짐
+  - 자식 `Sphere`에 태그 + 비활성 → `WeakPointReaction`이 태그로 찾음, 스캔 전 꺼짐
+  - `ScanTarget.OnScanned` → 셸 9/9 켜짐, 약점 켜짐
+  - 1프레임 뒤 셸 9/9에 `_WeakPointCount = 1`, `_WeakPoints[0]` = 콜라이더 월드 중심·반경과 일치
+  - 비활성 → 활성(풀 반납·재사용 흉내) → 셸 0개 켜짐, 약점 꺼짐, 셸 중복 생성 없음(SkinnedMeshRenderer 18 = 원본 9 + 셸 9)
+- 이번 실행에서 Scanning 관련 Assert·에러 0(그리퍼 `WeakPointShellMask`도 `SilhouetteReaction` 자동 탐색으로 정상).
+
+### 현재 상태 및 이슈
+- 화면 캡처로 색을 눈으로 보지는 않음(값으로 확인). 그리퍼 셸 색은 이전 캡처로 확인됨.
+- 몬스터 파트 프리팹 작업(약점 콜라이더·후보 5곳·태그·컴포넌트) 대기.
