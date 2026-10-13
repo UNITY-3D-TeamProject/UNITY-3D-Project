@@ -281,7 +281,7 @@ namespace Core.Stage
             _playerController = _playerFacade.transform.root
                 .GetComponentInChildren<CharacterController>();
 
-            _playerFacade.OnDeath += HandlePlayerDeath;
+            _playerFacade.OnDeathEnded += HandlePlayerDeath;
 
             // 사망 후 재스폰이면 새 플레이어에게 현재 라운드 최초 체력·배터리를 복원한다.
             if (_isRecovering)
@@ -405,7 +405,7 @@ namespace Core.Stage
         }
 
         // 낙하 데미지를 주고, 생존하면 도달한 체크포인트 중 가장 높은 곳으로 이동시킨다.
-        // 데미지로 사망하면 사망 이벤트가 라운드 복구를 처리하므로 여기서는 이동하지 않는다.
+        // 데미지로 사망하면 사망 애니메이션 종료 이벤트가 라운드 복구를 처리하므로 여기서는 이동하지 않는다.
         // [이벤트] FallZoneTrigger.OnPlayerEntered가 발생하면 호출된다. (BindFallZones에서 구독)
         private void HandleFallZoneEntered(FallZoneTrigger fallZone, Collider other)
         {
@@ -424,7 +424,8 @@ namespace Core.Stage
                 _fallEffect.Apply(_playerFacade.EffectTarget);
             }
 
-            if (_isRecovering)
+            // 사망 처리는 사망 애니메이션이 끝난 뒤 OnDeathEnded에서 하므로, 여기서는 체력으로 사망을 확인한다.
+            if (_playerFacade.GetAttribute(CURRENT_HP_KEY) <= 0f)
             {
                 return;
             }
@@ -485,15 +486,15 @@ namespace Core.Stage
         {
             if (_playerFacade != null)
             {
-                _playerFacade.OnDeath -= HandlePlayerDeath;
+                _playerFacade.OnDeathEnded -= HandlePlayerDeath;
             }
 
             _playerFacade = null;
         }
 
         // 플레이어가 죽었다는 이벤트를 받았을 때, 현재 라운드의 체크포인트에서 다시 스폰을 요청하는 함수
-        // 사망한 플레이어는 파괴되므로 이동이 아니라 재스폰한다. 스폰 위치는 GetSpawnPoint가 알려준다.
-        // [이벤트] PlayerFacade.OnDeath(플레이어 사망)가 발생하면 호출된다. (BindPlayer에서 구독)
+        // 사망한 플레이어를 여기서 파괴하고 이동이 아니라 재스폰한다. 스폰 위치는 GetSpawnPoint가 알려준다.
+        // [이벤트] PlayerFacade.OnDeathEnded(사망 애니메이션 종료)가 발생하면 호출된다. (BindPlayer에서 구독)
         // [이후] OnPlayerRespawnRequested 발생 -> PlayerSpawner.HandleRespawnRequested -> 다음 프레임 재스폰.
         private void HandlePlayerDeath()
         {
@@ -516,6 +517,9 @@ namespace Core.Stage
 
             // 사망하면 일반 체크포인트 진행도도 라운드 시작점으로 되돌린다.
             _currentCheckpointIndex = _roundCheckpointIndices[_currentRoundIndex];
+
+            // 사망 애니메이션이 끝난 플레이어를 파괴한다. 실제 파괴는 프레임 끝에 일어나고 재스폰은 다음 프레임에 한다.
+            Destroy(_playerFacade.gameObject);
 
             _gameManager.PrepareSpawn(GameManager.EPlayerSpawnReason.RoundRecovery);
             OnPlayerRespawnRequested?.Invoke();
