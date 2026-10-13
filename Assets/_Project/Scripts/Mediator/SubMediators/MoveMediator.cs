@@ -119,6 +119,15 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// CharacterMotor 가 지면에 닿아 있는지 반환한다.
+        /// </summary>
+        /// <returns>지면에 닿아 있으면 true. CharacterMotor 가 없으면 false</returns>
+        public bool IsGrounded()
+        {
+            return _motor && _motor.IsGrounded;
+        }
+
+        /// <summary>
         /// 이동 입력 방향으로 구르기를 RollMover 에 요청한다. 입력이 없으면 카메라가 보는 수평 방향으로 구른다.
         /// 구르는 동안에는 이동/점프 입력이 모터에 전달되지 않는다.
         /// </summary>

@@ -2,7 +2,7 @@
 
 - **우선순위**: 높음
 - **상태**: 대기
-- **관련 작업**: [10. 피격 깜빡임 + 무적](10-hit-blink-invincibility.md)
+- **관련 작업**: [10. 피격 깜빡임 + 무적](done/10-hit-blink-invincibility.md)
 
 ## 목표
 피격 방향에 따라 다른 피격 모션을 재생한다.
@@ -11,6 +11,9 @@
 - `CharacterCombat` 은 체력이 줄었는지만 보고 `OnHit` 을 방출한다. **피격 방향이나 공격자 정보가 없다** (`Assets/_Project/Scripts/Combat/CharacterCombat.cs`).
 - `OnHit` 은 인자 없이 `CombatMediator` → `CharacterMediator` → `PlayerFacade` 로 전달된다.
 - 공격 쪽은 `BulletController`(투사체), `MeleeHitController`(근접)가 `SOAttributeEffect.Apply` 로 데미지를 준다.
+- (10 완료 후) 피격 후 1초 무적 동안은 Health 감소가 막혀 `OnHit` 이 나오지 않는다.
+- (10 완료 후) `CharacterMediator.OnHitCallback` 이 살아 있을 때 `AnimationMediator.NotifyHit()` 을 호출한다(현재는 깜빡임만 시작). 피격 모션 연결 지점으로 쓸 수 있다.
+- `SEffectContext.Origin`(효과 시작 위치)이 있으나 현재 공격 측에서 채우지 않는다.
 
 ## 작업 범위 (예상)
 - 피격 방향 정보를 피격 이벤트까지 전달하는 경로 추가 (공개 이벤트 시그니처 변경 가능성 있음).

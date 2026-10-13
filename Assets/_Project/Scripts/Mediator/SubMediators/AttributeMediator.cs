@@ -20,6 +20,11 @@ namespace Mediator.SubMediators
         [SerializeField] private string _firePauseKey = "CurrentHeat";
         #endregion
 
+        #region Private Fields
+        // 어트리뷰트 이름을 받아 감소를 막을지 판정하는 함수. 외부(CharacterMediator)가 주입한다.
+        private Func<string, bool> _isDamageBlocked;
+        #endregion
+
         #region Properties
         /// <summary>효과 적용 대상/주체로 사용할 AttributeSet.</summary>
         public IEffectTarget EffectTarget => _attributeSet;
@@ -42,10 +47,8 @@ namespace Mediator.SubMediators
         protected override void OnEnable()
         {
             if (_attributeSet) _attributeSet.AddOnAttributeChangedCallback(RelayAttributeChanged);
-            if (_attributeSet && _clamper)
-            {
-                _attributeSet.SetPreAttributeChangedCallback(ClampAttribute);
-            }
+            // 데미지 차단 판정은 나중에 주입될 수 있으므로 AttributeSet 만 있으면 등록한다
+            if (_attributeSet) _attributeSet.SetPreAttributeChangedCallback(ClampAttribute);
             if (_attributeSet && _regenerator) _regenerator.SetTarget(_attributeSet);
             base.OnEnable();
         }
@@ -53,10 +56,7 @@ namespace Mediator.SubMediators
         private void OnDisable()
         {
             if (_attributeSet) _attributeSet.RemoveOnAttributeChangedCallback(RelayAttributeChanged);
-            if (_attributeSet && _clamper)
-            {
-                _attributeSet.ClearPreAttributeChangedCallback();
-            }
+            if (_attributeSet) _attributeSet.ClearPreAttributeChangedCallback();
             if (_regenerator) _regenerator.ClearTarget();
         }
         #endregion
@@ -107,6 +107,23 @@ namespace Mediator.SubMediators
 
             _regenerator.Pause(_firePauseKey);
         }
+
+        /// <summary>
+        /// 어트리뷰트 감소를 막을지 판정하는 함수를 설정한다.
+        /// </summary>
+        /// <param name="isDamageBlocked">어트리뷰트 이름을 받아 감소를 막아야 하면 true 를 반환하는 함수</param>
+        public void SetIsDamageBlocked(Func<string, bool> isDamageBlocked)
+        {
+            _isDamageBlocked = isDamageBlocked;
+        }
+
+        /// <summary>
+        /// 데미지 차단 판정 함수를 해제한다.
+        /// </summary>
+        public void ClearIsDamageBlocked()
+        {
+            _isDamageBlocked = null;
+        }
         #endregion
 
         #region Protected Methods
@@ -131,11 +148,15 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 값이 반영되기 전에 AttributeClamper 규칙으로 보정한다.
+        /// 값이 반영되기 전에 데미지 차단을 적용한 뒤 AttributeClamper 규칙으로 보정한다.
+        /// 차단 대상이면 출처와 관계없이 모든 감소를 막는다.
         /// </summary>
         private void ClampAttribute(string attributeName, ref float newValue, float oldValue)
         {
-            _clamper.Clamp(_attributeSet, attributeName, ref newValue);
+            bool isDamage = newValue < oldValue;
+            if (isDamage && _isDamageBlocked != null && _isDamageBlocked(attributeName)) newValue = oldValue;
+
+            if (_clamper) _clamper.Clamp(_attributeSet, attributeName, ref newValue);
         }
         #endregion
     }

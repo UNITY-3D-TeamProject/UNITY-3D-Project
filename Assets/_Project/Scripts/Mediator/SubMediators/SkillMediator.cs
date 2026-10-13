@@ -18,6 +18,8 @@ namespace Mediator.SubMediators
     {
         #region Constants
         private const string MULTI_JUMP_SKILL_NAME = "MultiJump";
+        private const string ROLL_SKILL_NAME = "Roll";
+        private const string FIRE_SKILL_NAME = "Attack";
         #endregion
 
         #region Serialized Fields
@@ -27,6 +29,7 @@ namespace Mediator.SubMediators
     
         #region Private Fields
         private ISkillRequestController _skillRequestController;
+        private Func<bool> _getGrounded;
         #endregion
 
         #region Events
@@ -39,8 +42,11 @@ namespace Mediator.SubMediators
         /// <summary>구르기 요청. (이동 거리, 이동 시간)</summary>
         public event Action<float, float> OnRollRequested;
 
-        /// <summary>사격 요청. (총알 생성 위치)</summary>
-        public event Action<Vector3> OnFireRequested;
+        /// <summary>사격 요청. (총알 생성 위치, 차지샷 여부)</summary>
+        public event Action<Vector3, bool> OnFireRequested;
+
+        /// <summary>사격 차지 상태 변경. 차지 시작이면 true, 발사·취소로 끝나면 false.</summary>
+        public event Action<bool> OnFireChargeChanged;
 
         /// <summary>공중 점프 요청. (점프 파워 비율)</summary>
         public event Action<float> OnMultiJumpRequested;
@@ -100,6 +106,23 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 접지 여부를 얻기 위한 델리게이트 주입
+        /// </summary>
+        public void SetGetGrounded(Func<bool> getGrounded)
+        {
+            if (getGrounded == null) return;
+            _getGrounded = getGrounded;
+        }
+
+        /// <summary>
+        /// 접지 여부 델리게이트 제거
+        /// </summary>
+        public void ClearGetGrounded()
+        {
+            _getGrounded = null;
+        }
+
+        /// <summary>
         /// 공중 점프 스킬 발동을 요청한다. 발동하면 OnMultiJumpRequested 가 발생한다.
         /// </summary>
         public void RequestMultiJump()
@@ -110,13 +133,39 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 착지를 알린다. 공중 점프 횟수를 초기화한다.
+        /// 점프 시작을 알린다. 지상에서 점프했으면 공중 구르기 횟수를 초기화한다.
+        /// </summary>
+        public void NotifyJumpStarted()
+        {
+            if (IsGrounded()) ResetRollCount();
+        }
+
+        /// <summary>
+        /// 착지를 알린다. 공중 점프와 공중 구르기 횟수를 초기화한다.
         /// </summary>
         public void NotifyLanded()
         {
-            if (!_skillController || !_skillController.HasSkill(MULTI_JUMP_SKILL_NAME)) return;
+            if (!_skillController) return;
 
-            _skillController.ResetSkill(MULTI_JUMP_SKILL_NAME);
+            if (_skillController.HasSkill(MULTI_JUMP_SKILL_NAME)) _skillController.ResetSkill(MULTI_JUMP_SKILL_NAME);
+            ResetRollCount();
+        }
+
+        /// <summary>
+        /// 구르기 시작을 알린다. 구르는 동안 사격할 수 없도록 Fire 를 비활성화한다 (진행 중인 차지는 취소된다).
+        /// </summary>
+        /// <param name="direction">구르기 방향 (사용하지 않음)</param>
+        public void NotifyRollStarted(Vector3 direction)
+        {
+            SetSkillEnabled(FIRE_SKILL_NAME, false);
+        }
+
+        /// <summary>
+        /// 구르기 종료를 알린다. Fire 를 다시 활성화한다.
+        /// </summary>
+        public void NotifyRollEnded()
+        {
+            SetSkillEnabled(FIRE_SKILL_NAME, true);
         }
         #endregion
         
@@ -162,6 +211,10 @@ namespace Mediator.SubMediators
         /// <param name="skillName">실행할 스킬 이름</param>
         private void OnRequestExecuteSkill(string skillName)
         {
+            // 지상 구르기는 공중 횟수와 무관하므로, 걸어서 떨어졌다 착지해 남은 횟수를 발동 전에 지운다
+            bool isRoll = string.Equals(skillName, ROLL_SKILL_NAME, StringComparison.OrdinalIgnoreCase);
+            if (isRoll && IsGrounded()) ResetRollCount();
+
             if (!_skillController.TryExecuteSkill(skillName)) return;
 
             OnSkillUsed?.Invoke(skillName, _skillController.GetSkillCooldown(skillName));
@@ -188,15 +241,57 @@ namespace Mediator.SubMediators
             switch (skill)
             {
                 case Roll roll:
+                    // 지상 구르기는 공중 횟수에서 제외한다
+                    if (IsGrounded()) ResetRollCount();
                     OnRollRequested?.Invoke(roll.Distance, roll.Duration);
                     break;
                 case Fire fire:
-                    OnFireRequested?.Invoke(fire.FirePosition);
+                    NotifyFirePhase(fire);
                     break;
                 case MultiJump multiJump:
                     OnMultiJumpRequested?.Invoke(multiJump.JumpPowerRatio);
                     break;
             }
+        }
+
+        /// <summary>
+        /// Fire 의 진행 단계에 맞는 사격 이벤트 발행
+        /// </summary>
+        /// <param name="fire">발동 알림을 보낸 Fire 스킬</param>
+        private void NotifyFirePhase(Fire fire)
+        {
+            switch (fire.Phase)
+            {
+                case EFirePhase.ChargeStarted:
+                    OnFireChargeChanged?.Invoke(true);
+                    break;
+                case EFirePhase.Fired:
+                    OnFireChargeChanged?.Invoke(false);
+                    OnFireRequested?.Invoke(fire.FirePosition, fire.IsCharged);
+                    break;
+                case EFirePhase.Canceled:
+                    OnFireChargeChanged?.Invoke(false);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 접지 여부를 반환한다. 델리게이트가 없으면 지상으로 간주한다.
+        /// </summary>
+        /// <returns>지면에 닿아 있으면 true</returns>
+        private bool IsGrounded()
+        {
+            return _getGrounded?.Invoke() ?? true;
+        }
+
+        /// <summary>
+        /// 공중 구르기 횟수를 초기화한다.
+        /// </summary>
+        private void ResetRollCount()
+        {
+            if (!_skillController || !_skillController.HasSkill(ROLL_SKILL_NAME)) return;
+
+            _skillController.ResetSkill(ROLL_SKILL_NAME);
         }
         #endregion
     }

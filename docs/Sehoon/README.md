@@ -15,14 +15,14 @@
 |---|---|---|---|
 | 01 | SO Apply 함수 퍼사드에 추가 | [01-facade-so-apply.md](01-facade-so-apply.md) | 대기 |
 | 02 | 멀티점프 | [02-multi-jump.md](done/02-multi-jump.md) | 완료 |
-| 03 | 점프 중 대쉬 1회 제약 | [03-air-dash-limit.md](03-air-dash-limit.md) | 대기 |
-| 04 | Fire 구조 차지샷으로 변경 | [04-fire-charge-shot.md](04-fire-charge-shot.md) | 대기 |
+| 03 | 점프 중 대쉬 1회 제약 | [03-air-dash-limit.md](done/03-air-dash-limit.md) | 완료 |
+| 04 | Fire 구조 차지샷으로 변경 | [04-fire-charge-shot.md](done/04-fire-charge-shot.md) | 완료 |
 
 ### 우선순위 높음
 | 순서 | 기능 | 문서 | 상태 |
 |---|---|---|---|
-| 05 | 대쉬 중 사격·Aim 규칙 | [05-dash-fire-aim-rules.md](05-dash-fire-aim-rules.md) | 대기 |
-| 06 | Heat 게이지 구조 수정 | [06-heat-gauge-fix.md](06-heat-gauge-fix.md) | 대기 |
+| 05 | 대쉬 중 사격·Aim 규칙 | [05-dash-fire-aim-rules.md](done/05-dash-fire-aim-rules.md) | 완료 |
+| 06 | Heat 게이지 구조 수정 | [06-heat-gauge-fix.md](done/06-heat-gauge-fix.md) | 완료 |
 | 07 | 스킬 구현 (블루투스, 상호작용) | [07-skill-implementation.md](07-skill-implementation.md) | 대기 |
 | 08 | 블루투스 모션 추가 | [08-bluetooth-motion.md](08-bluetooth-motion.md) | 대기 |
 | 09 | Hit 시 방향별 모션 | [09-directional-hit-motion.md](09-directional-hit-motion.md) | 대기 |
@@ -30,14 +30,18 @@
 ### 우선순위 중간
 | 순서 | 기능 | 문서 | 상태 |
 |---|---|---|---|
-| 10 | 피격 시 깜빡임 + 무적 | [10-hit-blink-invincibility.md](10-hit-blink-invincibility.md) | 대기 |
+| 10 | 피격 시 깜빡임 + 무적 | [10-hit-blink-invincibility.md](done/10-hit-blink-invincibility.md) | 완료 |
 | 11 | 플레이어 회전 속도 체크 | [11-rotation-speed-check.md](11-rotation-speed-check.md) | 대기 |
-| 12 | Idle 특수 애니메이션 | [12-idle-special-animation.md](12-idle-special-animation.md) | 대기 |
+| 12 | Idle 특수 애니메이션 | [12-idle-special-animation.md](done/12-idle-special-animation.md) | 완료 |
 
 ### 우선순위 낮음
 | 순서 | 기능 | 문서 | 상태 |
 |---|---|---|---|
-| 13 | 총기 과열 색상 변경 | [13-overheat-color.md](13-overheat-color.md) | 대기 |
+| 13 | 총기 과열 색상 변경 | [13-overheat-color.md](done/13-overheat-color.md) | 완료 |
+| 14 | 사격·조준 중 이동 속도 감소 | [14-fire-aim-move-slow.md](done/14-fire-aim-move-slow.md) | 완료 |
+| 15 | 캐릭터 사망 시 처리 | [15-character-death.md](done/15-character-death.md) | 완료 |
+| 16 | 이동속도에 맞춘 이동 애니메이션 재생 속도 | [16-move-anim-speed.md](done/16-move-anim-speed.md) | 완료 |
+| 17 | 조준 중 사격 자세 유지 | [17-aim-fire-pose.md](done/17-aim-fire-pose.md) | 완료 |
 
 ## 같은 우선순위 안에서 순서를 정한 근거
 - **최우선** (사용자 지정, 고정)
