@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.Serialization;
 
 namespace Core.ObjectPool
 {
@@ -30,25 +31,21 @@ namespace Core.ObjectPool
         // 그래서 꺼낼 때는 키만 넘기면 되고, 키는 모든 목록을 통틀어 겹치면 안 된다.
         // 씬에서 쓰지 않는 카테고리는 비워 둬도 된다.
 
-        // 인스펙터에 나오는 주문서 목록 6개 => 실제 풀이 아님
+        // 인스펙터에 나오는 주문서 목록 3개 => 실제 풀이 아님
         [Header("Pools (키 → 프리팹, 키는 모든 목록에서 유일해야 한다)")]
-        [SerializeField] private List<SPoolEntry> _monsters      = new();   // 몬스터
-        [SerializeField] private List<SPoolEntry> _npcs          = new();   // NPC
-        [SerializeField] private List<SPoolEntry> _effects       = new();   // 파티클 등 이펙트
+        [FormerlySerializedAs("_monsters")]
+        [SerializeField] private List<SPoolEntry> _enemies       = new();   // 적 (근접·원거리·특수)
         [SerializeField] private List<SPoolEntry> _playerBullets = new();   // 플레이어가 쏘는 총알
         [SerializeField] private List<SPoolEntry> _enemyBullets  = new();   // 적이 쏘는 총알
-        [SerializeField] private List<SPoolEntry> _bossSkills    = new();   // 보스 스킬이 만드는 오브젝트
 
         // 카테고리별 최대 개수. 그 카테고리에 등록된 키 하나하나에 적용된다.
-        // 예: Monsters에 Melee, Ranged가 있고 값이 20이면 Melee 풀 20개, Ranged 풀 20개까지 보관한다.
+        // 예: Enemies에 Melee, Ranged가 있고 값이 20이면 Melee 풀 20개, Ranged 풀 20개까지 보관한다.
         // 넘치는 반납분은 보관하지 않고 Destroy된다.
         [Header("Max Size (카테고리별, 키 하나당 보관 최대 개수)")]
-        [SerializeField, Min(1)] private int _monstersMaxSize      = MAX_SIZE;
-        [SerializeField, Min(1)] private int _npcsMaxSize          = MAX_SIZE;
-        [SerializeField, Min(1)] private int _effectsMaxSize       = MAX_SIZE;
+        [FormerlySerializedAs("_monstersMaxSize")]
+        [SerializeField, Min(1)] private int _enemiesMaxSize       = MAX_SIZE;
         [SerializeField, Min(1)] private int _playerBulletsMaxSize = MAX_SIZE;
         [SerializeField, Min(1)] private int _enemyBulletsMaxSize  = MAX_SIZE;
-        [SerializeField, Min(1)] private int _bossSkillsMaxSize    = MAX_SIZE;
 
         [Header("Capacity (모든 키에 공통)")]
         [Tooltip("풀을 만들 때 미리 잡아 둘 목록 크기. 오브젝트를 미리 만들지는 않는다.")]
@@ -86,12 +83,9 @@ namespace Core.ObjectPool
 
             // 키가 여러 목록에 중복되면 먼저 등록한 쪽이 이긴다. (이 순서대로)
             // 두 번째 값은 그 카테고리의 최대 개수다.
-            RegisterEntries(_monsters, _monstersMaxSize);
-            RegisterEntries(_npcs, _npcsMaxSize);
-            RegisterEntries(_effects, _effectsMaxSize);
+            RegisterEntries(_enemies, _enemiesMaxSize);
             RegisterEntries(_playerBullets, _playerBulletsMaxSize);
             RegisterEntries(_enemyBullets, _enemyBulletsMaxSize);
-            RegisterEntries(_bossSkills, _bossSkillsMaxSize);
         }
         #endregion
 
@@ -183,7 +177,7 @@ namespace Core.ObjectPool
                 GameObject prefab = entry.Prefab;
 
                 // 유니티 내장 풀. 꺼낼 게 없으면 createFunc로 만들고, 반납 시 actionOnRelease를 부른다.
-                // 비어있는 _pools 에다가 Monsters(melee,range)를 하나씩 만든다.
+                // 비어있는 _pools 에다가 Enemies(melee,range)를 하나씩 만든다.
                 _pools.Add(key, new ObjectPool<GameObject>(
                     createFunc:      () => CreateObject(key, prefab),
                     actionOnGet:     null,
