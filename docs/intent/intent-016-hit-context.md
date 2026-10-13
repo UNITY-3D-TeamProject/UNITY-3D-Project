@@ -43,6 +43,43 @@ GAS의 `FGameplayEffectContext`처럼 `SEffectContext{Cursor, Origin}`를 `Apply
 - 원점 기록: `BulletController`는 생성 위치를, `EnemyMeleeAttack`은 공격자 몸 위치를 넣는다. `_hitPoint`는 적 앞쪽이라 밀착하면 방향이 뒤집힐 수 있어서 쓰지 않는다.
 - AI: `AIController : IHitController`가 원점을 바라본 뒤 `Sensor`에 위치를 알리고, 기존 수색 BT 가지가 이어받는다.
 
+### Context에 Effect 추가 (2026-10-10 결정)
+팀 제안: 값 변경 콜백에서 "어떤 Effect 때문에 바뀌었는지"도 알 수 있도록 `SEffectContext`에 Effect를 담는다.
+
+| 항목 | 현재 | 변경 |
+|---|---|---|
+| `SEffectContext` 필드 | `Cursor`, `Origin` | `Cursor`, `Origin`, `Effect`(`SOAttributeEffect`) |
+| Effect를 채우는 곳 | 없음 | `SOAttributeEffect.Apply`가 맨 앞에서 `this`로 덮어쓴다 |
+| 호출부(`BulletController`, `MeleeHitController`, `AttributeRegenerator`) | `new SEffectContext(cursor)` | 그대로 |
+| 구독자가 Effect를 꺼내는 법 | 불가 | `data.Context.Effect` (`SAttributeChangeData`는 바꾸지 않음) |
+| Effect 없이 바뀐 값(코스트 지불, 값 복원 등) | `default` | 그대로 `default`, `Effect == null` |
+
+얻는 것:
+- 구독자가 `Cursor == null`이 원래 출처 없는 효과(독, 회복 등)인지, 호출부가 context를 빠뜨린 실수인지 Effect를 보고 구분할 수 있다.
+- 구독자가 Effect 종류에 따라 반응을 나눌 수 있다.
+
+GAS와 다른 점: GAS는 Effect(`Def`)를 Context가 아니라 `FGameplayEffectSpec`에 둔다. Context만 따로 쓰는 곳(GameplayCue 등)이 많고, 한 Context를 여러 Effect가 공유하며, 네트워크로 따로 복제하기 때문이다. 이 프로젝트의 Context는 어트리뷰트 변경 콜백을 통해서만 전달되고, 호출마다 새로 만들어 공유하지 않으므로 둘을 나눌 이유가 없다. Spec을 따로 두지 않는다는 제약(아래)과도 맞는다.
+
+세부 결정:
+- 호출부는 Effect를 넣지 않는다. `Apply`가 항상 `this`로 덮어쓰므로, 호출부가 다른 Effect를 넣어도 무시되고 Context와 실제로 적용된 Effect가 어긋나지 않는다.
+- 생성자는 `SEffectContext(IEffectTarget cursor, Vector3? origin = null, SOAttributeEffect effect = null)`로 한다. 마지막 매개변수가 기본값을 가지므로 기존 호출부는 컴파일이 깨지지 않는다.
+- 한 번 피격으로 어트리뷰트가 여러 개 바뀌는 경우(알려진 한계 2)에는 Effect별로 콜백이 오고, 각 콜백의 `Context.Effect`가 그 값을 바꾼 Effect를 가리킨다.
+- 이번에는 필드만 추가하고, Effect를 읽는 구독자는 실제로 필요해질 때 만든다(2026-10-11).
+- 필드 타입은 `SOAttributeEffect`로 하고 `Attribute.Core ↔ Attribute.Effect` 양방향 참조를 허용한다(2026-10-11). 지금은 `Effect → Core` 한 방향뿐이다. 프로젝트에 asmdef가 없어 모든 스크립트가 `Assembly-CSharp` 하나로 컴파일되므로 순환 참조가 컴파일이나 실행에 영향을 주지 않는다. 나중에 asmdef를 도입하면 Attribute(Core + Effect)를 asmdef 하나로 묶어야 한다. Core와 Effect를 따로 나누면 순환 참조 때문에 막힌다. 순환을 피하려면 필드 타입을 `ScriptableObject`로 바꿀 수 있지만, 그러면 구독자가 캐스팅해야 해서 채택하지 않았다.
+- `SEffectContext`는 이세훈 담당 영역이다. 시그니처는 깨지지 않으며, 공유는 BF_Leers가 직접 한다.
+
+변경 파일:
+- `Attribute/Core/SEffectContext.cs`: `Effect` 필드와 생성자 매개변수 추가
+- `Attribute/Effect/SOAttributeEffect.cs`: `Apply(IEffectTarget, SEffectContext)` 맨 앞에서 context를 `this`로 다시 만든다. `Apply(GameObject, ...)`는 이 메서드를 호출하므로 바꾸지 않는다.
+
+검증:
+- 컴파일 에러 없음
+- 플레이 모드에서 총알·근접 피격 시 구독자가 받은 `Context.Effect`가 실제 적용한 에셋인지 확인
+- 결과(2026-10-11): 컴파일 에러 0건. Play 모드에서 eval로 `BulletController`와 같은 형태의 호출 `Apply(GameObject, new SEffectContext(cursor))`를 실행해 아래 3가지를 확인했다. 실제 총알 발사와 근접 피격은 해 보지 않았다.
+  - `PlayerFireEffect`를 적용하면 `Context.Effect`가 `PlayerFireEffect`로 온다.
+  - 호출부가 다른 Effect를 넣어도 `PlayerFireEffect`로 덮어쓴다.
+  - `SetValue`를 직접 호출하면 `Effect`는 `null`이다.
+
 ## 영향 범위 (Affected users and systems)
 - 누가 사용하는가: AI(피격 반응), 플레이어 HUD(맞은 방향, 추후), 다른 서브 중재자(경직 등, 추후)
 - 어떤 시스템/모듈이 건드려지는가: Attribute Core/Effect/ProjectSpecific, Mediator(Base, Character, Attribute, Move, Combat), UI(PlayerHudPresenter), Projectile, Hit
