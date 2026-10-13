@@ -190,11 +190,41 @@ namespace Core.Scanning
                 _scannableCache.Remove(collider);
             }
 
+            // 스캔 대상은 Scan 태그가 달린 오브젝트의 IScannable 뿐이다.
             // 콜라이더가 자식에 있어도 부모의 IScannable 을 찾을 수 있다.
+            // 부모에 없으면 자식에서 찾는다. 몬스터는 루트에 스캔 스크립트가 없고,
+            // 몸체 콜라이더 아래 약점 오브젝트가 스캔 대상이기 때문이다(약점 콜라이더는 스캔 전 꺼져 있어 직접 닿지 않는다).
             // 못 찾은 결과(null)도 캐시해 두어 매 프레임 같은 탐색을 반복하지 않는다.
             scannable = collider.GetComponentInParent<IScannable>();
+            if (!HasScanTag(scannable)) scannable = FindTaggedChildScannable(collider);
+
             _scannableCache[collider] = scannable;
             return scannable != null;
+        }
+
+        /// <summary>
+        /// 콜라이더의 자식 중 Scan 태그가 달린 오브젝트의 IScannable 을 찾는다.
+        /// </summary>
+        /// <param name="collider">닿은 콜라이더</param>
+        /// <returns>찾은 대상. 없으면 null</returns>
+        private static IScannable FindTaggedChildScannable(Collider collider)
+        {
+            foreach (IScannable childScannable in collider.GetComponentsInChildren<IScannable>())
+            {
+                if (HasScanTag(childScannable)) return childScannable;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 대상 오브젝트에 Scan 태그가 달려 있는지 확인한다.
+        /// </summary>
+        /// <param name="scannable">확인할 대상</param>
+        /// <returns>Scan 태그가 달린 유니티 컴포넌트면 true</returns>
+        private static bool HasScanTag(IScannable scannable)
+        {
+            return (scannable is Component component) && component.CompareTag(ScanTarget.SCAN_TAG);
         }
         #endregion
     }

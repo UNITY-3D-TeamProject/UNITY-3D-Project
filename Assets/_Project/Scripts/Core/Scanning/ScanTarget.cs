@@ -10,6 +10,11 @@ namespace Core.Scanning
     /// </summary>
     public class ScanTarget : MonoBehaviour, IScannable
     {
+        #region Constants
+        /// <summary>스캔에 반응하는 대상(ScanTarget 이 붙은 오브젝트)에 다는 태그. ScanWave 는 이 태그가 달린 대상에만 알린다.</summary>
+        public const string SCAN_TAG = "Scan";
+        #endregion
+
         #region Enums
         // 스캔 반응의 진행 단계. Idle -> Active -> FadingOut -> Idle 순으로 돈다.
         private enum EScanState
@@ -60,6 +65,7 @@ namespace Core.Scanning
             }
 
             Debug.Assert(_reactions.Length > 0, $"[{name}] 스캔 반응(ScanReactionBase)이 없습니다.");
+            Debug.Assert(CompareTag(SCAN_TAG), $"[{name}] '{SCAN_TAG}' 태그가 없어 스캔 파동이 이 대상을 찾지 못합니다.");
 
             // 닿기 전에는 Update 비용을 쓰지 않는다.
             // 이 컴포넌트를 끈다.

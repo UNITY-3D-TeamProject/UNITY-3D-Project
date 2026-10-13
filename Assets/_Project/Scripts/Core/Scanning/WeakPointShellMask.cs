@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Core.Scanning
@@ -6,7 +5,7 @@ namespace Core.Scanning
     /// <summary>
     /// 스캔 홀로그램 셸(Project/ScanHologram)에 약점 구의 위치와 반경을 넘겨, 약점 구 안에 들어온 외곽선·격자만 다른 색으로 보이게 한다.
     /// 구는 약점의 SphereCollider 값을 그대로 쓰므로, 색이 바뀐 범위와 맞는 범위가 일치한다.
-    /// 꺼져 있는 약점은 넘기지 않으므로 WeakPointReaction 이 약점을 켜고 끄는 것에 색도 따라간다.
+    /// 꺼져 있는 약점은 넘기지 않으므로 WeakPointReaction 이 약점 콜라이더를 켜고 끄는 것에 색도 따라간다.
     /// 셸 렌더러는 SilhouetteReaction 에서 가져온다(런타임에 자동 생성된 셸 포함). 셸이 꺼져 있는 동안(스캔 전)은 아무것도 하지 않는다.
     /// </summary>
     public class WeakPointShellMask : MonoBehaviour
@@ -26,7 +25,7 @@ namespace Core.Scanning
         [Tooltip("홀로그램 셸 렌더러(M_ScanHologram)를 켜고 끄는 SilhouetteReaction. 비어 있으면 같은 오브젝트에서 찾는다.")]
         // 셸이 런타임에 만들어질 수 있어 렌더러를 직접 연결하지 않고, 반응에서 목록을 읽는다.
         [SerializeField] private SilhouetteReaction _silhouette;
-        [Tooltip("약점 콜라이더. 최대 4개까지 반영한다. 비어 있으면 자식 중 WeakPoint 태그가 달린 SphereCollider 를 찾는다.")]
+        [Tooltip("약점 콜라이더. 최대 4개까지 반영한다. 비어 있으면 같은 오브젝트(약점 오브젝트)의 SphereCollider 를 쓴다.")]
         [SerializeField] private SphereCollider[] _weakPoints;
         #endregion
 
@@ -42,7 +41,7 @@ namespace Core.Scanning
         {
             // 프리팹마다 연결하지 않아도 되도록 비어 있으면 직접 찾는다.
             if (!_silhouette) _silhouette = GetComponent<SilhouetteReaction>();
-            if ((_weakPoints == null) || (_weakPoints.Length == 0)) _weakPoints = FindTaggedWeakPoints();
+            if ((_weakPoints == null) || (_weakPoints.Length == 0)) _weakPoints = GetComponents<SphereCollider>();
 
             Debug.Assert(_silhouette != null, $"[{name}] SilhouetteReaction 이 없습니다.");
             Debug.Assert(
@@ -87,21 +86,6 @@ namespace Core.Scanning
         #endregion
 
         #region Private Methods
-        /// <summary>
-        /// 자식 중 WeakPoint 태그가 달린 SphereCollider 를 모두 찾는다. 평소에는 꺼져 있으므로 비활성 자식까지 찾는다.
-        /// </summary>
-        /// <returns>찾은 약점 콜라이더 목록</returns>
-        private SphereCollider[] FindTaggedWeakPoints()
-        {
-            List<SphereCollider> weakPoints = new List<SphereCollider>();
-            foreach (SphereCollider sphere in GetComponentsInChildren<SphereCollider>(true))
-            {
-                if (sphere.CompareTag(WeakPointReaction.WEAK_POINT_TAG)) weakPoints.Add(sphere);
-            }
-
-            return weakPoints.ToArray();
-        }
-
         /// <summary>
         /// SphereCollider 의 월드 중심과 월드 반경을 구한다. 반경은 물리 엔진처럼 가장 큰 축 스케일을 곱한다.
         /// </summary>

@@ -27,6 +27,9 @@ namespace Core.Scanning
         [Tooltip("지정하면 실루엣 렌더러를 직접 연결하지 않고, Awake 에서 자식의 모든 SkinnedMeshRenderer 마다 이 머티리얼을 쓰는 복제 렌더러를 만든다. 적의 홀로그램 셸(M_ScanHologram)용")]
         // 적 프리팹은 메시 조각이 많고(Melee 9개, Ranged 20개) 모델이 바뀔 수 있어, 셸을 손으로 만들지 않고 런타임에 만든다.
         [SerializeField] private Material _autoShellMaterial;
+        [Tooltip("셸을 자동 생성할 때 SkinnedMeshRenderer 를 찾을 기준 오브젝트. 비어 있으면 이 오브젝트. 약점 오브젝트에 붙일 때는 몬스터 루트를 연결한다.")]
+        // 몬스터는 루트에 스캔 스크립트를 두지 않고 약점 오브젝트에 이 반응을 붙이므로, 몸 전체 렌더러를 찾을 기준을 따로 받는다.
+        [SerializeField] private Transform _shellSourceRoot;
         #endregion
 
         #region Private Fields
@@ -104,14 +107,16 @@ namespace Core.Scanning
 
         #region Private Methods
         /// <summary>
-        /// 자식의 모든 SkinnedMeshRenderer 마다 같은 메시·본을 쓰고 _autoShellMaterial 을 지정한 셸 렌더러를 만든다.
+        /// 기준 오브젝트(_shellSourceRoot, 비어 있으면 자신) 아래 모든 SkinnedMeshRenderer 마다 같은 메시·본을 쓰고 _autoShellMaterial 을 지정한 셸 렌더러를 만든다.
         /// 셸은 원본 렌더러 오브젝트의 자식으로 두므로 원본과 함께 켜지고 꺼지며, 같은 본을 따라 애니메이션된다.
         /// </summary>
         /// <returns>만든 셸 렌더러 목록</returns>
         private Renderer[] BuildShellRenderers()
         {
+            Transform sourceRoot = _shellSourceRoot ? _shellSourceRoot : transform;
+
             // 새로 만든 셸이 다시 잡히지 않도록 원본 목록을 먼저 모아 둔다.
-            SkinnedMeshRenderer[] sources = GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            SkinnedMeshRenderer[] sources = sourceRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true);
             Renderer[] shells = new Renderer[sources.Length];
 
             for (int i = 0; i < sources.Length; i++)
