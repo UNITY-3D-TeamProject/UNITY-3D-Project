@@ -8,11 +8,10 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: M_Feed_Skybox
-  m_Shader: {fileID: 106, guid: 0000000000000000f000000000000000, type: 0}
+  m_Shader: {fileID: 4800000, guid: eac19dc3c4681024eae27a300bc87c6f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - _SUNDISK_HIGH_QUALITY
+  m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -23,16 +22,42 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _FeedAtlas:
+        m_Texture: {fileID: 2800000, guid: bea8d6afc2d389f4983359cc11b8edac, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ReelAtlas:
+        m_Texture: {fileID: 2800000, guid: 47978cc68eb43014c98f731b88cf3215, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _StoryAtlas:
+        m_Texture: {fileID: 2800000, guid: b64918557d617ad45a01eb00f87f5fbf, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _UIAtlas:
+        m_Texture: {fileID: 2800000, guid: 30b87c99bc48eee4cb707ed39b232076, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AtmosphereThickness: 0.75
-    - _Exposure: 1.15
-    - _SunDisk: 2
-    - _SunSize: 0.03
-    - _SunSizeConvergence: 5
+    - _CardColumns: 30
+    - _CardStrength: 0.7
+    - _Exposure: 1
+    - _GlowStrength: 0.05
+    - _ReflectionStrength: 0.6
+    - _ScrollSpeed: 0.2
+    - _StarStrength: 0.7
+    - _UIScrollSpeed: 0.5
+    - _UIStrength: 1
     m_Colors:
-    - _GroundColor: {r: 0.8, g: 0.6, b: 0.86, a: 1}
-    - _SkyTint: {r: 0.95, g: 0.55, b: 0.75, a: 1}
+    - _GlowColor: {r: 1, g: 0.85, b: 0.9, a: 1}
+    - _GlowWarmColor: {r: 1, g: 0.93, b: 0.8, a: 1}
+    - _GroundColor: {r: 0.722, g: 0.639, b: 0.902, a: 1}
+    - _HorizonColor: {r: 1, g: 0.85, b: 0.9, a: 1}
+    - _LowColor: {r: 1, g: 0.76899993, b: 0.886, a: 1}
+    - _MidColor: {r: 0.725, g: 0.69, b: 1, a: 1}
+    - _UIGlowColor: {r: 1, g: 0.5, b: 0.72, a: 1}
+    - _ZenithColor: {r: 0.43499997, g: 0.635, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
