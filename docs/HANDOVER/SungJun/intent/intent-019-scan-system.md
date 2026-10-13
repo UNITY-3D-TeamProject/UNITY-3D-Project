@@ -22,6 +22,8 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   4. 상호작용 오브젝트: 위치 마커 표시
 - 구조: `IScannable` + `ScanTarget`(타이머·상태) + `ScanReactionBase`(Strategy) 조합. 상세는 설계 계획(`C:\Users\inha\.claude\plans\declarative-snuggling-haven.md`)을 따른다.
 
+- (추가 2026-10-13) 적 스캔 연출: 몸체는 파란 홀로그램 셸(`Project/ScanHologram` 셰이더 = 바깥 외곽선 + 가장자리 빛 + 흐르는 격자)을 같은 메시 자식 렌더러로 두고 `SilhouetteReaction`으로 켜고 끈다(새 스크립트 없음, `_Color` 알파로 페이드). 약점은 약점 오브젝트 자식에 빨간 레티클 스프라이트 + "WEAK POINT" TextMeshPro + `Billboard`를 두어 `WeakPointReaction`이 약점을 켤 때 함께 보인다. TempScene `ScanTest/Enemy_WeakPoint`에 머리·가슴 약점 2개로 시험 배치. (정정 같은 날) 약점 마커는 월드 Billboard 대신 화면 UI로 전환: 약점 오브젝트에 `UI.ScreenMarkerFollower`를 붙여 HUD 캔버스의 마커를 화면 위치로 옮긴다. (추가 같은 날) 약점 부위만 셸 색을 다르게: 셸 셰이더의 구 마스크 + `WeakPointShellMask`가 약점 SphereCollider의 월드 중심·반경을 넘겨, 구 안의 외곽선·격자를 `_WeakColor`로 칠한다(보이는 범위 = 맞는 범위). 그리퍼 로봇(SkinnedMesh)에 시험 적용. (추가 같은 날) 실제 적 프리팹용: `SilhouetteReaction._autoShellMaterial`로 셸을 런타임 자동 생성, 약점 후보 5곳 중 하나로 콜라이더를 옮기고 끄는 것은 몬스터 파트가 몬스터 `OnEnable`에서 한다(스포너는 소환만). 스캔 쪽은 `WeakPoint` 태그로 약점 콜라이더를 자동으로 찾으므로(`WeakPointReaction`, `WeakPointShellMask` Awake) 몬스터 코드는 스캔 코드를 모른다.
+
 ## 영향 범위 (Affected users and systems)
 - 누가 사용하는가: 플레이어(스캔 스킬), 레벨 디자이너(대상 프리팹에 `ScanTarget` 부착)
 - 어떤 시스템/모듈이 건드려지는가: `Skill/Skills/Scan.cs`, `Scan.prefab`, `Player.prefab`(중첩 프리팹 변경), 신규 `Scripts/Core/Scanning/`, 에셋 이전(`Assets/Test` → `Assets/_Project`), (Phase B) Attribute/Projectile/Hit 경로

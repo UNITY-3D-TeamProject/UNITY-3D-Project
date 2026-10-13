@@ -5,6 +5,13 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-13** — 약점 초기화(후보 5곳 랜덤·비활성)는 몬스터 파트가 OnEnable에서 하기로 합의 → `WeakPointSelector` 삭제. 스캔 쪽은 `WeakPoint` 태그(신규)로 약점 콜라이더를 Awake에서 자동으로 찾음(`WeakPointReaction`, `WeakPointShellMask`). 몬스터 코드는 스캔 코드를 모름. 컴파일 OK: [작업 기록](./2026-10-13/enemy-scan-hologram-weakpoint.md)
+- **2026-10-13** — `UI.ScreenMarkerFollower` 삭제(약점 화면 UI 마커 폐기, 약점 표시는 셸 셰이더 마스크만). 참조 없음, 컴파일 OK: [작업 기록](./2026-10-13/enemy-scan-hologram-weakpoint.md)
+- **2026-10-13** — 실제 적 프리팹용 스캔 준비(Core 스크립트만): `SilhouetteReaction._autoShellMaterial`로 자식 SkinnedMeshRenderer마다 홀로그램 셸 자동 생성, `WeakPointShellMask`가 반응의 셸 전체에 약점 색 전달, 신규 `WeakPointSelector`가 OnEnable마다 후보(scale = 구 크기) 중 하나로 약점 콜라이더를 옮김. 컴파일 OK, 프리팹 적용·Play 확인 대기: [작업 기록](./2026-10-13/enemy-scan-hologram-weakpoint.md)
+- **2026-10-13** — 약점 셸 표시 강조: 약점 범위 채우기·구 경계 링·맥동·HDR 세기 추가(`ScanHologram.shader`, 머티리얼에서 조절). 셰이더 에러 0, Play 캡처로 확인: [작업 기록](./2026-10-13/enemy-scan-hologram-weakpoint.md)
+- **2026-10-13** — 그리퍼 로봇 약점 표시: 셸 셰이더에 약점 구 마스크(`_WeakPoints`, `_WeakColor`) 추가 + 신규 `Core.Scanning.WeakPointShellMask`(SphereCollider 값을 셸에 전달). TempScene 로봇에 SkinnedMesh 셸·RigHead 아래 약점 구 배치, 스캔 시 얼굴 앞만 빨갛게 확인. 데미지 2배는 미구현: [작업 기록](./2026-10-13/enemy-scan-hologram-weakpoint.md)
+- **2026-10-13** — 약점 마커를 월드 Billboard에서 화면 UI로 전환: 신규 `UI.ScreenMarkerFollower`(켜져 있는 동안 WorldToScreenPoint로 HUD 마커 이동, 카메라 뒤면 숨김). TempScene HUD Canvas에 머리·가슴 마커 연결. 컴파일 OK, Play에서 표시·숨김 확인. 스폰 적용은 HUD 마커 생성 구조 필요: [작업 기록](./2026-10-13/enemy-scan-hologram-weakpoint.md)
+- **2026-10-13** — TempScene 캡슐 적에 스캔 연출 추가: 몸체는 파란 홀로그램 셸(신규 `Project/ScanHologram` 셰이더, `SilhouetteReaction` 재사용), 머리·가슴 약점에 빨간 레티클 + "WEAK POINT" 라벨(Billboard). 새 스크립트 없음, 셰이더 에러 0, Play에서 스캔 전 숨김·스캔 후 표시 확인. 페이드아웃·플레이 시점 튜닝 대기: [작업 기록](./2026-10-13/enemy-scan-hologram-weakpoint.md)
 - **2026-10-13** — StageManager가 `PlayerFacade.OnDeath` 대신 `OnDeathEnded`를 구독하도록 변경해, 사망 애니메이션이 끝난 뒤 재스폰. 낙하 사망 시 체크포인트로 이동하지 않도록 `_isRecovering` 대신 체력으로 확인. 플레이어 파괴를 CharacterMediator에서 StageManager로 이동(적·NPC 파괴는 보류). 컴파일 OK, Play 확인 대기: [작업 기록](./2026-10-13/stage-death-on-death-ended.md)
 - **2026-10-13** — 반납 창구를 `ObjectPoolManager.Instance.Release(gameObject)`로 통일(`PooledObject.ReleaseOrDestroy` 삭제, PooledObject는 내부용으로 숨김). 공용 사망 처리는 호출 쪽에서 Instance null 확인. 가이드·intent-012 반영. 컴파일 OK, eval로 반납·이중 반납·일반 오브젝트 Destroy·null 확인: [작업 기록](./2026-10-13/object-pool-manager-release.md), [간단 사용법](./2026-10-13/object-pool-quick-usage.md)
 - **2026-10-13** — ObjectPoolManager에 씬 한정 `Instance` 추가(DontDestroyOnLoad·Singleton<T> 아님, 필요한 씬에만 배치, 같은 씬 중복은 LogError). 매니저 전달·인스펙터 연결 절차를 가이드·intent-012에서 제거. 컴파일 OK, eval로 Get·재사용·씬 재로드·매니저 없는 씬 null 확인. TempScene 매니저 2개 중복 정리 대기: [작업 기록](./2026-10-13/object-pool-scene-instance.md)
