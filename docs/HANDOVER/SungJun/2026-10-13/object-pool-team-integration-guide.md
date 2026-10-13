@@ -61,8 +61,9 @@
 
 | 매니저 목록 | 키 예시 | 프리팹 |
 |---|---|---|
-| Monsters | `RangedEnemy` | 원거리 적 프리팹 |
-| Monsters | `MeleeEnemy` | 근접 적 프리팹 |
+| Enemies | `MeleeEnemy` | 근접 적 프리팹 |
+| Enemies | `RangedEnemy` | 원거리 적 프리팹 |
+| Enemies | `SpecialEnemy` | 특수 적 프리팹 |
 | Player Bullets | `PlayerBullet` | Bullet.prefab |
 | Player Bullets | `PlayerChargedBullet` | ChargedBullet.prefab |
 | Enemy Bullets | `EnemyBullet` | EnemyBullet.prefab |

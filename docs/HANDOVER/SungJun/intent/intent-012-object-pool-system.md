@@ -14,7 +14,8 @@ GC 스파이크 및 프레임 드랍이 발생한다.
 ## 기대 결과 (Proposed outcome)
 - ~~ObjectPoolManager 싱글톤 하나로 몬스터·총알·이펙트·NPC 풀을 통합 관리한다.~~ (2026-10-12 변경)
 - 로비·각 스테이지 씬마다 ObjectPoolManager를 하나씩 둔다 (싱글톤·DontDestroyOnLoad 아님). 씬이 내려가면 풀도 함께 정리된다.
-- 카테고리: Monster, Npc, Effect, PlayerBullet, EnemyBullet, BossSkill. 각 카테고리는 프리팹 여러 종류를 지원한다(PrefabPool).
+- ~~카테고리: Monster, Npc, Effect, PlayerBullet, EnemyBullet, BossSkill.~~ (2026-10-13 축소)
+- 카테고리: Enemy(근접·원거리·특수), PlayerBullet, EnemyBullet. 각 카테고리는 키별로 프리팹 여러 종류를 지원한다.
 - 꺼내는 쪽은 매니저 참조 + 키 문자열로 `Get("Monster1", pos, rot)` (프리팹은 매니저 인스펙터에 키와 함께 등록, 쓰는 쪽은 프리팹을 몰라도 됨). 매니저 참조는 씬 배치 오브젝트는 인스펙터, 런타임 생성 오브젝트는 생성한 쪽이 직접 전달.
 - 반납은 오브젝트에 자동으로 붙는 PooledObject로 처리한다 (매니저를 몰라도 됨).
 - GC Alloc 없이 오브젝트를 재사용하여 런타임 성능을 안정화한다.
