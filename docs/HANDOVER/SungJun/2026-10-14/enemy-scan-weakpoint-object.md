@@ -48,6 +48,28 @@ Melee (루트: 기존 컴포넌트 그대로, 스캔 스크립트 없음)
 - TestScene 옛 스캔 대상들(`Item_Behind_Wall`, `Scan_Reveal_Object`, `Enemy_WeakPoint`, `Gripper Robot`, `Marker_Interact`, `Reveal_Platform`)은 Scan 태그가 없어 Assert가 뜨고 스캔에 반응하지 않는다. Assets/Test라 수정하지 않음 — 태그를 달아야 한다.
 - 몬스터 프리팹 구성의 약점 태그는 `WeakPoint` → **`Scan`** 으로 바뀐다.
 
+## 추가 작업: 물리 탐색 → 등록 목록 판정
+- 이유: 물리 탐색(`OverlapSphereNonAlloc`)은 태그를 몰라 대상이 아닌 콜라이더도 결과 배열(256칸)에 들어온다. 레이어는 이미 다른 용도로 쓰여 거를 수 없다.
+- `ScanTarget`
+  - static 목록 + `Registered`(읽기 전용). `Scan` 태그가 있으면 Awake에서 등록, `OnDestroy`에서 제거. (대기 중 스스로 `enabled = false`를 하므로 OnEnable/OnDisable로 관리하지 않음)
+  - `_scanColliders`(판정 콜라이더) 추가. 비어 있으면 자기와 자식 콜라이더 전부. 몬스터 약점은 몸체 CharacterController 연결.
+  - `IsTouchedBy(origin, radius)`: 꺼진 콜라이더 제외 → 범위 상자(`bounds.SqrDistance`)로 거름 → Box/Sphere/Capsule/볼록 Mesh는 `ClosestPoint`로 실제 표면 거리 확정, 그 외(CharacterController 등)는 범위 상자 결과.
+- `ScanWave`: `Registered`를 뒤에서부터 돌며 `activeInHierarchy && IsTouchedBy`면 `OnScanned`. `OverlapSphereNonAlloc`, 256 상한·경고, `_scannableLayers`, 캐시, 태그 탐색 코드 제거. `ScanWave.prefab`의 `_scannableLayers` 직렬화 값은 남지만 무시됨.
+- `IScannable`은 유지(`Assets/Test`의 `TerrainScanWave`가 사용).
+- 검증(TestScene Play, 저장 안 함): 컴파일 OK.
+  - 등록: 태그 있는 대상만 등록(0→2, 태그 없는 대상 제외), 파괴하면 2→1.
+  - 경계: CharacterController 범위 상자 끝까지 3.0m에서 r 2.9 false / 3.01 true. 45° 회전 큐브(BoxCollider) — 꼭짓점 방향 실제 0.493m에서 r 0.45 false / 0.52 true, 면 방향은 범위 상자로는 0m지만 실제 0.5m에서 r 0.45 false / 0.51 true(ClosestPoint로 정확).
+  - 실제 `ScanWave.Begin`: 약점(셸 9/9, 콜라이더 켜짐, `_WeakPointCount` 1)·태그 아이템 반응, 태그 없는 대상 무반응.
+  - Melee 비활성 → 콜라이더 꺼짐, 파동이 건너뜀, 재활성 시 셸 0·중복 생성 없음.
+- 몬스터 프리팹 구성: 약점 `ScanTarget._scanColliders` = 몬스터 루트 CharacterController 추가.
+
+## 추가 작업: TestScene 스캔 대상 정리 (Assets/Test, Git 제외)
+- 원인: TestScene 스캔 대상 7개가 전부 Untagged라 등록 목록에 안 들어가 스캔이 처리되지 않았다.
+- 7개(`Marker_Interact`, `Item_Behind_Wall`, `Scan_Reveal_Object`, `Hidden_Behind_Wall`, `Enemy_WeakPoint`, `Reveal_Platform`, `Gripper Robot`)에 `Scan` 태그.
+- 적 2개는 루트의 옛 `WeakPointReaction`이 몸체 CapsuleCollider를 끄는 상태였다 → 루트에서 `WeakPointReaction`·`WeakPointTestBinder` 제거(루트 ScanTarget·홀로그램·그리퍼 WeakPointShellMask는 유지). 약점 구 3개(`WeakPoint_Head`, `WeakPoint_Chest`, `WeakPoint_Visor`)에 `Scan` 태그 + `ScanTarget(_scanColliders = 몸체 Capsule)` + `WeakPointReaction`.
+- 씬 저장(작업 전 미저장 변경 없음 확인).
+- Play 검증: 등록 9개(꺼진 `Hidden_Behind_Wall` 제외), 플레이어 위치에서 파동 → 9개 모두 반응, 그리퍼 셸 `_WeakPointCount` 1, 스캔 전·후 약점 콜라이더 꺼짐 / 몸체 콜라이더 항상 켜짐. 스캔 관련 에러 0.
+
 ## 4. 다음 할 일 (Next Steps)
 - 몬스터 파트에 위 프리팹 구성 전달(약점 오브젝트, 후보 5곳, OnEnable에서 이동만)
 - TestScene 옛 약점 시험 오브젝트 정리 또는 새 구성으로 교체

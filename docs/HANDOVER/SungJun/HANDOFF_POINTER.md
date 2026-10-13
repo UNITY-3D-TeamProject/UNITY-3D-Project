@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-14** — 스캔 판정을 물리 탐색 → 등록 목록으로 변경: Scan 태그 `ScanTarget`이 스스로 등록, `ScanWave`는 목록만 돌며 범위 상자 + ClosestPoint로 닿음 판정(`_scanColliders`, 약점은 몸체 CharacterController 연결). 레이어·256 상한 제거. 컴파일 OK, 실제 파동·경계값·풀 재사용 Play 확인: [작업 기록](./2026-10-14/enemy-scan-weakpoint-object.md)
 - **2026-10-14** — 스캔 대상 태그를 `Scan` 하나로 통일(`WeakPoint` 태그 제거). `ScanWave`는 Scan 태그 대상에만 알림, `ScanTarget`에 태그 Assert. 피격 약점 판정은 `WeakPointReaction` 유무로. 컴파일 OK, 탐색 경로 3종 Play 확인: [작업 기록](./2026-10-14/enemy-scan-weakpoint-object.md)
 - **2026-10-14** — 적 스캔 구조 변경: 몬스터 루트 스크립트 없음, 약점 오브젝트(태그 `WeakPoint`, 항상 활성)에 스캔 컴포넌트 전부 + 콜라이더만 켜고 끔. `ScanWave`가 부모에 없으면 자식 중 WeakPoint 태그 대상을 찾음, `SilhouetteReaction._shellSourceRoot` 추가. 컴파일 OK, Play에서 실제 파동으로 셸·콜라이더·약점 색·풀 재사용 확인: [작업 기록](./2026-10-14/enemy-scan-weakpoint-object.md)
 - **2026-10-13** — develop 머지(TagManager 충돌은 develop 채택) 후 `WeakPoint` 태그 재추가. Play에서 Melee에 임시 부착해 셸 9개 자동 생성·태그 약점 탐색·스캔 시 셸/약점 켜짐·셸 9개에 약점 값 전달·비활성 후 정리 확인: [작업 기록](./2026-10-13/enemy-scan-hologram-weakpoint.md)
