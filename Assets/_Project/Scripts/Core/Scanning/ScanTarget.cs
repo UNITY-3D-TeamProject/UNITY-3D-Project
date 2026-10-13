@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Core.Scanning
 {
     /// <summary>
     /// IScannable 의 기본 구현. 스캔에 닿은 시점부터 스캔 지속 시간만큼 반응을 유지하고, 이후 서서히 사라지게 한다.
+    /// Scan 태그가 달려 있으면 Awake 에서 등록 목록(Registered)에 들어가고, ScanWave 는 이 목록만 돌며 판정 콜라이더에 파동이 닿았는지 확인한다.
     /// 어떻게 보일지는 같은 오브젝트에 붙은 ScanReactionBase 들이 결정한다(자식의 반응은 찾지 않는다).
     /// 스킬과 파동의 생명주기와 무관하게 대상이 스스로 타이머를 소유하므로, 파동이 사라져도 끝까지 진행한다.
     /// 재스캔은 유지 시간만 연장하고 처음 스캔의 연출을 그대로 둔다. 스킬 쿨타임으로 스캔이 겹치지 않는 것을 전제로 한다.
@@ -13,6 +15,12 @@ namespace Core.Scanning
         #region Constants
         /// <summary>스캔에 반응하는 대상(ScanTarget 이 붙은 오브젝트)에 다는 태그. ScanWave 는 이 태그가 달린 대상에만 알린다.</summary>
         public const string SCAN_TAG = "Scan";
+        #endregion
+
+        #region Static Fields
+        // 스캔 파동이 판정할 대상 목록. Awake 에서 등록하고 OnDestroy 에서 뺀다.
+        // 대기 중에는 스스로 enabled = false 를 하므로 OnEnable/OnDisable 로 관리하지 않는다. 비활성 대상은 파동 쪽에서 건너뛴다.
+        private static readonly List<ScanTarget> RegisteredTargets = new List<ScanTarget>();
         #endregion
 
         #region Enums
@@ -40,6 +48,9 @@ namespace Core.Scanning
         // 스캔에 닿았을 때 눈에 보이는 반응 하나를 만드는 부모 클래스 
         // 여러 반응이 필요한경우를 대비해서 배열로 만든다.
         [SerializeField] private ScanReactionBase[] _reactions;
+        [Tooltip("파동이 닿았는지 판정할 콜라이더. 비어 있으면 Awake 에서 이 오브젝트와 자식의 콜라이더를 모두 쓴다. 몬스터 약점은 몸체 콜라이더(CharacterController)를 연결한다.")]
+        // 약점처럼 자기 콜라이더가 스캔 전에 꺼져 있는 대상은 다른 오브젝트의 콜라이더로 판정해야 하므로 직접 지정할 수 있게 한다.
+        [SerializeField] private Collider[] _scanColliders;
         #endregion
 
         #region Private Fields
@@ -55,6 +66,11 @@ namespace Core.Scanning
         private float _fade;
         #endregion
 
+        #region Properties
+        /// <summary>스캔 파동이 판정할 대상 목록. 비활성 오브젝트도 들어 있으므로 쓰는 쪽에서 확인한다.</summary>
+        public static IReadOnlyList<ScanTarget> Registered => RegisteredTargets;
+        #endregion
+
         #region Unity Lifecycle
         private void Awake()
         {
@@ -64,12 +80,26 @@ namespace Core.Scanning
                 _reactions = GetComponents<ScanReactionBase>();
             }
 
+            if ((_scanColliders == null) || (_scanColliders.Length == 0))
+            {
+                _scanColliders = GetComponentsInChildren<Collider>(true);
+            }
+
             Debug.Assert(_reactions.Length > 0, $"[{name}] 스캔 반응(ScanReactionBase)이 없습니다.");
+            Debug.Assert(_scanColliders.Length > 0, $"[{name}] 스캔 판정 콜라이더가 없습니다.");
             Debug.Assert(CompareTag(SCAN_TAG), $"[{name}] '{SCAN_TAG}' 태그가 없어 스캔 파동이 이 대상을 찾지 못합니다.");
+
+            // Scan 태그가 달린 대상만 파동의 판정 목록에 들어간다.
+            if (CompareTag(SCAN_TAG)) RegisteredTargets.Add(this);
 
             // 닿기 전에는 Update 비용을 쓰지 않는다.
             // 이 컴포넌트를 끈다.
             enabled = false;
+        }
+
+        private void OnDestroy()
+        {
+            RegisteredTargets.Remove(this);
         }
 
         private void Update()
@@ -137,9 +167,49 @@ namespace Core.Scanning
                 reaction.OnScanUpdate(hit);
             }
         }
+
+        /// <summary>
+        /// 파동 구가 판정 콜라이더 중 하나에 닿았는지 확인한다. 꺼진 콜라이더는 판정에서 뺀다.
+        /// 범위 상자로 먼저 거르고, ClosestPoint 를 쓸 수 있는 콜라이더는 실제 표면까지의 거리로 확정한다.
+        /// </summary>
+        /// <param name="origin">파동 중심(월드 좌표)</param>
+        /// <param name="radius">파동의 현재 반경(m)</param>
+        /// <returns>닿았으면 true</returns>
+        public bool IsTouchedBy(Vector3 origin, float radius)
+        {
+            float sqrRadius = radius * radius;
+
+            foreach (Collider scanCollider in _scanColliders)
+            {
+                // 꺼진 콜라이더는 범위가 0 이라 판정에 쓸 수 없다.
+                if (!scanCollider || !scanCollider.enabled || !scanCollider.gameObject.activeInHierarchy) continue;
+
+                // 범위 상자에도 닿지 않으면 실제 표면에도 닿지 않는다.
+                if (scanCollider.bounds.SqrDistance(origin) > sqrRadius) continue;
+
+                // ClosestPoint 를 못 쓰는 콜라이더(CharacterController, 오목한 MeshCollider 등)는 범위 상자 결과를 쓴다.
+                if (!CanUseClosestPoint(scanCollider)) return true;
+
+                if ((scanCollider.ClosestPoint(origin) - origin).sqrMagnitude <= sqrRadius) return true;
+            }
+
+            return false;
+        }
         #endregion
 
         #region Private Methods
+        /// <summary>
+        /// Collider.ClosestPoint 가 지원하는 콜라이더인지 확인한다(Box, Sphere, Capsule, 볼록 MeshCollider).
+        /// </summary>
+        /// <param name="scanCollider">확인할 콜라이더</param>
+        /// <returns>지원하면 true</returns>
+        private static bool CanUseClosestPoint(Collider scanCollider)
+        {
+            if (scanCollider is MeshCollider meshCollider) return meshCollider.convex;
+
+            return (scanCollider is BoxCollider) || (scanCollider is SphereCollider) || (scanCollider is CapsuleCollider);
+        }
+
         /// <summary>
         /// 새 스캔에 닿았을 때 타이머를 (재)시작한다. 이미 진행 중이면(재스캔) 반응을 새로 시작하지 않고 시간만 연장한다.
         /// 따라서 OnScanBegin 은 새 스캔마다가 아니라 대기 상태에서 처음 닿았을 때만 호출된다.
