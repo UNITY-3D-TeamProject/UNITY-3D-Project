@@ -1,31 +1,38 @@
 # 09. Hit 시 방향별 모션
 
 - **우선순위**: 높음
-- **상태**: 대기
-- **관련 작업**: [10. 피격 깜빡임 + 무적](done/10-hit-blink-invincibility.md)
+- **상태**: 완료
+- **관련 작업**: [10. 피격 깜빡임 + 무적](10-hit-blink-invincibility.md)
 
 ## 목표
 피격 방향에 따라 다른 피격 모션을 재생한다.
 
 ## 현재 상황
-- `CharacterCombat` 은 체력이 줄었는지만 보고 `OnHit` 을 방출한다. **피격 방향이나 공격자 정보가 없다** (`Assets/_Project/Scripts/Combat/CharacterCombat.cs`).
-- `OnHit` 은 인자 없이 `CombatMediator` → `CharacterMediator` → `PlayerFacade` 로 전달된다.
-- 공격 쪽은 `BulletController`(투사체), `MeleeHitController`(근접)가 `SOAttributeEffect.Apply` 로 데미지를 준다.
-- (10 완료 후) 피격 후 1초 무적 동안은 Health 감소가 막혀 `OnHit` 이 나오지 않는다.
-- (10 완료 후) `CharacterMediator.OnHitCallback` 이 살아 있을 때 `AnimationMediator.NotifyHit()` 을 호출한다(현재는 깜빡임만 시작). 피격 모션 연결 지점으로 쓸 수 있다.
-- `SEffectContext.Origin`(효과 시작 위치)이 있으나 현재 공격 측에서 채우지 않는다.
+- 구현 완료 (사용자 확인).
+- 흐름: 데미지 → `CharacterMediator.OnAttributeChangeCallback` 이 `data.Context` 를 `_lastChangeContext` 에 보관 → `CombatMediator` → `CharacterCombat.OnHit` → `CharacterMediator.OnHitCallback` 이 `GetHitSource`(HitPoint → Cursor 위치 → null)로 기준 위치를 골라 `AnimationMediator.NotifyHit(Vector3?)` → 깜빡임 + `CharacterAnimator.PlayHit(Vector3?)`.
+- 방향 판정: (기준 위치 − 몸 위치) 수평 투영을 몸(SK_ZMike) 정면과 비교. ±45° 이내 앞, ±135° 밖 뒤, 나머지 좌/우. null 이면 앞.
+- Animator: 파라미터 `Hit`(Trigger), `HitDirection`(Int: 0 앞, 1 뒤, 2 왼쪽, 3 오른쪽). 레이어 `HitUpper`(Override, weight 1, `UpperBodyMask`) — Any State → HitFront/HitBack/HitLeft/HitRight (0.1초), exit time 1.0 → Empty (0.15초).
+- 기존 `AnimationMediator.NotifyHit()` 는 제거했다. `CharacterCombat`·`CombatMediator`·공격 측 코드·프리팹은 바꾸지 않았다.
+- 테스트: `Assets/Test/TestScene` 의 `DirectionalHitTester`(ContextMenu 로 6가지 경우 실행, git 추적 안 됨).
+- 알려진 사항
+  - 근접(`MeleeHitController`)은 HitPoint 를 채우지 않아 공격자(Cursor) 위치로 판정한다.
+  - 사격 자세 중 피격 시 오른팔 조준 보정이 피격 포즈 위에 겹친다.
 
-## 작업 범위 (예상)
-- 피격 방향 정보를 피격 이벤트까지 전달하는 경로 추가 (공개 이벤트 시그니처 변경 가능성 있음).
-- Animator 에 방향별 Hit 스테이트·파라미터 추가.
+## 확정 사항
+- 방향: 4방향(앞/뒤/좌/우). 클립은 데모 씬 번호 기준 전방 26(`HitRegister_Front`), 뒤 25(`HitRegister_Back`), 오른쪽 39(`HitRegister_R`), 왼쪽 38(`HitRegister_L`). 모두 제자리 클립.
+- 방향 기준: `CharacterMediator` 가 받은 어트리뷰트 변경 `SEffectContext.HitPoint` 를 쓴다. HitPoint 가 없으면(근접 등) `Cursor`(공격자) 위치로 계산하고, Cursor 도 없으면 전방 모션.
+- 판정: (기준 위치 − 캐릭터 위치)를 수평 투영해 **몸 정면**(SK_ZMike)과 비교한다.
+- 전달 방식: `CharacterCombat`(이식 모듈)·`OnHit` 시그니처는 바꾸지 않는다. `CharacterMediator` 에서 context 를 읽어 `AnimationMediator` 로 넘긴다.
+- 범위: 상체 전용 레이어(UpperBodyMask). 경직 없음, 이동·사격은 끊기지 않는다.
+- 플레이어만 적용.
 
 ## 열린 질문
 - [x] 방향 구분 → **4방향**(앞/뒤/좌/우).
-- [ ] 사용할 애니메이션 클립은?
-- [ ] 방향 전달 방식: 기존 `OnHit` 은 두고 방향을 담은 이벤트를 **추가**할지, 시그니처를 **변경**할지? (`CharacterCombat` 은 이식 가능 모듈이라 의존성 주의)
-- [ ] 방향 기준: 공격자 위치인가, 투사체 진행 방향인가?
-- [ ] 피격 모션 중 이동·사격이 끊기는가(경직)? 상체 레이어만인가, 전신인가?
-- [ ] 적에게도 적용하는가, 플레이어만인가?
+- [x] 사용할 애니메이션 클립은? → 26/25/39/38 (확정 사항 참고).
+- [x] 방향 전달 방식 → `CharacterMediator` 의 context(HitPoint) 활용. 이벤트 시그니처 변경 없음.
+- [x] 방향 기준 → HitPoint, 없으면 Cursor 위치, 둘 다 없으면 전방. 몸 정면 기준.
+- [x] 경직·레이어 → 상체 전용 레이어, 경직 없음.
+- [x] 적에게도 적용? → 플레이어만.
 
 ## 완료 기준
 - 플레이 모드에서 방향별로 다른 피격 모션이 재생되는지 확인.

@@ -28,7 +28,7 @@
 | 07-2 | └ 상호작용 스킬 | [07-2-interact-skill.md](done/07-2-interact-skill.md) | 완료 |
 | 07-3 | └ 스캔 스킬 | [07-3-scan-skill.md](07-3-scan-skill.md) | 대기 |
 | 08 | 블루투스 모션 추가 | [08-bluetooth-motion.md](done/08-bluetooth-motion.md) | 완료 |
-| 09 | Hit 시 방향별 모션 | [09-directional-hit-motion.md](09-directional-hit-motion.md) | 대기 |
+| 09 | Hit 시 방향별 모션 | [09-directional-hit-motion.md](done/09-directional-hit-motion.md) | 완료 |
 | 21 | 블루투스 디테일 수정 (자동 전진, 요시 점프, 회전 속도) | [21-bluetooth-detail.md](21-bluetooth-detail.md) | 대기 |
 | 22 | 약점 공격 시 대미지 처리 | [22-weak-point-damage.md](22-weak-point-damage.md) | 대기 |
 
