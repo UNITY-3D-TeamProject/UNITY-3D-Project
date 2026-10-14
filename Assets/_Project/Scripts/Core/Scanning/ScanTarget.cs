@@ -126,7 +126,7 @@ namespace Core.Scanning
             }
 
             // 갱신된 세기를 모든 반응에 전달한다.
-            UpdateScan();
+            UpdateFade();
 
             // 완전히 사라졌으면 반응을 끝내고 Update 를 다시 끈다.
             if ((_state == EScanState.FadingOut) && (_fade <= 0.0f))
@@ -151,6 +151,7 @@ namespace Core.Scanning
         /// 파동이 닿아 있는 동안 프레임당 한 번씩 호출되며(콜라이더가 여러 개여도 한 번), 같은 스캔이 반복해서 들어오므로 안전해야 한다.
         /// </summary>
         /// <param name="hit">닿은 스캔의 정보</param>
+        // ScanWave가 닿으면 ScanTarget의 OnScanned를 부른다.
         public void OnScanned(in SScanHit hit)
         {
             // 대기 중이거나, 직전과 다른 번호의 스캔이면 새 스캔으로 본다.
@@ -177,13 +178,15 @@ namespace Core.Scanning
         }
 
         /// <summary>
-        /// 파동 구가 판정 콜라이더 중 하나에 닿았는지 확인한다. 꺼진 콜라이더는 판정에서 뺀다.
+        /// 판정 콜라이더 중 하나가 파동 구 범위 안에 들어왔는지 확인한다. 꺼진 콜라이더는 판정에서 뺀다.
         /// 범위 상자로 먼저 거르고, ClosestPoint 를 쓸 수 있는 콜라이더는 실제 표면까지의 거리로 확정한다.
         /// </summary>
         /// <param name="origin">파동 중심(월드 좌표)</param>
         /// <param name="radius">파동의 현재 반경(m)</param>
-        /// <returns>닿았으면 true</returns>
-        public bool IsTouchedBy(Vector3 origin, float radius)
+        /// <returns>범위 안에 있으면 true</returns>
+        
+        // ScanWave.Update()에서 매프레임 계산해서 넘겨준다.
+        public bool IsInWaveRange(Vector3 origin, float radius)
         {
             float sqrRadius = radius * radius;
 
@@ -269,7 +272,7 @@ namespace Core.Scanning
         /// <summary>
         /// 현재 세기와 사라지는 중인지 여부를 모든 반응에 전달한다.
         /// </summary>
-        private void UpdateScan()
+        private void UpdateFade()
         {
             // 올라가는 중과 내려가는 중을 반응이 구분할 수 있게 같이 넘긴다.
             bool isFadingOut = _state == EScanState.FadingOut;

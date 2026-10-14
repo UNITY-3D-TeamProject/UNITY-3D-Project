@@ -78,7 +78,7 @@ namespace Core.Scanning
                 // 풀에 반납된 몬스터처럼 꺼져 있는 대상은 건너뛴다.
                 if (!target.gameObject.activeInHierarchy) continue;
 
-                if (target.IsTouchedBy(_origin, radius)) target.OnScanned(hit);
+                if (target.IsInWaveRange(_origin, radius)) target.OnScanned(hit);
             }
         }
         #endregion
