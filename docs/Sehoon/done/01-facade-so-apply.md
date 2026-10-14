@@ -1,7 +1,7 @@
 # 01. SO Effect / Context Apply 함수 추가 (CharacterMediator + 퍼사드)
 
 - **우선순위**: 최우선
-- **상태**: 대기
+- **상태**: 완료
 
 ## 목표
 외부(Stage, 기믹, UI 등)가 `SOAttributeEffect` 를 출처 정보(`SEffectContext`)와 함께 캐릭터에 적용할 수 있도록 `CharacterMediator` 에 Apply 함수를 추가하고, 플레이어는 `PlayerFacade` 에도 노출한다.
@@ -9,7 +9,7 @@
 ## 현재 상황
 - `SOAttributeEffect.Apply(IEffectTarget target, SEffectContext context = default)` / `Apply(GameObject target, SEffectContext context = default)` 가 있다 (`Scripts/Attribute/Effect/SOAttributeEffect.cs:60`, `:91`).
   - `SEffectContext` 는 `Cursor`(효과 주체), `Origin`(시작 위치), `Effect`(Apply 가 채움)를 담는다 (`Scripts/Attribute/Core/SEffectContext.cs`).
-  - `origin/feature/AI/WeakPoint` 브랜치가 `HitPoint`(맞은 지점)를 추가했다. 아직 develop 에 머지되지 않았다 ([22번](22-weak-point-damage.md) 참고).
+  - `HitPoint`(맞은 지점), `Direction`(날아온 방향)도 담는다 (WeakPoint 머지됨, [22번](22-weak-point-damage.md) 참고).
 - `CharacterMediator` 는 `EffectTarget` 프로퍼티만 있고 Apply 함수는 없다. `PlayerFacade` 도 `EffectTarget` 만 노출한다.
 - 현재 외부 호출부는 대상의 `EffectTarget` 이나 GameObject 로 직접 Apply 한다.
   - `StageManager:424` — `_fallEffect.Apply(_playerFacade.EffectTarget)`
@@ -22,13 +22,11 @@
 - `PlayerFacade` 에 같은 메서드 노출 (`CharacterMediator` 경유).
 
 ## 열린 질문
-- [ ] 메서드 시그니처
-  - `ApplyEffect(SOAttributeEffect effect, SEffectContext context = default)` 하나로 두는가?
-  - 배열(`SOAttributeEffect[]`) 오버로드도 두는가?
-- [ ] "Context Apply" 의 의미: `SOAttributeEffect` 없이 **어트리뷰트 값 + `SEffectContext`** 만으로 적용하는 함수도 필요한가? (예: `SetAttribute(key, value, context)`)
-- [ ] `context.Cursor` 가 비어 있을 때 효과 주체를 캐릭터 자신으로 채우는가, 비워 두는가?
-- [ ] 반환값: 적용 성공 여부(`bool`, 어트리뷰트가 없을 때 false)를 돌려주는가?
-- [ ] 이 함수를 실제로 쓸 곳(`StageManager`, `GimmickUtility`, `SpawnerBase` 등)을 이번에 함께 전환하는가, 다른 파트에 안내만 하는가?
+- [x] 메서드 시그니처 → 배열 오버로드 없이 `ApplyEffect(SOAttributeEffect effect)` + `ApplyEffect(SEffectContext context)` 두 개.
+- [x] "Context Apply" 의 의미 → 값 직접 설정 함수는 만들지 않는다. context 만 받는 함수는 `context.Effect` 를 적용한다.
+- [x] `context.Cursor` 가 비어 있을 때 → 채우지 않는다. 효과가 cursor 를 필요로 하는데(ValueSource=Attribute) 없으면 적용하지 않고 false.
+- [x] 반환값 → `bool`. 적용했으면 true (Float 효과는 cursor 없이도 true), 효과·대상·대상 어트리뷰트·필요한 cursor 가 없으면 false.
+- [x] 호출부 전환 → 이번에는 전환하지 않고 다른 파트에 안내만 한다 (`StageManager:424`, `FeedRound2:543`, `HomingHazard:82` 가 `PlayerFacade.EffectTarget` 직접 사용).
 
 ## 완료 기준
 - 컴파일 에러 없음.

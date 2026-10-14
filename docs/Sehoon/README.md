@@ -13,7 +13,7 @@
 ### 최우선 (고정)
 | 순서 | 기능 | 문서 | 상태 |
 |---|---|---|---|
-| 01 | SO Effect / Context Apply 함수 추가 (CharacterMediator + 퍼사드) | [01-facade-so-apply.md](01-facade-so-apply.md) | 대기 |
+| 01 | SO Effect / Context Apply 함수 추가 (CharacterMediator + 퍼사드) | [01-facade-so-apply.md](done/01-facade-so-apply.md) | 완료 |
 | 02 | 멀티점프 | [02-multi-jump.md](done/02-multi-jump.md) | 완료 |
 | 03 | 점프 중 대쉬 1회 제약 | [03-air-dash-limit.md](done/03-air-dash-limit.md) | 완료 |
 | 04 | Fire 구조 차지샷으로 변경 | [04-fire-charge-shot.md](done/04-fire-charge-shot.md) | 완료 |

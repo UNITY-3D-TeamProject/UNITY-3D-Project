@@ -3,7 +3,7 @@
 - **우선순위**: 높음
 - **상태**: 대기
 - **선행 작업**: `origin/feature/AI/WeakPoint` 브랜치(BFandLee, 약점 판정 1단계)가 develop 에 머지되어야 한다. 머지 전에는 시작하지 않는다.
-- **관련 작업**: [01. SO Effect / Context Apply 함수 추가](01-facade-so-apply.md) — 둘 다 `SEffectContext` 를 다룬다.
+- **관련 작업**: [01. SO Effect / Context Apply 함수 추가](done/01-facade-so-apply.md) — 둘 다 `SEffectContext` 를 다룬다.
 
 ## 목표
 약점에 명중하면 추가 대미지 또는 대미지 곱을 적용한다.
