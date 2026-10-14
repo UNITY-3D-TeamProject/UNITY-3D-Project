@@ -59,6 +59,8 @@
 
 ## 결과
 ### 구조
+> 이후 [23. 펫 Mediator 구조 정리](23-pet-mediator-refactor.md) 에서 `PetSpawner` 는 생성만, `PetMediator` 가 `PetFollower`·`PetAnimator` 를 직접 연결하도록 바뀌었다. 아래는 19 작업 당시 구조다.
+
 - `PetSpawner` (`Prefabs/Actions/PetPrefab`, `Player` 자식): `Start` 에서 `Pet.prefab` 을 월드 오브젝트로 생성하고 `PetPivot` 을 따라가게 한다. 파괴될 때 펫도 파괴한다 (리스폰 시 새 플레이어가 새 펫 생성).
 - `PetPivot`: `SK_ZMike`(회전하는 몸) 아래. `SK_ZMike` 에 FBX 기본 회전(X -90°)이 있어 local 값은 월드 기준으로 환산해 넣는다. 위치는 사용자가 조정.
 - `PetFollower` (`Pet.prefab` 루트): `LateUpdate` 에서 `SmoothDamp` 추종, 10m 이상이면 순간이동. 이동 중엔 이동 방향, 멈추면 pivot 정면을 본다. 실제 수평 속도를 `PetAnimator` 에 넘긴다.

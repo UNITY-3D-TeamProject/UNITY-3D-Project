@@ -49,6 +49,8 @@
 - [x] 펫이 앞으로 갈 수 없는 위치(벽)일 때 처리는?
 
 ## 결과 (2026-10-14)
+> 이후 [23. 펫 Mediator 구조 정리](23-pet-mediator-refactor.md) 에서 스캔 이동은 `PetFollower.MoveAndHold` 로, 이동·머묾 시간은 `PetFollower._moveDuration`·`_holdDuration` 으로, `_scanPivot` 은 `PetMediator` 로 옮겨졌다. 아래는 07-3 작업 당시 구조다.
+
 
 ### 동작
 1. 스캔 입력 → `Scan` 발동, 쿨타임 6초 시작 (HUD 는 기존 `OnSkillUsed` 경로).
