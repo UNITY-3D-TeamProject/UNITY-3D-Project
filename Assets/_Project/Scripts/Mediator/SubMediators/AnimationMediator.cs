@@ -192,13 +192,15 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 피격을 전달받아 깜빡임을 시작한다. 이미 깜빡이는 중이면 그대로 이어간다.
+        /// 피격을 전달받아 깜빡임을 시작하고 방향별 피격 애니메이션을 재생한다. 이미 깜빡이는 중이면 그대로 이어간다.
         /// </summary>
-        public void NotifyHit()
+        /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치). null 이면 전방 피격</param>
+        public void NotifyHit(Vector3? hitSource)
         {
-            if (!_blinker) return;
+            if (_blinker) _blinker.Play();
+            if (!_characterAnimator) return;
 
-            _blinker.Play();
+            _characterAnimator.PlayHit(hitSource);
         }
 
         /// <summary>

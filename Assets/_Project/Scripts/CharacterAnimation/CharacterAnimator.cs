@@ -13,6 +13,13 @@ namespace CharacterAnimation
         private const string UPPER_BODY_LAYER_NAME = "UpperBody";
         // 이동 방향이 정확히 옆(±90°)일 때 계산 오차로 뒤쪽으로 판정되지 않도록 앞쪽 반원을 이 각도(도)만큼 넓힌다
         private const float BOARD_SIDE_TOLERANCE = 1.0f;
+        // 피격 방향 판정: 몸 정면과 이 각도(도) 이내면 앞, (180 - 이 각도) 밖이면 뒤, 나머지는 좌/우
+        private const float HIT_FRONT_HALF_ANGLE = 45.0f;
+        // Animator HitDirection 값
+        private const int HIT_DIRECTION_FRONT = 0;
+        private const int HIT_DIRECTION_BACK = 1;
+        private const int HIT_DIRECTION_LEFT = 2;
+        private const int HIT_DIRECTION_RIGHT = 3;
         #endregion
 
         #region Serialized Fields
@@ -403,6 +410,19 @@ namespace CharacterAnimation
         }
 
         /// <summary>
+        /// 피격을 알린다. 기준 위치가 몸 정면 기준 어느 쪽(앞/뒤/좌/우)인지 판정해 상체 피격 애니메이션을 재생한다.
+        /// </summary>
+        /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치). null 이면 앞쪽 피격</param>
+        public void PlayHit(Vector3? hitSource)
+        {
+            if (!enabled || _isDead) return;
+
+            ResetSpecialIdle();
+            _animator.SetInteger(AnimHash.HitDirection, CalculateHitDirection(hitSource));
+            _animator.SetTrigger(AnimHash.Hit);
+        }
+
+        /// <summary>
         /// 사망을 알린다. 사격 자세를 내리고 사망 애니메이션(Death → DeathLoop 루프)을 재생한다.
         /// 이후에는 이동·사격·조준·점프·구르기 알림을 무시한다.
         /// </summary>
@@ -425,6 +445,7 @@ namespace CharacterAnimation
             _animator.ResetTrigger(AnimHash.Jump);
             _animator.ResetTrigger(AnimHash.Roll);
             _animator.ResetTrigger(AnimHash.Mount);
+            _animator.ResetTrigger(AnimHash.Hit);
             _animator.SetTrigger(AnimHash.Death);
         }
         #endregion
@@ -645,6 +666,28 @@ namespace CharacterAnimation
         }
 
         /// <summary>
+        /// 기준 위치가 몸 정면 기준 어느 방향인지 Animator HitDirection 값으로 반환한다.
+        /// 기준 위치가 없거나 몸과 수평 위치가 같으면 앞쪽으로 본다.
+        /// </summary>
+        /// <param name="hitSource">피격 방향 기준 월드 위치</param>
+        /// <returns>HitDirection 값 (0 앞, 1 뒤, 2 왼쪽, 3 오른쪽)</returns>
+        private int CalculateHitDirection(Vector3? hitSource)
+        {
+            if (!hitSource.HasValue) return HIT_DIRECTION_FRONT;
+
+            Vector3 origin = _body ? _body.position : _animator.transform.position;
+            Vector3 toSource = Vector3.ProjectOnPlane(hitSource.Value - origin, Vector3.up);
+            if (toSource.sqrMagnitude <= Mathf.Epsilon) return HIT_DIRECTION_FRONT;
+
+            float relativeYaw = Mathf.DeltaAngle(GetBodyYaw(), GetYaw(toSource));
+            float absYaw = Mathf.Abs(relativeYaw);
+            if (absYaw <= HIT_FRONT_HALF_ANGLE) return HIT_DIRECTION_FRONT;
+            if (absYaw >= 180.0f - HIT_FRONT_HALF_ANGLE) return HIT_DIRECTION_BACK;
+
+            return (relativeYaw > 0.0f) ? HIT_DIRECTION_RIGHT : HIT_DIRECTION_LEFT;
+        }
+
+        /// <summary>
         /// 월드 방향의 수평 yaw(도)를 반환한다. +z 가 0, +x 가 90 이다.
         /// </summary>
         /// <param name="direction">월드 방향</param>
@@ -750,6 +793,8 @@ namespace CharacterAnimation
             public static readonly int IsRiding = Animator.StringToHash("IsRiding");
             public static readonly int Mount = Animator.StringToHash("Mount");
             public static readonly int IsRidingPose = Animator.StringToHash("IsRidingPose");
+            public static readonly int Hit = Animator.StringToHash("Hit");
+            public static readonly int HitDirection = Animator.StringToHash("HitDirection");
             public static readonly int FireHoldState = Animator.StringToHash("FireHold");
             public static readonly int IdleState = Animator.StringToHash("Idle");
             public static readonly int DeathLoopState = Animator.StringToHash("DeathLoop");

@@ -33,6 +33,8 @@ namespace Mediator
         private AttributeSet _attributeSet;
         private bool _isDead;
         private bool _isRiding;
+        // 가장 최근 어트리뷰트 변경의 출처 정보. 피격은 Health 변경 알림 도중 동기로 오므로 피격 방향 계산에 쓴다
+        private SEffectContext _lastChangeContext;
         #endregion
 
         #region Properties
@@ -230,6 +232,7 @@ namespace Mediator
         /// </summary>
         private void OnAttributeChangeCallback(SAttributeChangeData data)
         {
+            _lastChangeContext = data.Context;
             foreach (var mediator in _mediators)
             {
                 mediator.NotifyAttributeChanged(data);
@@ -360,8 +363,20 @@ namespace Mediator
 
             Debug.Log($"{name} is hit!");
             // 치명타는 같은 프레임에 OnHit 다음 OnDeath 가 오므로, 이미 죽었으면 깜빡임을 시작하지 않는다
-            if (_animationMediator && !_combatMediator.IsDead()) _animationMediator.NotifyHit();
+            if (_animationMediator && !_combatMediator.IsDead()) _animationMediator.NotifyHit(GetHitSource(_lastChangeContext));
             OnHit?.Invoke();
+        }
+
+        /// <summary>
+        /// 피격 방향 계산에 쓸 기준 위치를 반환한다. 맞은 지점 → 공격자 위치 순으로 고른다.
+        /// </summary>
+        /// <param name="context">피격을 일으킨 어트리뷰트 변경의 출처 정보</param>
+        /// <returns>기준 위치. 맞은 지점과 공격자가 모두 없으면 null</returns>
+        private static Vector3? GetHitSource(SEffectContext context)
+        {
+            if (context.HitPoint.HasValue) return context.HitPoint;
+            if (context.Cursor is Component cursor && cursor) return cursor.transform.position;
+            return null;
         }
 
         /// <summary>
