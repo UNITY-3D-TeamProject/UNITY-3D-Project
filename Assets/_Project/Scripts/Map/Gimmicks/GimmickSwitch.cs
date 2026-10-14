@@ -62,6 +62,9 @@ namespace Map.Gimmicks
         /// <summary>지금 켜져 있는지 여부.</summary>
         public bool IsOn { get; private set; }
 
+        /// <summary>시작할 때의 상태. 자동으로 돌아갈 때도 이 상태로 돌아간다.</summary>
+        public bool IsOnAtStart => _isOnAtStart;
+
         /// <summary>켜질 때 실행되는 이벤트.</summary>
         public UnityEvent OnTurnedOn => _onTurnedOn;
 
