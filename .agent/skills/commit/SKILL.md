@@ -41,10 +41,7 @@ description: 이 프로젝트의 브랜치/커밋 컨벤션(docs/commit-conventi
    ```
    - 요약문은 `~구현`, `~수정`, `~제거`, `~추가` 형태로 끝맺는다 (`~함`, `~했음` 금지).
    - 요약문만으로 충분히 설명되면 상세 항목은 생략한다.
-   - 커밋 메시지 맨 아래에 한 줄 띄우고 다음 줄을 추가한다:
-     ```
-     Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
-     ```
+   - `Co-Authored-By` 등 AI 작성자 표시 줄은 넣지 않는다.
 
 7. **커밋 실행**
    - 하나의 논리적 변경마다 하나의 커밋으로 나눈다 (변경이 섞여 있으면 여러 번의 `git add` + `git commit`으로 분리 제안).

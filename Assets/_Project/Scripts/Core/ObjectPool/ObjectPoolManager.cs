@@ -30,8 +30,15 @@ namespace Core.ObjectPool
         [Header("Player Bullets")]
         [SerializeField] private PrefabPool _playerBullets = new();
 
+        // 차지 총알은 일반 총알보다 적게 쓰이므로 개수를 따로 정하기 위해 분리한다.
+        [Header("Player Charged Bullets")]
+        [SerializeField] private PrefabPool _playerChargedBullets = new();
+
         [Header("Enemy Bullets")]
         [SerializeField] private PrefabPool _enemyBullets  = new();
+
+        [Header("Crowd (차량·보행자)")]
+        [SerializeField] private PrefabPool _crowd         = new();
         #endregion
 
         #region Private Fields
@@ -39,6 +46,10 @@ namespace Core.ObjectPool
         // Awake 전에는 null이다. (Get에서 초기화 여부 확인용으로도 쓴다.)
         // 매니저가 받은 키를 어느 PrefabPool에 넘길지 찾는 표
         private Dictionary<string, PrefabPool> _poolByKey;
+
+        /// <summary>프리팹 → 그 프리팹이 등록된 키</summary>
+        // 프리팹 칸을 가진 쪽(스포너 등)이 키 문자열 없이 Get(프리팹)으로 꺼낼 수 있게 한다.
+        private Dictionary<GameObject, string> _keyByPrefab;
         #endregion
 
         #region Properties
@@ -60,11 +71,14 @@ namespace Core.ObjectPool
             Instance = this;
 
             _poolByKey = new Dictionary<string, PrefabPool>();
+            _keyByPrefab = new Dictionary<GameObject, string>();
 
             // 키가 여러 카테고리에 중복되면 먼저 등록한 쪽이 이긴다. (이 순서대로)
             RegisterPool(_enemies);
             RegisterPool(_playerBullets);
+            RegisterPool(_playerChargedBullets);
             RegisterPool(_enemyBullets);
+            RegisterPool(_crowd);
         }
 
         // 씬이 내려가 매니저가 파괴될 때 Instance를 비운다.
@@ -101,6 +115,30 @@ namespace Core.ObjectPool
             }
 
             return pool.Get(key, position, rotation);
+        }
+
+        /// <summary>
+        /// 프리팹이 등록된 키의 풀에서 오브젝트를 꺼내 지정 위치/회전으로 배치한다.
+        /// </summary>
+        /// <param name="prefab">인스펙터에 등록한 프리팹 (예: 스포너의 몬스터 프리팹 칸)</param>
+        /// <returns>꺼낸 오브젝트. 등록되지 않은 프리팹이면 null</returns>
+        // [호출] 키 문자열 대신 프리팹 칸을 가진 쪽에서 호출한다. 예: MonsterSpawner
+        //        프리팹 이름이 아니라 참조로 찾으므로 프리팹 이름을 바꿔도 동작한다.
+        public GameObject Get(GameObject prefab, Vector3 position, Quaternion rotation)
+        {
+            if (_keyByPrefab == null)
+            {
+                Debug.LogError("[ObjectPoolManager] 초기화 전에 Get을 요청했습니다. Awake 이후(Start 등)에 사용하세요.", this);
+                return null;
+            }
+
+            if ((prefab == null) || !_keyByPrefab.TryGetValue(prefab, out string key))
+            {
+                Debug.LogError($"[ObjectPoolManager] 등록되지 않은 프리팹입니다: '{(prefab != null ? prefab.name : "null")}'", this);
+                return null;
+            }
+
+            return Get(key, position, rotation);
         }
 
         /// <summary>
@@ -144,7 +182,7 @@ namespace Core.ObjectPool
         #endregion
 
         #region Private Methods
-        // 카테고리의 풀을 만들고, 그 카테고리의 키들을 표에 넣는다.
+        // 카테고리의 풀을 만들고, 그 카테고리의 키들을 표에 넣는다. (키 → 카테고리, 프리팹 → 키)
         // [호출] Awake에서 카테고리마다 한 번씩 호출된다.
         private void RegisterPool(PrefabPool pool)
         {
@@ -153,7 +191,15 @@ namespace Core.ObjectPool
             foreach (string key in pool.Keys)
             {
                 if (!_poolByKey.TryAdd(key, pool))
+                {
                     Debug.LogError($"[ObjectPoolManager] 키 '{key}'가 다른 카테고리에 이미 등록되었습니다. 뒤의 항목은 무시됩니다.", this);
+                    continue;
+                }
+
+                // 같은 프리팹을 여러 키로 등록했으면 Get(프리팹)은 먼저 등록한 키를 쓴다.
+                GameObject prefab = pool.GetPrefab(key);
+                if (!_keyByPrefab.TryAdd(prefab, key))
+                    Debug.LogWarning($"[ObjectPoolManager] 프리팹 '{prefab.name}'이 키 '{_keyByPrefab[prefab]}'와 '{key}'에 중복 등록되었습니다. Get(프리팹)은 '{_keyByPrefab[prefab]}'를 씁니다.", this);
             }
         }
         #endregion

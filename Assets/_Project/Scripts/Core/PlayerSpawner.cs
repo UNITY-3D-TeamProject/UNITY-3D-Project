@@ -154,7 +154,8 @@ public class PlayerSpawner : SpawnerBase
         // 사망 후 라운드 복구 스폰도 새 인스턴스이므로 기본 Effect를 적용한다. (체력·배터리는 StageManager가 이후 복원)
         bool shouldInitialize =
             (gameManager.SpawnReason == GameManager.EPlayerSpawnReason.NewGame) ||
-            (gameManager.SpawnReason == GameManager.EPlayerSpawnReason.RoundRecovery);
+            (gameManager.SpawnReason == GameManager.EPlayerSpawnReason.RoundRecovery) ||
+            (gameManager.SpawnReason == GameManager.EPlayerSpawnReason.StageRestart);
 
         if (shouldInitialize)
         {

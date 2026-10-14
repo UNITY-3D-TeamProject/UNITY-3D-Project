@@ -47,6 +47,9 @@ namespace Core.ObjectPool
         /// <summary>키 → 그 키의 풀</summary>
         private Dictionary<string, ObjectPool<GameObject>> _pools;
 
+        /// <summary>키 → 그 키에 등록된 프리팹</summary>
+        private Dictionary<string, GameObject> _prefabByKey;
+
         // 생성·반납된 인스턴스의 부모. (매니저 Transform)
         private Transform _root;
         #endregion
@@ -81,6 +84,7 @@ namespace Core.ObjectPool
         {
             _root  = root;
             _pools = new Dictionary<string, ObjectPool<GameObject>>();
+            _prefabByKey = new Dictionary<string, GameObject>();
 
             foreach (SPoolEntry entry in _entries)
             {
@@ -111,6 +115,7 @@ namespace Core.ObjectPool
                     maxSize:         _maxSize);
 
                 _pools.Add(key, pool);
+                _prefabByKey.Add(key, prefab);
                 Prewarm(pool);
             }
         }
@@ -128,6 +133,13 @@ namespace Core.ObjectPool
             obj.GetComponent<PooledObject>().PrepareForGet();
             obj.SetActive(true);
             return obj;
+        }
+
+        /// <summary>키에 등록된 프리팹을 돌려준다.</summary>
+        // [호출] ObjectPoolManager.RegisterPool에서 "프리팹 → 키" 표를 만들 때 호출된다.
+        public GameObject GetPrefab(string key)
+        {
+            return _prefabByKey[key];
         }
 
         /// <summary>오브젝트를 키의 풀에 돌려놓는다.</summary>
