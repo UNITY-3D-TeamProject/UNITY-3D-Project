@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4560642912539566074
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8608483306439308204}
+  - component: {fileID: 8490929010268924605}
+  m_Layer: 0
+  m_Name: ObjectPoolManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8608483306439308204
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4560642912539566074}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8490929010268924605
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4560642912539566074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b7d7a790d6256d458cfd339194e3f14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.ObjectPool.ObjectPoolManager
+  _enemies:
+    _entries:
+    - _key: Melee
+      _prefab: {fileID: 2851063550565306939, guid: dc244ee48deba544a9d6314c6acf0bd8, type: 3}
+    - _key: Ranged
+      _prefab: {fileID: 681821616047237814, guid: 59b4d0c178c16d44db058b08fd0a3dc4, type: 3}
+    _defaultCapacity: 10
+    _prewarmCount: 10
+    _maxSize: 50
+  _playerBullets:
+    _entries:
+    - _key: Bullet
+      _prefab: {fileID: 7935857951603384714, guid: e9c7c98f57efe734c8cfe056d3122412, type: 3}
+    _defaultCapacity: 10
+    _prewarmCount: 10
+    _maxSize: 50
+  _playerChargedBullets:
+    _entries:
+    - _key: ChargedBullet
+      _prefab: {fileID: 1573659177138836158, guid: 142fb822af43d844f8b9350d058622d4, type: 3}
+    _defaultCapacity: 10
+    _prewarmCount: 10
+    _maxSize: 50
+  _enemyBullets:
+    _entries:
+    - _key: EnemyBullet
+      _prefab: {fileID: 7935857951603384714, guid: d947b178bda2a4d408aa9ce82508159b, type: 3}
+    _defaultCapacity: 10
+    _prewarmCount: 10
+    _maxSize: 50
+  _crowd:
+    _entries:
+    - _key: Car
+      _prefab: {fileID: 3277443633729080383, guid: 5e30265544911b34f9b05ae6c6f58962, type: 3}
+    - _key: Pedestrian
+      _prefab: {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
+    _defaultCapacity: 10
+    _prewarmCount: 10
+    _maxSize: 100
