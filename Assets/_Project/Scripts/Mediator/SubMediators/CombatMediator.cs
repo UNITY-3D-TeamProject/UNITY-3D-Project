@@ -100,7 +100,7 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 체력 감소량을 보정한다. 약점에 명중했으면 OnCriticalHit 을 발행하고 CharacterCombat 의 배율을 곱한다.
+        /// 체력 감소량을 CharacterCombat 규칙으로 보정한다. 체력이 아닌 어트리뷰트는 그대로 둔다.
         /// </summary>
         /// <param name="key">감소하려는 어트리뷰트 이름</param>
         /// <param name="damage">감소량</param>
@@ -110,10 +110,8 @@ namespace Mediator.SubMediators
         {
             if (_combatComponent == null) return damage;
             if (!string.Equals(key, _healthValueKey, StringComparison.OrdinalIgnoreCase)) return damage;
-            if (!_combatComponent.IsCriticalHit(context.HitPoint, context.Direction)) return damage;
 
-            OnCriticalHit?.Invoke(context.HitPoint);
-            return damage * _combatComponent.CriticalMultiplier;
+            return _combatComponent.ModifyDamage(damage, context.HitPoint, context.Direction);
         }
         #endregion
         
@@ -146,6 +144,7 @@ namespace Mediator.SubMediators
             if (_combatComponent == null) return;
             
             _combatComponent.OnHit += OnHitCallback;
+            _combatComponent.OnCriticalHit += OnCriticalHitCallback;
             _combatComponent.OnDeath += OnDeathCallback;
             if (_hitInvincibility != null) _hitInvincibility.OnEnded += OnInvincibilityEndedCallback;
         }
@@ -159,6 +158,7 @@ namespace Mediator.SubMediators
             if (_combatComponent == null) return;
             
             _combatComponent.OnHit -= OnHitCallback;
+            _combatComponent.OnCriticalHit -= OnCriticalHitCallback;
             _combatComponent.OnDeath -= OnDeathCallback;
             if (_hitInvincibility != null) _hitInvincibility.OnEnded -= OnInvincibilityEndedCallback;
         }
@@ -169,6 +169,11 @@ namespace Mediator.SubMediators
             if (!_combatComponent.IsDead && _hitInvincibility != null) _hitInvincibility.Begin();
 
             OnHit?.Invoke();
+        }
+
+        private void OnCriticalHitCallback(Vector3? hitPoint)
+        {
+            OnCriticalHit?.Invoke(hitPoint);
         }
 
         private void OnDeathCallback()
