@@ -4,13 +4,13 @@ using UnityEngine;
 namespace Core.Scanning
 {
     /// <summary>
-    /// IScannable 의 기본 구현. 스캔에 닿은 시점부터 스캔 지속 시간만큼 반응을 유지하고, 이후 서서히 사라지게 한다.
+    /// 스캔 파동에 반응하는 대상. 스캔에 닿은 시점부터 스캔 지속 시간만큼 반응을 유지하고, 이후 서서히 사라지게 한다.
     /// Scan 태그가 달려 있으면 Awake 에서 등록 목록(Registered)에 들어가고, ScanWave 는 이 목록만 돌며 판정 콜라이더에 파동이 닿았는지 확인한다.
     /// 어떻게 보일지는 같은 오브젝트에 붙은 ScanReactionBase 들이 결정한다(자식의 반응은 찾지 않는다).
     /// 스킬과 파동의 생명주기와 무관하게 대상이 스스로 타이머를 소유하므로, 파동이 사라져도 끝까지 진행한다.
     /// 재스캔은 유지 시간만 연장하고 처음 스캔의 연출을 그대로 둔다. 스킬 쿨타임으로 스캔이 겹치지 않는 것을 전제로 한다.
     /// </summary>
-    public class ScanTarget : MonoBehaviour, IScannable
+    public class ScanTarget : MonoBehaviour
     {
         #region Constants
         /// <summary>스캔에 반응하는 대상(ScanTarget 이 붙은 오브젝트)에 다는 태그. ScanWave 는 이 태그가 달린 대상에만 알린다.</summary>
@@ -68,6 +68,8 @@ namespace Core.Scanning
 
         #region Properties
         /// <summary>스캔 파동이 판정할 대상 목록. 비활성 오브젝트도 들어 있으므로 쓰는 쪽에서 확인한다.</summary>
+        // 외부에서 목록을 수정(Add,Remove)하지 못하도록 읽기 전용으로 감싸서 제공하는 C# 인터페이스
+        // ScanWave.cs 의 Update() 내부에서 읽어서 쓰고 있다.
         public static IReadOnlyList<ScanTarget> Registered => RegisteredTargets;
         #endregion
 
@@ -77,11 +79,13 @@ namespace Core.Scanning
             // 자식에 별도 ScanTarget 이 있어도 서로의 반응을 건드리지 않도록 같은 오브젝트의 반응만 찾는다.
             if ((_reactions == null) || (_reactions.Length == 0))
             {
+                // ScanReaction에 대한 것들을 가져와서 _reactions 배열에 담는다.
                 _reactions = GetComponents<ScanReactionBase>();
             }
 
             if ((_scanColliders == null) || (_scanColliders.Length == 0))
             {
+                // 자식 오브젝트의 콜라이더까지 전부 찾는다. (비활성화 되어있는 오브젝트까지 찾겠다.)
                 _scanColliders = GetComponentsInChildren<Collider>(true);
             }
 
@@ -93,7 +97,7 @@ namespace Core.Scanning
             if (CompareTag(SCAN_TAG)) RegisteredTargets.Add(this);
 
             // 닿기 전에는 Update 비용을 쓰지 않는다.
-            // 이 컴포넌트를 끈다.
+            // 이 컴포넌트를 끈다. => Update 안돌아간다.
             enabled = false;
         }
 
@@ -122,7 +126,7 @@ namespace Core.Scanning
             }
 
             // 갱신된 세기를 모든 반응에 전달한다.
-            NotifyFade();
+            UpdateScan();
 
             // 완전히 사라졌으면 반응을 끝내고 Update 를 다시 끈다.
             if ((_state == EScanState.FadingOut) && (_fade <= 0.0f))
@@ -142,7 +146,11 @@ namespace Core.Scanning
         #endregion
 
         #region Public Methods
-        /// <inheritdoc />
+        /// <summary>
+        /// 스캔 파동에 닿았음을 알린다.
+        /// 파동이 닿아 있는 동안 프레임당 한 번씩 호출되며(콜라이더가 여러 개여도 한 번), 같은 스캔이 반복해서 들어오므로 안전해야 한다.
+        /// </summary>
+        /// <param name="hit">닿은 스캔의 정보</param>
         public void OnScanned(in SScanHit hit)
         {
             // 대기 중이거나, 직전과 다른 번호의 스캔이면 새 스캔으로 본다.
@@ -261,7 +269,7 @@ namespace Core.Scanning
         /// <summary>
         /// 현재 세기와 사라지는 중인지 여부를 모든 반응에 전달한다.
         /// </summary>
-        private void NotifyFade()
+        private void UpdateScan()
         {
             // 올라가는 중과 내려가는 중을 반응이 구분할 수 있게 같이 넘긴다.
             bool isFadingOut = _state == EScanState.FadingOut;
