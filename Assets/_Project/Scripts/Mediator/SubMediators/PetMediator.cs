@@ -1,10 +1,11 @@
+using System;
 using UnityEngine;
 using Pet;
 
 namespace Mediator.SubMediators
 {
     /// <summary>
-    /// 다른 Mediator 에서 온 캐릭터 상태(점프, 피격, 특수 Idle, 사망)를 PetSpawner 로 전달하는 접착 컴포넌트.
+    /// 다른 Mediator 에서 온 캐릭터 상태(점프, 피격, 특수 Idle, 사망)와 스캔 요청을 PetSpawner 로 전달하는 접착 컴포넌트.
     /// </summary>
     public class PetMediator : MediatorBase
     {
@@ -72,6 +73,21 @@ namespace Mediator.SubMediators
             if (!_petSpawner) return;
 
             _petSpawner.PlayDeath();
+        }
+
+        /// <summary>
+        /// 펫을 스캔 위치로 보내고, 스캔할 위치가 정해지면 onReady 로 알린다.
+        /// </summary>
+        /// <param name="onReady">스캔 위치(월드 좌표)를 받을 콜백</param>
+        public void RequestScan(Action<Vector3> onReady)
+        {
+            if (!_petSpawner)
+            {
+                onReady?.Invoke(transform.position);
+                return;
+            }
+
+            _petSpawner.PlayScan(onReady);
         }
         #endregion
 

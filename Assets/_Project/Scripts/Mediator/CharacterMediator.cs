@@ -298,6 +298,20 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 스캔 발동 위치를 펫에게 정하게 하고, 정해지면 그 위치에서 스캔을 시작한다. 펫이 없으면 캐릭터 위치에서 바로 시작한다.
+        /// </summary>
+        private void OnScanRequestedCallback()
+        {
+            if (_petMediator)
+            {
+                _petMediator.RequestScan(_skillMediator.BeginScan);
+                return;
+            }
+
+            _skillMediator.BeginScan(transform.position);
+        }
+
+        /// <summary>
         /// 스킬 중재자가 보낸 버프 배율을 대상에 맞는 중재자로 전달한다.
         /// </summary>
         /// <param name="buffRatios">대상별 배율 목록</param>
@@ -465,6 +479,7 @@ namespace Mediator
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested += OnFireCallback;
             if (_skillMediator) _skillMediator.OnSkillUsed += OnSkillUsedCallback;
             if (_skillMediator) _skillMediator.OnInteractableChanged += OnInteractableChangedCallback;
+            if (_skillMediator) _skillMediator.OnScanRequested += OnScanRequestedCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
             if (_animationMediator) _animationMediator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
@@ -514,6 +529,7 @@ namespace Mediator
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested -= OnFireCallback;
             if (_skillMediator) _skillMediator.OnSkillUsed -= OnSkillUsedCallback;
             if (_skillMediator) _skillMediator.OnInteractableChanged -= OnInteractableChangedCallback;
+            if (_skillMediator) _skillMediator.OnScanRequested -= OnScanRequestedCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
             if (_animationMediator) _animationMediator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;

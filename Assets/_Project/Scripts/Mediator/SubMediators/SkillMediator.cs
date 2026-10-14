@@ -34,6 +34,7 @@ namespace Mediator.SubMediators
         private Func<bool> _getGrounded;
         private Interact _interactSkill;
         private SpawnVehicle _spawnVehicleSkill;
+        private Scan _scanSkill;
         // 점프 시작 ~ 착지. 이 동안 탑승하면 착지할 때 탈것을 생성한다
         private bool _isJumping;
         private bool _isRolling;
@@ -92,6 +93,9 @@ namespace Mediator.SubMediators
 
         /// <summary>요시 점프를 시작하거나 끝냈을 때 발생한다. (시작이면 true, 상승 속도)</summary>
         public event Action<bool, float> OnHoverChanged;
+
+        /// <summary>스캔 스킬이 발동했을 때 발생한다. 받는 쪽은 발동 위치가 정해지면 BeginScan 을 호출한다.</summary>
+        public event Action OnScanRequested;
         #endregion
 
         #region Unity Lifecycle
@@ -103,6 +107,7 @@ namespace Mediator.SubMediators
             _skillRequestController = GetComponentInParent<ISkillRequestController>();
             if (_skillController) _interactSkill = _skillController.GetComponentInChildren<Interact>(true);
             if (_skillController) _spawnVehicleSkill = _skillController.GetComponentInChildren<SpawnVehicle>(true);
+            if (_skillController) _scanSkill = _skillController.GetComponentInChildren<Scan>(true);
             BindRequest();
         }
 
@@ -250,6 +255,17 @@ namespace Mediator.SubMediators
             // 공중에서 구르다 탑승하면 구르기가 끝나도 탈것 생성 전까지 사격을 막아 둔다 (탑승 연출이 끝날 때 되돌린다)
             if (_wasFireEnabledOnRoll && !_isMounting) SetSkillEnabled(FIRE_SKILL_NAME, true);
         }
+
+        /// <summary>
+        /// origin 에서 스캔 파동을 시작한다. OnScanRequested 를 받은 쪽이 발동 위치를 정한 뒤 호출한다.
+        /// </summary>
+        /// <param name="origin">파동의 중심(월드 좌표)</param>
+        public void BeginScan(Vector3 origin)
+        {
+            if (!_scanSkill) return;
+
+            _scanSkill.BeginWave(origin);
+        }
         #endregion
         
         #region Protected Methods
@@ -353,6 +369,9 @@ namespace Mediator.SubMediators
                     }
                     // 강제 하차(자원 고갈 등)도 쿨타임이 시작되므로 하차는 여기서 알린다
                     if (!spawnVehicle.IsRiding) OnSkillUsed?.Invoke(spawnVehicle.SkillName, spawnVehicle.Cooldown);
+                    break;
+                case Scan:
+                    OnScanRequested?.Invoke();
                     break;
             }
         }
