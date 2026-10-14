@@ -78,6 +78,9 @@ namespace Mediator.SubMediators
 
         /// <summary>탈것 오브젝트가 생성되었을 때 그 Transform 과 함께, 하차로 제거되었을 때 null 과 함께 발생한다.</summary>
         public event Action<Transform> OnVehicleAttached;
+
+        /// <summary>탑승 중 자동 전진을 켜거나 끌 때 발생한다. (켜면 true, 전진 방향이 시점 방향을 따라 도는 속도(도/초))</summary>
+        public event Action<bool, float> OnAutoForwardChanged;
         #endregion
 
         #region Unity Lifecycle
@@ -305,8 +308,15 @@ namespace Mediator.SubMediators
                 case SpawnVehicle spawnVehicle:
                     OnBuffRatiosChanged?.Invoke(spawnVehicle.BuffRatios);
                     OnRidingChanged?.Invoke(spawnVehicle.IsRiding);
-                    if (spawnVehicle.IsRiding) BeginMount(spawnVehicle);
-                    else OnVehicleAttached?.Invoke(null);
+                    if (spawnVehicle.IsRiding)
+                    {
+                        BeginMount(spawnVehicle);
+                    }
+                    else
+                    {
+                        OnVehicleAttached?.Invoke(null);
+                        OnAutoForwardChanged?.Invoke(false, 0.0f);
+                    }
                     // 강제 하차(자원 고갈 등)도 쿨타임이 시작되므로 하차는 여기서 알린다
                     if (!spawnVehicle.IsRiding) OnSkillUsed?.Invoke(spawnVehicle.SkillName, spawnVehicle.Cooldown);
                     break;
@@ -333,7 +343,7 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 탈것을 생성하고, 새로 생성되었으면 알린다.
+        /// 탈것을 생성하고, 새로 생성되었으면 알린 뒤 자동 전진을 켠다.
         /// </summary>
         /// <param name="spawnVehicle">탈것 스킬</param>
         private void AttachVehicle(SpawnVehicle spawnVehicle)
@@ -343,6 +353,7 @@ namespace Mediator.SubMediators
             if (hadVehicle || !spawnVehicle.Vehicle) return;
 
             OnVehicleAttached?.Invoke(spawnVehicle.Vehicle.transform);
+            OnAutoForwardChanged?.Invoke(true, spawnVehicle.ForwardTurnSpeed);
         }
 
         /// <summary>

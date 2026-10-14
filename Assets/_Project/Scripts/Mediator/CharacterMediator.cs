@@ -33,6 +33,7 @@ namespace Mediator
         private AttributeSet _attributeSet;
         private bool _isDead;
         private bool _isRiding;
+        private bool _isAutoForward;
         // 가장 최근 어트리뷰트 변경의 출처 정보. 피격은 Health 변경 알림 도중 동기로 오므로 피격 방향 계산에 쓴다
         private SEffectContext _lastChangeContext;
         #endregion
@@ -326,6 +327,17 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 자동 전진 상태를 기록하고 이동 중재자로 전달한다.
+        /// </summary>
+        /// <param name="isEnabled">켜면 true</param>
+        /// <param name="turnSpeed">전진 방향이 시점 방향을 따라 도는 속도(도/초)</param>
+        private void OnAutoForwardChangedCallback(bool isEnabled, float turnSpeed)
+        {
+            _isAutoForward = isEnabled;
+            if (_moveMediator) _moveMediator.SetAutoForward(isEnabled, turnSpeed);
+        }
+
+        /// <summary>
         /// 구르기 시작을 애니메이션 중재자로 전달한다. 탑승 중이면 몸·보드가 볼 방향으로 바꿔 전달한다.
         /// </summary>
         /// <param name="direction">구르기 방향 (월드 기준)</param>
@@ -346,12 +358,13 @@ namespace Mediator
         /// <summary>
         /// 구르는 동안 몸이 볼 방향을 반환한다. 탑승 중이고 시점 뒤쪽으로 구르면 반대 방향(앞쪽)을 본다.
         /// 보드가 뒤로 갈 때 앞을 본 채 미끄러지는 규칙과 맞춘다. 실제 구르기 이동 방향은 바꾸지 않는다.
+        /// 자동 전진 중에는 항상 전진 방향으로 구르므로 바꾸지 않는다 (전진 방향이 시점을 늦게 따라와 뒤쪽으로 판정될 수 있다).
         /// </summary>
         /// <param name="direction">구르기 방향 (월드 기준)</param>
         /// <returns>몸이 볼 방향</returns>
         private Vector3 GetRollLookDirection(Vector3 direction)
         {
-            if (!_isRiding || !_moveMediator) return direction;
+            if (!_isRiding || _isAutoForward || !_moveMediator) return direction;
 
             bool isBackward = Vector3.Dot(direction, _moveMediator.GetViewDirection()) < 0.0f;
             return isBackward ? -direction : direction;
@@ -468,6 +481,7 @@ namespace Mediator
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted += _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted += _skillMediator.NotifyRollStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded += _skillMediator.NotifyRollEnded;
+            if (_skillMediator) _skillMediator.OnAutoForwardChanged += OnAutoForwardChangedCallback;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted += _cameraMediator.NotifyRollStarted;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded += _cameraMediator.NotifyRollEnded;
             if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged += _combatMediator.NotifyFireCharge;
@@ -511,6 +525,7 @@ namespace Mediator
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted -= _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted -= _skillMediator.NotifyRollStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded -= _skillMediator.NotifyRollEnded;
+            if (_skillMediator) _skillMediator.OnAutoForwardChanged -= OnAutoForwardChangedCallback;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted -= _cameraMediator.NotifyRollStarted;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded -= _cameraMediator.NotifyRollEnded;
             if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged -= _combatMediator.NotifyFireCharge;

@@ -21,6 +21,8 @@ namespace Skill.Skills
         [SerializeField] private Vector3 _vehicleOffset = Vector3.zero;
         [Tooltip("지상에서 탑승할 때 뛰어오르는 높이. 지상 점프 대비 높이 비율 (탑승 버프 적용 후 기준)")]
         [SerializeField, Min(0.0f)] private float _mountJumpPowerRatio = 0.15f;
+        [Tooltip("탑승 중 자동 전진 방향이 카메라 방향을 따라 도는 속도(도/초)")]
+        [SerializeField, Min(0.0f)] private float _forwardTurnSpeed = 720.0f;
 
         [Header("Buff")]
         [Tooltip("탑승 중 적용할 대상별 배율")]
@@ -51,6 +53,9 @@ namespace Skill.Skills
 
         /// <summary>지상에서 탑승할 때 뛰어오르는 높이. 지상 점프 대비 높이 비율.</summary>
         public float MountJumpPowerRatio => _mountJumpPowerRatio;
+
+        /// <summary>탑승 중 자동 전진 방향이 카메라 방향을 따라 도는 속도(도/초).</summary>
+        public float ForwardTurnSpeed => _forwardTurnSpeed;
 
         /// <summary>코스트는 하차할 때 지불한다.</summary>
         protected override bool IsPayOnExecute => false;

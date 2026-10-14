@@ -190,6 +190,18 @@ namespace Mediator.SubMediators
         {
             if (_motor) _motor.Gravity = _baseGravity * ratio;
         }
+
+        /// <summary>
+        /// 자동 전진을 켜거나 끈다. MoveDirectionCalculator 로 전달한다.
+        /// </summary>
+        /// <param name="isEnabled">켜면 true</param>
+        /// <param name="turnSpeed">전진 방향이 시점 방향을 따라 도는 속도(도/초)</param>
+        public void SetAutoForward(bool isEnabled, float turnSpeed)
+        {
+            if (!_moveDirectionCalculator) return;
+
+            _moveDirectionCalculator.SetAutoForward(isEnabled, turnSpeed);
+        }
         #endregion
 
         #region Protected Methods
