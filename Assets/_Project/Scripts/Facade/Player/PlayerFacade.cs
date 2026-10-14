@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Attribute.Core;
+using Attribute.Effect;
 using Mediator;
 
 namespace Facade.Player
@@ -106,6 +107,26 @@ namespace Facade.Player
             if (!_characterMediator) return;
 
             _characterMediator.SetAttribute(key, value);
+        }
+
+        /// <summary>
+        /// 출처 정보 없이 effect 를 플레이어에 적용한다.
+        /// </summary>
+        /// <param name="effect">적용할 효과</param>
+        /// <returns>적용했으면 true. 효과·대상 어트리뷰트가 없거나 cursor 가 필요한 효과면 false</returns>
+        public bool ApplyEffect(SOAttributeEffect effect)
+        {
+            return _characterMediator && _characterMediator.ApplyEffect(effect);
+        }
+
+        /// <summary>
+        /// context.Effect 를 출처 정보와 함께 플레이어에 적용한다.
+        /// </summary>
+        /// <param name="context">적용할 효과(Effect)와 출처 정보. ValueSource 가 Attribute 인 효과는 Cursor 가 필요하다</param>
+        /// <returns>적용했으면 true. 효과·대상 어트리뷰트가 없거나 필요한 cursor 가 없으면 false</returns>
+        public bool ApplyEffect(SEffectContext context)
+        {
+            return _characterMediator && _characterMediator.ApplyEffect(context);
         }
 
         /// <summary>

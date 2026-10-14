@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Attribute.Core;
+using Attribute.Effect;
 using Mediator.SubMediators;
 using Skill.Buff;
 using UnityEngine;
@@ -115,6 +116,34 @@ namespace Mediator
         public void SetAttribute(string key, float value)
         {
             EffectTarget?.SetValue(key, value);
+        }
+
+        /// <summary>
+        /// 출처 정보 없이 effect 를 이 캐릭터에 적용한다.
+        /// </summary>
+        /// <param name="effect">적용할 효과</param>
+        /// <returns>적용했으면 true. 효과·대상 어트리뷰트가 없거나 cursor 가 필요한 효과면 false</returns>
+        public bool ApplyEffect(SOAttributeEffect effect)
+        {
+            return ApplyEffect(new SEffectContext(null, effect));
+        }
+
+        /// <summary>
+        /// context.Effect 를 출처 정보와 함께 이 캐릭터에 적용한다. context 는 어트리뷰트 변경 콜백까지 전달된다.
+        /// </summary>
+        /// <param name="context">적용할 효과(Effect)와 출처 정보. ValueSource 가 Attribute 인 효과는 Cursor 가 필요하다</param>
+        /// <returns>적용했으면 true. 효과·대상 어트리뷰트가 없거나 필요한 cursor 가 없으면 false</returns>
+        public bool ApplyEffect(SEffectContext context)
+        {
+            SOAttributeEffect effect = context.Effect;
+            IEffectTarget target = EffectTarget;
+            if (!effect || target == null || !target.IsValidTarget(effect.TargetAttribute)) return false;
+
+            bool needsCursor = effect.ValueSource == EValueSource.Attribute;
+            if (needsCursor && (context.Cursor == null || !context.Cursor.IsValidTarget(effect.CursorAttribute))) return false;
+
+            effect.Apply(target, context);
+            return true;
         }
 
         /// <summary>
