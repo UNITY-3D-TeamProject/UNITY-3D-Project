@@ -2,7 +2,7 @@
 
 - **우선순위**: 높음
 - **상태**: 완료
-- **상위 작업**: [07. 스킬 구현](../07-skill-implementation.md)
+- **상위 작업**: [07. 스킬 구현](07-skill-implementation.md)
 - **후속 작업**: [08. 블루투스 모션 추가](08-bluetooth-motion.md)
 
 ## 목표

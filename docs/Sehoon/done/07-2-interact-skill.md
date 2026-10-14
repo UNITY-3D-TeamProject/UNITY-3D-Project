@@ -2,7 +2,7 @@
 
 - **우선순위**: 높음
 - **상태**: 완료
-- **상위 작업**: [07. 스킬 구현](../07-skill-implementation.md)
+- **상위 작업**: [07. 스킬 구현](07-skill-implementation.md)
 
 ## 목표
 카메라에서 Raycast 로 찾은 `IInteractable` 을 상호작용 스킬로 실행하고, "상호작용 가능" 신호를 Facade 로 알린다.
