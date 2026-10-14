@@ -60,6 +60,8 @@ namespace CharacterAnimation
         [SerializeField, Min(0.0f)] private float _ridingTurnBlendTime = 0.15f;
         [Tooltip("탑승 중 보드(와 하체)가 목표 방향으로 도는 속도(도/초).")]
         [SerializeField, Min(0.0f)] private float _boardTurnSpeed = 720.0f;
+        [Tooltip("탈것 위에 서 있는 동안 몸(_bodyName)을 올릴 높이. 탈것이 생성될 때 올리고 제거될 때 되돌린다.")]
+        [SerializeField] private float _ridingBodyHeight = 0.3f;
         [Tooltip("몸 정면을 읽을 Transform 이름. CharacterRotator 가 돌리는 대상이다.")]
         [SerializeField] private string _bodyName = "SK_ZMike";
 
@@ -99,6 +101,8 @@ namespace CharacterAnimation
         private Transform _body;
         // 몸의 기준 자세(yaw 제외)의 역회전. 몸 localRotation 에서 yaw 만 뽑을 때 쓴다
         private Quaternion _bodyRestInverse = Quaternion.identity;
+        // 몸의 기준 로컬 위치. 탑승 중 높이를 더하고 하차 시 되돌릴 때 쓴다
+        private Vector3 _bodyRestPosition;
         private float _idleTime;
         private Vector3 _lastViewForward;
         private bool _isDead;
@@ -402,11 +406,13 @@ namespace CharacterAnimation
 
         /// <summary>
         /// 탑승 중 이동 방향으로 돌릴 보드(탈것)를 설정한다. 위치는 그대로 두고 회전만 덮어쓴다.
+        /// 보드가 있으면 몸을 탈것 위 높이로 올리고, 없으면 원래 높이로 되돌린다.
         /// </summary>
         /// <param name="board">탈것 Transform. 없으면 null</param>
         public void SetRidingBoard(Transform board)
         {
             _ridingBoard = board;
+            if (_body) _body.localPosition = _bodyRestPosition + (board ? Vector3.up * _ridingBodyHeight : Vector3.zero);
         }
 
         /// <summary>
@@ -532,6 +538,7 @@ namespace CharacterAnimation
 
             Vector3 restEuler = _body.localRotation.eulerAngles;
             _bodyRestInverse = Quaternion.Inverse(Quaternion.Euler(restEuler.x, 0.0f, restEuler.z));
+            _bodyRestPosition = _body.localPosition;
         }
 
         /// <summary>
