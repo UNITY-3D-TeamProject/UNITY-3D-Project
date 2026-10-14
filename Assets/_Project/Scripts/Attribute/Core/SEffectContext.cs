@@ -12,7 +12,9 @@ namespace Attribute.Core
         /// <summary>효과를 발생시킨 주체. null 이면 주체 없음.</summary>
         public readonly IEffectTarget Cursor;
 
-        /// <summary>값을 바꾼 효과 에셋. SOAttributeEffect.Apply 가 채운다. null 이면 효과 없이 바뀐 값(코스트 지불, 값 복원 등).</summary>
+        /// <summary>
+        /// 값을 바꾼 효과 에셋. SOAttributeEffect.Apply 를 거치면 호출부가 넣은 값과 무관하게 항상 그 효과 자신으로 채워진다.
+        /// </summary>
         public readonly SOAttributeEffect Effect;
 
         /// <summary>효과가 실제로 닿은 월드 위치. null 이면 위치 없음(근접, 회복 등).</summary>

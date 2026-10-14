@@ -37,8 +37,21 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   - 사격 중: Guard 아래 Fail 노드에 "사선 트임=false"를 넣어 공격을 중단한다
   - Conditional Guard는 Lower Priority만 지원하고(Self/Both 불가), Priority Abort는 조건이 거짓이면 부모를 처음부터 다시 돌려 진입 관문으로 쓸 수 없다. 패키지에 조건 반전 기능이 없어서 기대값 변수로 해결했다
 
+- (2026-10-14) 후퇴 중에도 사격한다(뒷걸음질 사격). 기대 결과의 "이동 중에는 쏘지 않는다"를 대체한다
+  - 그래프에서 후퇴와 원거리 공격을 `Run In Parallel`(Mode: Until Any Complete)로 묶는다. 새 노드는 만들지 않는다
+  - 후퇴는 `Repeat`로 감싸고, 병렬 쪽 원거리 공격의 Range는 RetreateRange로 둔다. 후퇴 한 구간이 약 0.4초라서, 감싸지 않으면 구간마다 병렬 노드가 다시 시작되며 사격 대기가 리셋된다
+  - `AIRangedAttackAction.KeepMoving`(기본 false): true면 시작할 때 `StopMove`를 부르지 않아 후퇴 이동이 유지된다
+  - `AIController.ShouldFaceMoveDirection`(기본 true): 원거리 공격이 실행되는 동안 false로 둔다. 이동 방향 회전 요청과 대상 방향 회전 요청이 프레임마다 서로 덮어써 떨리는 것을 막는다
+- (2026-10-14) 후퇴 시작 거리와 끝 거리를 나눈다. 병렬 쪽 원거리 공격의 Range를 블랙보드 `RetreatExitRange`(6)로 둔다(위의 "Range는 RetreateRange"를 대체). 진입 Guard는 `RetreateRange`(4) 그대로다
+  - 두 값이 모두 4였을 때는 쫓기는 동안 거리가 3.9~4.08m를 오가며 병렬 노드가 1초에 여러 번 다시 시작했다. 그래서 사격 대기가 계속 리셋되어 이동 중 사격이 0회였다(Play 측정)
+- (2026-10-14) 후퇴하는 동안에만 이동 속도를 낮춘다. `AIRetreatAction.SpeedRatio`(기본 0.4)
+  - 적 MoveSpeed(10, 이 맵은 스폰 효과로 8)가 플레이어(6)보다 빨라서 약 0.5초 만에 6m를 벗어났다. 그래서 병렬 노드가 사격 대기(1~3초)보다 먼저 끝났다
+  - 방식: `AIController.ScaleMoveSpeed(ratio)`가 `CharacterMediator.Get/SetAttribute`로 MoveSpeed 어트리뷰트에 곱하고, 끝날 때 1/ratio로 되돌린다. 덮어쓰지 않고 곱하므로 감속 지대(×0.5/÷0.5)와 겹쳐도 맞는다. 애니메이션 재생 속도도 어트리뷰트를 따라가므로 함께 느려진다
+  - `MoveMediator.SetMoveSpeedRatio` 경로는 쓰지 않는다. 이를 위해서는 중재자에 인터페이스를 추가해야 하고, 애니메이션 속도도 맞지 않는다
+
 ## 열린 질문 (Open questions)
-- 후퇴하는 동안 몸이 이동 방향을 보므로 등을 보인다. 뒷걸음질 사격이 필요하면 회전 처리를 따로 다룬다
+- ~~후퇴하는 동안 몸이 이동 방향을 보므로 등을 보인다~~ → 2026-10-14 결정 사항으로 해결
+- 후퇴 도중 적이 비활성화되면 `OnEnd`가 불리지 않아 MoveSpeed가 낮은 채로 남는다. 다시 활성화하면 그래프가 이어서 돌며 `OnEnd`에서 복구되는 것은 확인했다. 사망·풀 재사용 시 그래프를 새로 시작하는 경로가 있다면 복구되지 않을 수 있다(미확인)
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:

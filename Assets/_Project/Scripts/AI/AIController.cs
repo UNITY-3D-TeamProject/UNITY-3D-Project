@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.AI;
+using Mediator;
 using Mediator.SubMediators;
 
 namespace AI
@@ -56,6 +57,12 @@ namespace AI
         [Header("Separation")]
         [Tooltip("주변 동료로 볼 레이어. 비워두면 동료를 찾지 않는다.")]
         [SerializeField] private LayerMask _separationLayers;
+
+        [Header("Speed")]
+        [Tooltip("이동 속도 어트리뷰트를 바꿀 중재자. 비워두면 이 오브젝트에서 찾는다.")]
+        [SerializeField] private CharacterMediator _mediator;
+        [Tooltip("이동 속도 어트리뷰트 이름.")]
+        [SerializeField] private string _speedAttributeKey = "MoveSpeed";
         #endregion
 
         #region Private Fields
@@ -128,6 +135,12 @@ namespace AI
         /// 제한 시간을 넘겨도 도착하지 못하면 true 가 된다. 목적지가 없으면 false.
         /// </summary>
         public bool IsStuck => _isStuck;
+
+        /// <summary>
+        /// 이동 중 몸통을 이동 방향으로 돌릴지 여부. 기본 true.
+        /// 이동하면서 대상을 바라봐야 할 때(후퇴 중 사격 등) false 로 두면 회전은 FaceDirection 요청만 따른다.
+        /// </summary>
+        public bool ShouldFaceMoveDirection { get; set; } = true;
         #endregion
 
         #region Unity Lifecycle
@@ -137,6 +150,7 @@ namespace AI
             if (!_patrolRoute) _patrolRoute = GetComponent<WaypointPatrolRoute>();
             if (!_agent) _agent = GetComponent<NavMeshAgent>();
             if (!_body) _body = transform;
+            if (!_mediator) _mediator = GetComponent<CharacterMediator>();
 
             if (!_agent)
             {
@@ -192,7 +206,7 @@ namespace AI
             RequestMove(desired2D);
             // 회전도 이동과 같은 방향으로 요청한다. 정지 시(위의 zero 경로)에는 요청을 보내지 않아
             // CharacterRotator 가 직전 방향을 유지하게 둔다.
-            RequestRotate(desired2D);
+            if (ShouldFaceMoveDirection) RequestRotate(desired2D);
         }
 
         private void OnDisable()
@@ -359,6 +373,20 @@ namespace AI
             }
 
             RequestMove(Vector2.zero);
+        }
+
+        /// <summary>
+        /// 이동 속도 어트리뷰트에 배율을 곱한다. 되돌릴 때는 1/ratio 로 다시 호출한다.
+        /// 덮어쓰지 않고 곱하므로 감속 지대 등 다른 곳의 변경과 겹쳐도 어긋나지 않는다.
+        /// 중재자가 없거나 어트리뷰트가 없으면 무시한다.
+        /// </summary>
+        /// <param name="ratio">곱할 배율 (양수)</param>
+        public void ScaleMoveSpeed(float ratio)
+        {
+            if (!_mediator || !_mediator.IsValidAttribute(_speedAttributeKey)) return;
+
+            float speed = _mediator.GetAttribute(_speedAttributeKey);
+            _mediator.SetAttribute(_speedAttributeKey, speed * ratio);
         }
 
         /// <summary>
