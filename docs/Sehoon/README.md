@@ -52,7 +52,7 @@
 | 순서 | 기능 | 문서 | 상태 |
 |---|---|---|---|
 | 18 | 플레이어 카메라 뷰 수정 (화면 고정 위치) | [18-camera-fixed-screen-position.md](done/18-camera-fixed-screen-position.md) | 완료 |
-| 19 | 펫 시스템 (따라다니기 + 스캔 대리 사용) | [19-pet-system.md](19-pet-system.md) | 대기 |
+| 19 | 펫 시스템 (따라다니기 + 애니메이션 동기화, 스캔 대리 사용은 07-3 으로 이관) | [19-pet-system.md](done/19-pet-system.md) | 완료 |
 | 20 | 카메라 가림 처리 (7, 10번 레이어) | [20-camera-occlusion.md](done/20-camera-occlusion.md) | 완료 |
 
 ## 같은 우선순위 안에서 순서를 정한 근거
