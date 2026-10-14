@@ -22,7 +22,7 @@ namespace Core.Scanning
         [Tooltip("닿은 뒤 메시가 드러나는 속도(m/s). 파동이 이보다 빠르면 파동을 따라간다.")]
         [SerializeField, Min(0.0f)] private float _revealSpeed = 10.0f;
 
-        [Header("References")]
+        [Header("References (비워 두면 자동으로 찾음)")]
         [Tooltip("드러낼 렌더러. 비어 있으면 Awake 에서 자식의 Renderer 를 모두 찾는다.")]
         [SerializeField] private Renderer[] _renderers;
         #endregion

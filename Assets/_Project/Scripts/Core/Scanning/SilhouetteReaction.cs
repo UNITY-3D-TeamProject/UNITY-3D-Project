@@ -19,7 +19,7 @@ namespace Core.Scanning
         #endregion
 
         #region Serialized Fields
-        [Header("References")]
+        [Header("References (둘 중 하나는 필수)")]
         [Tooltip("스캔 중에만 켜질 실루엣 렌더러. 대상과 같은 메시에 M_ScanSilhouette 를 지정한 자식 오브젝트를 연결한다. 평소에는 꺼진다.")]
         // 아이템이 여러 메시 조각(예: 상자 몸통 + 뚜껑)으로 이루어지면 조각마다 실루엣 렌더러가 하나씩 필요하므로 배열로 받는다.
         // 메시가 하나뿐인 아이템은 1칸만 채우면 된다.
@@ -27,6 +27,7 @@ namespace Core.Scanning
         [Tooltip("지정하면 실루엣 렌더러를 직접 연결하지 않고, Awake 에서 자식의 모든 SkinnedMeshRenderer 마다 이 머티리얼을 쓰는 복제 렌더러를 만든다. 적의 홀로그램 셸(M_ScanHologram)용")]
         // 적 프리팹은 메시 조각이 많고(Melee 9개, Ranged 20개) 모델이 바뀔 수 있어, 셸을 손으로 만들지 않고 런타임에 만든다.
         [SerializeField] private Material _autoShellMaterial;
+        [Header("References (비워 두면 이 오브젝트 기준)")]
         [Tooltip("셸을 자동 생성할 때 SkinnedMeshRenderer 를 찾을 기준 오브젝트. 비어 있으면 이 오브젝트. 약점 오브젝트에 붙일 때는 몬스터 루트를 연결한다.")]
         // 몬스터는 루트에 스캔 스크립트를 두지 않고 약점 오브젝트에 이 반응을 붙이므로, 몸 전체 렌더러를 찾을 기준을 따로 받는다.
         [SerializeField] private Transform _shellSourceRoot;

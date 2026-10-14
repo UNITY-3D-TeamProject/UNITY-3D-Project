@@ -43,7 +43,7 @@ namespace Core.Scanning
         [Tooltip("활성 시간이 끝난 뒤 반응이 완전히 사라지기까지의 시간(초)")]
         [SerializeField, Min(0.0f)] private float _fadeOutTime = 1.0f;
 
-        [Header("References")]
+        [Header("References (비워 두면 자동으로 찾음)")]
         [Tooltip("이 대상의 반응 목록. 비어 있으면 Awake 에서 같은 오브젝트의 ScanReactionBase 를 모두 찾는다.")]
         // 스캔에 닿았을 때 눈에 보이는 반응 하나를 만드는 부모 클래스 
         // 여러 반응이 필요한경우를 대비해서 배열로 만든다.
