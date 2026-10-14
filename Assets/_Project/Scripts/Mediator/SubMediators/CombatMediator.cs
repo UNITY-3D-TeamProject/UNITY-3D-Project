@@ -1,4 +1,5 @@
 using System;
+using Attribute.Core;
 using Combat;
 using UnityEngine;
 
@@ -22,6 +23,8 @@ namespace Mediator.SubMediators
         #region Events
         /// <summary>CharacterCombat 이 피격되었을 때 발생한다.</summary>
         public event Action OnHit;
+        /// <summary>약점에 명중해 피해 배율이 적용될 때 맞은 지점을 알린다. OnHit 보다 먼저 발생한다.</summary>
+        public event Action<Vector3?> OnCriticalHit;
         /// <summary>CharacterCombat 이 사망했을 때 발생한다.</summary>
         public event Action OnDeath;
         /// <summary>피격 후 무적 시간이 끝났을 때 발생한다. 사망으로 멈춘 경우에는 발생하지 않는다.</summary>
@@ -95,6 +98,23 @@ namespace Mediator.SubMediators
 
             return string.Equals(key, _healthValueKey, StringComparison.OrdinalIgnoreCase);
         }
+
+        /// <summary>
+        /// 체력 감소량을 보정한다. 약점에 명중했으면 OnCriticalHit 을 발행하고 CharacterCombat 의 배율을 곱한다.
+        /// </summary>
+        /// <param name="key">감소하려는 어트리뷰트 이름</param>
+        /// <param name="damage">감소량</param>
+        /// <param name="context">감소를 일으킨 효과의 출처 정보</param>
+        /// <returns>보정한 감소량. 체력이 아니거나 약점 명중이 아니면 그대로</returns>
+        public float ModifyDamage(string key, float damage, SEffectContext context)
+        {
+            if (_combatComponent == null) return damage;
+            if (!string.Equals(key, _healthValueKey, StringComparison.OrdinalIgnoreCase)) return damage;
+            if (!_combatComponent.IsCriticalHit(context.HitPoint, context.Direction)) return damage;
+
+            OnCriticalHit?.Invoke(context.HitPoint);
+            return damage * _combatComponent.CriticalMultiplier;
+        }
         #endregion
         
         #region Protected Methods
@@ -103,13 +123,6 @@ namespace Mediator.SubMediators
             AttributeCallback.TryAdd(_healthValueKey, data =>
             {
                 if (_combatComponent == null) return;
-
-                // TODO: 치명타 피해 곱 적용 전, 판정 결과만 로그로 확인한다
-                if (data.NewValue < data.OldValue)
-                {
-                    bool isCritical = _combatComponent.IsCriticalHit(data.Context.HitPoint, data.Context.Direction);
-                    Debug.Log($"[{name}] {(isCritical ? "Critical" : "Normal")} Hit (HitPoint: {data.Context.HitPoint})", this);
-                }
 
                 _combatComponent.Health = data.NewValue;
             });

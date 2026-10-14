@@ -15,8 +15,11 @@ namespace Attribute.Core
     public class AttributeSet : MonoBehaviour, IEffectTarget
     {
         #region Delegates
-        /// <summary>값 변경 전 호출. newValue 를 수정하면 실제 반영되는 값이 바뀐다.</summary>
-        public delegate void OnAttributeChangeWithRef(string attributeName, ref float newValue, float oldValue);
+        /// <summary>값 변경 전 호출. newValue 를 수정하면 실제 반영되는 값이 바뀐다. context 는 SetValue 에 넘긴 출처 정보.</summary>
+        // 변경: (string attributeName, ref float newValue, float oldValue)
+        //    → (string attributeName, ref float newValue, float oldValue, SEffectContext context)
+        //    약점 피해 배율처럼 반영 전에 출처 정보가 필요해 context 를 추가했다.
+        public delegate void OnAttributeChangeWithRef(string attributeName, ref float newValue, float oldValue, SEffectContext context);
 
         /// <summary>값 변경 시 / 변경 후 호출. data 에 이름, 변경 후/전 값, 출처 정보가 담긴다.</summary>
         public delegate void OnAttributeChange(SAttributeChangeData data);
@@ -114,7 +117,7 @@ namespace Attribute.Core
         /// Value 변경 전 발생할 콜백 Set
         /// newValue 에 대해 클램핑이 가능하므로 단일구독을 위해 Set
         /// </summary>
-        /// <param name="callback">void(string, ref float, float) 시그니쳐 callback</param>
+        /// <param name="callback">void(string, ref float, float, SEffectContext) 시그니쳐 callback</param>
         public void SetPreAttributeChangedCallback(OnAttributeChangeWithRef callback)
         {
             if (callback == null) return;
@@ -173,7 +176,7 @@ namespace Attribute.Core
         #region Private Methods
         private void NativePreAttributeChanged(AttributeData target, ref float newValue, float oldValue)
         {
-            _preAttributeChangedEvent?.Invoke(target.Name, ref newValue, oldValue);
+            _preAttributeChangedEvent?.Invoke(target.Name, ref newValue, oldValue, _currentContext);
         }
 
         private void NativeOnAttributeChanged(AttributeData target, float newValue, float oldValue)

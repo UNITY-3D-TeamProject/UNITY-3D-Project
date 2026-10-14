@@ -56,6 +56,8 @@ namespace Mediator
         public event Action<string, float, float> OnAttributeChanged;
         /// <summary>캐릭터가 피격되었을 때 발생한다.</summary>
         public event Action OnHit;
+        /// <summary>약점에 명중했을 때 맞은 지점을 알린다. OnHit 보다 먼저 발생한다.</summary>
+        public event Action<Vector3?> OnCriticalHit;
         /// <summary>캐릭터가 사망한 즉시 한 번 발생한다.</summary>
         public event Action OnDeath;
         /// <summary>사망 후 처리(사망 애니메이션)가 끝나 GameObject 를 파괴하기 직전에 한 번 발생한다.</summary>
@@ -206,6 +208,7 @@ namespace Mediator
             if (_skillMediator && _moveMediator) _skillMediator.SetGetGrounded(_moveMediator.IsGrounded);
             if (_skillMediator && _cameraMediator) _skillMediator.SetGetAimRay(_cameraMediator.GetAimRay);
             if (_attributeMediator && _combatMediator) _attributeMediator.SetIsDamageBlocked(_combatMediator.IsDamageBlocked);
+            if (_attributeMediator && _combatMediator) _attributeMediator.SetDamageModifier(_combatMediator.ModifyDamage);
         }
         /// <summary>
         /// 등록된 바인딩 해제
@@ -228,6 +231,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.ClearGetGrounded();
             if (_skillMediator) _skillMediator.ClearGetAimRay();
             if (_attributeMediator) _attributeMediator.ClearIsDamageBlocked();
+            if (_attributeMediator) _attributeMediator.ClearDamageModifier();
         }
         /// <summary>
         /// 중재자들이 원하는 값 변경시 알림 발송
@@ -385,6 +389,13 @@ namespace Mediator
             return isBackward ? -direction : direction;
         }
 
+        private void OnCriticalHitCallback(Vector3? hitPoint)
+        {
+            if (_isDead) return;
+
+            OnCriticalHit?.Invoke(hitPoint);
+        }
+
         private void OnHitCallback()
         {
             if (_isDead) return;
@@ -481,6 +492,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnInteractableChanged += OnInteractableChangedCallback;
             if (_skillMediator) _skillMediator.OnScanRequested += OnScanRequestedCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
+            if (_combatMediator) _combatMediator.OnCriticalHit += OnCriticalHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
             if (_animationMediator) _animationMediator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged += _animationMediator.SetMoveDirection;
@@ -531,6 +543,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnInteractableChanged -= OnInteractableChangedCallback;
             if (_skillMediator) _skillMediator.OnScanRequested -= OnScanRequestedCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
+            if (_combatMediator) _combatMediator.OnCriticalHit -= OnCriticalHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
             if (_animationMediator) _animationMediator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged -= _animationMediator.SetMoveDirection;

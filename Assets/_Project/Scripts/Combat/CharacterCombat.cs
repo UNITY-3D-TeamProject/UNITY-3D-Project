@@ -13,6 +13,8 @@ namespace Combat
         #region Serialized Fields
         [Tooltip("약점 콜라이더. 없으면 치명타 없음")]
         [SerializeField] private SphereCollider _weakPoint;
+        [Tooltip("약점 명중 시 피해 배율")]
+        [SerializeField] private float _criticalMultiplier = 2.0f;
         #endregion
 
         #region Private Fields
@@ -43,6 +45,9 @@ namespace Combat
         }
 
         public bool IsDead => _health <= 0;
+
+        /// <summary>약점 명중 시 피해 배율.</summary>
+        public float CriticalMultiplier => _criticalMultiplier;
         #endregion
 
         #region Events
