@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 9220976172868465241}
   - component: {fileID: 4027413288509265592}
   - component: {fileID: 4546795741421077499}
+  - component: {fileID: 2752148484722071969}
   m_Layer: 0
   m_Name: SpawnVehicle
   m_TagString: Untagged
@@ -46,6 +47,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Skill.Skills.SpawnVehicle
   _skillName: SpawnVehicle
+  _vehiclePrefab: {fileID: 3453756293661828566, guid: cd6f3a052cd2eb84ba8ca2f6a1550e6a, type: 3}
+  _vehicleOffset: {x: 0, y: 0, z: 0}
+  _buffRatios:
+  - Target: 0
+    Ratio: 1.5
+  - Target: 1
+    Ratio: 1.25
+  - Target: 2
+    Ratio: 0.7
 --- !u!114 &4546795741421077499
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -58,4 +68,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4b4bbfb30b27084297015379edf9e4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.CooldownCost
-  _cooldown: 1
+  _cooldown: 3
+--- !u!114 &2752148484722071969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3300303827777807749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06c92ac40770b7c42975fecb51784035, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.DrainCost
+  _drainPerSecond: 10
+  _resourceKey: CurrentBattery

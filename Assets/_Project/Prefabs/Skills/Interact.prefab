@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5026945938295708754}
   - component: {fileID: 339303079115650884}
-  - component: {fileID: 492671270505115526}
+  - component: {fileID: 460157995469931500}
   m_Layer: 0
   m_Name: Interact
   m_TagString: Untagged
@@ -46,7 +46,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Skill.Skills.Interact
   _skillName: Interact
---- !u!114 &492671270505115526
+  _interactDistance: 6
+  _interactLayers:
+    serializedVersion: 2
+    m_Bits: 512
+  _blockingLayers:
+    serializedVersion: 2
+    m_Bits: 1153
+--- !u!114 &460157995469931500
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -55,7 +62,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1891066425272341251}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4b4bbfb30b27084297015379edf9e4a, type: 3}
+  m_Script: {fileID: 11500000, guid: a36f84fa52ff23e45bca47fc2226de70, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.CooldownCost
-  _cooldown: 1
+  m_EditorClassIdentifier: Assembly-CSharp::Skill.Conditions.HasTargetCondition
