@@ -9,6 +9,7 @@
 - **[UI / Stage]** HUD를 PlayerFacade 기반으로 전환, 스킬 쿨(구르기·블루투스·스캔) UI 추가, 낙하 데미지를 Effect SO로 변경 → [문서](../HANDOVER/SungJun/intent/intent-018-hud-facade-skill-cooldown.md)
 - **[Skill / Scan / Core]** 스캔 스킬 구현 — 파동이 닿은 대상이 IScannable 반응으로 드러났다가 duration 후 서서히 사라짐 → [문서](../HANDOVER/SungJun/intent/intent-019-scan-system.md)
 <!-- 파트별로 묶어서 나열. 형식: - **[파트]** 문제 한 줄 요약 → [문서](./intent-NNN-slug.md) -->
+- **[AI / Enemy / Combat]** 적을 어디에 맞혀도 같은 피해. 적마다 후보 5곳 중 무작위 약점을 두고, 맞은 지점과 약점 중심의 거리로 치명타를 판정한다. 1단계는 판정 로그만, 피해 곱은 2단계 → [문서](./intent-023-weak-point-critical.md)
 - **[Movement System]** 이동 코어에 경로/회전/탑승 정책이 섞여 있음 → [문서](./intent-002-movement-core-scope.md)
 - **[Movement System]** PlayMode 테스트로 발견된 이동 자체 버그 4건 → [문서](./intent-003-movement-playtest-bugfixes.md)
 - **[Combat]** Combat 컴포넌트 재설계 — 의존성 0 + HP 옵서버 완료. `IHitReceiver`/`SHitInfo` 폐기로 입구가 `Health` setter 하나로 통합됨(HP 감소 = 피격). HP를 깎는 주체 등 이세훈과 협의할 열린 질문 3건 남음 → [문서](./intent-005-combat-component-decoupling.md)

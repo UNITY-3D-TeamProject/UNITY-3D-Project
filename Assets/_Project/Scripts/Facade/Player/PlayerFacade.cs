@@ -49,6 +49,8 @@ namespace Facade.Player
         public event Action OnDeathEnded;
         /// <summary>플레이어가 스킬을 사용했을 때 (스킬 이름, 쿨타임)을 알린다. 사용 1회당 1번 발생한다.</summary>
         public event Action<string, float> OnSkillUsed;
+        /// <summary>카메라가 상호작용 대상을 바라보는지 여부가 바뀔 때 발생한다. 대상이 있으면 true.</summary>
+        public event Action<bool> OnInteractableChanged;
         /// <summary>설정창 열기 입력이 들어왔을 때 발생한다.</summary>
         public event Action OnOpenSettingsRequested;
         /// <summary>설정창 닫기 입력이 들어왔을 때 발생한다.</summary>
@@ -158,6 +160,7 @@ namespace Facade.Player
                 _characterMediator.OnDeath += RelayDeath;
                 _characterMediator.OnDeathEnded += RelayDeathEnded;
                 _characterMediator.OnSkillUsed += RelaySkillUsed;
+                _characterMediator.OnInteractableChanged += RelayInteractableChanged;
             }
 
             if (!_playerInput || _playerInput.actions == null) return;
@@ -181,6 +184,7 @@ namespace Facade.Player
                 _characterMediator.OnDeath -= RelayDeath;
                 _characterMediator.OnDeathEnded -= RelayDeathEnded;
                 _characterMediator.OnSkillUsed -= RelaySkillUsed;
+                _characterMediator.OnInteractableChanged -= RelayInteractableChanged;
             }
 
             if (_openSettingsAction != null) _openSettingsAction.performed -= HandleOpenSettings;
@@ -213,6 +217,12 @@ namespace Facade.Player
         private void RelaySkillUsed(string skillName, float cooldown)
         {
             OnSkillUsed?.Invoke(skillName, cooldown);
+        }
+
+        private void RelayInteractableChanged(bool hasTarget)
+        {
+            Debug.Log($"[PlayerFacade] OnInteractableChanged : {hasTarget}"); // TODO: 테스트용 로그, 검증 후 제거
+            OnInteractableChanged?.Invoke(hasTarget);
         }
 
         private void HandleOpenSettings(InputAction.CallbackContext context)

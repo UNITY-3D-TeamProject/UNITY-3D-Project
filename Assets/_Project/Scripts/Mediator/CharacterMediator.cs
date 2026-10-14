@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Attribute.Core;
 using Mediator.SubMediators;
+using Skill.Buff;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -30,6 +31,7 @@ namespace Mediator
         // _attributeMediator 가 지정되지 않았을 때 직접 사용할 AttributeSet
         private AttributeSet _attributeSet;
         private bool _isDead;
+        private bool _isRiding;
         #endregion
 
         #region Properties
@@ -55,6 +57,8 @@ namespace Mediator
         public event Action OnDeathEnded;
         /// <summary>스킬이 사용되었을 때 (스킬 이름, 쿨타임)을 알린다. 요청 1회당 1번 발생한다.</summary>
         public event Action<string, float> OnSkillUsed;
+        /// <summary>상호작용 대상을 바라보는지 여부가 바뀔 때 발생한다. 대상이 있으면 true.</summary>
+        public event Action<bool> OnInteractableChanged;
         #endregion
 
         #region Unity Lifecycle
@@ -167,6 +171,7 @@ namespace Mediator
             }
             if (_animationMediator && _cameraMediator) _animationMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
             if (_skillMediator && _moveMediator) _skillMediator.SetGetGrounded(_moveMediator.IsGrounded);
+            if (_skillMediator && _cameraMediator) _skillMediator.SetGetAimRay(_cameraMediator.GetAimRay);
             if (_attributeMediator && _combatMediator) _attributeMediator.SetIsDamageBlocked(_combatMediator.IsDamageBlocked);
         }
         /// <summary>
@@ -188,6 +193,7 @@ namespace Mediator
             }
             if (_animationMediator) _animationMediator.ClearGetAimPoint();
             if (_skillMediator) _skillMediator.ClearGetGrounded();
+            if (_skillMediator) _skillMediator.ClearGetAimRay();
             if (_attributeMediator) _attributeMediator.ClearIsDamageBlocked();
         }
         /// <summary>
@@ -250,6 +256,73 @@ namespace Mediator
         private void OnSkillUsedCallback(string skillName, float cooldown)
         {
             OnSkillUsed?.Invoke(skillName, cooldown);
+        }
+
+        private void OnInteractableChangedCallback(bool hasTarget)
+        {
+            OnInteractableChanged?.Invoke(hasTarget);
+        }
+
+        /// <summary>
+        /// 스킬 중재자가 보낸 버프 배율을 대상에 맞는 중재자로 전달한다.
+        /// </summary>
+        /// <param name="buffRatios">대상별 배율 목록</param>
+        private void OnBuffRatiosChangedCallback(IReadOnlyList<SBuffRatio> buffRatios)
+        {
+            if (!_moveMediator) return;
+
+            foreach (SBuffRatio buffRatio in buffRatios)
+            {
+                switch (buffRatio.Target)
+                {
+                    case EBuffTarget.MoveSpeed:
+                        _moveMediator.SetMoveSpeedRatio(buffRatio.Ratio);
+                        break;
+                    case EBuffTarget.JumpPower:
+                        _moveMediator.SetJumpPowerRatio(buffRatio.Ratio);
+                        break;
+                    case EBuffTarget.Gravity:
+                        _moveMediator.SetGravityRatio(buffRatio.Ratio);
+                        break;
+                }
+            }
+        }
+
+        private void OnRidingChangedCallback(bool isRiding)
+        {
+            _isRiding = isRiding;
+        }
+
+        /// <summary>
+        /// 구르기 시작을 애니메이션 중재자로 전달한다. 탑승 중이면 몸·보드가 볼 방향으로 바꿔 전달한다.
+        /// </summary>
+        /// <param name="direction">구르기 방향 (월드 기준)</param>
+        private void OnRollStartedCallback(Vector3 direction)
+        {
+            _animationMediator.NotifyRollStarted(GetRollLookDirection(direction));
+        }
+
+        /// <summary>
+        /// 구르는 동안 몸이 볼 방향을 회전 중재자로 전달한다. 탑승 중이면 뒤쪽 구르기도 앞쪽을 보게 바꾼다.
+        /// </summary>
+        /// <param name="direction">구르기 방향 (월드 기준)</param>
+        private void OnRollLookCallback(Vector3 direction)
+        {
+            _rotateMediator.LockLookDirection(GetRollLookDirection(direction));
+        }
+
+        /// <summary>
+        /// 구르는 동안 몸이 볼 방향을 반환한다. 탑승 중이고 시점 뒤쪽으로 구르면 반대 방향(앞쪽)을 본다.
+        /// 보드가 뒤로 갈 때 앞을 본 채 미끄러지는 규칙과 맞춘다. 실제 구르기 이동 방향은 바꾸지 않는다.
+        /// </summary>
+        /// <param name="direction">구르기 방향 (월드 기준)</param>
+        /// <returns>몸이 볼 방향</returns>
+        private Vector3 GetRollLookDirection(Vector3 direction)
+        {
+            if (!_isRiding || !_moveMediator) return direction;
+
+            bool isBackward = Vector3.Dot(direction, _moveMediator.GetViewDirection()) < 0.0f;
+            return isBackward ? -direction : direction;
         }
 
         private void OnHitCallback()
@@ -327,6 +400,7 @@ namespace Mediator
             if (_skillMediator && _spawnMediator) _skillMediator.OnFireRequested += _spawnMediator.CommandSpawnBullet;
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested += OnFireCallback;
             if (_skillMediator) _skillMediator.OnSkillUsed += OnSkillUsedCallback;
+            if (_skillMediator) _skillMediator.OnInteractableChanged += OnInteractableChangedCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
             if (_animationMediator) _animationMediator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
@@ -335,12 +409,17 @@ namespace Mediator
             if (_skillMediator && _animationMediator) _skillMediator.OnFireChargeChanged += _animationMediator.NotifyFireCharge;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpStarted += _animationMediator.NotifyJumpStarted;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpEnded += _animationMediator.NotifyJumpEnded;
-            if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted += _animationMediator.NotifyRollStarted;
+            if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted += OnRollStartedCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnRollEnded += _animationMediator.NotifyRollEnded;
-            if (_moveMediator && _rotateMediator) _moveMediator.OnRollStarted += _rotateMediator.LockLookDirection;
+            if (_moveMediator && _rotateMediator) _moveMediator.OnRollStarted += OnRollLookCallback;
             if (_moveMediator && _rotateMediator) _moveMediator.OnRollEnded += _rotateMediator.UnlockLookDirection;
             if (_moveMediator && _skillMediator) _moveMediator.OnAirJumpRequested += _skillMediator.RequestMultiJump;
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested += _moveMediator.CommandAirJump;
+            if (_skillMediator) _skillMediator.OnBuffRatiosChanged += OnBuffRatiosChangedCallback;
+            if (_skillMediator) _skillMediator.OnRidingChanged += OnRidingChangedCallback;
+            if (_skillMediator && _animationMediator) _skillMediator.OnRidingChanged += _animationMediator.NotifyRidingChanged;
+            if (_skillMediator && _moveMediator) _skillMediator.OnMountJumpRequested += _moveMediator.CommandAirJump;
+            if (_skillMediator && _animationMediator) _skillMediator.OnVehicleAttached += _animationMediator.SetRidingBoard;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded += _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted += _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted += _skillMediator.NotifyRollStarted;
@@ -364,6 +443,7 @@ namespace Mediator
             if (_skillMediator && _spawnMediator) _skillMediator.OnFireRequested -= _spawnMediator.CommandSpawnBullet;
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested -= OnFireCallback;
             if (_skillMediator) _skillMediator.OnSkillUsed -= OnSkillUsedCallback;
+            if (_skillMediator) _skillMediator.OnInteractableChanged -= OnInteractableChangedCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
             if (_animationMediator) _animationMediator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
@@ -372,12 +452,17 @@ namespace Mediator
             if (_skillMediator && _animationMediator) _skillMediator.OnFireChargeChanged -= _animationMediator.NotifyFireCharge;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpStarted -= _animationMediator.NotifyJumpStarted;
             if (_moveMediator && _animationMediator) _moveMediator.OnJumpEnded -= _animationMediator.NotifyJumpEnded;
-            if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted -= _animationMediator.NotifyRollStarted;
+            if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted -= OnRollStartedCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnRollEnded -= _animationMediator.NotifyRollEnded;
-            if (_moveMediator && _rotateMediator) _moveMediator.OnRollStarted -= _rotateMediator.LockLookDirection;
+            if (_moveMediator && _rotateMediator) _moveMediator.OnRollStarted -= OnRollLookCallback;
             if (_moveMediator && _rotateMediator) _moveMediator.OnRollEnded -= _rotateMediator.UnlockLookDirection;
             if (_moveMediator && _skillMediator) _moveMediator.OnAirJumpRequested -= _skillMediator.RequestMultiJump;
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested -= _moveMediator.CommandAirJump;
+            if (_skillMediator) _skillMediator.OnBuffRatiosChanged -= OnBuffRatiosChangedCallback;
+            if (_skillMediator) _skillMediator.OnRidingChanged -= OnRidingChangedCallback;
+            if (_skillMediator && _animationMediator) _skillMediator.OnRidingChanged -= _animationMediator.NotifyRidingChanged;
+            if (_skillMediator && _moveMediator) _skillMediator.OnMountJumpRequested -= _moveMediator.CommandAirJump;
+            if (_skillMediator && _animationMediator) _skillMediator.OnVehicleAttached -= _animationMediator.SetRidingBoard;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded -= _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted -= _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted -= _skillMediator.NotifyRollStarted;
