@@ -36,6 +36,9 @@ namespace Mediator.SubMediators
         private Vector3 _lastDirection;
         private Vector3 _rollDirection;
         private float _jumpPower;
+        private float _baseGravity;
+        private float _moveSpeedRatio = 1.0f;
+        private float _jumpPowerRatio = 1.0f;
         #endregion
 
         #region Properties
@@ -75,6 +78,7 @@ namespace Mediator.SubMediators
             ResolveComponent(ref _motor);
             ResolveComponent(ref _moveDirectionCalculator);
             ResolveComponent(ref _rollMover);
+            if (_motor) _baseGravity = _motor.Gravity;
             MoveController = GetComponentInParent<IMoveController>();
         }
 
@@ -156,7 +160,35 @@ namespace Mediator.SubMediators
             if (!_motor) return;
             if (_rollMover && _rollMover.IsRolling) return;
 
-            _motor.Jump(_jumpPower * Mathf.Sqrt(powerRatio));
+            _motor.Jump(_jumpPower * _jumpPowerRatio * Mathf.Sqrt(powerRatio));
+        }
+
+        /// <summary>
+        /// 이동속도 어트리뷰트에 곱할 배율을 설정한다.
+        /// </summary>
+        /// <param name="ratio">배율. 1 이면 변화 없음</param>
+        public void SetMoveSpeedRatio(float ratio)
+        {
+            _moveSpeedRatio = ratio;
+            if (_motor && AttributeGetter != null) _motor.Speed = AttributeGetter.Invoke(_speedValueKey) * _moveSpeedRatio;
+        }
+
+        /// <summary>
+        /// 점프력 어트리뷰트에 곱할 배율을 설정한다. 지상·공중 점프 모두에 적용된다.
+        /// </summary>
+        /// <param name="ratio">배율. 1 이면 변화 없음</param>
+        public void SetJumpPowerRatio(float ratio)
+        {
+            _jumpPowerRatio = ratio;
+        }
+
+        /// <summary>
+        /// CharacterMotor 의 기본 중력에 곱할 배율을 설정한다.
+        /// </summary>
+        /// <param name="ratio">배율. 1 이면 변화 없음</param>
+        public void SetGravityRatio(float ratio)
+        {
+            if (_motor) _motor.Gravity = _baseGravity * ratio;
         }
         #endregion
 
@@ -168,7 +200,7 @@ namespace Mediator.SubMediators
         {
             AttributeCallback.TryAdd(_speedValueKey, data =>
             {
-                if (_motor != null) _motor.Speed = data.NewValue;
+                if (_motor != null) _motor.Speed = data.NewValue * _moveSpeedRatio;
             });
 
             AttributeCallback.TryAdd(_jumpSpeedValueKey, data =>
@@ -184,7 +216,7 @@ namespace Mediator.SubMediators
         {
             if (_motor == null || AttributeGetter == null) return;
 
-            _motor.Speed = AttributeGetter.Invoke(_speedValueKey);
+            _motor.Speed = AttributeGetter.Invoke(_speedValueKey) * _moveSpeedRatio;
             _jumpPower = AttributeGetter.Invoke(_jumpSpeedValueKey);
         }
         #endregion
@@ -230,7 +262,7 @@ namespace Mediator.SubMediators
                 return;
             }
 
-            _motor.Jump(_jumpPower);
+            _motor.Jump(_jumpPower * _jumpPowerRatio);
         }
         
         /// <summary>

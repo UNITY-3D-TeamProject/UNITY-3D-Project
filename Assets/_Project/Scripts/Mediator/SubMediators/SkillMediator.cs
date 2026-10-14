@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Attribute.Core;
+using Skill.Buff;
 using Skill.Core;
 using Skill.Skills;
 using UnityEngine;
@@ -31,6 +33,7 @@ namespace Mediator.SubMediators
         private ISkillRequestController _skillRequestController;
         private Func<bool> _getGrounded;
         private Interact _interactSkill;
+        private SpawnVehicle _spawnVehicleSkill;
         #endregion
 
         #region Events
@@ -60,6 +63,9 @@ namespace Mediator.SubMediators
 
         /// <summary>상호작용 대상을 바라보는지 여부가 바뀔 때 발생한다. 대상이 있으면 true.</summary>
         public event Action<bool> OnInteractableChanged;
+
+        /// <summary>버프 배율이 바뀔 때 대상별 배율 목록과 함께 발생한다. 해제 시에는 같은 대상에 배율 1 이 담긴다.</summary>
+        public event Action<IReadOnlyList<SBuffRatio>> OnBuffRatiosChanged;
         #endregion
 
         #region Unity Lifecycle
@@ -70,6 +76,7 @@ namespace Mediator.SubMediators
             ResolveComponent(ref _skillController);
             _skillRequestController = GetComponentInParent<ISkillRequestController>();
             if (_skillController) _interactSkill = _skillController.GetComponentInChildren<Interact>(true);
+            if (_skillController) _spawnVehicleSkill = _skillController.GetComponentInChildren<SpawnVehicle>(true);
             BindRequest();
         }
 
@@ -241,6 +248,9 @@ namespace Mediator.SubMediators
 
             if (!_skillController.TryExecuteSkill(skillName)) return;
 
+            // 탈것 스킬은 하차할 때 쿨타임이 시작되므로 OnSkillExecuted 에서 하차 시에만 알린다
+            if (IsSpawnVehicleSkill(skillName)) return;
+
             OnSkillUsed?.Invoke(skillName, _skillController.GetSkillCooldown(skillName));
         }
 
@@ -275,6 +285,11 @@ namespace Mediator.SubMediators
                 case MultiJump multiJump:
                     OnMultiJumpRequested?.Invoke(multiJump.JumpPowerRatio);
                     break;
+                case SpawnVehicle spawnVehicle:
+                    OnBuffRatiosChanged?.Invoke(spawnVehicle.BuffRatios);
+                    // 강제 하차(자원 고갈 등)도 쿨타임이 시작되므로 하차는 여기서 알린다
+                    if (!spawnVehicle.IsRiding) OnSkillUsed?.Invoke(spawnVehicle.SkillName, spawnVehicle.Cooldown);
+                    break;
             }
         }
 
@@ -306,6 +321,16 @@ namespace Mediator.SubMediators
                     OnFireChargeChanged?.Invoke(false);
                     break;
             }
+        }
+
+        /// <summary>
+        /// skillName 이 탈것 스킬의 이름인지 확인한다.
+        /// </summary>
+        /// <param name="skillName">확인할 스킬 이름</param>
+        /// <returns>탈것 스킬이면 true</returns>
+        private bool IsSpawnVehicleSkill(string skillName)
+        {
+            return _spawnVehicleSkill && string.Equals(skillName, _spawnVehicleSkill.SkillName, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Attribute.Core;
 using Mediator.SubMediators;
+using Skill.Buff;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -261,6 +262,31 @@ namespace Mediator
             OnInteractableChanged?.Invoke(hasTarget);
         }
 
+        /// <summary>
+        /// 스킬 중재자가 보낸 버프 배율을 대상에 맞는 중재자로 전달한다.
+        /// </summary>
+        /// <param name="buffRatios">대상별 배율 목록</param>
+        private void OnBuffRatiosChangedCallback(IReadOnlyList<SBuffRatio> buffRatios)
+        {
+            if (!_moveMediator) return;
+
+            foreach (SBuffRatio buffRatio in buffRatios)
+            {
+                switch (buffRatio.Target)
+                {
+                    case EBuffTarget.MoveSpeed:
+                        _moveMediator.SetMoveSpeedRatio(buffRatio.Ratio);
+                        break;
+                    case EBuffTarget.JumpPower:
+                        _moveMediator.SetJumpPowerRatio(buffRatio.Ratio);
+                        break;
+                    case EBuffTarget.Gravity:
+                        _moveMediator.SetGravityRatio(buffRatio.Ratio);
+                        break;
+                }
+            }
+        }
+
         private void OnHitCallback()
         {
             if (_isDead) return;
@@ -351,6 +377,7 @@ namespace Mediator
             if (_moveMediator && _rotateMediator) _moveMediator.OnRollEnded += _rotateMediator.UnlockLookDirection;
             if (_moveMediator && _skillMediator) _moveMediator.OnAirJumpRequested += _skillMediator.RequestMultiJump;
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested += _moveMediator.CommandAirJump;
+            if (_skillMediator) _skillMediator.OnBuffRatiosChanged += OnBuffRatiosChangedCallback;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded += _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted += _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted += _skillMediator.NotifyRollStarted;
@@ -389,6 +416,7 @@ namespace Mediator
             if (_moveMediator && _rotateMediator) _moveMediator.OnRollEnded -= _rotateMediator.UnlockLookDirection;
             if (_moveMediator && _skillMediator) _moveMediator.OnAirJumpRequested -= _skillMediator.RequestMultiJump;
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested -= _moveMediator.CommandAirJump;
+            if (_skillMediator) _skillMediator.OnBuffRatiosChanged -= OnBuffRatiosChangedCallback;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded -= _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted -= _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted -= _skillMediator.NotifyRollStarted;
