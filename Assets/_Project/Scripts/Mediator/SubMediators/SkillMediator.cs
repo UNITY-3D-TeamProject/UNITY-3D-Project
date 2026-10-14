@@ -37,7 +37,6 @@ namespace Mediator.SubMediators
         // 점프 시작 ~ 착지. 이 동안 탑승하면 착지할 때 탈것을 생성한다
         private bool _isJumping;
         private bool _isRolling;
-        private Action<Transform> _attachToBody;
         #endregion
 
         #region Events
@@ -76,6 +75,9 @@ namespace Mediator.SubMediators
 
         /// <summary>지상에서 탈것에 탑승할 때 뛰어오르기 요청. (점프 파워 비율)</summary>
         public event Action<float> OnMountJumpRequested;
+
+        /// <summary>탈것 오브젝트가 생성되었을 때 그 Transform 과 함께, 하차로 제거되었을 때 null 과 함께 발생한다.</summary>
+        public event Action<Transform> OnVehicleAttached;
         #endregion
 
         #region Unity Lifecycle
@@ -160,23 +162,6 @@ namespace Mediator.SubMediators
         {
             if (!_interactSkill) return;
             _interactSkill.ClearGetAimRay();
-        }
-
-        /// <summary>
-        /// 생성한 탈것을 몸에 붙여 몸 정면을 따라 돌게 하는 델리게이트 주입
-        /// </summary>
-        public void SetAttachToBody(Action<Transform> attachToBody)
-        {
-            if (attachToBody == null) return;
-            _attachToBody = attachToBody;
-        }
-
-        /// <summary>
-        /// 몸에 붙이는 델리게이트 제거. 이후 탈것은 캐릭터 루트 아래에 그대로 둔다.
-        /// </summary>
-        public void ClearAttachToBody()
-        {
-            _attachToBody = null;
         }
 
         /// <summary>
@@ -321,6 +306,7 @@ namespace Mediator.SubMediators
                     OnBuffRatiosChanged?.Invoke(spawnVehicle.BuffRatios);
                     OnRidingChanged?.Invoke(spawnVehicle.IsRiding);
                     if (spawnVehicle.IsRiding) BeginMount(spawnVehicle);
+                    else OnVehicleAttached?.Invoke(null);
                     // 강제 하차(자원 고갈 등)도 쿨타임이 시작되므로 하차는 여기서 알린다
                     if (!spawnVehicle.IsRiding) OnSkillUsed?.Invoke(spawnVehicle.SkillName, spawnVehicle.Cooldown);
                     break;
@@ -347,7 +333,7 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 탈것을 생성하고, 새로 생성되었으면 몸에 붙여 몸 정면을 따라 돌게 한다.
+        /// 탈것을 생성하고, 새로 생성되었으면 알린다.
         /// </summary>
         /// <param name="spawnVehicle">탈것 스킬</param>
         private void AttachVehicle(SpawnVehicle spawnVehicle)
@@ -356,7 +342,7 @@ namespace Mediator.SubMediators
             spawnVehicle.AttachVehicle();
             if (hadVehicle || !spawnVehicle.Vehicle) return;
 
-            _attachToBody?.Invoke(spawnVehicle.Vehicle.transform);
+            OnVehicleAttached?.Invoke(spawnVehicle.Vehicle.transform);
         }
 
         /// <summary>

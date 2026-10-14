@@ -151,12 +151,12 @@ namespace Mediator.SubMediators
         /// <summary>
         /// 구르기 시작을 CharacterAnimator 로 전달한다.
         /// </summary>
-        /// <param name="direction">구르기 방향 (사용하지 않음)</param>
+        /// <param name="direction">구르기 방향 (탑승 중 보드 방향에 사용)</param>
         public void NotifyRollStarted(Vector3 direction)
         {
             if (!_characterAnimator) return;
 
-            _characterAnimator.PlayRoll();
+            _characterAnimator.PlayRoll(direction);
         }
 
         /// <summary>
@@ -178,6 +178,17 @@ namespace Mediator.SubMediators
             if (!_characterAnimator) return;
 
             _characterAnimator.SetRiding(isRiding);
+        }
+
+        /// <summary>
+        /// 탑승 중 이동 방향으로 돌릴 보드(탈것)를 CharacterAnimator 로 전달한다.
+        /// </summary>
+        /// <param name="board">탈것 Transform. 하차해 제거되었으면 null</param>
+        public void SetRidingBoard(Transform board)
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.SetRidingBoard(board);
         }
 
         /// <summary>
