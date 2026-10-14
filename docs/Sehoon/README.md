@@ -30,7 +30,7 @@
 | 08 | 블루투스 모션 추가 | [08-bluetooth-motion.md](done/08-bluetooth-motion.md) | 완료 |
 | 09 | Hit 시 방향별 모션 | [09-directional-hit-motion.md](done/09-directional-hit-motion.md) | 완료 |
 | 21 | 블루투스 디테일 수정 (자동 전진, 요시 점프, 회전 속도) | [21-bluetooth-detail.md](done/21-bluetooth-detail.md) | 완료 |
-| 22 | 약점 공격 시 대미지 처리 | [22-weak-point-damage.md](22-weak-point-damage.md) | 대기 |
+| 22 | 약점 공격 시 대미지 처리 | [22-weak-point-damage.md](done/22-weak-point-damage.md) | 완료 |
 
 ### 우선순위 중간
 | 순서 | 기능 | 문서 | 상태 |
