@@ -36,6 +36,8 @@ namespace Movement
         private Vector3 _direction;
         private float _speed;
         private bool _isJumping;
+        private bool _isHovering;
+        private float _hoverSpeed;
         #endregion
 
         #region Properties
@@ -128,6 +130,25 @@ namespace Movement
             _isJumping = true;
             OnJumpStarted?.Invoke();
         }
+
+        /// <summary>
+        /// 중력 대신 일정 속도로 상승하기 시작한다. StopHover 를 호출할 때까지 유지된다.
+        /// 상승 중에는 수직 속도가 양수라 착지로 판정하지 않는다.
+        /// </summary>
+        /// <param name="riseSpeed">상승 속도</param>
+        public void StartHover(float riseSpeed)
+        {
+            _hoverSpeed = riseSpeed;
+            _isHovering = true;
+        }
+
+        /// <summary>
+        /// 일정 속도 상승을 끝낸다. 이후 현재 수직 속도에서 다시 중력이 적용된다.
+        /// </summary>
+        public void StopHover()
+        {
+            _isHovering = false;
+        }
         #endregion
 
         #region Private Methods
@@ -188,6 +209,12 @@ namespace Movement
 
         private void ApplyGravity(float deltaTime)
         {
+            if (_isHovering)
+            {
+                _verticalVelocity = _hoverSpeed;
+                return;
+            }
+
             bool isGroundedAndFalling = _controller.isGrounded && (_verticalVelocity < 0.0f);
             if (isGroundedAndFalling)
             {

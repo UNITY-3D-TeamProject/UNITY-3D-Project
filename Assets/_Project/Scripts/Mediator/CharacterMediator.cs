@@ -481,6 +481,8 @@ namespace Mediator
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted += _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted += _skillMediator.NotifyRollStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded += _skillMediator.NotifyRollEnded;
+            if (_moveMediator && _skillMediator) _moveMediator.OnJumpReleased += _skillMediator.NotifyJumpReleased;
+            if (_skillMediator && _moveMediator) _skillMediator.OnHoverChanged += _moveMediator.SetHover;
             if (_skillMediator) _skillMediator.OnAutoForwardChanged += OnAutoForwardChangedCallback;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted += _cameraMediator.NotifyRollStarted;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded += _cameraMediator.NotifyRollEnded;
@@ -525,6 +527,8 @@ namespace Mediator
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted -= _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted -= _skillMediator.NotifyRollStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded -= _skillMediator.NotifyRollEnded;
+            if (_moveMediator && _skillMediator) _moveMediator.OnJumpReleased -= _skillMediator.NotifyJumpReleased;
+            if (_skillMediator && _moveMediator) _skillMediator.OnHoverChanged -= _moveMediator.SetHover;
             if (_skillMediator) _skillMediator.OnAutoForwardChanged -= OnAutoForwardChangedCallback;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted -= _cameraMediator.NotifyRollStarted;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded -= _cameraMediator.NotifyRollEnded;

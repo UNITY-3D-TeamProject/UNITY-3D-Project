@@ -81,6 +81,9 @@ namespace Mediator.SubMediators
 
         /// <summary>탑승 중 자동 전진을 켜거나 끌 때 발생한다. (켜면 true, 전진 방향이 시점 방향을 따라 도는 속도(도/초))</summary>
         public event Action<bool, float> OnAutoForwardChanged;
+
+        /// <summary>요시 점프를 시작하거나 끝냈을 때 발생한다. (시작이면 true, 상승 속도)</summary>
+        public event Action<bool, float> OnHoverChanged;
         #endregion
 
         #region Unity Lifecycle
@@ -98,6 +101,7 @@ namespace Mediator.SubMediators
         protected override void OnEnable()
         {
             BindRequest();
+            if (_spawnVehicleSkill) _spawnVehicleSkill.OnHoverChanged += OnHoverChangedCallback;
             base.OnEnable();
         }
 
@@ -105,6 +109,7 @@ namespace Mediator.SubMediators
         {
             // Stop 요청 경로가 끊기기 전에 진행 중인 지속형 스킬(연사 등)을 멈춘다
             if (_skillController) _skillController.StopAllSkills();
+            if (_spawnVehicleSkill) _spawnVehicleSkill.OnHoverChanged -= OnHoverChangedCallback;
             UnBindRequest();
         }
         #endregion
@@ -169,12 +174,24 @@ namespace Mediator.SubMediators
 
         /// <summary>
         /// 공중 점프 스킬 발동을 요청한다. 발동하면 OnMultiJumpRequested 가 발생한다.
+        /// 공중 점프를 다 써서 발동하지 못했으면 탑승 중일 때 요시 점프를 시작한다.
         /// </summary>
         public void RequestMultiJump()
         {
-            if (!_skillController || !_skillController.HasSkill(MULTI_JUMP_SKILL_NAME)) return;
+            bool isJumped = _skillController &&
+                            _skillController.HasSkill(MULTI_JUMP_SKILL_NAME) &&
+                            _skillController.TryExecuteSkill(MULTI_JUMP_SKILL_NAME);
+            if (isJumped) return;
 
-            _skillController.TryExecuteSkill(MULTI_JUMP_SKILL_NAME);
+            if (_spawnVehicleSkill) _spawnVehicleSkill.TryStartHover();
+        }
+
+        /// <summary>
+        /// 점프 입력을 뗀 것을 알린다. 요시 점프 중이면 끝낸다.
+        /// </summary>
+        public void NotifyJumpReleased()
+        {
+            if (_spawnVehicleSkill) _spawnVehicleSkill.StopHover();
         }
 
         /// <summary>
@@ -187,12 +204,16 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 착지를 알린다. 공중 점프와 공중 구르기 횟수를 초기화하고, 탑승 중이면 탈것을 생성한다.
+        /// 착지를 알린다. 공중 점프·공중 구르기 횟수와 요시 점프 사용 여부를 초기화하고, 탑승 중이면 탈것을 생성한다.
         /// </summary>
         public void NotifyLanded()
         {
             _isJumping = false;
-            if (_spawnVehicleSkill) AttachVehicle(_spawnVehicleSkill);
+            if (_spawnVehicleSkill)
+            {
+                _spawnVehicleSkill.ResetHover();
+                AttachVehicle(_spawnVehicleSkill);
+            }
             if (!_skillController) return;
 
             if (_skillController.HasSkill(MULTI_JUMP_SKILL_NAME)) _skillController.ResetSkill(MULTI_JUMP_SKILL_NAME);
@@ -200,12 +221,13 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 구르기 시작을 알린다. 구르는 동안 사격할 수 없도록 Fire 를 비활성화한다 (진행 중인 차지는 취소된다).
+        /// 구르기 시작을 알린다. 구르는 동안 사격할 수 없도록 Fire 를 비활성화한다 (진행 중인 차지는 취소된다). 요시 점프 중이면 끝낸다.
         /// </summary>
         /// <param name="direction">구르기 방향 (사용하지 않음)</param>
         public void NotifyRollStarted(Vector3 direction)
         {
             _isRolling = true;
+            if (_spawnVehicleSkill) _spawnVehicleSkill.StopHover();
             SetSkillEnabled(FIRE_SKILL_NAME, false);
         }
 
@@ -354,6 +376,15 @@ namespace Mediator.SubMediators
 
             OnVehicleAttached?.Invoke(spawnVehicle.Vehicle.transform);
             OnAutoForwardChanged?.Invoke(true, spawnVehicle.ForwardTurnSpeed);
+        }
+
+        /// <summary>
+        /// 탈것 스킬의 요시 점프 시작·종료를 상승 속도와 함께 알린다.
+        /// </summary>
+        /// <param name="isHovering">시작이면 true</param>
+        private void OnHoverChangedCallback(bool isHovering)
+        {
+            OnHoverChanged?.Invoke(isHovering, _spawnVehicleSkill.HoverRiseSpeed);
         }
 
         /// <summary>
