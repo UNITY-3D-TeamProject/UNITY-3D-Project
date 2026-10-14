@@ -37,6 +37,14 @@ namespace Mediator.SubMediators
         // 점프 시작 ~ 착지. 이 동안 탑승하면 착지할 때 탈것을 생성한다
         private bool _isJumping;
         private bool _isRolling;
+        // 구르기 시작 직전 Fire 활성화 상태. 구르기가 끝날 때 원래 켜져 있었으면 다시 켠다
+        private bool _wasFireEnabledOnRoll;
+        // 탑승 시작 ~ 탈것 생성. 이 동안 사격·구르기·공중 점프를 막는다
+        private bool _isMounting;
+        // 탑승 연출로 막기 직전의 활성화 상태. 풀 때 원래 켜져 있던 스킬만 다시 켠다
+        private bool _wasFireEnabled;
+        private bool _wasRollEnabled;
+        private bool _wasMultiJumpEnabled;
         #endregion
 
         #region Events
@@ -222,22 +230,25 @@ namespace Mediator.SubMediators
 
         /// <summary>
         /// 구르기 시작을 알린다. 구르는 동안 사격할 수 없도록 Fire 를 비활성화한다 (진행 중인 차지는 취소된다). 요시 점프 중이면 끝낸다.
+        /// 비활성화 직전 Fire 상태를 기억해 두어 구르기가 끝날 때 되돌린다.
         /// </summary>
         /// <param name="direction">구르기 방향 (사용하지 않음)</param>
         public void NotifyRollStarted(Vector3 direction)
         {
             _isRolling = true;
+            _wasFireEnabledOnRoll = IsSkillEnabled(FIRE_SKILL_NAME);
             if (_spawnVehicleSkill) _spawnVehicleSkill.StopHover();
             SetSkillEnabled(FIRE_SKILL_NAME, false);
         }
 
         /// <summary>
-        /// 구르기 종료를 알린다. Fire 를 다시 활성화한다.
+        /// 구르기 종료를 알린다. 구르기 전에 Fire 가 켜져 있었고 탑승 연출 중이 아니면 다시 활성화한다.
         /// </summary>
         public void NotifyRollEnded()
         {
             _isRolling = false;
-            SetSkillEnabled(FIRE_SKILL_NAME, true);
+            // 공중에서 구르다 탑승하면 구르기가 끝나도 탈것 생성 전까지 사격을 막아 둔다 (탑승 연출이 끝날 때 되돌린다)
+            if (_wasFireEnabledOnRoll && !_isMounting) SetSkillEnabled(FIRE_SKILL_NAME, true);
         }
         #endregion
         
@@ -336,6 +347,7 @@ namespace Mediator.SubMediators
                     }
                     else
                     {
+                        if (_isMounting) SetMountBlocked(false);
                         OnVehicleAttached?.Invoke(null);
                         OnAutoForwardChanged?.Invoke(false, 0.0f);
                     }
@@ -347,6 +359,7 @@ namespace Mediator.SubMediators
 
         /// <summary>
         /// 탑승 연출을 시작한다. 지상이면 뛰어오르고, 점프 중이면 그대로 두어 착지(NotifyLanded) 때 탈것을 생성한다.
+        /// 착지를 기다리는 동안에는 사격·구르기·공중 점프를 막는다.
         /// 뛰어오를 수 없거나(구르는 중) 점프 없이 떨어지는 중이면 착지 알림이 오지 않으므로 바로 생성한다.
         /// </summary>
         /// <param name="spawnVehicle">탑승한 탈것 스킬</param>
@@ -355,11 +368,16 @@ namespace Mediator.SubMediators
             // 공중 탑승으로 추가 점프를 얻지 않도록 지상에서 탑승할 때만 뛰어오른다
             if (IsGrounded() && !_isRolling)
             {
+                SetMountBlocked(true);
                 OnMountJumpRequested?.Invoke(spawnVehicle.MountJumpPowerRatio);
                 return;
             }
 
-            if (_isJumping) return;
+            if (_isJumping)
+            {
+                SetMountBlocked(true);
+                return;
+            }
 
             AttachVehicle(spawnVehicle);
         }
@@ -374,8 +392,35 @@ namespace Mediator.SubMediators
             spawnVehicle.AttachVehicle();
             if (hadVehicle || !spawnVehicle.Vehicle) return;
 
+            if (_isMounting) SetMountBlocked(false);
             OnVehicleAttached?.Invoke(spawnVehicle.Vehicle.transform);
             OnAutoForwardChanged?.Invoke(true, spawnVehicle.ForwardTurnSpeed);
+        }
+
+        /// <summary>
+        /// 탑승 연출 중 사격·구르기·공중 점프를 막거나 푼다. 사격을 막으면 진행 중인 차지는 취소된다.
+        /// 막기 직전의 활성화 상태를 기억해 두고, 풀 때는 원래 켜져 있던 스킬만 다시 켠다 (외부에서 꺼 둔 스킬 유지).
+        /// </summary>
+        /// <param name="isBlocked">막으면 true</param>
+        private void SetMountBlocked(bool isBlocked)
+        {
+            _isMounting = isBlocked;
+            if (isBlocked)
+            {
+                // 구르는 중에는 구르기 때문에 Fire 가 꺼져 있으므로 구르기 전 상태를 쓴다
+                _wasFireEnabled = _isRolling ? _wasFireEnabledOnRoll : IsSkillEnabled(FIRE_SKILL_NAME);
+                _wasRollEnabled = IsSkillEnabled(ROLL_SKILL_NAME);
+                _wasMultiJumpEnabled = IsSkillEnabled(MULTI_JUMP_SKILL_NAME);
+                SetSkillEnabled(FIRE_SKILL_NAME, false);
+                SetSkillEnabled(ROLL_SKILL_NAME, false);
+                SetSkillEnabled(MULTI_JUMP_SKILL_NAME, false);
+                return;
+            }
+
+            // 아직 구르는 중이면 구르기가 끝날 때(NotifyRollEnded) 켜진다
+            if (_wasFireEnabled && !_isRolling) SetSkillEnabled(FIRE_SKILL_NAME, true);
+            if (_wasRollEnabled) SetSkillEnabled(ROLL_SKILL_NAME, true);
+            if (_wasMultiJumpEnabled) SetSkillEnabled(MULTI_JUMP_SKILL_NAME, true);
         }
 
         /// <summary>

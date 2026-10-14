@@ -134,12 +134,12 @@ namespace Skill.Skills
         }
 
         /// <summary>
-        /// 탑승 중이고 이번 체공에 아직 쓰지 않았으면 요시 점프를 시작한다. 유지 시간이 지나면 스스로 끝난다.
+        /// 탑승 중이고 탈것이 생성되었으며 이번 체공에 아직 쓰지 않았으면 요시 점프를 시작한다. 유지 시간이 지나면 스스로 끝난다.
         /// </summary>
         /// <returns>시작했으면 true</returns>
         public bool TryStartHover()
         {
-            if (!IsRiding || IsHovering || _hasHovered) return false;
+            if (!IsRiding || !_vehicle || IsHovering || _hasHovered) return false;
 
             _hasHovered = true;
             IsHovering = true;
