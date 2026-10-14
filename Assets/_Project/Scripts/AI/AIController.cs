@@ -29,6 +29,9 @@ namespace AI
 
         /// <summary>정체 판정 검사 주기 동안 이 거리(m) 미만으로 이동했으면 정체로 본다.</summary>
         private const float STUCK_DISTANCE_THRESHOLD = 0.1f;
+
+        /// <summary>주변 동료를 찾을 때 한 번에 감지하는 최대 수.</summary>
+        private const int MAX_SEPARATION_NEIGHBORS = 8;
         #endregion
 
         #region Serialized Fields
@@ -49,9 +52,14 @@ namespace AI
         [Header("Stuck")]
         [Tooltip("한 목적지를 향해 이동을 시도할 수 있는 최대 시간(초). 초과하면 정체로 본다.")]
         [SerializeField, Min(0.1f)] private float _destinationTimeout = 10.0f;
+
+        [Header("Separation")]
+        [Tooltip("주변 동료로 볼 레이어. 비워두면 동료를 찾지 않는다.")]
+        [SerializeField] private LayerMask _separationLayers;
         #endregion
 
         #region Private Fields
+        private readonly Collider[] _separationHits = new Collider[MAX_SEPARATION_NEIGHBORS];
         private Vector3 _spawnPosition;
         private bool _hasDestination;
         private float _lastTargetSeenTime;
@@ -403,6 +411,49 @@ namespace AI
         public void ClearLastKnownPosition()
         {
             if (_sensor) _sensor.ClearLastKnownPosition();
+        }
+
+        /// <summary>
+        /// 반경 안 동료들에게서 멀어지는 수평 방향을 구한다. 가까운 동료일수록 크게 반영한다.
+        /// 붙은 두 적이 동시에 서로를 피해 자리만 맞바꾸지 않도록, 나보다 InstanceID 가 작은 동료만 피한다.
+        /// 그래서 뭉친 무리에서 ID 가 가장 작은 적은 제자리에 있고 나머지가 비킨다.
+        /// </summary>
+        /// <param name="radius">동료를 찾을 반경(m)</param>
+        /// <param name="direction">동료들에게서 멀어지는 수평 방향 (정규화됨)</param>
+        /// <returns>반경 안에 피해야 할 동료가 있으면 true</returns>
+        public bool TryGetAwayFromAllies(float radius, out Vector3 direction)
+        {
+            direction = Vector3.zero;
+            if (_separationLayers.value == 0) return false;
+
+            int hitCount = Physics.OverlapSphereNonAlloc(
+                _body.position,
+                radius,
+                _separationHits,
+                _separationLayers,
+                QueryTriggerInteraction.Ignore);
+
+            bool hasAlly = false;
+            for (int i = 0; i < hitCount; i++)
+            {
+                AIController ally = _separationHits[i].GetComponentInParent<AIController>();
+                if (!ally || ally == this) continue;
+                if (ally.GetInstanceID() > GetInstanceID()) continue;
+
+                hasAlly = true;
+                Vector3 away = Vector3.ProjectOnPlane(_body.position - ally.Position, Vector3.up);
+                float distance = away.magnitude;
+                if (distance <= Mathf.Epsilon) continue;
+
+                // 중심이 반경 밖인데 콜라이더 표면만 걸린 동료는 음수 가중치로 방향을 뒤집지 않게 0으로 둔다
+                direction += away / distance * Mathf.Clamp01(1.0f - distance / radius);
+            }
+
+            if (!hasAlly) return false;
+
+            // 동료와 위치가 정확히 겹치거나 양쪽 동료가 상쇄되면 옆으로 벌어진다
+            direction = (direction.sqrMagnitude > Mathf.Epsilon) ? direction.normalized : _body.right;
+            return true;
         }
         #endregion
 

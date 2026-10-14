@@ -177,7 +177,8 @@ GameObject:
   - component: {fileID: 5351093735736510952}
   - component: {fileID: 789176804322984740}
   - component: {fileID: 1369908204660790272}
-  m_Layer: 7
+  - component: {fileID: 9031708989183875549}
+  m_Layer: 8
   m_Name: Ranged
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -222,13 +223,13 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 1
-  m_Radius: 0.4
+  m_Height: 2
+  m_Radius: 1
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.5, z: 0.1}
+  m_Center: {x: 0, y: 1, z: 0.1}
 --- !u!114 &2738174108649719487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -260,6 +261,9 @@ MonoBehaviour:
   _patrolRadius: 10
   _patrolRoute: {fileID: 0}
   _destinationTimeout: 10
+  _separationLayers:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!114 &5120159287565978398
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -293,11 +297,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Sensor
   _eye: {fileID: 8903707711899121783}
-  _sightRange: 8
-  _sightAngle: 73
-  _detectTimeNear: 0.2
-  _detectTimeFar: 1.5
-  _awarenessDecayTime: 2
+  _sightRange: 30
+  _sightAngle: 150
   _loseGraceTime: 2
   _targetLayers:
     serializedVersion: 2
@@ -357,6 +358,22 @@ MonoBehaviour:
           m_Value1: 0
         Name: Self
         m_Value: {fileID: 681821616047237814}
+--- !u!114 &9031708989183875549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 681821616047237814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 044288ff23e165144900a90e7a4b1b13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.AllySeparationPusher
+  _controller: {fileID: 4192601481905257955}
+  _motor: {fileID: 5607368646529891143}
+  _pushRadius: 2.1
+  _pushSpeed: 5
 --- !u!1 &835412326865447768
 GameObject:
   m_ObjectHideFlags: 0
@@ -1902,6 +1919,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4184b676d9d003498c27f9ce1b7507b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Mediator.MoveMediator
+--- !u!114 &5607368646529891143 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8199077832532000388, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
+  m_PrefabInstance: {fileID: 4330661610374481347}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c0204b33ccc984f88ec4f9d98a1298, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Movement.CharacterMotor
 --- !u!4 &7862149291710748091 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5837350018986070136, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
