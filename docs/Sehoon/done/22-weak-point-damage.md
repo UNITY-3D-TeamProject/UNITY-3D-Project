@@ -39,7 +39,7 @@
 - [x] 배율 겹침 순서: 무적 차단 → 최종 감소량(`oldValue - newValue`)에 배율 곱 → Clamp. 차지샷은 효과 에셋 피해량이 달라 자연스럽게 곱해진다.
 
 ## 확정 사항
-- 흐름: `AttributeSet` Pre(context 포함) → `AttributeMediator.ClampAttribute` → 주입된 `CombatMediator.ModifyDamage` → `CharacterCombat.IsCriticalHit` 이면 `OnCriticalHit` 발행 후 `damage × CriticalMultiplier`.
+- 흐름: `AttributeSet` Pre(context 포함) → `AttributeMediator.ClampAttribute` → 주입된 `CombatMediator.ModifyDamage`(체력 키 필터) → `CharacterCombat.ModifyDamage`: `IsCriticalHit` 이면 `OnCriticalHit` 발행 후 `damage × _criticalMultiplier`.
 - 이벤트 순서: `OnCriticalHit` → `OnHit` → (`OnDeath`). 무적으로 막힌 공격은 치명타가 아니다.
 - `CombatMediator` Health 콜백의 1단계 판정 로그는 제거했다.
 
@@ -52,8 +52,8 @@
 ## 결과 구조
 - `AttributeSet.OnAttributeChangeWithRef`: `(string, ref float, float)` → `(string, ref float, float, SEffectContext)`. `NativePreAttributeChanged` 가 `_currentContext` 를 넘긴다.
 - `AttributeMediator`: `SetDamageModifier(Func<string, float, SEffectContext, float>)` / `ClearDamageModifier()`. `ClampAttribute` 는 무적 차단 → 감소량 보정 → Clamp 순.
-- `CharacterCombat`: `_criticalMultiplier`(기본 2, Inspector), `CriticalMultiplier` 프로퍼티.
-- `CombatMediator`: `ModifyDamage(string, float, SEffectContext)`, `event Action<Vector3?> OnCriticalHit`.
+- `CharacterCombat`: `_criticalMultiplier`(기본 2, Inspector), `ModifyDamage(float, Vector3?, Vector3?)`(약점 명중이면 `OnCriticalHit` 발행 후 배율 곱), `event Action<Vector3?> OnCriticalHit`. Attribute 를 참조하지 않는 이식성 원칙을 지킨다.
+- `CombatMediator`: `ModifyDamage(string, float, SEffectContext)` 는 체력 키만 걸러 context 를 풀어 `CharacterCombat.ModifyDamage` 로 넘긴다. `OnCriticalHit` 중계.
 - `CharacterMediator`: `event Action<Vector3?> OnCriticalHit` 중계(사망 후 미발행), `SetDamageModifier(_combatMediator.ModifyDamage)` 연결·해제.
 - 프리팹 변경 없음 (기존 적 프리팹은 기본값 2 적용).
 
