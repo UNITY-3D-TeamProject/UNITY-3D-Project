@@ -7,6 +7,10 @@
 ## 목표
 블루투스 스킬(탈것 소환·탑승)을 쓸 때 재생할 플레이어 애니메이션을 추가한다.
 
+## 현재 상황
+- 블루투스 스킬 구현 완료 ([07-1](done/07-1-bluetooth-skill.md)). 탑승 상태는 `SpawnVehicle.IsRiding` 이고, 탑승·하차 시 `SkillMediator` 가 `OnBuffRatiosChanged` 를 발행한다. 애니메이션 쪽으로 가는 탑승 상태 알림 경로는 아직 없다.
+- 탑승 중 사격·구르기·멀티점프가 모두 가능하다. 탈것은 임시 큐브(`Prefabs/Object/BluetoothVehicle.prefab`)다.
+
 ## 작업 범위 (예상)
 - Animator 파라미터·스테이트 추가, `CharacterAnimator` 에 트리거 연결 (`player-animation` 스킬 절차를 따른다).
 

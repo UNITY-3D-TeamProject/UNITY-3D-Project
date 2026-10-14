@@ -24,7 +24,7 @@
 | 05 | 대쉬 중 사격·Aim 규칙 | [05-dash-fire-aim-rules.md](done/05-dash-fire-aim-rules.md) | 완료 |
 | 06 | Heat 게이지 구조 수정 | [06-heat-gauge-fix.md](done/06-heat-gauge-fix.md) | 완료 |
 | 07 | 스킬 구현 (블루투스, 상호작용, 스캔) | [07-skill-implementation.md](07-skill-implementation.md) | 대기 |
-| 07-1 | └ 블루투스 스킬 | [07-1-bluetooth-skill.md](07-1-bluetooth-skill.md) | 대기 |
+| 07-1 | └ 블루투스 스킬 | [07-1-bluetooth-skill.md](done/07-1-bluetooth-skill.md) | 완료 |
 | 07-2 | └ 상호작용 스킬 | [07-2-interact-skill.md](done/07-2-interact-skill.md) | 완료 |
 | 07-3 | └ 스캔 스킬 | [07-3-scan-skill.md](07-3-scan-skill.md) | 대기 |
 | 08 | 블루투스 모션 추가 | [08-bluetooth-motion.md](08-bluetooth-motion.md) | 대기 |
