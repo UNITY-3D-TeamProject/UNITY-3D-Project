@@ -5,6 +5,7 @@
 // 3) Glow 패스가 더 넓게 부풀린 메시를 반투명 가산으로 덧그려 빛이 번지는 것처럼 보이게 한다.
 // _Color 는 HDR 이므로 화면에 블룸이 켜진 씬에서는 더 밝게 번진다.
 // 각진 메시는 법선이 모서리에서 갈라져 외곽선이 끊기므로, SilhouetteReaction 이 매끄러운 법선 메시로 바꿔 준다.
+// 외곽선과 빛 번짐에는 홀로그램 연출(화면 가로줄 + 위로 지나가는 밝은 띠 + 가끔 깜빡임)을 입힌다. 함수는 ScanHologramEffects.hlsl.
 Shader "Project/ScanOutline"
 {
     Properties
@@ -15,6 +16,16 @@ Shader "Project/ScanOutline"
         _GlowStrength ("Glow Strength", Range(0, 1)) = 0.35
         _DepthPush ("Depth Push (m)", Float) = 0.1
         _StencilRef ("Stencil Ref", Int) = 64
+
+        [Header(Hologram)]
+        _LinePeriod ("Line Period (px)", Float) = 3
+        _LineDim ("Line Dim", Range(0, 1)) = 0.15
+        _SweepSpacing ("Sweep Spacing (m)", Float) = 3
+        _SweepWidth ("Sweep Width (m)", Float) = 0.15
+        _SweepSpeed ("Sweep Speed (m/s)", Float) = 1.2
+        _SweepStrength ("Sweep Strength", Range(0, 2)) = 1
+        _FlickerRate ("Flicker Rate (회 / s)", Float) = 15
+        _FlickerStrength ("Flicker Strength", Range(0, 1)) = 0.35
     }
 
     SubShader
@@ -29,6 +40,7 @@ Shader "Project/ScanOutline"
 
         HLSLINCLUDE
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+        #include "ScanHologramEffects.hlsl"
 
         CBUFFER_START(UnityPerMaterial)
             half4 _Color;
@@ -36,6 +48,14 @@ Shader "Project/ScanOutline"
             float _GlowWidth;
             float _GlowStrength;
             float _DepthPush;
+            float _LinePeriod;
+            float _LineDim;
+            float _SweepSpacing;
+            float _SweepWidth;
+            float _SweepSpeed;
+            float _SweepStrength;
+            float _FlickerRate;
+            float _FlickerStrength;
         CBUFFER_END
 
         struct Attributes
@@ -47,6 +67,7 @@ Shader "Project/ScanOutline"
         struct Varyings
         {
             float4 positionCS : SV_POSITION;
+            float3 positionWS : TEXCOORD0;
         };
 
         // 메시를 화면에서 법선 방향으로 widthPixels 만큼 부풀린 클립 좌표를 돌려준다
@@ -66,6 +87,24 @@ Shader "Project/ScanOutline"
             float2 offset = (normalCS / normalLength) * (widthPixels * 2.0 / _ScreenParams.xy) * positionCS.w;
             positionCS.xy += offset;
             return positionCS;
+        }
+
+        // 부풀린 메시를 그리는 Outline·Glow 패스 공용 정점 함수
+        Varyings ExtrudedVert(Attributes input, float widthPixels)
+        {
+            Varyings output;
+            output.positionCS = ExtrudedPositionCS(input, widthPixels);
+            output.positionWS = TransformObjectToWorld(input.positionOS.xyz);
+            return output;
+        }
+
+        // 홀로그램 연출을 입힌 색. 지나가는 띠에서는 더 밝고 진해지며, 가로줄과 깜빡임만큼 옅어진다
+        half4 HologramColor(Varyings input, half alpha)
+        {
+            float sweep = ScanSweep(input.positionWS.y, _SweepSpacing, _SweepWidth, _SweepSpeed) * _SweepStrength;
+            float lines = ScanLines(input.positionCS.y, _LinePeriod, _LineDim);
+            float flicker = ScanFlicker(_FlickerRate, _FlickerStrength);
+            return half4(_Color.rgb * (1.0 + sweep), saturate(alpha * (1.0 + sweep)) * lines * flicker);
         }
         ENDHLSL
 
@@ -96,6 +135,7 @@ Shader "Project/ScanOutline"
             {
                 Varyings output;
                 output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+                output.positionWS = 0;
                 return output;
             }
 
@@ -130,14 +170,12 @@ Shader "Project/ScanOutline"
 
             Varyings vert(Attributes input)
             {
-                Varyings output;
-                output.positionCS = ExtrudedPositionCS(input, _OutlineWidth);
-                return output;
+                return ExtrudedVert(input, _OutlineWidth);
             }
 
             half4 frag(Varyings input) : SV_Target
             {
-                return _Color;
+                return HologramColor(input, _Color.a);
             }
             ENDHLSL
         }
@@ -167,14 +205,12 @@ Shader "Project/ScanOutline"
 
             Varyings vert(Attributes input)
             {
-                Varyings output;
-                output.positionCS = ExtrudedPositionCS(input, _GlowWidth);
-                return output;
+                return ExtrudedVert(input, _GlowWidth);
             }
 
             half4 frag(Varyings input) : SV_Target
             {
-                return half4(_Color.rgb, _Color.a * _GlowStrength);
+                return HologramColor(input, _Color.a * _GlowStrength);
             }
             ENDHLSL
         }

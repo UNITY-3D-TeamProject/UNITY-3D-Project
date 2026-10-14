@@ -7,7 +7,7 @@ namespace Core.Scanning
     /// <summary>
     /// 스캔 중에만 대상에 실루엣(외곽선·셸)을 씌우는 반응. 아이템·상호작용 오브젝트처럼 평소에도 보이는 오브젝트에 쓴다.
     /// 대상의 원래 렌더러는 건드리지 않고, 같은 메시에 실루엣 머티리얼을 지정한 별도 렌더러를 켜고 끈다.
-    /// 벽 뒤 아이템은 실루엣 머티리얼(M_ScanSilhouette)로 가려진 부분만 단색으로 보이고,
+    /// 벽 뒤 아이템은 실루엣 머티리얼(M_ScanSilhouette)로 가려진 부분만 홀로그램으로 보이고,
     /// 상호작용 오브젝트는 외곽선 머티리얼(M_ScanOutline)로 벽에 가려지지 않았을 때만 바깥 테두리가 보인다.
     /// MeshFilter 실루엣 렌더러는 각진 모서리에서 외곽선이 끊기지 않도록 Awake 에서 매끄러운 법선 메시로 바꾼다.
     /// 사라질 때는 실루엣 알파가 서서히 줄어든다.
@@ -16,7 +16,7 @@ namespace Core.Scanning
     public class SilhouetteReaction : ScanReactionBase
     {
         #region Static Fields
-        // 셰이더 프로퍼티 이름 "_Color"(SG_ScanSilhouette 셰이더 그래프의 실루엣 색)를 정수 ID 로 바꿔 둔 값.
+        // 셰이더 프로퍼티 이름 "_Color"(실루엣·외곽선·셸 셰이더 공통 색)를 정수 ID 로 바꿔 둔 값.
         // 문자열로 넘기면 호출할 때마다 이름을 ID 로 변환하므로, 매 프레임 쓰는 값은 한 번만 변환해 재사용한다.
         private static readonly int ColorId = Shader.PropertyToID("_Color");
         // 원본 메시 -> 매끄러운 법선 복제본. 같은 아이템이 여러 개여도 메시는 하나만 복제해 함께 쓴다.
