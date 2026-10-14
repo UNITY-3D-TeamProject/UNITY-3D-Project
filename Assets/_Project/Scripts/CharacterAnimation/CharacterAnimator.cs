@@ -44,6 +44,12 @@ namespace CharacterAnimation
         [Tooltip("Animator 의 특수 Idle 상태 개수. SpecialIdleIndex 를 0 ~ (개수 - 1) 중 랜덤으로 고른다.")]
         [SerializeField, Min(1)] private int _specialIdleCount = 2;
 
+        [Header("Riding")]
+        [Tooltip("탑승 자세(Riding)일 때 하체(골반)를 돌릴 yaw 각도(도). 음수면 왼쪽. 상체는 정면을 유지한다.")]
+        [SerializeField] private float _ridingLowerBodyYaw = -90.0f;
+        [Tooltip("탑승 하체 회전이 켜지고 꺼지는 데 걸리는 시간(초).")]
+        [SerializeField, Min(0.0f)] private float _ridingTurnBlendTime = 0.15f;
+
         [Header("Death")]
         [Tooltip("사망 루프(DeathLoop) 상태를 이 횟수만큼 재생하면 사망 애니메이션 종료를 알린다.")]
         [SerializeField, Min(0.0f)] private float _deathLoopCount = 2.0f;
@@ -71,6 +77,8 @@ namespace CharacterAnimation
         private float _lastFireTime;
         private float _aimWeight;
         private bool _isRolling;
+        private bool _isRiding;
+        private float _ridingTurnWeight;
         private float _idleTime;
         private Vector3 _lastViewForward;
         private bool _isDead;
@@ -120,6 +128,7 @@ namespace CharacterAnimation
             float blendSpeed = (_aimBlendTime > 0.0f) ? (deltaTime / _aimBlendTime) : 1.0f;
             _aimWeight = Mathf.MoveTowards(_aimWeight, targetWeight, blendSpeed);
 
+            UpdateRidingTurnWeight(deltaTime);
             UpdateSpecialIdle(deltaTime);
             UpdateDeath();
         }
@@ -129,6 +138,7 @@ namespace CharacterAnimation
             // Animator 가 포즈를 적용한 뒤 상체를 정면으로 맞추고, 총신이 조준점을 향하도록 조준 뼈를 돌린다
             CapturePelvisReference();
             ApplyUpperBodyTwist();
+            ApplyRidingTurn();
 
             if (!_aimBone || !_muzzle || !_aimBone.parent) return;
 
@@ -279,6 +289,7 @@ namespace CharacterAnimation
 
         /// <summary>
         /// 점프 시작을 알린다. 점프 시작 → 상승 → 공중 순서로 재생된다. 공중에서 다시 점프하면 처음부터 재생한다.
+        /// 탑승 중에는 탑승 자세를 유지하고 공중 여부만 기록한다 (공중에서 하차하면 공중 애니메이션으로 간다).
         /// </summary>
         public void PlayJump()
         {
@@ -286,6 +297,8 @@ namespace CharacterAnimation
 
             ResetSpecialIdle();
             _animator.SetBool(AnimHash.IsJumping, true);
+            if (_isRiding) return;
+
             _animator.SetTrigger(AnimHash.Jump);
         }
 
@@ -302,7 +315,7 @@ namespace CharacterAnimation
         }
 
         /// <summary>
-        /// 구르기 시작을 알린다. 구르는 동안 구르기 애니메이션을 재생한다.
+        /// 구르기 시작을 알린다. 구르는 동안 구르기 애니메이션을 재생한다. 탑승 중에는 탑승 자세를 유지한다.
         /// </summary>
         public void PlayRoll()
         {
@@ -311,6 +324,8 @@ namespace CharacterAnimation
             ResetSpecialIdle();
             _isRolling = true;
             _animator.SetBool(AnimHash.IsRolling, true);
+            if (_isRiding) return;
+
             _animator.SetTrigger(AnimHash.Roll);
         }
 
@@ -324,6 +339,30 @@ namespace CharacterAnimation
             _isRolling = false;
             _animator.SetBool(AnimHash.IsRolling, false);
             _animator.ResetTrigger(AnimHash.Roll);
+        }
+
+        /// <summary>
+        /// 탈것 탑승 상태를 설정한다. 탑승하면 탑승 점프 후 탑승 자세를 유지하고,
+        /// 하차하면 공중이면 공중 애니메이션, 아니면 Idle/Locomotion 으로 돌아간다.
+        /// </summary>
+        /// <param name="isRiding">탑승 중이면 true</param>
+        public void SetRiding(bool isRiding)
+        {
+            if (!enabled) return;
+
+            _isRiding = isRiding;
+            _animator.SetBool(AnimHash.IsRiding, isRiding);
+            if (!isRiding || _isDead)
+            {
+                _animator.ResetTrigger(AnimHash.Mount);
+                return;
+            }
+
+            ResetSpecialIdle();
+            // 탑승 직전에 들어온 점프·구르기 Trigger 가 탑승 점프를 덮지 않게 한다
+            _animator.ResetTrigger(AnimHash.Jump);
+            _animator.ResetTrigger(AnimHash.Roll);
+            _animator.SetTrigger(AnimHash.Mount);
         }
 
         /// <summary>
@@ -348,6 +387,7 @@ namespace CharacterAnimation
             _animator.ResetTrigger(AnimHash.Fire);
             _animator.ResetTrigger(AnimHash.Jump);
             _animator.ResetTrigger(AnimHash.Roll);
+            _animator.ResetTrigger(AnimHash.Mount);
             _animator.SetTrigger(AnimHash.Death);
         }
         #endregion
@@ -454,6 +494,38 @@ namespace CharacterAnimation
         }
 
         /// <summary>
+        /// 탑승 중이고 하체가 탑승 자세(Riding)로 들어가는 중이거나 들어가 있으면 탑승 하체 회전과 탑승 상체(IsRidingPose)를 켜고, 아니면 끈다.
+        /// </summary>
+        /// <param name="deltaTime">이번 프레임 경과 시간</param>
+        private void UpdateRidingTurnWeight(float deltaTime)
+        {
+            bool isRidingState = _animator.IsInTransition(0)
+                ? (_animator.GetNextAnimatorStateInfo(0).shortNameHash == AnimHash.RidingState)
+                : (_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == AnimHash.RidingState);
+            bool isRidingPose = _isRiding && !_isDead && isRidingState;
+            _animator.SetBool(AnimHash.IsRidingPose, isRidingPose);
+
+            float targetWeight = isRidingPose ? 1.0f : 0.0f;
+            float blendSpeed = (_ridingTurnBlendTime > 0.0f) ? (deltaTime / _ridingTurnBlendTime) : 1.0f;
+            _ridingTurnWeight = Mathf.MoveTowards(_ridingTurnWeight, targetWeight, blendSpeed);
+        }
+
+        /// <summary>
+        /// 탑승 자세일 때 골반을 수평으로 돌려 하체만 옆을 보게 한다. 비틀림 뼈(상체)는 돌리기 전 월드 회전으로 되돌려 정면을 유지한다.
+        /// 상체 비틀림 보정 뒤, 조준 보정 전에 호출한다.
+        /// </summary>
+        private void ApplyRidingTurn()
+        {
+            if ((_ridingTurnWeight <= 0.0f) || !_twistBone || !_twistBone.parent) return;
+
+            Transform pelvis = _twistBone.parent;
+            Quaternion upperBodyRotation = _twistBone.rotation;
+
+            pelvis.rotation = Quaternion.AngleAxis(_ridingLowerBodyYaw * _ridingTurnWeight, Vector3.up) * pelvis.rotation;
+            _twistBone.rotation = upperBodyRotation;
+        }
+
+        /// <summary>
         /// 상체가 FireHold 자세(전환 중 아님)이면 총구 위치와 총신 방향을 기준 자세로 저장한다.
         /// 조준 보정을 적용하기 전, Animator 가 만든 포즈에서 호출해야 한다.
         /// </summary>
@@ -546,9 +618,13 @@ namespace CharacterAnimation
             public static readonly int IsSpecialIdle = Animator.StringToHash("IsSpecialIdle");
             public static readonly int SpecialIdleIndex = Animator.StringToHash("SpecialIdleIndex");
             public static readonly int Death = Animator.StringToHash("Death");
+            public static readonly int IsRiding = Animator.StringToHash("IsRiding");
+            public static readonly int Mount = Animator.StringToHash("Mount");
+            public static readonly int IsRidingPose = Animator.StringToHash("IsRidingPose");
             public static readonly int FireHoldState = Animator.StringToHash("FireHold");
             public static readonly int IdleState = Animator.StringToHash("Idle");
             public static readonly int DeathLoopState = Animator.StringToHash("DeathLoop");
+            public static readonly int RidingState = Animator.StringToHash("Riding");
         }
         #endregion
     }

@@ -86,6 +86,15 @@ namespace Mediator.SubMediators
         {
             if (_rotator) _rotator.UnlockLookDirection();
         }
+
+        /// <summary>
+        /// target 을 몸 아래에 붙여 몸과 함께 돌도록 CharacterRotator 에 전달한다.
+        /// </summary>
+        /// <param name="target">붙일 Transform</param>
+        public void AttachToBody(Transform target)
+        {
+            if (_rotator) _rotator.AttachToBody(target);
+        }
         #endregion
 
         #region Protected Methods

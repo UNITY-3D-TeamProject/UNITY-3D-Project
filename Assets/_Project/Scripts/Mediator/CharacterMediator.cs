@@ -171,6 +171,7 @@ namespace Mediator
             if (_animationMediator && _cameraMediator) _animationMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
             if (_skillMediator && _moveMediator) _skillMediator.SetGetGrounded(_moveMediator.IsGrounded);
             if (_skillMediator && _cameraMediator) _skillMediator.SetGetAimRay(_cameraMediator.GetAimRay);
+            if (_skillMediator && _rotateMediator) _skillMediator.SetAttachToBody(_rotateMediator.AttachToBody);
             if (_attributeMediator && _combatMediator) _attributeMediator.SetIsDamageBlocked(_combatMediator.IsDamageBlocked);
         }
         /// <summary>
@@ -193,6 +194,7 @@ namespace Mediator
             if (_animationMediator) _animationMediator.ClearGetAimPoint();
             if (_skillMediator) _skillMediator.ClearGetGrounded();
             if (_skillMediator) _skillMediator.ClearGetAimRay();
+            if (_skillMediator) _skillMediator.ClearAttachToBody();
             if (_attributeMediator) _attributeMediator.ClearIsDamageBlocked();
         }
         /// <summary>
@@ -378,6 +380,8 @@ namespace Mediator
             if (_moveMediator && _skillMediator) _moveMediator.OnAirJumpRequested += _skillMediator.RequestMultiJump;
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested += _moveMediator.CommandAirJump;
             if (_skillMediator) _skillMediator.OnBuffRatiosChanged += OnBuffRatiosChangedCallback;
+            if (_skillMediator && _animationMediator) _skillMediator.OnRidingChanged += _animationMediator.NotifyRidingChanged;
+            if (_skillMediator && _moveMediator) _skillMediator.OnMountJumpRequested += _moveMediator.CommandAirJump;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded += _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted += _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted += _skillMediator.NotifyRollStarted;
@@ -417,6 +421,8 @@ namespace Mediator
             if (_moveMediator && _skillMediator) _moveMediator.OnAirJumpRequested -= _skillMediator.RequestMultiJump;
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested -= _moveMediator.CommandAirJump;
             if (_skillMediator) _skillMediator.OnBuffRatiosChanged -= OnBuffRatiosChangedCallback;
+            if (_skillMediator && _animationMediator) _skillMediator.OnRidingChanged -= _animationMediator.NotifyRidingChanged;
+            if (_skillMediator && _moveMediator) _skillMediator.OnMountJumpRequested -= _moveMediator.CommandAirJump;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded -= _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted -= _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted -= _skillMediator.NotifyRollStarted;

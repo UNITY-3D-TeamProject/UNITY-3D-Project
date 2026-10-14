@@ -124,6 +124,25 @@ namespace Rotation
         {
             _isLookDirectionLocked = false;
         }
+
+        /// <summary>
+        /// target 을 회전 대상(_body) 아래에 붙여 이후 몸과 함께 돌게 한다.
+        /// target 의 현재 위치·회전(_body 부모 기준)을 몸 정면 기준 값으로 보고, 현재 정면에 맞춰 옮긴 뒤 붙인다.
+        /// </summary>
+        /// <param name="target">붙일 Transform</param>
+        public void AttachToBody(Transform target)
+        {
+            if (!target) return;
+
+            Transform space = _body.parent;
+            Quaternion yawRotation = Quaternion.AngleAxis(_yaw, Vector3.up);
+            Vector3 localPosition = space ? space.InverseTransformPoint(target.position) : target.position;
+            Quaternion localRotation = space ? Quaternion.Inverse(space.rotation) * target.rotation : target.rotation;
+
+            target.SetParent(_body, true);
+            target.position = space ? space.TransformPoint(yawRotation * localPosition) : yawRotation * localPosition;
+            target.rotation = space ? space.rotation * yawRotation * localRotation : yawRotation * localRotation;
+        }
         #endregion
 
         #region Private Methods

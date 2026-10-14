@@ -34,6 +34,10 @@ namespace Mediator.SubMediators
         private Func<bool> _getGrounded;
         private Interact _interactSkill;
         private SpawnVehicle _spawnVehicleSkill;
+        // 점프 시작 ~ 착지. 이 동안 탑승하면 착지할 때 탈것을 생성한다
+        private bool _isJumping;
+        private bool _isRolling;
+        private Action<Transform> _attachToBody;
         #endregion
 
         #region Events
@@ -66,6 +70,12 @@ namespace Mediator.SubMediators
 
         /// <summary>버프 배율이 바뀔 때 대상별 배율 목록과 함께 발생한다. 해제 시에는 같은 대상에 배율 1 이 담긴다.</summary>
         public event Action<IReadOnlyList<SBuffRatio>> OnBuffRatiosChanged;
+
+        /// <summary>탈것에 탑승하거나 하차했을 때 발생한다. 탑승이면 true.</summary>
+        public event Action<bool> OnRidingChanged;
+
+        /// <summary>지상에서 탈것에 탑승할 때 뛰어오르기 요청. (점프 파워 비율)</summary>
+        public event Action<float> OnMountJumpRequested;
         #endregion
 
         #region Unity Lifecycle
@@ -153,6 +163,23 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 생성한 탈것을 몸에 붙여 몸 정면을 따라 돌게 하는 델리게이트 주입
+        /// </summary>
+        public void SetAttachToBody(Action<Transform> attachToBody)
+        {
+            if (attachToBody == null) return;
+            _attachToBody = attachToBody;
+        }
+
+        /// <summary>
+        /// 몸에 붙이는 델리게이트 제거. 이후 탈것은 캐릭터 루트 아래에 그대로 둔다.
+        /// </summary>
+        public void ClearAttachToBody()
+        {
+            _attachToBody = null;
+        }
+
+        /// <summary>
         /// 공중 점프 스킬 발동을 요청한다. 발동하면 OnMultiJumpRequested 가 발생한다.
         /// </summary>
         public void RequestMultiJump()
@@ -167,14 +194,17 @@ namespace Mediator.SubMediators
         /// </summary>
         public void NotifyJumpStarted()
         {
+            _isJumping = true;
             if (IsGrounded()) ResetRollCount();
         }
 
         /// <summary>
-        /// 착지를 알린다. 공중 점프와 공중 구르기 횟수를 초기화한다.
+        /// 착지를 알린다. 공중 점프와 공중 구르기 횟수를 초기화하고, 탑승 중이면 탈것을 생성한다.
         /// </summary>
         public void NotifyLanded()
         {
+            _isJumping = false;
+            if (_spawnVehicleSkill) AttachVehicle(_spawnVehicleSkill);
             if (!_skillController) return;
 
             if (_skillController.HasSkill(MULTI_JUMP_SKILL_NAME)) _skillController.ResetSkill(MULTI_JUMP_SKILL_NAME);
@@ -187,6 +217,7 @@ namespace Mediator.SubMediators
         /// <param name="direction">구르기 방향 (사용하지 않음)</param>
         public void NotifyRollStarted(Vector3 direction)
         {
+            _isRolling = true;
             SetSkillEnabled(FIRE_SKILL_NAME, false);
         }
 
@@ -195,6 +226,7 @@ namespace Mediator.SubMediators
         /// </summary>
         public void NotifyRollEnded()
         {
+            _isRolling = false;
             SetSkillEnabled(FIRE_SKILL_NAME, true);
         }
         #endregion
@@ -287,10 +319,44 @@ namespace Mediator.SubMediators
                     break;
                 case SpawnVehicle spawnVehicle:
                     OnBuffRatiosChanged?.Invoke(spawnVehicle.BuffRatios);
+                    OnRidingChanged?.Invoke(spawnVehicle.IsRiding);
+                    if (spawnVehicle.IsRiding) BeginMount(spawnVehicle);
                     // 강제 하차(자원 고갈 등)도 쿨타임이 시작되므로 하차는 여기서 알린다
                     if (!spawnVehicle.IsRiding) OnSkillUsed?.Invoke(spawnVehicle.SkillName, spawnVehicle.Cooldown);
                     break;
             }
+        }
+
+        /// <summary>
+        /// 탑승 연출을 시작한다. 지상이면 뛰어오르고, 점프 중이면 그대로 두어 착지(NotifyLanded) 때 탈것을 생성한다.
+        /// 뛰어오를 수 없거나(구르는 중) 점프 없이 떨어지는 중이면 착지 알림이 오지 않으므로 바로 생성한다.
+        /// </summary>
+        /// <param name="spawnVehicle">탑승한 탈것 스킬</param>
+        private void BeginMount(SpawnVehicle spawnVehicle)
+        {
+            // 공중 탑승으로 추가 점프를 얻지 않도록 지상에서 탑승할 때만 뛰어오른다
+            if (IsGrounded() && !_isRolling)
+            {
+                OnMountJumpRequested?.Invoke(spawnVehicle.MountJumpPowerRatio);
+                return;
+            }
+
+            if (_isJumping) return;
+
+            AttachVehicle(spawnVehicle);
+        }
+
+        /// <summary>
+        /// 탈것을 생성하고, 새로 생성되었으면 몸에 붙여 몸 정면을 따라 돌게 한다.
+        /// </summary>
+        /// <param name="spawnVehicle">탈것 스킬</param>
+        private void AttachVehicle(SpawnVehicle spawnVehicle)
+        {
+            bool hadVehicle = spawnVehicle.Vehicle;
+            spawnVehicle.AttachVehicle();
+            if (hadVehicle || !spawnVehicle.Vehicle) return;
+
+            _attachToBody?.Invoke(spawnVehicle.Vehicle.transform);
         }
 
         /// <summary>

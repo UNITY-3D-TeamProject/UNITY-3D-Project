@@ -170,6 +170,17 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 탈것 탑승 상태를 CharacterAnimator 로 전달한다.
+        /// </summary>
+        /// <param name="isRiding">탑승 중이면 true</param>
+        public void NotifyRidingChanged(bool isRiding)
+        {
+            if (!_characterAnimator) return;
+
+            _characterAnimator.SetRiding(isRiding);
+        }
+
+        /// <summary>
         /// 피격을 전달받아 깜빡임을 시작한다. 이미 깜빡이는 중이면 그대로 이어간다.
         /// </summary>
         public void NotifyHit()
