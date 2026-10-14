@@ -10,6 +10,11 @@ namespace Combat
     /// </summary>
     public class CharacterCombat : MonoBehaviour
     {
+        #region Serialized Fields
+        [Tooltip("약점 콜라이더. 없으면 치명타 없음")]
+        [SerializeField] private SphereCollider _weakPoint;
+        #endregion
+
         #region Private Fields
         private float _health;
         private bool _isDead;
@@ -43,6 +48,27 @@ namespace Combat
         #region Events
         public event Action OnHit;
         public event Action OnDeath;
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// 맞은 지점이 약점 반지름 안에 있는지 거리로 판정한다.
+        /// 약점이 없거나 꺼져 있거나, 맞은 지점 정보가 없으면 일반 피격으로 본다.
+        /// </summary>
+        /// <param name="hitPoint">효과가 실제로 닿은 월드 위치</param>
+        /// <returns>약점 중심과의 거리가 반지름 이하이면 true</returns>
+        public bool IsCriticalHit(Vector3? hitPoint)
+        {
+            if (hitPoint == null) return false;
+            if (!_weakPoint || !_weakPoint.enabled || !_weakPoint.gameObject.activeInHierarchy) return false;
+
+            Vector3 center = _weakPoint.transform.TransformPoint(_weakPoint.center);
+            Vector3 scale = _weakPoint.transform.lossyScale;
+            float maxScale = Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
+            float radius = _weakPoint.radius * maxScale;
+
+            return (hitPoint.Value - center).sqrMagnitude <= radius * radius;
+        }
         #endregion
 
         #region Private Methods

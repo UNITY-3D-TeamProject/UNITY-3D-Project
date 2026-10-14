@@ -60,7 +60,7 @@ namespace Attribute.Effect
         public void Apply(IEffectTarget target, SEffectContext context = default)
         {
             // 호출부가 넣은 Effect 는 무시하고 실제로 적용하는 자신으로 덮어쓴다
-            context = new SEffectContext(context.Cursor, context.Origin, this);
+            context = new SEffectContext(context.Cursor, context.Origin, this, context.HitPoint);
 
             IEffectTarget cursor = context.Cursor;
             if (_valueSource == EValueSource.Attribute)

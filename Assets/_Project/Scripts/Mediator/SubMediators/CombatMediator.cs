@@ -102,7 +102,16 @@ namespace Mediator.SubMediators
         {
             AttributeCallback.TryAdd(_healthValueKey, data =>
             {
-                if (_combatComponent != null) _combatComponent.Health = data.NewValue;
+                if (_combatComponent == null) return;
+
+                // TODO: 치명타 피해 곱 적용 전, 판정 결과만 로그로 확인한다
+                if (data.NewValue < data.OldValue)
+                {
+                    bool isCritical = _combatComponent.IsCriticalHit(data.Context.HitPoint);
+                    Debug.Log($"[{name}] {(isCritical ? "Critical" : "Normal")} Hit (HitPoint: {data.Context.HitPoint})", this);
+                }
+
+                _combatComponent.Health = data.NewValue;
             });
         }
 

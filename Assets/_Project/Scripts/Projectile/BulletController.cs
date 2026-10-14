@@ -105,7 +105,9 @@ namespace Projectile
         {
             if (_hitEffect == null) return;
 
-            _hitEffect.Apply(other.gameObject, new SEffectContext(_cursor));
+            // TODO: 테스트용으로 우선 사용. 트리거에 처음 겹친 순간의 총알 중심을 맞은 지점으로 쓴다
+            //       (탄도 방향 최대 약 0.33m 오차, 정밀한 표면 진입점 계산은 추후 검토)
+            _hitEffect.Apply(other.gameObject, new SEffectContext(_cursor, hitPoint: transform.position));
         }
         #endregion
     }
