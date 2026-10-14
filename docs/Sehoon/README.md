@@ -27,7 +27,7 @@
 | 07-1 | └ 블루투스 스킬 | [07-1-bluetooth-skill.md](done/07-1-bluetooth-skill.md) | 완료 |
 | 07-2 | └ 상호작용 스킬 | [07-2-interact-skill.md](done/07-2-interact-skill.md) | 완료 |
 | 07-3 | └ 스캔 스킬 | [07-3-scan-skill.md](07-3-scan-skill.md) | 대기 |
-| 08 | 블루투스 모션 추가 | [08-bluetooth-motion.md](08-bluetooth-motion.md) | 대기 |
+| 08 | 블루투스 모션 추가 | [08-bluetooth-motion.md](done/08-bluetooth-motion.md) | 완료 |
 | 09 | Hit 시 방향별 모션 | [09-directional-hit-motion.md](09-directional-hit-motion.md) | 대기 |
 
 ### 우선순위 중간
