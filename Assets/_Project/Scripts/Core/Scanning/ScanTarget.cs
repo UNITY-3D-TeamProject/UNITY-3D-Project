@@ -37,17 +37,18 @@ namespace Core.Scanning
         #endregion
 
         #region Serialized Fields
-        [Header("Fade")]
+        [Header("Fade : 안 해도 됨 (기본값 사용)")]
         [Tooltip("닿은 뒤 반응 세기가 0에서 1이 되기까지의 시간(초). 튐 방지용 짧은 값")]
         [SerializeField, Min(0.0f)] private float _fadeInTime = 0.2f;
         [Tooltip("활성 시간이 끝난 뒤 반응이 완전히 사라지기까지의 시간(초)")]
         [SerializeField, Min(0.0f)] private float _fadeOutTime = 1.0f;
 
-        [Header("References (비워 두면 자동으로 찾음)")]
+        [Header("안 해도 됨 (비우면 자동으로 찾음)")]
         [Tooltip("이 대상의 반응 목록. 비어 있으면 Awake 에서 같은 오브젝트의 ScanReactionBase 를 모두 찾는다.")]
         // 스캔에 닿았을 때 눈에 보이는 반응 하나를 만드는 부모 클래스 
         // 여러 반응이 필요한경우를 대비해서 배열로 만든다.
         [SerializeField] private ScanReactionBase[] _reactions;
+        [Header("약점은 필수 (CharacterController ← 몬스터 루트), 그 외는 안 해도 됨")]
         [Tooltip("파동이 닿았는지 판정할 콜라이더. 비어 있으면 Awake 에서 이 오브젝트와 자식의 콜라이더를 모두 쓴다. 몬스터 약점은 몸체 콜라이더(CharacterController)를 연결한다.")]
         // 약점처럼 자기 콜라이더가 스캔 전에 꺼져 있는 대상은 다른 오브젝트의 콜라이더로 판정해야 하므로 직접 지정할 수 있게 한다.
         [SerializeField] private Collider[] _scanColliders;

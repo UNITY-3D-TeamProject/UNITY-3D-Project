@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-15** — 스캔 컴포넌트(`ScanTarget`·`SilhouetteReaction`·`WeakPointShellMask`) Inspector 헤더를 필드별 "필수/안 해도 됨 (타입 ← 가져올 것)"으로 정리, 컴파일 0에러. TestScene Ranged 약점 구성 확인(정상, **프리팹 미Apply**): [작업 기록](./2026-10-15/scan-inspector-headers.md)
 - **2026-10-14** — ObjectPoolManager 기본 프리팹(`Prefabs/System/Manager/ObjectPoolManager.prefab`): Crowd 칸 추가, Melee·Ranged·Bullet·ChargedBullet·EnemyBullet·Car·Pedestrian 등록. CrowdLane은 자기 풀 유지. ChargedBullet은 Player Charged Bullets 칸으로 분리. `Get(프리팹)` 추가 후 MonsterSpawner 적용(TestScene Play 확인), 적용 가이드 `docs/object-pool-guide.md`. **Map_4_Security 매니저 미배치(스포너가 몬스터를 만들지 않음)·총알/몬스터 Release 미적용**: [작업 기록](./2026-10-14/object-pool-manager-prefab.md)
 - **2026-10-14** — 스캔 대상 세팅 정리: 가이드 `docs/scan-setup-guide.md`, 부품 프리팹(`Prefabs/System/Scan/`: ScanMarker·ScanOutline·ScanSilhouette·ScanPlatform·ScanWeakPoint, ScanWave 이동), 4종 예시(`Example/`, 약점은 Gripper Robot), 안 쓰는 리빌·실루엣 머티리얼·셰이더 그래프 `Art/Scan/NotUse/`로 이동. Play에서 판정·표시 확인, **실제 파동 확산 끝까지 미확인**: [작업 기록](./2026-10-14/scan-prefabs-guide.md)
 - **2026-10-14** — 스캔 표시 홀로그램화: 벽 뒤 아이템 실루엣을 신규 `Project/ScanSilhouetteHologram`(가려진 부분만, rim + 화면 가로줄 + 위로 지나가는 띠 + 깜빡임, 가산)으로 교체(`M_ScanSilhouette` 셰이더만 교체), 상호작용 외곽선(`ScanOutline`)의 Outline·Glow 패스에 같은 연출 적용 + 빛 번짐 9→14px. 공용 함수 `ScanHologramEffects.hlsl`. 셰이더·컴파일 에러 0, Play 캡처 확인, **실제 스캔 파동 페이드 미확인**: [작업 기록](./2026-10-14/scan-hologram-look.md)

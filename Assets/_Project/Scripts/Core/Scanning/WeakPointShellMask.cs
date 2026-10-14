@@ -21,10 +21,11 @@ namespace Core.Scanning
         #endregion
 
         #region Serialized Fields
-        [Header("References")]
+        [Header("안 해도 됨 (비우면 같은 오브젝트에서 찾음)")]
         [Tooltip("홀로그램 셸 렌더러(M_ScanHologram)를 켜고 끄는 SilhouetteReaction. 비어 있으면 같은 오브젝트에서 찾는다.")]
         // 셸이 런타임에 만들어질 수 있어 렌더러를 직접 연결하지 않고, 반응에서 목록을 읽는다.
         [SerializeField] private SilhouetteReaction _silhouette;
+        [Header("안 해도 됨 (비우면 같은 오브젝트의 SphereCollider)")]
         [Tooltip("약점 콜라이더. 최대 4개까지 반영한다. 비어 있으면 같은 오브젝트(약점 오브젝트)의 SphereCollider 를 쓴다.")]
         [SerializeField] private SphereCollider[] _weakPoints;
         #endregion
