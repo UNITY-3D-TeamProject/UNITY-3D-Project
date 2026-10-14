@@ -11,9 +11,10 @@ namespace Core.Scanning
     public class MarkerReaction : ScanReactionBase
     {
         #region Serialized Fields
-        [Header("References")]
+        [Header("References (필수)")]
         [Tooltip("스캔에 닿았을 때 켜질 마커 오브젝트. 평소에는 꺼진다.")]
         [SerializeField] private GameObject _marker;
+        [Header("References (비워 두면 자동으로 찾음)")]
         [Tooltip("알파를 줄일 스프라이트. 비어 있으면 마커 아래에서 찾는다. 없으면 켜고 끄기만 한다.")]
         [SerializeField] private SpriteRenderer _spriteRenderer;
         #endregion
