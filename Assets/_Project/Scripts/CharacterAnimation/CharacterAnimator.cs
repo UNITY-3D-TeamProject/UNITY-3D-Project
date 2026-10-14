@@ -112,6 +112,8 @@ namespace CharacterAnimation
         #region Events
         /// <summary>사망 애니메이션(사망 루프 정해진 횟수 재생)이 끝났을 때 한 번 발생한다.</summary>
         public event Action OnDeathAnimationEnded;
+        /// <summary>특수 Idle 재생을 시작할 때 재생할 특수 Idle 인덱스(SpecialIdleIndex)를 알린다.</summary>
+        public event Action<int> OnSpecialIdleStarted;
         #endregion
 
         #region Unity Lifecycle
@@ -429,6 +431,16 @@ namespace CharacterAnimation
         }
 
         /// <summary>
+        /// 기준 위치가 몸 정면 기준 어느 쪽인지 판정해 피격 방향(HitDirection)을 반환한다.
+        /// </summary>
+        /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치). null 이면 앞쪽 피격</param>
+        /// <returns>0: 앞, 1: 뒤, 2: 왼쪽, 3: 오른쪽</returns>
+        public int GetHitDirection(Vector3? hitSource)
+        {
+            return CalculateHitDirection(hitSource);
+        }
+
+        /// <summary>
         /// 사망을 알린다. 사격 자세를 내리고 사망 애니메이션(Death → DeathLoop 루프)을 재생한다.
         /// 이후에는 이동·사격·조준·점프·구르기 알림을 무시한다.
         /// </summary>
@@ -488,9 +500,11 @@ namespace CharacterAnimation
             if (_idleTime < _specialIdleDelay) return;
 
             _idleTime = 0.0f;
-            _animator.SetInteger(AnimHash.SpecialIdleIndex, UnityEngine.Random.Range(0, _specialIdleCount));
+            int specialIdleIndex = UnityEngine.Random.Range(0, _specialIdleCount);
+            _animator.SetInteger(AnimHash.SpecialIdleIndex, specialIdleIndex);
             _animator.SetBool(AnimHash.IsSpecialIdle, true);
             _animator.SetTrigger(AnimHash.SpecialIdle);
+            OnSpecialIdleStarted?.Invoke(specialIdleIndex);
         }
 
         /// <summary>

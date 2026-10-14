@@ -25,6 +25,7 @@ namespace Mediator
         [SerializeField] private RotateMediator _rotateMediator;
         [SerializeField] private SpawnMediator _spawnMediator;
         [SerializeField] private AnimationMediator _animationMediator;
+        [SerializeField] private PetMediator _petMediator;
         #endregion
 
         #region Private Fields
@@ -376,7 +377,12 @@ namespace Mediator
 
             Debug.Log($"{name} is hit!");
             // 치명타는 같은 프레임에 OnHit 다음 OnDeath 가 오므로, 이미 죽었으면 깜빡임을 시작하지 않는다
-            if (_animationMediator && !_combatMediator.IsDead()) _animationMediator.NotifyHit(GetHitSource(_lastChangeContext));
+            if (!_combatMediator.IsDead())
+            {
+                Vector3? hitSource = GetHitSource(_lastChangeContext);
+                if (_animationMediator) _animationMediator.NotifyHit(hitSource);
+                if (_petMediator) _petMediator.NotifyHit(_animationMediator ? _animationMediator.GetHitDirection(hitSource) : 0);
+            }
             OnHit?.Invoke();
         }
 
@@ -404,6 +410,7 @@ namespace Mediator
             Debug.Log($"{name} is Death!");
             OnDeath?.Invoke();
             DisableControl();
+            if (_petMediator) _petMediator.NotifyDeath();
 
             if (!_animationMediator)
             {
@@ -491,6 +498,9 @@ namespace Mediator
             if (_cameraMediator && _animationMediator) _cameraMediator.OnAimChanged += _animationMediator.NotifyAim;
             if (_combatMediator && _animationMediator) _combatMediator.OnInvincibilityEnded += _animationMediator.NotifyInvincibilityEnded;
             if (_combatMediator) _combatMediator.OnMoveSpeedReduceRequested += OnMoveSpeedReduceCallback;
+            if (_moveMediator && _petMediator) _moveMediator.OnJumpStarted += _petMediator.NotifyJumpStarted;
+            if (_moveMediator && _petMediator) _moveMediator.OnJumpEnded += _petMediator.NotifyJumpEnded;
+            if (_animationMediator && _petMediator) _animationMediator.OnSpecialIdleStarted += _petMediator.NotifySpecialIdle;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -537,6 +547,9 @@ namespace Mediator
             if (_cameraMediator && _animationMediator) _cameraMediator.OnAimChanged -= _animationMediator.NotifyAim;
             if (_combatMediator && _animationMediator) _combatMediator.OnInvincibilityEnded -= _animationMediator.NotifyInvincibilityEnded;
             if (_combatMediator) _combatMediator.OnMoveSpeedReduceRequested -= OnMoveSpeedReduceCallback;
+            if (_moveMediator && _petMediator) _moveMediator.OnJumpStarted -= _petMediator.NotifyJumpStarted;
+            if (_moveMediator && _petMediator) _moveMediator.OnJumpEnded -= _petMediator.NotifyJumpEnded;
+            if (_animationMediator && _petMediator) _animationMediator.OnSpecialIdleStarted -= _petMediator.NotifySpecialIdle;
         }
         #endregion
     }
