@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-14** — 숨은 플랫폼 홀로그램 연출: 평소 아주 희미한 형태(2m 2.5% → 10m 0.5%, 노이즈 칸은 피드백으로 제거) → 스캔 시 모서리·격자·면 순서로 채움 → 완료 순간 발광 후 반투명 홀로그램. 신규 `Project/ScanPlatformHologram` + `M_ScanPlatformHologram`, `MeshRevealReaction`이 완료 시각 `_ScanRevealTime` 전달. 먼저 만든 굴절 은신은 플레이어 주변 일렁임으로 폐기. 화면 회전 시 번쩍임은 모서리·격자 두께를 픽셀 → 미터 기준으로 바꿔 해결. 컴파일·셰이더 에러 0, 단계별 캡처 확인, **실제 시간 흐름 Play 미확인, TestScene 미저장**: [작업 기록](./2026-10-14/scan-platform-hologram.md)
 - **2026-10-14** — 정정: 외곽선은 상호작용 오브젝트 전용, 벽 뒤 아이템은 초록 실루엣(`M_ScanSilhouette`)으로 원복(TestScene `Item_Behind_Wall`, 씬 미저장). 주석·intent-019 정정, 컴파일 0에러, Play에서 벽 너머 초록 실루엣 확인: [작업 기록](./2026-10-14/scan-item-outline.md)
 - **2026-10-14** — 스캔 외곽선에 빛 번짐 추가: `ScanOutline.shader`에 `Glow` 패스(UniversalForwardOnly, 9px 가산 띠) 추가, 색을 HDR로 올림(전역 블룸 없는 씬에서도 보이도록 셰이더로 처리). 셰이더 에러 0, Play 캡처 확인: [작업 기록](./2026-10-14/scan-item-outline.md)
 - **2026-10-14** — 스캔 아이템·상호작용 표시를 외곽선으로 변경: 신규 `Project/ScanOutline`(스텐실 마스크 + 화면 픽셀 두께 외곽선, 벽에 가려지면 안 보임) + `M_ScanOutline`, `SilhouetteReaction`이 MeshFilter 실루엣 메시를 매끄러운 법선 복제본으로 바꿔 각진 모서리 끊김 방지. TestScene 큐브·벽 뒤 아이템 적용(씬 미저장). 컴파일·셰이더 에러 0, Play 캡처로 확인: [작업 기록](./2026-10-14/scan-item-outline.md)
