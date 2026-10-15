@@ -1,0 +1,821 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50f516a47cf785243ac852aa8c8a546b, type: 3}
+  m_Name: SOSpiralMapSettings_FeedTagTest_5_Photo
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SOSpiralMapSettings
+  _spiralRadius: 30
+  _defaultPlatformPrefab: {fileID: 6601298655555250593, guid: b939c22fd79c36d41bb2cf54e9c25fda, type: 3}
+  _maxJumpDistance: 12
+  _maxJumpHeight: 5
+  _platformGap: 5
+  _randomHeightRange: {x: 4, y: 6.5}
+  _sectionPatterns: []
+  _connectorCount: 2
+  _isConnectorInsideSection: 0
+  _tags:
+  - tagName: C_Bridge
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 3032160321112168425, guid: 4170e39dc2665c54ab247cb3d571a643, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_TimerButton
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 1693954658628367267, guid: 01876ebb0e259404cb51a3aa142b5314, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_MovePlatform
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 5844357702676159021, guid: 0515b9d005d527c49b10a785b176093c, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_ShiftPlatform
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 4071667854327964219, guid: 3f08025291c85fa42827b60a4fe2ff4d, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_Conveyor
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 154670637156582585, guid: 8150e2fffb4aace4c9e20cf1912bc0fd, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_SpinnerStop
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 3415191944987760117, guid: 622001f69ec2f1f4191f85c5221fdcd4, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_TimedPath
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 5002945594321696384, guid: 936d9cb577032a04fbaae05dfde820ad, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_RotatePlatform
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 4518387696276722310, guid: d309750d8e2e4de4fb658a7d9b07b174, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_ColorSwap
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 5194951403951972867, guid: e57fe3af668a5404bb2b3c4e248e9212, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_WindFan
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 3462056048895479466, guid: bfddd752b564eb548a824fc472f63aa6, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_Piston
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 8635109644985424398, guid: d5d6f48a754fabd49900ae23d5a91c60, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_DualTarget
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 9135928003085339916, guid: d212b05c80f408f438b369794644b64e, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_Pendulum
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 8326994834785114378, guid: 42ed487c0ea92b840bf746242b70e95c, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_PatrolBall
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 8597238705637911756, guid: ab741270a28040041896c15bddb22210, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_LaserGate
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 4893973831414266027, guid: 7f3c58ed1432563449c183dca62da902, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_Bumpers
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 5043837379320368989, guid: b75f6c1a0b00d0b4e9d6fd818eb03d47, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_TubeGate
+    platformPrefabs:
+    - {fileID: 4558594430025478253, guid: ae6f1fadfd1daea4eb7beeec8ee8951d, type: 3}
+    - {fileID: 740119605419978421, guid: 3f33ba920ad5f794aa2eeace272cb498, type: 3}
+    - {fileID: 354038426778711738, guid: 5acb5785b5731654c97dd78f5b7a980c, type: 3}
+    - {fileID: 9169072655165164898, guid: f456fc925dfe8cb4d9c0cc872b442992, type: 3}
+    - {fileID: 4239583290027883188, guid: 0a7eddc2ebc4b664a93ab65e218b4017, type: 3}
+    - {fileID: 8308494890281631299, guid: 3b02d4fc16c01ee42ae9fb1c18208a6e, type: 3}
+    - {fileID: 6245545522768987035, guid: 78028660b82bf3f4aab3e47c1786cd9a, type: 3}
+    - {fileID: 376042385778688022, guid: 7fc2fb158b1d3fd4a8221f41eda78ed5, type: 3}
+    - {fileID: 8222605170082920623, guid: f2dfe23056a97ac4b8ff33ab183d22f0, type: 3}
+    - {fileID: 8630991930618938247, guid: 4f9b0146e17d250438e27f4b2e4ccfd8, type: 3}
+    - {fileID: 8411941127201903698, guid: b57d522d2d211a6458947b4746923821, type: 3}
+    - {fileID: 9140831418704393214, guid: 5c2ddcb6d3020bd4393923807887f6a2, type: 3}
+    - {fileID: 7830300316259144230, guid: 18cd8a3036d088841af127e49986b121, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 3800918003337944117, guid: 35b1eef16d4578b41a3110f281774457, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1406389684452341341, guid: 679bcb62e94d4f542a6c5bcfaae8b291, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8958835897745299664, guid: ca4b98e5140dc044d8e6a36369a433aa, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 1277939548807275239, guid: 50dda490858b08147ac5bd73f139ee7e, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0.6, z: 0}
+    - Prefab: {fileID: 6681756746688853785, guid: 2be43791211a37a4e9294b368484a090, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 8, z: 0}
+    - Prefab: {fileID: 4686049178625685897, guid: b293689cba4ddc140a452b07e8cf0546, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 2
+    endPlatformPrefab: {fileID: 5078835819290579408, guid: f9315bcd7ce5ba640ae5634ac6fa813b, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  _sectionsPerTag: 1
+  _tagItems: []
+  _checkpointDistance: 1.5
+  _feedDistance: 6
+  _itemDistance: 9
+  _outerFeedCount: 0
+  _innerFeedCount: 0
+  _outerFeedDistance: {x: 8.25, y: 12.25}
+  _innerFeedDistance: {x: 8.25, y: 12.25}
+  _ambientFeedHeightRange: {x: 2.5, y: 6.5}
+  _exitStepCount: 0
+  _exitStepHeight: 1
+  _roundPlatformPrefab: {fileID: 0}
+  _roundPlatformRadius: 27
+  _roundCheckpointInset: 3

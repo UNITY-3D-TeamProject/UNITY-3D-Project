@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50f516a47cf785243ac852aa8c8a546b, type: 3}
+  m_Name: SOSpiralMapSettings_FeedTagTest_1_Title
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SOSpiralMapSettings
+  _spiralRadius: 30
+  _defaultPlatformPrefab: {fileID: 6601298655555250593, guid: b939c22fd79c36d41bb2cf54e9c25fda, type: 3}
+  _maxJumpDistance: 12
+  _maxJumpHeight: 5
+  _platformGap: 5
+  _randomHeightRange: {x: 4, y: 6.5}
+  _sectionPatterns: []
+  _connectorCount: 2
+  _isConnectorInsideSection: 0
+  _tags:
+  - tagName: C_Bridge
+    platformPrefabs:
+    - {fileID: 7687236253267290303, guid: f38e28faac5bd1a48adb4fa10d3f120e, type: 3}
+    - {fileID: 3375717596316909301, guid: ee90b9c39f103ea4ab6caa44543a4b50, type: 3}
+    - {fileID: 4370399586583595073, guid: 60a296a691f00574a8121f0c9529342d, type: 3}
+    - {fileID: 8646930008689808821, guid: fb5601afe7aede244b1112fbe4012f91, type: 3}
+    - {fileID: 2234628784828775219, guid: 2e08db79966ff8b4486bdde849015a1d, type: 3}
+    - {fileID: 6093535393372657445, guid: b8881a1229be1da448e0def3f751a9a2, type: 3}
+    - {fileID: 7331777738925027209, guid: 8122d1a221a84c74fa99642d9a50d7ba, type: 3}
+    - {fileID: 386511773249939461, guid: 9b982ba22d3fdd0468d9c172d42e961d, type: 3}
+    - {fileID: 5662627496363432540, guid: 5cf3c79199d1be24bb7ac44b6e409e6c, type: 3}
+    - {fileID: 6896445805799693853, guid: 7613fc1865e34ac498ed461f1819fefe, type: 3}
+    - {fileID: 4286479037693128009, guid: f896f8c33aee9de4daa006d4a7822454, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 3032160321112168425, guid: 4170e39dc2665c54ab247cb3d571a643, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 1
+    endPlatformPrefab: {fileID: 3327648592854387141, guid: adc8e2a8937f10343870442ffd5fdb1a, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  - tagName: C_TimerButton
+    platformPrefabs:
+    - {fileID: 7687236253267290303, guid: f38e28faac5bd1a48adb4fa10d3f120e, type: 3}
+    - {fileID: 3375717596316909301, guid: ee90b9c39f103ea4ab6caa44543a4b50, type: 3}
+    - {fileID: 4370399586583595073, guid: 60a296a691f00574a8121f0c9529342d, type: 3}
+    - {fileID: 8646930008689808821, guid: fb5601afe7aede244b1112fbe4012f91, type: 3}
+    - {fileID: 2234628784828775219, guid: 2e08db79966ff8b4486bdde849015a1d, type: 3}
+    - {fileID: 6093535393372657445, guid: b8881a1229be1da448e0def3f751a9a2, type: 3}
+    - {fileID: 7331777738925027209, guid: 8122d1a221a84c74fa99642d9a50d7ba, type: 3}
+    - {fileID: 386511773249939461, guid: 9b982ba22d3fdd0468d9c172d42e961d, type: 3}
+    - {fileID: 5662627496363432540, guid: 5cf3c79199d1be24bb7ac44b6e409e6c, type: 3}
+    - {fileID: 6896445805799693853, guid: 7613fc1865e34ac498ed461f1819fefe, type: 3}
+    - {fileID: 4286479037693128009, guid: f896f8c33aee9de4daa006d4a7822454, type: 3}
+    sectionPatterns: []
+    chunkPrefabs:
+    - {fileID: 1693954658628367267, guid: 01876ebb0e259404cb51a3aa142b5314, type: 3}
+    chunkSectionChance: 1
+    obstacles:
+    - Prefab: {fileID: 1827391084251319607, guid: 00684abf48983c14699c1e4ba2c7fec5, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 5800865352858751986, guid: 34ed7e7086d02af439105fdcf5a8ac3f, type: 3}
+      Count: 1
+      Offset: {x: 0, y: 0, z: 0}
+    obstaclesPerSection: 1
+    endPlatformPrefab: {fileID: 3327648592854387141, guid: adc8e2a8937f10343870442ffd5fdb1a, type: 3}
+    maliciousFeedPrefab: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    ambientFeedPrefab: {fileID: 0}
+  _sectionsPerTag: 1
+  _tagItems: []
+  _checkpointDistance: 1.5
+  _feedDistance: 6
+  _itemDistance: 9
+  _outerFeedCount: 0
+  _innerFeedCount: 0
+  _outerFeedDistance: {x: 8.25, y: 12.25}
+  _innerFeedDistance: {x: 8.25, y: 12.25}
+  _ambientFeedHeightRange: {x: 2.5, y: 6.5}
+  _exitStepCount: 0
+  _exitStepHeight: 1
+  _roundPlatformPrefab: {fileID: 0}
+  _roundPlatformRadius: 27
+  _roundCheckpointInset: 3

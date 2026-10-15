@@ -44,6 +44,11 @@ namespace Map.Platforms
         private TransformMotor _motor;
         #endregion
 
+        #region Properties
+        /// <summary>지금 웨이포인트를 향해 이동 중인지 여부. (도착 후 대기 중도 포함)</summary>
+        public bool IsMoving => _isMoving;
+        #endregion
+
         #region Unity Lifecycle
         private void Awake()
         {
