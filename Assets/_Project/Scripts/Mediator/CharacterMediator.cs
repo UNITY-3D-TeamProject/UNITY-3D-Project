@@ -25,6 +25,8 @@ namespace Mediator
         [SerializeField] private RotateMediator _rotateMediator;
         [SerializeField] private SpawnMediator _spawnMediator;
         [SerializeField] private AnimationMediator _animationMediator;
+        [Tooltip("AI(적·군중) 전용 애니메이션 중재자. 플레이어는 비워 둔다.")]
+        [SerializeField] private EnemyAnimationMediator _enemyAnimationMediator;
         [SerializeField] private PetMediator _petMediator;
         #endregion
 
@@ -406,6 +408,7 @@ namespace Mediator
             {
                 Vector3? hitSource = GetHitSource(_lastChangeContext);
                 if (_animationMediator) _animationMediator.NotifyHit(hitSource);
+                if (_enemyAnimationMediator) _enemyAnimationMediator.NotifyHit(hitSource);
                 if (_petMediator) _petMediator.NotifyHit(_animationMediator ? _animationMediator.GetHitDirection(hitSource) : 0);
             }
             OnHit?.Invoke();
@@ -437,13 +440,14 @@ namespace Mediator
             DisableControl();
             if (_petMediator) _petMediator.NotifyDeath();
 
-            if (!_animationMediator)
+            if (!_animationMediator && !_enemyAnimationMediator)
             {
                 EndDeath();
                 return;
             }
 
-            _animationMediator.NotifyDeath();
+            if (_animationMediator) _animationMediator.NotifyDeath();
+            if (_enemyAnimationMediator) _enemyAnimationMediator.NotifyDeath();
         }
 
         private void OnDeathAnimationEndedCallback()
@@ -528,6 +532,12 @@ namespace Mediator
             if (_moveMediator && _petMediator) _moveMediator.OnJumpStarted += _petMediator.NotifyJumpStarted;
             if (_moveMediator && _petMediator) _moveMediator.OnJumpEnded += _petMediator.NotifyJumpEnded;
             if (_animationMediator && _petMediator) _animationMediator.OnSpecialIdleStarted += _petMediator.NotifySpecialIdle;
+            if (_enemyAnimationMediator) _enemyAnimationMediator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
+            if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnMoveDirectionChanged += _enemyAnimationMediator.SetMoveDirection;
+            if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnJumpStarted += _enemyAnimationMediator.NotifyJumpStarted;
+            if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnJumpEnded += _enemyAnimationMediator.NotifyJumpEnded;
+            if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillUsed += _enemyAnimationMediator.NotifySkillUsed;
+            if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillStopped += _enemyAnimationMediator.NotifySkillStopped;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -579,6 +589,12 @@ namespace Mediator
             if (_moveMediator && _petMediator) _moveMediator.OnJumpStarted -= _petMediator.NotifyJumpStarted;
             if (_moveMediator && _petMediator) _moveMediator.OnJumpEnded -= _petMediator.NotifyJumpEnded;
             if (_animationMediator && _petMediator) _animationMediator.OnSpecialIdleStarted -= _petMediator.NotifySpecialIdle;
+            if (_enemyAnimationMediator) _enemyAnimationMediator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
+            if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnMoveDirectionChanged -= _enemyAnimationMediator.SetMoveDirection;
+            if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnJumpStarted -= _enemyAnimationMediator.NotifyJumpStarted;
+            if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnJumpEnded -= _enemyAnimationMediator.NotifyJumpEnded;
+            if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillUsed -= _enemyAnimationMediator.NotifySkillUsed;
+            if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillStopped -= _enemyAnimationMediator.NotifySkillStopped;
         }
         #endregion
     }
