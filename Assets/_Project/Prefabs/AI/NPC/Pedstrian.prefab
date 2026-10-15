@@ -105,7 +105,7 @@ CharacterController:
   m_Enabled: 1
   serializedVersion: 3
   m_Height: 1
-  m_Radius: 0.6
+  m_Radius: 0.4
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
@@ -124,12 +124,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdController
   _lookAheadDistance: 1
+  _lateralOffsetRange: 0.3
   _detectDistance: 1.5
   _detectRadius: 0.3
   _detectHeight: 0.9
   _detectLayers:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 2147483712
+  _speedVariation: 0.2
+  _canJumpOver: 1
+  _jumpOverSpeedMultiplier: 3
+  _jumpPowerAttributeKey: JumpPower
 --- !u!114 &3750706564106249470
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -150,6 +155,7 @@ MonoBehaviour:
   _rotateMediator: {fileID: 6405489376610710897}
   _spawnMediator: {fileID: 0}
   _animationMediator: {fileID: 0}
+  _petMediator: {fileID: 0}
 --- !u!114 &2484129671692693122
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -969,7 +975,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4236341993996040545, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
       propertyPath: _jumpSpeedValueKey
-      value: 
+      value: JumpPower
       objectReference: {fileID: 0}
     - target: {fileID: 5837350018986070136, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
       propertyPath: m_LocalPosition.x

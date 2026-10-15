@@ -1,15 +1,17 @@
 using UnityEngine;
-using UnityEngine.Pool;
 using UnityEngine.Splines;
+using Core.ObjectPool;
 using Mediator;
 
 namespace AI.Crowd
 {
     /// <summary>
-    /// 스플라인 하나를 군중 레인으로 쓰고, 씬 시작 시 개체를 일정 간격으로 생성해 이동시킨다.
-    /// 닫힌 스플라인은 개체가 계속 돈다. 열린 스플라인은 끝에 닿은 개체를 풀에 반납하고, 시작점에서 다시 꺼낸다.
-    /// 개체는 이 레인이 소유한 풀에서 나오므로 씬이 끝나면 함께 사라진다.
-    /// 개체의 속도는 프리팹 SOAttributeData 의 기본 속도에 이 레인의 배율을 곱한 값이다.
+    /// 스플라인 하나를 군중 레인으로 쓰고, 개체를 생성해 이동시킨다.
+    /// 닫힌 스플라인은 씬 시작 시 전체에 일정 간격으로 깔고, 개체가 계속 돈다.
+    /// 열린 스플라인은 시작점에서 차례대로 꺼내고, 끝에 닿은 개체를 풀에 반납한 뒤 시작점에서 다시 꺼낸다.
+    /// 시작점과 개체 수는 0번 스플라인 기준이다. 갈림길은 같은 컨테이너 안에서 Knot 으로부터 바깥쪽으로 새 스플라인을 그려 만든다 (개체가 무작위로 고른다).
+    /// 개체는 씬의 ObjectPoolManager(Crowd 카테고리)에서 꺼내므로 프리팹이 매니저에 등록돼 있어야 한다.
+    /// 개체의 속도는 프리팹 SOAttributeData 의 기본 속도에 이 레인의 배율과 개체별 무작위 배율(조종부 설정)을 곱한 값이다.
     /// 스플라인이 있는 오브젝트의 스케일은 1 이어야 한다.
     /// </summary>
     [RequireComponent(typeof(SplineContainer))]
@@ -18,6 +20,9 @@ namespace AI.Crowd
         #region Constants
         /// <summary>수평 접선 벡터의 제곱 크기가 이 값 이하이면 방향이 없는 것으로 본다.</summary>
         private const float MIN_DIRECTION_SQR_MAGNITUDE = 0.0001f;
+
+        /// <summary>시작 방향을 구할 때 비교하는 앞쪽 점까지의 거리(m).</summary>
+        private const float TANGENT_SAMPLE_DISTANCE = 0.1f;
         #endregion
 
         #region Serialized Fields
@@ -31,7 +36,7 @@ namespace AI.Crowd
         [SerializeField] private float _minSpacing = 2.5f;
 
         [Header("Respawn (열린 스플라인만)")]
-        [Tooltip("시작점에서 개체를 다시 꺼내는 최소 시간 간격(초). 시작점 반경(최소 간격의 절반) 안에 프리팹의 감지 레이어 대상이 있으면 꺼내지 않는다.")]
+        [Tooltip("시작점에서 개체를 꺼내는 최소 시간 간격(초). 씬 시작 후 처음 채울 때도 이 간격을 쓴다. 시작점 반경(최소 간격의 절반) 안에 프리팹의 감지 레이어 대상이 있으면 꺼내지 않는다.")]
         [SerializeField] private float _spawnInterval = 2.5f;
 
         [Header("Speed")]
@@ -41,12 +46,14 @@ namespace AI.Crowd
         #endregion
 
         #region Private Fields
-        private ObjectPool<CrowdController> _pool;
+        private bool _isReady;
+        private int _activeCount;
         private int _spawnCount;
         private float _laneLength;
         private bool _isLaneClosed;
         private float _spawnTimer;
         private LayerMask _spawnBlockLayers;
+        private float _lateralOffsetRange;
         #endregion
 
         #region Unity Lifecycle
@@ -69,16 +76,23 @@ namespace AI.Crowd
 
             // 개체가 멈추는 대상과 시작점을 막는 대상은 같으므로 프리팹의 감지 레이어를 그대로 쓴다
             _spawnBlockLayers = _prefab.GetComponent<CrowdController>().DetectLayers;
+            _lateralOffsetRange = _prefab.GetComponent<CrowdController>().LateralOffsetRange;
 
-            // 꺼낼 때는 활성화하지 않는다. SpawnMember 가 위치를 옮긴 뒤 켠다.
-            _pool = new ObjectPool<CrowdController>(
-                CreateMember,
-                null,
-                member => member.gameObject.SetActive(false),
-                member => Destroy(member.gameObject),
-                true,
-                _spawnCount,
-                _spawnCount);
+            // ObjectPoolManager.Instance 는 Awake 에서 채워지므로 Start 에서 확인한다
+            if (ObjectPoolManager.Instance == null)
+            {
+                Debug.LogError($"[{name}] 씬에 ObjectPoolManager 가 없어 군중을 생성할 수 없습니다.", this);
+                return;
+            }
+
+            _isReady = true;
+
+            // 열린 레인은 한꺼번에 깔지 않고 Update 가 시작점에서 차례대로 꺼낸다. 첫 개체는 바로 나오게 한다.
+            if (!_isLaneClosed)
+            {
+                _spawnTimer = _spawnInterval;
+                return;
+            }
 
             float spacing = _laneLength / _spawnCount;
             for (int i = 0; i < _spawnCount; i++)
@@ -89,11 +103,11 @@ namespace AI.Crowd
 
         private void Update()
         {
-            if ((_pool == null) || _isLaneClosed) return;
+            if (!_isReady || _isLaneClosed) return;
 
             _spawnTimer += Time.deltaTime;
 
-            bool canSpawn = (_pool.CountActive < _spawnCount) &&
+            bool canSpawn = (_activeCount < _spawnCount) &&
                             (_spawnTimer >= _spawnInterval) &&
                             IsSpawnPointClear();
             if (!canSpawn) return;
@@ -174,40 +188,19 @@ namespace AI.Crowd
         }
 
         /// <summary>
-        /// 풀에 넣을 개체를 새로 만든다. 속도 배율을 적용하고, 열린 레인 끝에 닿으면 반납되도록 구독한다.
-        /// </summary>
-        /// <returns>새 개체의 조종부</returns>
-        private CrowdController CreateMember()
-        {
-            GameObject member = Instantiate(_prefab, transform);
-            CrowdController controller = member.GetComponent<CrowdController>();
-            CharacterMediator mediator = member.GetComponent<CharacterMediator>();
-
-            controller.OnLaneEndReached += ReleaseMember;
-
-            // 잘못된 키는 AttributeSet 이 Debug.Log 만 찍어 묻히므로 먼저 검사한다
-            if (!mediator.IsValidAttribute(_speedAttributeKey))
-            {
-                Debug.LogWarning(
-                    $"[{name}] 어트리뷰트 '{_speedAttributeKey}' 가 개체에 없습니다. 속도가 적용되지 않습니다.",
-                    _prefab);
-                return controller;
-            }
-
-            // SO 초기값은 모터에 전달되지 않으므로(MediatorBase.InitValue 미호출) 배율이 1 이어도 다시 넣어 전달한다.
-            // 풀이 개체를 새로 만들 때만 호출되므로 재사용해도 배율이 누적되지 않는다.
-            float baseSpeed = mediator.GetAttribute(_speedAttributeKey);
-            mediator.SetAttribute(_speedAttributeKey, baseSpeed * _speedMultiplier);
-            return controller;
-        }
-
-        /// <summary>
         /// 끝에 닿은 개체를 풀에 반납한다.
         /// </summary>
         /// <param name="member">반납할 개체의 조종부</param>
         private void ReleaseMember(CrowdController member)
         {
-            _pool.Release(member);
+            // 재사용될 때 다른 레인이 다시 구독하므로 반납 전에 해제한다
+            member.OnLaneEndReached -= ReleaseMember;
+            _activeCount--;
+
+            if (ObjectPoolManager.Instance != null)
+                ObjectPoolManager.Instance.Release(member.gameObject);
+            else
+                Destroy(member.gameObject);
         }
 
         /// <summary>
@@ -233,19 +226,32 @@ namespace AI.Crowd
         {
             float normalized = distance / _laneLength;
             Vector3 position = _lane.EvaluatePosition(normalized);
-            Vector3 tangent = Vector3.ProjectOnPlane(_lane.EvaluateTangent(normalized), Vector3.up);
+
+            // Linear Knot 은 그 지점의 접선이 0 이라 EvaluateTangent 대신 바로 앞 점과의 위치 차이로 방향을 구한다
+            Vector3 ahead = _lane.EvaluatePosition((distance + TANGENT_SAMPLE_DISTANCE) / _laneLength);
+            Vector3 tangent = Vector3.ProjectOnPlane(ahead - position, Vector3.up);
 
             Quaternion rotation = tangent.sqrMagnitude > MIN_DIRECTION_SQR_MAGNITUDE
                 ? Quaternion.LookRotation(tangent.normalized, Vector3.up)
                 : Quaternion.identity;
 
-            // 재사용 개체는 반납된 자리(레인 끝)가 아니라 새 위치에서 켜지도록 옮긴 뒤 활성화한다
-            CrowdController member = _pool.Get();
-            member.transform.SetPositionAndRotation(position, rotation);
-            member.gameObject.SetActive(true);
+            // 개체마다 옆 오프셋을 뽑아 스폰 위치에도 같이 적용한다. 조종부가 반납될 때까지 이 오프셋을 유지한다.
+            float lateralOffset = Random.Range(-_lateralOffsetRange, _lateralOffsetRange);
+            if (tangent.sqrMagnitude > MIN_DIRECTION_SQR_MAGNITUDE)
+                position += Vector3.Cross(Vector3.up, tangent.normalized) * lateralOffset;
+
+            // 매니저가 새 위치로 옮긴 뒤 켜서 돌려준다
+            GameObject obj = ObjectPoolManager.Instance.Get(_prefab, position, rotation);
+            if (obj == null) return;
+
+            CrowdController member = obj.GetComponent<CrowdController>();
+            member.ApplySpeed(_speedAttributeKey, _speedMultiplier);
+
+            member.OnLaneEndReached += ReleaseMember;
+            _activeCount++;
 
             // SetLane 이 현재 위치를 기준점으로 저장하므로 위치를 먼저 옮긴다
-            member.SetLane(_lane, distance);
+            member.SetLane(_lane, distance, lateralOffset);
         }
         #endregion
     }
