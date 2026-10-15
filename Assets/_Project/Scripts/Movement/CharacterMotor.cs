@@ -101,6 +101,16 @@ namespace Movement
         {
             Move(Time.deltaTime);
         }
+
+        private void OnDisable()
+        {
+            // 풀에 반납됐다 다시 꺼낼 때 이전 점프·이동 속도가 이어지지 않게 한다
+            _verticalVelocity = 0.0f;
+            _horizontalVelocity = Vector3.zero;
+            _externalDisplacement = Vector3.zero;
+            _isJumping = false;
+            _isHovering = false;
+        }
         #endregion
 
         #region Public Methods
