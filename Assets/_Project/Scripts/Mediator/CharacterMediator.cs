@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Attribute.Core;
+using Attribute.Effect;
 using Mediator.SubMediators;
 using Skill.Buff;
 using UnityEngine;
@@ -24,6 +25,7 @@ namespace Mediator
         [SerializeField] private RotateMediator _rotateMediator;
         [SerializeField] private SpawnMediator _spawnMediator;
         [SerializeField] private AnimationMediator _animationMediator;
+        [SerializeField] private PetMediator _petMediator;
         #endregion
 
         #region Private Fields
@@ -32,6 +34,9 @@ namespace Mediator
         private AttributeSet _attributeSet;
         private bool _isDead;
         private bool _isRiding;
+        private bool _isAutoForward;
+        // 가장 최근 어트리뷰트 변경의 출처 정보. 피격은 Health 변경 알림 도중 동기로 오므로 피격 방향 계산에 쓴다
+        private SEffectContext _lastChangeContext;
         #endregion
 
         #region Properties
@@ -51,6 +56,8 @@ namespace Mediator
         public event Action<string, float, float> OnAttributeChanged;
         /// <summary>캐릭터가 피격되었을 때 발생한다.</summary>
         public event Action OnHit;
+        /// <summary>약점에 명중했을 때 맞은 지점을 알린다. OnHit 보다 먼저 발생한다.</summary>
+        public event Action<Vector3?> OnCriticalHit;
         /// <summary>캐릭터가 사망한 즉시 한 번 발생한다.</summary>
         public event Action OnDeath;
         /// <summary>사망 후 처리(사망 애니메이션)가 끝나 GameObject 를 파괴하기 직전에 한 번 발생한다.</summary>
@@ -118,6 +125,34 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 출처 정보 없이 effect 를 이 캐릭터에 적용한다.
+        /// </summary>
+        /// <param name="effect">적용할 효과</param>
+        /// <returns>적용했으면 true. 효과·대상 어트리뷰트가 없거나 cursor 가 필요한 효과면 false</returns>
+        public bool ApplyEffect(SOAttributeEffect effect)
+        {
+            return ApplyEffect(new SEffectContext(null, effect));
+        }
+
+        /// <summary>
+        /// context.Effect 를 출처 정보와 함께 이 캐릭터에 적용한다. context 는 어트리뷰트 변경 콜백까지 전달된다.
+        /// </summary>
+        /// <param name="context">적용할 효과(Effect)와 출처 정보. ValueSource 가 Attribute 인 효과는 Cursor 가 필요하다</param>
+        /// <returns>적용했으면 true. 효과·대상 어트리뷰트가 없거나 필요한 cursor 가 없으면 false</returns>
+        public bool ApplyEffect(SEffectContext context)
+        {
+            SOAttributeEffect effect = context.Effect;
+            IEffectTarget target = EffectTarget;
+            if (!effect || target == null || !target.IsValidTarget(effect.TargetAttribute)) return false;
+
+            bool needsCursor = effect.ValueSource == EValueSource.Attribute;
+            if (needsCursor && (context.Cursor == null || !context.Cursor.IsValidTarget(effect.CursorAttribute))) return false;
+
+            effect.Apply(target, context);
+            return true;
+        }
+
+        /// <summary>
         /// 스킬을 활성화/비활성화한다.
         /// </summary>
         /// <param name="skillName">대상 스킬 이름</param>
@@ -173,6 +208,7 @@ namespace Mediator
             if (_skillMediator && _moveMediator) _skillMediator.SetGetGrounded(_moveMediator.IsGrounded);
             if (_skillMediator && _cameraMediator) _skillMediator.SetGetAimRay(_cameraMediator.GetAimRay);
             if (_attributeMediator && _combatMediator) _attributeMediator.SetIsDamageBlocked(_combatMediator.IsDamageBlocked);
+            if (_attributeMediator && _combatMediator) _attributeMediator.SetDamageModifier(_combatMediator.ModifyDamage);
         }
         /// <summary>
         /// 등록된 바인딩 해제
@@ -195,12 +231,14 @@ namespace Mediator
             if (_skillMediator) _skillMediator.ClearGetGrounded();
             if (_skillMediator) _skillMediator.ClearGetAimRay();
             if (_attributeMediator) _attributeMediator.ClearIsDamageBlocked();
+            if (_attributeMediator) _attributeMediator.ClearDamageModifier();
         }
         /// <summary>
         /// 중재자들이 원하는 값 변경시 알림 발송
         /// </summary>
         private void OnAttributeChangeCallback(SAttributeChangeData data)
         {
+            _lastChangeContext = data.Context;
             foreach (var mediator in _mediators)
             {
                 mediator.NotifyAttributeChanged(data);
@@ -264,6 +302,20 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 스캔 발동 위치를 펫에게 정하게 하고, 정해지면 그 위치에서 스캔을 시작한다. 펫이 없으면 캐릭터 위치에서 바로 시작한다.
+        /// </summary>
+        private void OnScanRequestedCallback()
+        {
+            if (_petMediator)
+            {
+                _petMediator.RequestScan(_skillMediator.BeginScan);
+                return;
+            }
+
+            _skillMediator.BeginScan(transform.position);
+        }
+
+        /// <summary>
         /// 스킬 중재자가 보낸 버프 배율을 대상에 맞는 중재자로 전달한다.
         /// </summary>
         /// <param name="buffRatios">대상별 배율 목록</param>
@@ -294,6 +346,17 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 자동 전진 상태를 기록하고 이동 중재자로 전달한다.
+        /// </summary>
+        /// <param name="isEnabled">켜면 true</param>
+        /// <param name="turnSpeed">전진 방향이 시점 방향을 따라 도는 속도(도/초)</param>
+        private void OnAutoForwardChangedCallback(bool isEnabled, float turnSpeed)
+        {
+            _isAutoForward = isEnabled;
+            if (_moveMediator) _moveMediator.SetAutoForward(isEnabled, turnSpeed);
+        }
+
+        /// <summary>
         /// 구르기 시작을 애니메이션 중재자로 전달한다. 탑승 중이면 몸·보드가 볼 방향으로 바꿔 전달한다.
         /// </summary>
         /// <param name="direction">구르기 방향 (월드 기준)</param>
@@ -314,15 +377,23 @@ namespace Mediator
         /// <summary>
         /// 구르는 동안 몸이 볼 방향을 반환한다. 탑승 중이고 시점 뒤쪽으로 구르면 반대 방향(앞쪽)을 본다.
         /// 보드가 뒤로 갈 때 앞을 본 채 미끄러지는 규칙과 맞춘다. 실제 구르기 이동 방향은 바꾸지 않는다.
+        /// 자동 전진 중에는 항상 전진 방향으로 구르므로 바꾸지 않는다 (전진 방향이 시점을 늦게 따라와 뒤쪽으로 판정될 수 있다).
         /// </summary>
         /// <param name="direction">구르기 방향 (월드 기준)</param>
         /// <returns>몸이 볼 방향</returns>
         private Vector3 GetRollLookDirection(Vector3 direction)
         {
-            if (!_isRiding || !_moveMediator) return direction;
+            if (!_isRiding || _isAutoForward || !_moveMediator) return direction;
 
             bool isBackward = Vector3.Dot(direction, _moveMediator.GetViewDirection()) < 0.0f;
             return isBackward ? -direction : direction;
+        }
+
+        private void OnCriticalHitCallback(Vector3? hitPoint)
+        {
+            if (_isDead) return;
+
+            OnCriticalHit?.Invoke(hitPoint);
         }
 
         private void OnHitCallback()
@@ -331,8 +402,25 @@ namespace Mediator
 
             Debug.Log($"{name} is hit!");
             // 치명타는 같은 프레임에 OnHit 다음 OnDeath 가 오므로, 이미 죽었으면 깜빡임을 시작하지 않는다
-            if (_animationMediator && !_combatMediator.IsDead()) _animationMediator.NotifyHit();
+            if (!_combatMediator.IsDead())
+            {
+                Vector3? hitSource = GetHitSource(_lastChangeContext);
+                if (_animationMediator) _animationMediator.NotifyHit(hitSource);
+                if (_petMediator) _petMediator.NotifyHit(_animationMediator ? _animationMediator.GetHitDirection(hitSource) : 0);
+            }
             OnHit?.Invoke();
+        }
+
+        /// <summary>
+        /// 피격 방향 계산에 쓸 기준 위치를 반환한다. 맞은 지점 → 공격자 위치 순으로 고른다.
+        /// </summary>
+        /// <param name="context">피격을 일으킨 어트리뷰트 변경의 출처 정보</param>
+        /// <returns>기준 위치. 맞은 지점과 공격자가 모두 없으면 null</returns>
+        private static Vector3? GetHitSource(SEffectContext context)
+        {
+            if (context.HitPoint.HasValue) return context.HitPoint;
+            if (context.Cursor is Component cursor && cursor) return cursor.transform.position;
+            return null;
         }
 
         /// <summary>
@@ -347,6 +435,7 @@ namespace Mediator
             Debug.Log($"{name} is Death!");
             OnDeath?.Invoke();
             DisableControl();
+            if (_petMediator) _petMediator.NotifyDeath();
 
             if (!_animationMediator)
             {
@@ -401,7 +490,9 @@ namespace Mediator
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested += OnFireCallback;
             if (_skillMediator) _skillMediator.OnSkillUsed += OnSkillUsedCallback;
             if (_skillMediator) _skillMediator.OnInteractableChanged += OnInteractableChangedCallback;
+            if (_skillMediator) _skillMediator.OnScanRequested += OnScanRequestedCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
+            if (_combatMediator) _combatMediator.OnCriticalHit += OnCriticalHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
             if (_animationMediator) _animationMediator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged += _animationMediator.SetMoveDirection;
@@ -424,6 +515,9 @@ namespace Mediator
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted += _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted += _skillMediator.NotifyRollStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded += _skillMediator.NotifyRollEnded;
+            if (_moveMediator && _skillMediator) _moveMediator.OnJumpReleased += _skillMediator.NotifyJumpReleased;
+            if (_skillMediator && _moveMediator) _skillMediator.OnHoverChanged += _moveMediator.SetHover;
+            if (_skillMediator) _skillMediator.OnAutoForwardChanged += OnAutoForwardChangedCallback;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted += _cameraMediator.NotifyRollStarted;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded += _cameraMediator.NotifyRollEnded;
             if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged += _combatMediator.NotifyFireCharge;
@@ -431,6 +525,9 @@ namespace Mediator
             if (_cameraMediator && _animationMediator) _cameraMediator.OnAimChanged += _animationMediator.NotifyAim;
             if (_combatMediator && _animationMediator) _combatMediator.OnInvincibilityEnded += _animationMediator.NotifyInvincibilityEnded;
             if (_combatMediator) _combatMediator.OnMoveSpeedReduceRequested += OnMoveSpeedReduceCallback;
+            if (_moveMediator && _petMediator) _moveMediator.OnJumpStarted += _petMediator.NotifyJumpStarted;
+            if (_moveMediator && _petMediator) _moveMediator.OnJumpEnded += _petMediator.NotifyJumpEnded;
+            if (_animationMediator && _petMediator) _animationMediator.OnSpecialIdleStarted += _petMediator.NotifySpecialIdle;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -444,7 +541,9 @@ namespace Mediator
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested -= OnFireCallback;
             if (_skillMediator) _skillMediator.OnSkillUsed -= OnSkillUsedCallback;
             if (_skillMediator) _skillMediator.OnInteractableChanged -= OnInteractableChangedCallback;
+            if (_skillMediator) _skillMediator.OnScanRequested -= OnScanRequestedCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
+            if (_combatMediator) _combatMediator.OnCriticalHit -= OnCriticalHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
             if (_animationMediator) _animationMediator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
             if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged -= _animationMediator.SetMoveDirection;
@@ -467,6 +566,9 @@ namespace Mediator
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted -= _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted -= _skillMediator.NotifyRollStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollEnded -= _skillMediator.NotifyRollEnded;
+            if (_moveMediator && _skillMediator) _moveMediator.OnJumpReleased -= _skillMediator.NotifyJumpReleased;
+            if (_skillMediator && _moveMediator) _skillMediator.OnHoverChanged -= _moveMediator.SetHover;
+            if (_skillMediator) _skillMediator.OnAutoForwardChanged -= OnAutoForwardChangedCallback;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted -= _cameraMediator.NotifyRollStarted;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded -= _cameraMediator.NotifyRollEnded;
             if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged -= _combatMediator.NotifyFireCharge;
@@ -474,6 +576,9 @@ namespace Mediator
             if (_cameraMediator && _animationMediator) _cameraMediator.OnAimChanged -= _animationMediator.NotifyAim;
             if (_combatMediator && _animationMediator) _combatMediator.OnInvincibilityEnded -= _animationMediator.NotifyInvincibilityEnded;
             if (_combatMediator) _combatMediator.OnMoveSpeedReduceRequested -= OnMoveSpeedReduceCallback;
+            if (_moveMediator && _petMediator) _moveMediator.OnJumpStarted -= _petMediator.NotifyJumpStarted;
+            if (_moveMediator && _petMediator) _moveMediator.OnJumpEnded -= _petMediator.NotifyJumpEnded;
+            if (_animationMediator && _petMediator) _animationMediator.OnSpecialIdleStarted -= _petMediator.NotifySpecialIdle;
         }
         #endregion
     }

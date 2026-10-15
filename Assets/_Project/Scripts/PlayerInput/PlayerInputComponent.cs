@@ -7,13 +7,14 @@ using Mediator.SubMediators;
 // 이 프로젝트 코드에서 해당 클래스를 쓸 때는 반드시 UnityEngine.InputSystem.PlayerInput 으로 완전 수식한다.
 namespace PlayerInput
 {
-    public class PlayerInputComponent : MonoBehaviour, IMoveController, ICameraController, ISkillRequestController
+    public class PlayerInputComponent : MonoBehaviour, IMoveController, IJumpReleaseController, ICameraController, ISkillRequestController
     {
         #region Events
         private event Action<Vector2> _onMoveRequested;
         private event Action<Vector2> _onLookRequested;
         private event Action<bool> _onAimRequested;
         private event Action _onJumpRequested;
+        private event Action _onJumpReleaseRequested;
         private event Action<string> _requestExecuteSkill;
         private event Action<string> _requestStopSkill;
         #endregion
@@ -36,6 +37,18 @@ namespace PlayerInput
         public void ClearJumpRequest()
         {
             _onJumpRequested = null;
+        }
+        #endregion
+
+        #region IJumpReleaseController
+        public void SetJumpReleaseRequest(Action callback)
+        {
+            if (callback == null) return;
+            _onJumpReleaseRequested = callback;
+        }
+        public void ClearJumpReleaseRequest()
+        {
+            _onJumpReleaseRequested = null;
         }
         #endregion
         
@@ -113,9 +126,13 @@ namespace PlayerInput
             _onLookRequested?.Invoke(value.Get<Vector2>());
         }
 
+        // Jump 액션은 Press And Release 로 설정되어 누를 때와 뗄 때 모두 호출된다.
         private void OnJump(InputValue value)
         {
-            _onJumpRequested?.Invoke();
+            if (value.isPressed)
+                _onJumpRequested?.Invoke();
+            else
+                _onJumpReleaseRequested?.Invoke();
         }
 
         private void OnRoll(InputValue value)

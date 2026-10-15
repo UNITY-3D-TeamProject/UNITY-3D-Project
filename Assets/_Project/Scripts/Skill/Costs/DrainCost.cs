@@ -24,6 +24,7 @@ namespace Skill.Costs
         private Func<string, float> _getAttribute;
         private Func<string, float, bool> _requestPay;
         private Coroutine _drainRoutine;
+        private float _extraDrainPerSecond;
         #endregion
 
         #region Properties
@@ -92,6 +93,15 @@ namespace Skill.Costs
             StopCoroutine(_drainRoutine);
             _drainRoutine = null;
         }
+
+        /// <summary>
+        /// 초당 소모량에 더할 추가 소모량을 설정한다. 0 이면 추가 소모 없음.
+        /// </summary>
+        /// <param name="extraDrainPerSecond">초당 추가 소모량</param>
+        public void SetExtraDrainPerSecond(float extraDrainPerSecond)
+        {
+            _extraDrainPerSecond = Mathf.Max(0.0f, extraDrainPerSecond);
+        }
         #endregion
 
         #region Coroutines
@@ -104,7 +114,7 @@ namespace Skill.Costs
             {
                 yield return null;
 
-                _requestPay?.Invoke(_resourceKey, _drainPerSecond * Time.deltaTime);
+                _requestPay?.Invoke(_resourceKey, (_drainPerSecond + _extraDrainPerSecond) * Time.deltaTime);
                 if (_getAttribute == null || _getAttribute.Invoke(_resourceKey) > 0.0f) continue;
 
                 _drainRoutine = null;

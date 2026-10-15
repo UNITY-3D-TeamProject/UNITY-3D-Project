@@ -23,6 +23,8 @@ namespace Mediator.SubMediators
         #region Private Fields
         // 어트리뷰트 이름을 받아 감소를 막을지 판정하는 함수. 외부(CharacterMediator)가 주입한다.
         private Func<string, bool> _isDamageBlocked;
+        // (어트리뷰트 이름, 감소량, 출처 정보)를 받아 보정한 감소량을 반환하는 함수. 외부(CharacterMediator)가 주입한다.
+        private Func<string, float, SEffectContext, float> _modifyDamage;
         #endregion
 
         #region Properties
@@ -47,7 +49,7 @@ namespace Mediator.SubMediators
         protected override void OnEnable()
         {
             if (_attributeSet) _attributeSet.AddOnAttributeChangedCallback(RelayAttributeChanged);
-            // 데미지 차단 판정은 나중에 주입될 수 있으므로 AttributeSet 만 있으면 등록한다
+            // 데미지 차단 판정·보정은 나중에 주입될 수 있으므로 AttributeSet 만 있으면 등록한다
             if (_attributeSet) _attributeSet.SetPreAttributeChangedCallback(ClampAttribute);
             if (_attributeSet && _regenerator) _regenerator.SetTarget(_attributeSet);
             base.OnEnable();
@@ -124,6 +126,23 @@ namespace Mediator.SubMediators
         {
             _isDamageBlocked = null;
         }
+
+        /// <summary>
+        /// 어트리뷰트 감소량을 보정하는 함수를 설정한다.
+        /// </summary>
+        /// <param name="modifyDamage">(어트리뷰트 이름, 감소량, 출처 정보)를 받아 보정한 감소량을 반환하는 함수</param>
+        public void SetDamageModifier(Func<string, float, SEffectContext, float> modifyDamage)
+        {
+            _modifyDamage = modifyDamage;
+        }
+
+        /// <summary>
+        /// 감소량 보정 함수를 해제한다.
+        /// </summary>
+        public void ClearDamageModifier()
+        {
+            _modifyDamage = null;
+        }
         #endregion
 
         #region Protected Methods
@@ -148,13 +167,14 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 값이 반영되기 전에 데미지 차단을 적용한 뒤 AttributeClamper 규칙으로 보정한다.
-        /// 차단 대상이면 출처와 관계없이 모든 감소를 막는다.
+        /// 값이 반영되기 전에 데미지 차단 → 감소량 보정 순으로 적용한 뒤 AttributeClamper 규칙으로 보정한다.
+        /// 차단 대상이면 출처와 관계없이 모든 감소를 막고, 보정하지 않는다.
         /// </summary>
-        private void ClampAttribute(string attributeName, ref float newValue, float oldValue)
+        private void ClampAttribute(string attributeName, ref float newValue, float oldValue, SEffectContext context)
         {
             bool isDamage = newValue < oldValue;
             if (isDamage && _isDamageBlocked != null && _isDamageBlocked(attributeName)) newValue = oldValue;
+            else if (isDamage && _modifyDamage != null) newValue = oldValue - _modifyDamage(attributeName, oldValue - newValue, context);
 
             if (_clamper) _clamper.Clamp(_attributeSet, attributeName, ref newValue);
         }

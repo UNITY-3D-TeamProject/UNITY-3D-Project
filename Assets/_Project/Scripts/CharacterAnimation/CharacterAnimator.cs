@@ -13,6 +13,13 @@ namespace CharacterAnimation
         private const string UPPER_BODY_LAYER_NAME = "UpperBody";
         // 이동 방향이 정확히 옆(±90°)일 때 계산 오차로 뒤쪽으로 판정되지 않도록 앞쪽 반원을 이 각도(도)만큼 넓힌다
         private const float BOARD_SIDE_TOLERANCE = 1.0f;
+        // 피격 방향 판정: 몸 정면과 이 각도(도) 이내면 앞, (180 - 이 각도) 밖이면 뒤, 나머지는 좌/우
+        private const float HIT_FRONT_HALF_ANGLE = 45.0f;
+        // Animator HitDirection 값
+        private const int HIT_DIRECTION_FRONT = 0;
+        private const int HIT_DIRECTION_BACK = 1;
+        private const int HIT_DIRECTION_LEFT = 2;
+        private const int HIT_DIRECTION_RIGHT = 3;
         #endregion
 
         #region Serialized Fields
@@ -53,6 +60,8 @@ namespace CharacterAnimation
         [SerializeField, Min(0.0f)] private float _ridingTurnBlendTime = 0.15f;
         [Tooltip("탑승 중 보드(와 하체)가 목표 방향으로 도는 속도(도/초).")]
         [SerializeField, Min(0.0f)] private float _boardTurnSpeed = 720.0f;
+        [Tooltip("탈것 위에 서 있는 동안 몸(_bodyName)을 올릴 높이. 탈것이 생성될 때 올리고 제거될 때 되돌린다.")]
+        [SerializeField] private float _ridingBodyHeight = 0.3f;
         [Tooltip("몸 정면을 읽을 Transform 이름. CharacterRotator 가 돌리는 대상이다.")]
         [SerializeField] private string _bodyName = "SK_ZMike";
 
@@ -92,6 +101,8 @@ namespace CharacterAnimation
         private Transform _body;
         // 몸의 기준 자세(yaw 제외)의 역회전. 몸 localRotation 에서 yaw 만 뽑을 때 쓴다
         private Quaternion _bodyRestInverse = Quaternion.identity;
+        // 몸의 기준 로컬 위치. 탑승 중 높이를 더하고 하차 시 되돌릴 때 쓴다
+        private Vector3 _bodyRestPosition;
         private float _idleTime;
         private Vector3 _lastViewForward;
         private bool _isDead;
@@ -101,6 +112,8 @@ namespace CharacterAnimation
         #region Events
         /// <summary>사망 애니메이션(사망 루프 정해진 횟수 재생)이 끝났을 때 한 번 발생한다.</summary>
         public event Action OnDeathAnimationEnded;
+        /// <summary>특수 Idle 재생을 시작할 때 재생할 특수 Idle 인덱스(SpecialIdleIndex)를 알린다.</summary>
+        public event Action<int> OnSpecialIdleStarted;
         #endregion
 
         #region Unity Lifecycle
@@ -395,11 +408,36 @@ namespace CharacterAnimation
 
         /// <summary>
         /// 탑승 중 이동 방향으로 돌릴 보드(탈것)를 설정한다. 위치는 그대로 두고 회전만 덮어쓴다.
+        /// 보드가 있으면 몸을 탈것 위 높이로 올리고, 없으면 원래 높이로 되돌린다.
         /// </summary>
         /// <param name="board">탈것 Transform. 없으면 null</param>
         public void SetRidingBoard(Transform board)
         {
             _ridingBoard = board;
+            if (_body) _body.localPosition = _bodyRestPosition + (board ? Vector3.up * _ridingBodyHeight : Vector3.zero);
+        }
+
+        /// <summary>
+        /// 피격을 알린다. 기준 위치가 몸 정면 기준 어느 쪽(앞/뒤/좌/우)인지 판정해 상체 피격 애니메이션을 재생한다.
+        /// </summary>
+        /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치). null 이면 앞쪽 피격</param>
+        public void PlayHit(Vector3? hitSource)
+        {
+            if (!enabled || _isDead) return;
+
+            ResetSpecialIdle();
+            _animator.SetInteger(AnimHash.HitDirection, CalculateHitDirection(hitSource));
+            _animator.SetTrigger(AnimHash.Hit);
+        }
+
+        /// <summary>
+        /// 기준 위치가 몸 정면 기준 어느 쪽인지 판정해 피격 방향(HitDirection)을 반환한다.
+        /// </summary>
+        /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치). null 이면 앞쪽 피격</param>
+        /// <returns>0: 앞, 1: 뒤, 2: 왼쪽, 3: 오른쪽</returns>
+        public int GetHitDirection(Vector3? hitSource)
+        {
+            return CalculateHitDirection(hitSource);
         }
 
         /// <summary>
@@ -425,6 +463,7 @@ namespace CharacterAnimation
             _animator.ResetTrigger(AnimHash.Jump);
             _animator.ResetTrigger(AnimHash.Roll);
             _animator.ResetTrigger(AnimHash.Mount);
+            _animator.ResetTrigger(AnimHash.Hit);
             _animator.SetTrigger(AnimHash.Death);
         }
         #endregion
@@ -461,9 +500,11 @@ namespace CharacterAnimation
             if (_idleTime < _specialIdleDelay) return;
 
             _idleTime = 0.0f;
-            _animator.SetInteger(AnimHash.SpecialIdleIndex, UnityEngine.Random.Range(0, _specialIdleCount));
+            int specialIdleIndex = UnityEngine.Random.Range(0, _specialIdleCount);
+            _animator.SetInteger(AnimHash.SpecialIdleIndex, specialIdleIndex);
             _animator.SetBool(AnimHash.IsSpecialIdle, true);
             _animator.SetTrigger(AnimHash.SpecialIdle);
+            OnSpecialIdleStarted?.Invoke(specialIdleIndex);
         }
 
         /// <summary>
@@ -511,6 +552,7 @@ namespace CharacterAnimation
 
             Vector3 restEuler = _body.localRotation.eulerAngles;
             _bodyRestInverse = Quaternion.Inverse(Quaternion.Euler(restEuler.x, 0.0f, restEuler.z));
+            _bodyRestPosition = _body.localPosition;
         }
 
         /// <summary>
@@ -645,6 +687,28 @@ namespace CharacterAnimation
         }
 
         /// <summary>
+        /// 기준 위치가 몸 정면 기준 어느 방향인지 Animator HitDirection 값으로 반환한다.
+        /// 기준 위치가 없거나 몸과 수평 위치가 같으면 앞쪽으로 본다.
+        /// </summary>
+        /// <param name="hitSource">피격 방향 기준 월드 위치</param>
+        /// <returns>HitDirection 값 (0 앞, 1 뒤, 2 왼쪽, 3 오른쪽)</returns>
+        private int CalculateHitDirection(Vector3? hitSource)
+        {
+            if (!hitSource.HasValue) return HIT_DIRECTION_FRONT;
+
+            Vector3 origin = _body ? _body.position : _animator.transform.position;
+            Vector3 toSource = Vector3.ProjectOnPlane(hitSource.Value - origin, Vector3.up);
+            if (toSource.sqrMagnitude <= Mathf.Epsilon) return HIT_DIRECTION_FRONT;
+
+            float relativeYaw = Mathf.DeltaAngle(GetBodyYaw(), GetYaw(toSource));
+            float absYaw = Mathf.Abs(relativeYaw);
+            if (absYaw <= HIT_FRONT_HALF_ANGLE) return HIT_DIRECTION_FRONT;
+            if (absYaw >= 180.0f - HIT_FRONT_HALF_ANGLE) return HIT_DIRECTION_BACK;
+
+            return (relativeYaw > 0.0f) ? HIT_DIRECTION_RIGHT : HIT_DIRECTION_LEFT;
+        }
+
+        /// <summary>
         /// 월드 방향의 수평 yaw(도)를 반환한다. +z 가 0, +x 가 90 이다.
         /// </summary>
         /// <param name="direction">월드 방향</param>
@@ -750,6 +814,8 @@ namespace CharacterAnimation
             public static readonly int IsRiding = Animator.StringToHash("IsRiding");
             public static readonly int Mount = Animator.StringToHash("Mount");
             public static readonly int IsRidingPose = Animator.StringToHash("IsRidingPose");
+            public static readonly int Hit = Animator.StringToHash("Hit");
+            public static readonly int HitDirection = Animator.StringToHash("HitDirection");
             public static readonly int FireHoldState = Animator.StringToHash("FireHold");
             public static readonly int IdleState = Animator.StringToHash("Idle");
             public static readonly int DeathLoopState = Animator.StringToHash("DeathLoop");

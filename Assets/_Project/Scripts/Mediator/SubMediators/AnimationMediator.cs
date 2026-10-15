@@ -27,6 +27,8 @@ namespace Mediator.SubMediators
         #region Events
         /// <summary>CharacterAnimator 의 사망 애니메이션이 끝났을 때 발생한다.</summary>
         public event Action OnDeathAnimationEnded;
+        /// <summary>CharacterAnimator 가 특수 Idle 재생을 시작할 때 (특수 Idle 인덱스)를 알린다.</summary>
+        public event Action<int> OnSpecialIdleStarted;
         #endregion
 
         #region Unity Lifecycle
@@ -40,12 +42,14 @@ namespace Mediator.SubMediators
         protected override void OnEnable()
         {
             if (_characterAnimator) _characterAnimator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
+            if (_characterAnimator) _characterAnimator.OnSpecialIdleStarted += OnSpecialIdleStartedCallback;
             base.OnEnable();
         }
 
         private void OnDisable()
         {
             if (_characterAnimator) _characterAnimator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
+            if (_characterAnimator) _characterAnimator.OnSpecialIdleStarted -= OnSpecialIdleStartedCallback;
         }
         #endregion
 
@@ -192,13 +196,25 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 피격을 전달받아 깜빡임을 시작한다. 이미 깜빡이는 중이면 그대로 이어간다.
+        /// 피격을 전달받아 깜빡임을 시작하고 방향별 피격 애니메이션을 재생한다. 이미 깜빡이는 중이면 그대로 이어간다.
         /// </summary>
-        public void NotifyHit()
+        /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치). null 이면 전방 피격</param>
+        public void NotifyHit(Vector3? hitSource)
         {
-            if (!_blinker) return;
+            if (_blinker) _blinker.Play();
+            if (!_characterAnimator) return;
 
-            _blinker.Play();
+            _characterAnimator.PlayHit(hitSource);
+        }
+
+        /// <summary>
+        /// 기준 위치가 몸 정면 기준 어느 쪽인지 CharacterAnimator 로 판정한 피격 방향을 반환한다.
+        /// </summary>
+        /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치). null 이면 전방 피격</param>
+        /// <returns>0: 앞, 1: 뒤, 2: 왼쪽, 3: 오른쪽. CharacterAnimator 가 없으면 0</returns>
+        public int GetHitDirection(Vector3? hitSource)
+        {
+            return _characterAnimator ? _characterAnimator.GetHitDirection(hitSource) : 0;
         }
 
         /// <summary>
@@ -241,6 +257,11 @@ namespace Mediator.SubMediators
         private void OnDeathAnimationEndedCallback()
         {
             OnDeathAnimationEnded?.Invoke();
+        }
+
+        private void OnSpecialIdleStartedCallback(int specialIdleIndex)
+        {
+            OnSpecialIdleStarted?.Invoke(specialIdleIndex);
         }
         #endregion
     }
