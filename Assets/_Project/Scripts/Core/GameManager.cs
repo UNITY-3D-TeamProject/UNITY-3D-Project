@@ -201,6 +201,12 @@ namespace Core
         // [이벤트] SceneManager.sceneLoaded(씬 로드 완료)가 발생하면 호출된다. (OnEnable에서 구독)
         private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            // 로딩씬은 이전 씬 위에 Additive로 겹쳐 열리므로 무시한다. (이때 찾으면 이전 씬의 StageManager가 잡힌다)
+            if (mode == LoadSceneMode.Additive)
+            {
+                return;
+            }
+
             _stageManager = FindAnyObjectByType<StageManager>();
 
             if (_stageManager == null)
