@@ -9,9 +9,16 @@ namespace SceneTransition
     /// 순서: 튜토리얼 → 로비 → 피드 → 로비 → 파일 → 로비 → 보안 → 로비 → 라이브.
     /// 현재 단계는 처음 사용할 때 활성 씬의 Build Settings 번호로 정한다.
     /// (로비는 순서에 여러 번 나오므로, 로비에서 바로 플레이를 시작하면 첫 번째 로비로 본다)
+    /// 전환할 때는 로딩씬을 지금 씬 위에 겹쳐 띄우고, 로딩씬의 LoadingScreen이 지금 씬을 정리한 뒤 목적지 씬을 비동기로 불러온다.
     /// </summary>
     public static class SceneLoader
     {
+        #region Constants
+        // Build Settings 맨 끝에 등록한 로딩씬 이름.
+        // ESceneType에 넣지 않아서 포탈 목적지로 고를 수 없게 한다.
+        private const string LOADING_SCENE_NAME = "Loading";
+        #endregion
+
         #region Private Fields
         private static readonly ESceneType[] Sequence =
         {
@@ -32,13 +39,18 @@ namespace SceneTransition
         #endregion
 
         #region Properties
-        /// <summary>씬을 불러오는 중인지 여부.</summary>
+        /// <summary>씬을 불러오는 중인지 여부. 로딩씬에 들어간 뒤 목적지 씬 로드가 끝날 때까지 true.</summary>
         public static bool IsLoading => _isLoading;
 
         /// <summary>
         /// 지금 씬으로 넘어오기 직전에 있던 씬. 플레이를 시작한 뒤 한 번도 전환하지 않았으면 null.
         /// </summary>
         public static ESceneType? PreviousScene { get; private set; }
+
+        /// <summary>
+        /// 로딩씬이 불러갈 목적지 씬. 전환 중이 아니면 null.
+        /// </summary>
+        public static ESceneType? PendingScene { get; private set; }
         #endregion
 
         #region Events
@@ -64,7 +76,8 @@ namespace SceneTransition
         }
 
         /// <summary>
-        /// 순서상 다음 씬일 때만 전환 직전 이벤트를 발행하고 씬을 불러온다.
+        /// 순서상 다음 씬일 때만 전환 직전 이벤트를 발행하고 로딩씬으로 넘어간다.
+        /// 목적지 씬은 로딩씬에서 불러온다.
         /// </summary>
         /// <param name="destination">가려는 씬</param>
         /// <returns>전환을 시작했으면 true</returns>
@@ -85,6 +98,13 @@ namespace SceneTransition
                 return false;
             }
 
+            // 로딩씬이 없으면 _isLoading이 풀리지 않고 멈추므로 상태를 바꾸기 전에 확인한다.
+            if (!Application.CanStreamedLevelBeLoaded(LOADING_SCENE_NAME))
+            {
+                Debug.LogError($"[SceneLoader] Build Settings에 {LOADING_SCENE_NAME} 씬이 등록되지 않았습니다.");
+                return false;
+            }
+
             ESceneType previous = Sequence[_step];
             _step++;
             _isLoading = true;
@@ -92,9 +112,30 @@ namespace SceneTransition
 
             OnBeforeSceneChange?.Invoke(previous, destination);
 
-            AsyncOperation operation = SceneManager.LoadSceneAsync(buildIndex);
-            operation.completed += _ => _isLoading = false;
+            // 로딩씬은 지금 씬 위에 겹쳐 띄운다. 지금 씬 정리와 목적지 불러오기는 로딩씬의 LoadingScreen이 한다.
+            // _isLoading은 목적지 로드가 끝날 때 푼다.
+            PendingScene = destination;
+            SceneManager.LoadSceneAsync(LOADING_SCENE_NAME, LoadSceneMode.Additive);
             return true;
+        }
+
+        /// <summary>
+        /// 로딩씬에서 호출한다. 기다리던 목적지 씬을 비동기로 불러오기 시작한다.
+        /// 활성화를 막아 둔 채로 반환하므로, 호출한 쪽에서 allowSceneActivation을 true로 바꿔야 씬이 넘어간다.
+        /// </summary>
+        /// <returns>불러오기 작업. 기다리는 목적지가 없으면 null</returns>
+        public static AsyncOperation LoadPendingSceneAsync()
+        {
+            if (!PendingScene.HasValue) return null;
+
+            AsyncOperation operation = SceneManager.LoadSceneAsync((int)PendingScene.Value);
+            operation.allowSceneActivation = false;
+            operation.completed += _ =>
+            {
+                _isLoading = false;
+                PendingScene = null;
+            };
+            return operation;
         }
         #endregion
 
@@ -107,6 +148,7 @@ namespace SceneTransition
             _hasStep = false;
             _isLoading = false;
             PreviousScene = null;
+            PendingScene = null;
             OnBeforeSceneChange = null;
         }
 
