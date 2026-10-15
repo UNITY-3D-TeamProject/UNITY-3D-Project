@@ -13,6 +13,8 @@ namespace Core
             Random,
         }
 
+        private const string MOVE_SPEED_KEY = "MoveSpeed";
+
         // 몬스터 프리팹은 씬의 ObjectPoolManager에도 같은 프리팹으로 등록돼 있어야 한다. (Get(프리팹)으로 꺼낸다)
         [Header("Monster")]
         [Tooltip("Fixed: Monster Prefab 하나를 소환 / Random: Random Monster Prefabs 중 하나를 골라 소환")]
@@ -23,6 +25,8 @@ namespace Core
         [SerializeField] private GameObject[] _randomMonsterPrefabs;
         [Tooltip("어떤 몬스터가 소환되든 똑같이 적용할 Effect")]
         [SerializeField] private SOAttributeEffect[] _monsterEffects;
+        [Tooltip("같은 종류 몬스터라도 개체마다 MoveSpeed가 다르도록 줄 비율 오차. 0.15면 85%~115%, 0이면 오차 없음")]
+        [SerializeField, Range(0.0f, 1.0f)] private float _moveSpeedVariance;
 
         // ObjectPoolManager.Instance는 Awake에서 채워지므로 Start에서 꺼낸다.
         private void Start()
@@ -68,8 +72,28 @@ namespace Core
             // 프리팹의 AttributeSet이 기본 SO를 읽은 뒤 개체별 Effect 값을 적용한다.
             // 몬스터를 재사용(Release 후 다시 Get)하게 되면 Attribute를 기본값으로 되돌린 뒤 적용해야 효과가 겹치지 않는다.
             ApplySpawnEffects(attributes, _monsterEffects);
+            // 오차는 Effect가 기본값을 넣은 뒤 곱한다. MoveSpeed를 Set하는 Effect가 없으면 재사용 시 배율이 누적된다.
+            ApplyMoveSpeedVariance(attributes);
 
             // monster.SetActive(true);
+        }
+
+        // MoveSpeed를 값 × Random(1 - 오차, 1 + 오차)로 덮어쓴다.
+        private void ApplyMoveSpeedVariance(AttributeSet attributes)
+        {
+            if (_moveSpeedVariance <= 0.0f)
+            {
+                return;
+            }
+
+            if (!attributes.IsValidTarget(MOVE_SPEED_KEY))
+            {
+                Debug.LogWarning($"[{name}] 어트리뷰트 '{MOVE_SPEED_KEY}'가 몬스터에 없어 속도 오차를 주지 않습니다.", this);
+                return;
+            }
+
+            float ratio = UnityEngine.Random.Range(1.0f - _moveSpeedVariance, 1.0f + _moveSpeedVariance);
+            attributes.SetValue(MOVE_SPEED_KEY, attributes.GetValue(MOVE_SPEED_KEY) * ratio);
         }
 
         // Fixed면 _monsterPrefab, Random이면 _randomMonsterPrefabs 중 하나를 고른다. 고를 수 없으면 null.
