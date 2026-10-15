@@ -101,7 +101,7 @@ namespace Map.Common
                 Instantiate(_goalPrefab, goalPosition, Quaternion.identity, _generatedRoot);
             }
 
-            PlaceObjects(placementPoints, random);
+            PlaceObjects(_placements, placementPoints, random);
 
             // 에디터에서 미리 만들어 볼 때는 베이크하지 않는다
             if ((_navMeshSurface != null) && Application.isPlaying)
@@ -149,15 +149,16 @@ namespace Map.Common
             List<Vector3> placementPoints,
             out Vector3 startPosition,
             out Vector3 goalPosition);
-        #endregion
 
-        #region Private Methods
-        // 배치 목록의 순서대로, 남은 자리 가운데 무작위로 골라 놓는다. 자리가 다 차면 남은 것은 놓지 않는다.
-        private void PlaceObjects(List<Vector3> placementPoints, System.Random random)
+        /// <summary>
+        /// 배치 목록의 순서대로, 남은 자리 가운데 무작위로 골라 놓는다. 자리가 다 차면 남은 것은 놓지 않는다.
+        /// 놓은 자리는 placementPoints 에서 빠지므로, 남은 자리를 다른 배치에 이어서 쓸 수 있다.
+        /// </summary>
+        protected void PlaceObjects(IReadOnlyList<SMapPlacement> placements, List<Vector3> placementPoints, System.Random random)
         {
-            if (_placements == null) return;
+            if (placements == null) return;
 
-            foreach (SMapPlacement placement in _placements)
+            foreach (SMapPlacement placement in placements)
             {
                 if (placement.Prefab == null) continue;
 
