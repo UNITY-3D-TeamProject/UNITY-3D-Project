@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Spawner]** 같은 종류 몬스터도 개체마다 MoveSpeed에 비율 오차(±%)를 줌 → [문서](../HANDOVER/SungJun/intent/intent-025-monster-attribute-variance.md)
 - **[Stage / Player State]** StageManager 체크포인트 컴포넌트 연결 및 도달 처리 → [문서](../HANDOVER/SungJun/intent/intent-016-stage-checkpoint-events.md)
 - **[Stage / Player State]** PlayerFacade 기반 낙하 복귀(이동)·사망 복구(파괴 후 재스폰) 구현, 사망 시 Destroy 전제 확인 필요 → [문서](../HANDOVER/SungJun/intent/intent-017-fall-death-recovery-playerfacade.md)
 - **[UI / Stage]** HUD를 PlayerFacade 기반으로 전환, 스킬 쿨(구르기·블루투스·스캔) UI 추가, 낙하 데미지를 Effect SO로 변경 → [문서](../HANDOVER/SungJun/intent/intent-018-hud-facade-skill-cooldown.md)

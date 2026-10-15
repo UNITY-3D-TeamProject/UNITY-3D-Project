@@ -30,3 +30,29 @@
 ## 4. 다음 할 일 (Next Steps)
 - 실제 맵에서 랜덤이 필요한 스포너를 Random으로 바꾸고 목록 채우기(목록의 프리팹은 모두 ObjectPoolManager에 등록 필요).
 - Map_4_Security에 ObjectPoolManager 배치(기존 이슈, 없으면 몬스터 안 나옴).
+
+---
+
+# 추가: 몬스터 개체별 MoveSpeed 비율 오차
+
+관련 intent: [intent-025](../intent/intent-025-monster-attribute-variance.md)
+
+## 1. 작업 요약 및 방법
+- `MonsterSpawner`에 `_moveSpeedVariance`(Range 0~1) 칸과 상수 `MOVE_SPEED_KEY = "MoveSpeed"` 추가.
+- 소환 직후 `ApplySpawnEffects` 다음에 `ApplyMoveSpeedVariance`가 MoveSpeed를 `값 × Random(1 - 오차, 1 + 오차)`로 `AttributeSet.SetValue`. 오차 0이면 아무것도 안 함, 몬스터에 MoveSpeed가 없으면 경고 후 건너뜀.
+- `Prefabs/System/MonsterSpawner.prefab` 기본값 `_moveSpeedVariance: 0.15`(±15%). 프리팹을 쓰는 Map_4_Security 스포너들도 이어받음.
+- 처음엔 (어트리뷰트 이름, 오차) 목록으로 만들었다가 사용자 요청으로 MoveSpeed 전용 칸 하나로 줄임.
+
+## 2. 결정 사항
+- SO를 개체 수만큼 만들지 않고 스포너가 오차를 붙인다. 종류별 기본 속도는 능력치 데이터/Effect, 개체별 흔들림은 스포너.
+- 비율(±%) 방식, MoveSpeed만.
+- 몬스터 이동 속도는 MovePrefab의 MoveMediator(`_speedValueKey: MoveSpeed`)가 변경 콜백으로 CharacterMotor.Speed에 넘기므로 SetValue만으로 실제 속도가 바뀜.
+
+## 3. 현재 상태 및 이슈
+- 컴파일 에러 0. Play(Map_3_File, 런타임 임시 스포너 10개, 씬 저장 안 함): Melee MoveSpeed 8.64~11.29로 퍼지고 CharacterMotor.Speed도 같은 값, CurrentHp 100 유지.
+- 콘솔의 `GameObjectInspector` / `SerializedObjectNotCreatableException`은 Play 전환 중 인스펙터가 지워진 오브젝트를 잡아서 난 에디터 내부 예외(코드와 무관).
+- 풀 재사용 시 MoveSpeed를 Set하는 Effect가 없으면 배율 누적(현재 Monster_Effect _MoveSpeed가 Set 10).
+- 미커밋. 워킹 트리의 `Monster_Effect`/`Monster_Effect 1` 삭제(이름 변경)·EditorBuildSettings 변경은 사용자 작업이라 손대지 않음.
+
+## 4. 다음 할 일 (Next Steps)
+- 실제 맵에서 몬스터 여러 마리가 쫓아올 때 ±15%가 적당한지 체감 확인 후 조정.

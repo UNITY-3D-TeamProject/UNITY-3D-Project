@@ -3,6 +3,7 @@
 SungJun 작업의 미해결 intent 문서를 정리한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Spawner]** 같은 종류 몬스터도 개체마다 MoveSpeed에 비율 오차(±%)를 줌 → [문서](./intent-025-monster-attribute-variance.md)
 - **[Stage / Player State]** StageManager 체크포인트 컴포넌트 연결 및 도달 처리 → [문서](./intent-016-stage-checkpoint-events.md)
 - **[Stage / Player State]** PlayerFacade 기반 낙하 복귀(이동)·사망 복구(파괴 후 재스폰) 구현, 사망 시 Destroy 전제 확인 필요 → [문서](./intent-017-fall-death-recovery-playerfacade.md)
 - **[Skill / Scan / Core]** 스캔 스킬 구현 — 파동이 닿은 대상이 IScannable 반응으로 드러났다가 duration 후 서서히 사라짐 → [문서](./intent-019-scan-system.md)
