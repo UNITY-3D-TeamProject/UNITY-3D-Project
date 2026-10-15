@@ -36,8 +36,10 @@ namespace AI.Crowd
         [SerializeField] private float _minSpacing = 2.5f;
 
         [Header("Respawn (열린 스플라인만)")]
-        [Tooltip("시작점에서 개체를 꺼내는 최소 시간 간격(초). 씬 시작 후 처음 채울 때도 이 간격을 쓴다. 시작점 반경(최소 간격의 절반) 안에 프리팹의 감지 레이어 대상이 있으면 꺼내지 않는다.")]
-        [SerializeField] private float _spawnInterval = 2.5f;
+        [Tooltip("시작점에서 개체를 꺼내는 시간 간격(초)의 최소값. 꺼낼 때마다 최소~최대 사이에서 간격을 새로 뽑는다. 씬 시작 후 처음 채울 때도 이 간격을 쓴다. 시작점 반경(최소 간격의 절반) 안에 프리팹의 감지 레이어 대상이 있으면 꺼내지 않는다.")]
+        [SerializeField] private float _minSpawnInterval = 1.5f;
+        [Tooltip("시작점에서 개체를 꺼내는 시간 간격(초)의 최대값.")]
+        [SerializeField] private float _maxSpawnInterval = 3.5f;
 
         [Header("Speed")]
         [SerializeField] private string _speedAttributeKey = "MoveSpeed";
@@ -52,6 +54,7 @@ namespace AI.Crowd
         private float _laneLength;
         private bool _isLaneClosed;
         private float _spawnTimer;
+        private float _nextSpawnInterval;
         private LayerMask _spawnBlockLayers;
         private float _lateralOffsetRange;
         #endregion
@@ -87,12 +90,8 @@ namespace AI.Crowd
 
             _isReady = true;
 
-            // 열린 레인은 한꺼번에 깔지 않고 Update 가 시작점에서 차례대로 꺼낸다. 첫 개체는 바로 나오게 한다.
-            if (!_isLaneClosed)
-            {
-                _spawnTimer = _spawnInterval;
-                return;
-            }
+            // 열린 레인은 한꺼번에 깔지 않고 Update 가 시작점에서 차례대로 꺼낸다. 첫 간격이 0 이라 첫 개체는 바로 나온다.
+            if (!_isLaneClosed) return;
 
             float spacing = _laneLength / _spawnCount;
             for (int i = 0; i < _spawnCount; i++)
@@ -108,11 +107,12 @@ namespace AI.Crowd
             _spawnTimer += Time.deltaTime;
 
             bool canSpawn = (_activeCount < _spawnCount) &&
-                            (_spawnTimer >= _spawnInterval) &&
+                            (_spawnTimer >= _nextSpawnInterval) &&
                             IsSpawnPointClear();
             if (!canSpawn) return;
 
             _spawnTimer = 0.0f;
+            _nextSpawnInterval = Random.Range(_minSpawnInterval, _maxSpawnInterval);
             SpawnMember(0.0f);
         }
         #endregion
