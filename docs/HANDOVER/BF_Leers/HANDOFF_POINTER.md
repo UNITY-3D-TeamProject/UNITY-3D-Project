@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-15** — 보행자가 점프 후 공중에 떠서 걷는 문제: `Pedstrian.prefab` 모델 Animator의 Apply Root Motion이 켜져 Jump 클립 상승분이 모델 localY에 남던 것을 껐다(코드 무변경). Play에서 점프 중 모델 localY 0 유지, Root Motion을 켠 대조는 최대 1.31 확인, 에러 0. **`Ranged.prefab`도 Root Motion 켜짐(미수정)**: [보행자 Root Motion 떠 있음](./2026-10-15/pedestrian-root-motion-float.md)
 - **2026-10-15** — 보행자가 뜬 채로 스폰되는 문제: 점프 중 풀에 반납되면 `CharacterMotor`의 수직 속도·점프 상태가 남아 있다가, 다시 꺼낼 때 점프를 이어서 했다. `CharacterMotor.OnDisable`에서 이동 상태를 초기화한다. 컴파일 에러 0, **Play 관찰 검증 미완**: [풀 반납 시 모터 상태 초기화](./2026-10-15/pooled-motor-state-reset.md)
 - **2026-10-15** — 보행자 추월 점프 복구: `Pedstrian.prefab`의 `CrowdController._detectLayers`가 31번 레이어 비트가 빠진 64로 바뀌어 다른 보행자를 감지하지 못하던 것을 2147483712로 되돌렸다(코드 무변경). Play에서 점프 시작 확인, 에러 0. **보행자가 이름 없는 31번 레이어라 같은 문제 재발 가능**: [보행자 점프 감지 레이어](./2026-10-15/pedestrian-jump-detect-layer.md)
 - **2026-10-15** — AI 애니메이션 코드 1차(intent-025): `EnemyAnimator`·`JumpAnimator`·`EnemyAnimationMediator` 신규, `CharacterMediator`·`SkillMediator`(`OnSkillStopped`)에 추가만. **컴파일 미확인, 컨트롤러·프리팹은 [USER] 가이드대로 작성 필요**: [AI 애니메이션 코드](./2026-10-15/enemy-animation-code.md)
