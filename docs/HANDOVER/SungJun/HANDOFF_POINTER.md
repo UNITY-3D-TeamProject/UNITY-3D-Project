@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-15** — 몬스터 DB SO 도입: 신규 `SOMonsterData`(프리팹 + 어트리뷰트 값), 에셋 Melee·Ranged·Special(MaxHp 100/CurrentHp 100/MoveSpeed 10/AttackDamage 1). `MonsterSpawner._monsterDatabase`로 소환한 프리팹의 데이터를 찾아 SetValue → 추가 Effect → MoveSpeed 오차. 프리팹 Effect 2개 비움. 인스펙터 칸별 Header 설명 추가. Play에서 종류별 값·오차·DB 없음 경고 확인: [작업 기록](./2026-10-15/spawner-facade-effect.md)
 - **2026-10-15** — 몬스터 개체별 MoveSpeed 오차: `MonsterSpawner._moveSpeedVariance`(비율 0~1) 추가, Effect 적용 뒤 MoveSpeed × (1 ± 오차)로 덮어씀. MonsterSpawner 프리팹 기본 ±15%. Play에서 Melee 10마리 MoveSpeed 8.64~11.29, 모터 속도 일치 확인, **미커밋**: [작업 기록](./2026-10-15/spawner-facade-effect.md)
 - **2026-10-15** — 스포너 Effect 경로 변경: `PlayerSpawner`가 시작 Effect를 `PlayerFacade.ApplyEffect`로 적용(실패 시 경고), `MonsterSpawner`에 `ESpawnMode`(Fixed/Random) + `_randomMonsterPrefabs` 추가(기존 칸 유지, 기본 Fixed). 몬스터 Effect는 기존 방식 유지. 컴파일 0에러, Play에서 플레이어 Effect 값·랜덤(Melee 5/Ranged 5)·빈 목록 에러 확인. **PlayerSpawner.cs는 CP949 인코딩**, 커밋 4a9a9e0: [작업 기록](./2026-10-15/spawner-facade-effect.md)
 - **2026-10-15** — 로딩씬 남은 확인 마무리(코드 변경 없음): 피드 첫 라운드 사망 재시작이 로딩씬 없이 씬만 다시 불러오고 순서 단계 유지 확인. 에디터가 포커스를 잃으면 컷씬 VideoPlayer가 0프레임에 멈춰 로딩이 안 끝나는 현상 기록(포커스 주면 재생, 빌드 미확인). **커밋 시 SO가 `Art/TestVideo/` 영상을 참조함 주의**: [작업 기록](./2026-10-15/loading-scene.md)

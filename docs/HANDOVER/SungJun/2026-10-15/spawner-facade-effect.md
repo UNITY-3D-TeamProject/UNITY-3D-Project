@@ -56,3 +56,35 @@
 
 ## 4. 다음 할 일 (Next Steps)
 - 실제 맵에서 몬스터 여러 마리가 쫓아올 때 ±15%가 적당한지 체감 확인 후 조정.
+
+---
+
+# 추가: 몬스터 DB SO(SOMonsterData)로 초기값 적용
+
+관련 intent: [intent-025](../intent/intent-025-monster-attribute-variance.md)
+
+## 1. 작업 요약 및 방법
+- 신규 `Scripts/Core/SOMonsterData.cs`: `_monsterPrefab`(DB 찾는 키) + `SOAttributeData.SAttribute[] _attributes`(기존 구조체 재사용). 메뉴 `Monster/MonsterData`.
+- `MonsterSpawner`: `_monsterDatabase`(SOMonsterData[]) 추가. 소환 후 `ApplyMonsterData`가 소환한 프리팹과 같은 `MonsterPrefab`을 가진 데이터를 찾아 각 항목을 `SetValue`. 몬스터에 없는 이름은 경고 후 건너뜀, 데이터가 없으면 경고 후 프리팹 기본값. 순서: DB → `_monsterEffects`(유지) → MoveSpeed 오차.
+- 에셋 `ScriptableObjects/MonsterData/`: `SOMonsterData_Melee`(Melee), `SOMonsterData_Ranged`(Ranged), `SOMonsterData_Special`(프리팹 비움, 특수몹 프리팹 생기면 연결). 값은 모두 MaxHp 100 / CurrentHp 100 / MoveSpeed 10 / AttackDamage 1.
+- `MonsterSpawner.prefab`: `_monsterDatabase`에 3개 연결, `_monsterEffects`의 CurrentHp·MoveSpeed Set 2개는 DB와 겹쳐 비움(Effect 에셋 파일은 유지).
+- 이 작업 전에 지금까지의 MoveSpeed 오차 작업을 커밋(a4c4212 코드, 9a08e75 문서).
+- 인스펙터: MonsterSpawner 각 칸 위에 `[Header]` 한 줄 설명(ScanTarget과 같은 "필수/안 해도 됨" 형식)을 달고, Tooltip에 자세한 설명(쓰는 모드, 오른쪽 숫자 = 목록 칸 수, ObjectPoolManager·DB 등록 필요)을 둠.
+
+## 2. 결정 사항
+- DB 찾는 키는 몬스터 프리팹(스포너가 이미 알고 있어 enum 등 새 타입·중복 입력 불필요).
+- 몬스터 프리팹의 `_initData`(SOAttributeData_Enemy)는 어트리뷰트 이름 정의용으로 그대로 둠.
+- DB 값을 SetValue로 넣으므로 InitValue 미호출 문제와 풀 재사용 누적 문제가 같이 해결됨.
+
+## 3. 현재 상태 및 이슈
+- 컴파일 에러 0. Play(Map_3_File, 런타임 임시 스포너 9개, 씬·에셋 저장 안 함):
+  - Melee·Ranged(DB 에셋): CurrentHp 100(기존 SO 0 → DB 적용 확인), MoveSpeed 8.97~11.46, 모터 속도 일치.
+  - Ranged에 런타임 전용 DB(MoveSpeed 20, CurrentHp 55): MoveSpeed 18.22·22.86, CurrentHp 55 → 종류별 값 적용 확인.
+  - DB 비운 스포너: "[Melee] Monster Database에 데이터가 없어 프리팹 기본값으로 소환합니다." 경고 후 소환(CurrentHp 0).
+- 에디터가 포커스를 가져도 Play 프레임이 멈춰 있는 경우가 있어 `EditorApplication.Step()`으로 프레임을 넘겨 확인함.
+- 커밋함. `Monster_Effect` 이름 변경(GUID 유지)·EditorBuildSettings(줄바꿈만)는 사용자 작업이라 커밋에 넣지 않음.
+
+## 4. 다음 할 일 (Next Steps)
+- Melee·Ranged·특수몹 실제 밸런스 값을 DB 에셋에 입력.
+- 특수몹 프리팹이 생기면 `SOMonsterData_Special`의 Monster Prefab 연결 + ObjectPoolManager 등록.
+- 실제 맵에서 ±15% 체감 확인.
