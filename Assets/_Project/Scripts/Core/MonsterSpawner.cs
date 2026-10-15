@@ -7,9 +7,21 @@ namespace Core
 {
     public class MonsterSpawner : SpawnerBase
     {
+        public enum ESpawnMode
+        {
+            Fixed,
+            Random,
+        }
+
         // 몬스터 프리팹은 씬의 ObjectPoolManager에도 같은 프리팹으로 등록돼 있어야 한다. (Get(프리팹)으로 꺼낸다)
         [Header("Monster")]
+        [Tooltip("Fixed: Monster Prefab 하나를 소환 / Random: Random Monster Prefabs 중 하나를 골라 소환")]
+        [SerializeField] private ESpawnMode _spawnMode = ESpawnMode.Fixed;
+        [Tooltip("Fixed일 때 소환할 프리팹. ObjectPoolManager에 등록돼 있어야 한다.")]
         [SerializeField] private GameObject _monsterPrefab;
+        [Tooltip("Random일 때 이 중 하나를 골라 소환한다. 모두 ObjectPoolManager에 등록돼 있어야 한다.")]
+        [SerializeField] private GameObject[] _randomMonsterPrefabs;
+        [Tooltip("어떤 몬스터가 소환되든 똑같이 적용할 Effect")]
         [SerializeField] private SOAttributeEffect[] _monsterEffects;
 
         // ObjectPoolManager.Instance는 Awake에서 채워지므로 Start에서 꺼낸다.
@@ -20,9 +32,10 @@ namespace Core
 
         private void SpawnMonster()
         {
-            if (_monsterPrefab == null)
+            GameObject monsterPrefab = SelectMonsterPrefab();
+            if (monsterPrefab == null)
             {
-                Debug.LogError("Monster 프리팹이 지정되지 않았습니다.", this);
+                Debug.LogError($"Monster 프리팹이 지정되지 않았습니다. ({_spawnMode}: 칸이 비었거나 랜덤 목록에 빈 칸이 있음)", this);
                 return;
             }
 
@@ -34,7 +47,7 @@ namespace Core
             }
 
             // 등록되지 않은 프리팹이면 매니저가 에러를 남기고 null을 돌려준다.
-            GameObject monster = poolManager.Get(_monsterPrefab, transform.position, transform.rotation);
+            GameObject monster = poolManager.Get(monsterPrefab, transform.position, transform.rotation);
             if (monster == null)
             {
                 return;
@@ -43,7 +56,7 @@ namespace Core
             AttributeSet attributes = monster.GetComponentInChildren<AttributeSet>(true);
             if (attributes == null)
             {
-                Debug.LogError($"[{_monsterPrefab.name}] AttributeSet이 없습니다.", monster);
+                Debug.LogError($"[{monsterPrefab.name}] AttributeSet이 없습니다.", monster);
                 poolManager.Release(monster);
                 return;
             }
@@ -57,6 +70,22 @@ namespace Core
             ApplySpawnEffects(attributes, _monsterEffects);
 
             // monster.SetActive(true);
+        }
+
+        // Fixed면 _monsterPrefab, Random이면 _randomMonsterPrefabs 중 하나를 고른다. 고를 수 없으면 null.
+        private GameObject SelectMonsterPrefab()
+        {
+            if (_spawnMode == ESpawnMode.Fixed)
+            {
+                return _monsterPrefab;
+            }
+
+            if (_randomMonsterPrefabs == null || _randomMonsterPrefabs.Length == 0)
+            {
+                return null;
+            }
+
+            return _randomMonsterPrefabs[UnityEngine.Random.Range(0, _randomMonsterPrefabs.Length)];
         }
     }
 }
