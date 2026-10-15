@@ -173,6 +173,17 @@ namespace Mediator
         {
             return _skillMediator && _skillMediator.IsSkillEnabled(skillName);
         }
+
+        /// <summary>
+        /// 사망 처리로 바뀐 상태를 되돌린다. 오브젝트 풀에서 다시 꺼낸 캐릭터가 재사용될 때 호출한다.
+        /// </summary>
+        public void ResetForReuse()
+        {
+            _isDead = false;
+            if (_moveMediator) _moveMediator.enabled = true;
+            if (_skillMediator) _skillMediator.enabled = true;
+            if (_rotateMediator) _rotateMediator.enabled = true;
+        }
         #endregion
 
         #region Private Methods

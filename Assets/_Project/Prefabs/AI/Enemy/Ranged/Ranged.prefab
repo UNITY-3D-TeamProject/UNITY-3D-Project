@@ -242,6 +242,7 @@ GameObject:
   - component: {fileID: 1369908204660790272}
   - component: {fileID: 9031708989183875549}
   - component: {fileID: 7585644405135888982}
+  - component: {fileID: 4564190703093895376}
   m_Layer: 8
   m_Name: Ranged
   m_TagString: Untagged
@@ -328,6 +329,8 @@ MonoBehaviour:
   _separationLayers:
     serializedVersion: 2
     m_Bits: 256
+  _mediator: {fileID: 0}
+  _speedAttributeKey: MoveSpeed
 --- !u!114 &5120159287565978398
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -348,6 +351,7 @@ MonoBehaviour:
   _rotateMediator: {fileID: 8465775487129008740}
   _spawnMediator: {fileID: 0}
   _animationMediator: {fileID: 0}
+  _petMediator: {fileID: 0}
 --- !u!114 &5351093735736510952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -457,6 +461,19 @@ MonoBehaviour:
   - {fileID: 924762729389229667}
   - {fileID: 5065884894039086192}
   - {fileID: 3440903531603295587}
+--- !u!114 &4564190703093895376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 681821616047237814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ebb06080a92e3b4f8715f3dd4ccb2e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.EnemyPoolReturner
+  _characterMediator: {fileID: 5120159287565978398}
 --- !u!1 &835412326865447768
 GameObject:
   m_ObjectHideFlags: 0
