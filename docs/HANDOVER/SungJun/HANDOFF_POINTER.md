@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-15** — 스포너 Effect 경로 변경: `PlayerSpawner`가 시작 Effect를 `PlayerFacade.ApplyEffect`로 적용(실패 시 경고), `MonsterSpawner`에 `ESpawnMode`(Fixed/Random) + `_randomMonsterPrefabs` 추가(기존 칸 유지, 기본 Fixed). 몬스터 Effect는 기존 방식 유지. 컴파일 0에러, Play에서 플레이어 Effect 값·랜덤(Melee 5/Ranged 5)·빈 목록 에러 확인. **PlayerSpawner.cs는 CP949 인코딩**, 커밋 4a9a9e0: [작업 기록](./2026-10-15/spawner-facade-effect.md)
 - **2026-10-15** — 로딩씬 남은 확인 마무리(코드 변경 없음): 피드 첫 라운드 사망 재시작이 로딩씬 없이 씬만 다시 불러오고 순서 단계 유지 확인. 에디터가 포커스를 잃으면 컷씬 VideoPlayer가 0프레임에 멈춰 로딩이 안 끝나는 현상 기록(포커스 주면 재생, 빌드 미확인). **커밋 시 SO가 `Art/TestVideo/` 영상을 참조함 주의**: [작업 기록](./2026-10-15/loading-scene.md)
 - **2026-10-15** — 테스트 컷씬(로블록스 mp4)을 임포트 설정으로 앞 3초(0~90프레임)만 쓰게 자름(원본 파일 유지). 튜토리얼 → 로비에서 3초 재생 후 로비 진입 확인: [작업 기록](./2026-10-15/loading-scene.md)
 - **2026-10-15** — 로딩 컷씬 mp4가 안 나온 원인 3가지 정리: SO 칸 To가 Tutorial(사용자 수정), AI 시험 훅이 사용자 Play에 간섭(해제), H.264 mp4 에디터 디코딩 극저속 → 임포트 Transcode VP8로 해결. 실제 SO·포탈로 13.9초 영상 실시간 재생 후 로비 진입 확인: [작업 기록](./2026-10-15/loading-scene.md)
