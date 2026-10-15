@@ -38,13 +38,13 @@ namespace MapTest
         private const float REFERENCE_HEIGHT = 1080.0f;
 
         private const float MARGIN = 20.0f;
-        private const float PANEL_WIDTH = 540.0f;
+        private const float PANEL_WIDTH = 780.0f;
         private const float PANEL_PADDING = 16.0f;
         private const float HEADER_HEIGHT = 50.0f;
         private const float GROUP_HEIGHT = 32.0f;
         private const float ROW_HEIGHT = 27.0f;
         private const float NUMBER_WIDTH = 38.0f;
-        private const int COLUMN_COUNT = 2;
+        private const int COLUMN_COUNT = 3;
 
         private const float TOAST_WIDTH = 420.0f;
         private const float TOAST_HEIGHT = 54.0f;

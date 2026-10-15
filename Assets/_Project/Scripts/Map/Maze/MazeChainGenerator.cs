@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 using UnityEngine;
 using Map.Common;
 
@@ -26,6 +27,13 @@ namespace Map.Maze
         [Header("Checkpoints")]
         [Tooltip("씬에 미리 놓아 둔 체크포인트 (선택). 0번은 첫 미로의 입구 칸으로, 그 뒤는 차례대로 각 미로의 출구 밖 다리 가운데로 옮긴다.")]
         [SerializeField] private Transform[] _checkpointAnchors;
+
+        [Header("Waypoints")]
+        [Tooltip("웨이포인트를 놓을 미로 번호 (0 부터). 기본은 두 번째 미로.")]
+        [SerializeField, Min(0)] private int _waypointMazeIndex = 1;
+
+        [Tooltip("씬에 미리 놓아 둔 웨이포인트 (선택). 생성할 때마다 위 미로의 칸 가운데로 무작위로 옮기며, 그 칸에는 배치물을 놓지 않는다.")]
+        [SerializeField] private Transform[] _waypointAnchors;
         #endregion
 
         #region Protected Methods
@@ -63,6 +71,12 @@ namespace Map.Maze
                 mazeRoot.SetParent(root, false);
                 mazeRoot.localPosition = new Vector3(0.0f, 0.0f, i * mazePitch);
 
+                // NavMesh 를 만들지 않는 미로는 통째로 베이크에서 뺀다
+                if (!_settings.Themes[i].ShouldBakeNavMesh)
+                {
+                    mazeRoot.gameObject.AddComponent<NavMeshModifier>().ignoreFromBuild = true;
+                }
+
                 var entranceCell = new Vector2Int(entranceColumn, 0);
                 MazeGenerator.SCell[,] grid = generator.GenerateMaze(_settings.Size, _settings.Size, entranceCell, random);
                 Vector2Int exitCell = FindFarthestExitCell(generator.ComputeDistances(grid, entranceCell));
@@ -71,7 +85,16 @@ namespace Map.Maze
                 bool isLastMaze = i == _settings.Themes.Count - 1;
                 BuildMaze(mazeRoot, grid, _settings.Themes[i], entranceCell, exitCell, isFirstMaze, isLastMaze);
                 BuildBridge(mazeRoot, exitCell.x);
-                CollectPlacementPoints(mazeRoot, entranceCell, exitCell, placementPoints);
+
+                // 웨이포인트 → 이 미로 전용 배치물 순서로 칸을 차지하고, 남은 칸은 맵 공통 배치에 넘긴다
+                var mazePoints = new List<Vector3>();
+                CollectPlacementPoints(mazeRoot, entranceCell, exitCell, mazePoints);
+                if (i == _waypointMazeIndex)
+                {
+                    MoveWaypointAnchors(mazePoints, random);
+                }
+                PlaceObjects(_settings.Themes[i].Placements, mazePoints, random);
+                placementPoints.AddRange(mazePoints);
 
                 if (isFirstMaze)
                 {
@@ -245,6 +268,22 @@ namespace Map.Maze
             if (_checkpointAnchors[index] == null) return;
 
             _checkpointAnchors[index].position = position;
+        }
+
+        // 웨이포인트를 남은 자리 가운데 무작위로 골라 옮긴다. 옮긴 자리는 points 에서 빠진다.
+        private void MoveWaypointAnchors(List<Vector3> points, System.Random random)
+        {
+            if (_waypointAnchors == null) return;
+
+            foreach (Transform anchor in _waypointAnchors)
+            {
+                if (anchor == null) continue;
+                if (points.Count == 0) return;
+
+                int index = random.Next(points.Count);
+                anchor.position = points[index];
+                points.RemoveAt(index);
+            }
         }
 
         // 프리팹을 parent 아래 지정한 로컬 위치·회전으로 놓는다.
