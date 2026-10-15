@@ -181,6 +181,37 @@ AnimatorController:
     m_SyncedLayerAffectsTiming: 0
     m_Controller: {fileID: 9100000}
   m_EvaluateTransitionsOnStart: 1
+--- !u!206 &56160932196445844
+BlendTree:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Blend Tree
+  m_Childs:
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400006, guid: d314a97dbb26b834a882d42db92820bd, type: 3}
+    m_Threshold: 0.52
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: MoveAnimSpeed
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400008, guid: d314a97dbb26b834a882d42db92820bd, type: 3}
+    m_Threshold: 0.54
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: MoveAnimSpeed
+    m_Mirror: 0
+  m_BlendParameter: MoveAnimSpeed
+  m_BlendParameterY: MoveAnimSpeed
+  m_MinThreshold: 0.52
+  m_MaxThreshold: 0.54
+  m_UseAutomaticThresholds: 0
+  m_NormalizedBlendValues: 0
+  m_BlendType: 0
 --- !u!1107 &4104012545454752856
 AnimatorStateMachine:
   serializedVersion: 7
@@ -231,7 +262,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400006, guid: d314a97dbb26b834a882d42db92820bd, type: 3}
+  m_Motion: {fileID: 56160932196445844}
   m_Tag: 
   m_SpeedParameter: MoveAnimSpeed
   m_MirrorParameter: 
