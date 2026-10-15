@@ -63,6 +63,10 @@ namespace AI
         [SerializeField] private CharacterMediator _mediator;
         [Tooltip("이동 속도 어트리뷰트 이름.")]
         [SerializeField] private string _speedAttributeKey = "MoveSpeed";
+
+        [Header("Hit Reaction")]
+        [Tooltip("피격 시 이동을 멈추고 맞은 쪽을 바라보는 시간(초). 0 이면 반응하지 않는다. CharacterRotator 회전 속도로 180° 돌 수 있는 시간 이상이어야 뒤에서 맞아도 완전히 돌아선다.")]
+        [SerializeField, Min(0.0f)] private float _hitLookDuration = 1.0f;
         #endregion
 
         #region Private Fields
@@ -75,6 +79,9 @@ namespace AI
         private float _stuckCheckTimer;
         private float _destinationTimer;
         private bool _isStuck;
+
+        private float _hitLookTimer;
+        private Vector2 _hitLookDirection;
         #endregion
 
         #region Events
@@ -164,6 +171,11 @@ namespace AI
             _agent.updateUpAxis = false;
         }
 
+        private void OnEnable()
+        {
+            if (_mediator) _mediator.OnHitFrom += OnHitFromCallback;
+        }
+
         private void Start()
         {
             _spawnPosition = _body.position;
@@ -184,6 +196,16 @@ namespace AI
 
             // CharacterMotor 가 옮긴 실제 위치를 Agent 에 되돌려야 다음 경로가 어긋나지 않는다
             _agent.nextPosition = _body.position;
+
+            // 피격 직후에는 목적지를 유지한 채 멈춰서 맞은 쪽을 바라본다. 끝나면 하던 이동을 이어간다
+            if (_hitLookTimer > 0.0f)
+            {
+                // 돌아보는 중 대상을 발견하면 바로 전투로 넘어가도록 멈춤을 끝낸다
+                _hitLookTimer = HasVisibleTarget ? 0.0f : _hitLookTimer - Time.deltaTime;
+                RequestMove(Vector2.zero);
+                RequestRotate(_hitLookDirection);
+                return;
+            }
 
             UpdateStuckState();
 
@@ -211,6 +233,10 @@ namespace AI
 
         private void OnDisable()
         {
+            if (_mediator) _mediator.OnHitFrom -= OnHitFromCallback;
+            // 오브젝트 풀에서 다시 꺼냈을 때 멈춤이 남아 있지 않게 한다
+            _hitLookTimer = 0.0f;
+
             // 비활성화 시 마지막 이동 명령이 남아 계속 미끄러지지 않도록 정지시킨다
             RequestMove(Vector2.zero);
         }
@@ -502,6 +528,22 @@ namespace AI
         private void RequestRotate(Vector2 direction)
         {
             _onBodyRotateRequested?.Invoke(direction);
+        }
+
+        /// <summary>
+        /// 피격되면 잠시 멈춰 맞은 쪽을 바라보게 한다.
+        /// 대상이 보이는 중(전투 중)에는 공격이 이미 대상을 바라보므로 추격·사격이 끊기지 않게 무시한다.
+        /// </summary>
+        /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치)</param>
+        private void OnHitFromCallback(Vector3 hitSource)
+        {
+            if (HasVisibleTarget) return;
+
+            Vector3 toSource = Vector3.ProjectOnPlane(hitSource - _body.position, Vector3.up);
+            if (toSource.sqrMagnitude <= Mathf.Epsilon) return;
+
+            _hitLookDirection = new Vector2(toSource.x, toSource.z);
+            _hitLookTimer = _hitLookDuration;
         }
 
         /// <summary>

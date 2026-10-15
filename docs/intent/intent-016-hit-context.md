@@ -43,6 +43,15 @@ GAS의 `FGameplayEffectContext`처럼 `SEffectContext{Cursor, Origin}`를 `Apply
 - 원점 기록: `BulletController`는 생성 위치를, `EnemyMeleeAttack`은 공격자 몸 위치를 넣는다. `_hitPoint`는 적 앞쪽이라 밀착하면 방향이 뒤집힐 수 있어서 쓰지 않는다.
 - AI: `AIController : IHitController`가 원점을 바라본 뒤 `Sensor`에 위치를 알리고, 기존 수색 BT 가지가 이어받는다.
 
+### AI 피격 돌아보기 — 2차 AI 항목 대체 (2026-10-15 결정)
+위 2차의 `IHitController` + Sensor 위치 통보 + 수색 대신, 더 단순한 방식으로 AI 반응을 넣었다.
+- `CharacterMediator.OnHitFrom(Vector3)`: 플레이어 피격 애니메이션과 같은 지점(`OnHitCallback`의 생존 블록)에서, 이미 계산한 `GetHitSource()` 결과(HitPoint → 없으면 Cursor 위치)를 알린다. `OnHit`보다 먼저 발생하며 기준 위치가 없거나 사망을 일으킨 피격에는 발생하지 않는다.
+- `AIController`가 구독해, 대상이 보이지 않을 때만 `_hitLookDuration`(기본 1.0초) 동안 목적지를 유지한 채 멈추고 맞은 쪽을 바라본다. 끝나면 하던 이동을 이어간다. 돌아보는 중 대상을 발견하면 멈춤을 바로 끝낸다.
+- 방향 기준은 `-Direction`이 아니라 HitPoint다. 적에게도 방향별 피격 애니메이션을 넣을 예정이라 애니메이션과 같은 기준을 쓴다.
+- 메디에이터가 직접 몸을 돌리지 않는다. 플레이어는 카메라 방향이 회전을 덮어쓰고, 적은 조종부가 매 프레임 회전을 요청하며, `LockLookDirection`은 구르기·BT 조준과 충돌한다. 메디에이터는 위치만 알리고 판단은 조종부가 한다.
+- 기본값 1.0초는 적 `CharacterRotator` 회전 속도(180°/s)로 180° 도는 시간이다(0.5초면 90°만 돈다).
+- BT·Sensor는 바꾸지 않았다. 피격 후 수색(Sensor 위치 통보)은 필요해지면 따로 한다.
+
 ### Context에 Effect 추가 (2026-10-10 결정)
 팀 제안: 값 변경 콜백에서 "어떤 Effect 때문에 바뀌었는지"도 알 수 있도록 `SEffectContext`에 Effect를 담는다.
 
