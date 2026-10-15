@@ -1,4 +1,5 @@
 using System;
+using Attribute.Core;
 using Combat;
 using UnityEngine;
 
@@ -22,6 +23,8 @@ namespace Mediator.SubMediators
         #region Events
         /// <summary>CharacterCombat 이 피격되었을 때 발생한다.</summary>
         public event Action OnHit;
+        /// <summary>약점에 명중해 피해 배율이 적용될 때 맞은 지점을 알린다. OnHit 보다 먼저 발생한다.</summary>
+        public event Action<Vector3?> OnCriticalHit;
         /// <summary>CharacterCombat 이 사망했을 때 발생한다.</summary>
         public event Action OnDeath;
         /// <summary>피격 후 무적 시간이 끝났을 때 발생한다. 사망으로 멈춘 경우에는 발생하지 않는다.</summary>
@@ -95,6 +98,21 @@ namespace Mediator.SubMediators
 
             return string.Equals(key, _healthValueKey, StringComparison.OrdinalIgnoreCase);
         }
+
+        /// <summary>
+        /// 체력 감소량을 CharacterCombat 규칙으로 보정한다. 체력이 아닌 어트리뷰트는 그대로 둔다.
+        /// </summary>
+        /// <param name="key">감소하려는 어트리뷰트 이름</param>
+        /// <param name="damage">감소량</param>
+        /// <param name="context">감소를 일으킨 효과의 출처 정보</param>
+        /// <returns>보정한 감소량. 체력이 아니거나 약점 명중이 아니면 그대로</returns>
+        public float ModifyDamage(string key, float damage, SEffectContext context)
+        {
+            if (_combatComponent == null) return damage;
+            if (!string.Equals(key, _healthValueKey, StringComparison.OrdinalIgnoreCase)) return damage;
+
+            return _combatComponent.ModifyDamage(damage, context.HitPoint, context.Direction);
+        }
         #endregion
         
         #region Protected Methods
@@ -102,7 +120,9 @@ namespace Mediator.SubMediators
         {
             AttributeCallback.TryAdd(_healthValueKey, data =>
             {
-                if (_combatComponent != null) _combatComponent.Health = data.NewValue;
+                if (_combatComponent == null) return;
+
+                _combatComponent.Health = data.NewValue;
             });
         }
 
@@ -124,6 +144,7 @@ namespace Mediator.SubMediators
             if (_combatComponent == null) return;
             
             _combatComponent.OnHit += OnHitCallback;
+            _combatComponent.OnCriticalHit += OnCriticalHitCallback;
             _combatComponent.OnDeath += OnDeathCallback;
             if (_hitInvincibility != null) _hitInvincibility.OnEnded += OnInvincibilityEndedCallback;
         }
@@ -137,6 +158,7 @@ namespace Mediator.SubMediators
             if (_combatComponent == null) return;
             
             _combatComponent.OnHit -= OnHitCallback;
+            _combatComponent.OnCriticalHit -= OnCriticalHitCallback;
             _combatComponent.OnDeath -= OnDeathCallback;
             if (_hitInvincibility != null) _hitInvincibility.OnEnded -= OnInvincibilityEndedCallback;
         }
@@ -147,6 +169,11 @@ namespace Mediator.SubMediators
             if (!_combatComponent.IsDead && _hitInvincibility != null) _hitInvincibility.Begin();
 
             OnHit?.Invoke();
+        }
+
+        private void OnCriticalHitCallback(Vector3? hitPoint)
+        {
+            OnCriticalHit?.Invoke(hitPoint);
         }
 
         private void OnDeathCallback()

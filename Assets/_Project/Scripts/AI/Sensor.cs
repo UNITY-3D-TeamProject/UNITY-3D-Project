@@ -6,7 +6,8 @@ namespace AI
     /// 시야(거리 + 각도 + 차폐)로 대상을 감지하는 조종부 소속 자료원.
     /// 중재자가 관리하지 않으며, 조종부(AIController)만 이 컴포넌트를 참조한다.
     /// 출력은 "보이는가"(bool)가 아니라 대상 자체와 마지막 목격 위치다.
-    /// 시야에 머무는 동안 발견 게이지가 차야 대상이 확정되고(가까울수록 빨리 찬다),
+    /// 시야에 들어오면 바로 대상이 확정되고,
+    /// 확정된 대상이 있는 동안(전투 중)에는 시야각을 보지 않고 시야 거리 안을 360도로 찾는다.
     /// 확정된 대상을 놓쳐도 유예 시간 동안은 실제 위치를 계속 추적한다.
     /// 유예가 끝나도 마지막 목격 위치는 남아 수색의 목적지로 쓰인다.
     /// </summary>
@@ -29,12 +30,6 @@ namespace AI
         [SerializeField] private float _sightAngle = 90.0f;
 
         [Header("Awareness")]
-        [Tooltip("대상이 바로 앞에 있을 때 발견 게이지가 가득 차는 시간(초).")]
-        [SerializeField] private float _detectTimeNear = 0.2f;
-        [Tooltip("대상이 시야 거리 끝에 있을 때 발견 게이지가 가득 차는 시간(초).")]
-        [SerializeField] private float _detectTimeFar = 1.5f;
-        [Tooltip("대상이 보이지 않을 때 가득 찬 발견 게이지가 0 까지 빠지는 시간(초).")]
-        [SerializeField] private float _awarenessDecayTime = 2.0f;
         [Tooltip("확정된 대상을 놓친 뒤에도 실제 위치를 계속 추적하는 유예 시간(초).")]
         [SerializeField] private float _loseGraceTime = 3.0f;
 
@@ -55,7 +50,6 @@ namespace AI
         private Vector3 _lastKnownPosition;
         private bool _hasLastKnownPosition;
         private float _detectTimer;
-        private float _awareness;
         private float _graceTimer;
         #endregion
 
@@ -123,7 +117,8 @@ namespace AI
         #region Private Methods
         /// <summary>
         /// 시야 범위 안의 대상 중 각도와 차폐 검사를 모두 통과한 가장 가까운 것을 찾아
-        /// 발견 게이지와 놓친 뒤 유예 시간을 갱신한다.
+        /// 대상과 놓친 뒤 유예 시간을 갱신한다.
+        /// 확정된 대상이 있는 동안에는 각도 검사를 건너뛴다.
         /// </summary>
         private void Detect()
         {
@@ -147,7 +142,8 @@ namespace AI
                 Vector3 targetPoint = hit.bounds.center;
                 Vector3 toTarget = targetPoint - eyePosition;
 
-                if (!IsInSightAngle(toTarget)) continue;
+                // 대상이 확정된 동안(전투 중)에는 시야각을 무시하고 시야 거리 안이면 360도로 찾는다
+                if (!HasTarget && !IsInSightAngle(toTarget)) continue;
                 if (IsOccluded(eyePosition, toTarget)) continue;
 
                 float sqrDistance = toTarget.sqrMagnitude;
@@ -159,18 +155,10 @@ namespace AI
 
             if (seenTarget)
             {
-                // 가까울수록 게이지가 빨리 찬다
-                float distanceRatio = Mathf.Sqrt(nearestSqrDistance) / _sightRange;
-                float fillTime = Mathf.Lerp(_detectTimeNear, _detectTimeFar, distanceRatio);
-                _awareness = Mathf.Min(1.0f, _awareness + (_detectInterval / Mathf.Max(fillTime, Mathf.Epsilon)));
-
-                if (_awareness >= 1.0f)
-                {
-                    _currentTarget = seenTarget;
-                    _graceTimer = _loseGraceTime;
-                    _lastKnownPosition = _currentTarget.position;
-                    _hasLastKnownPosition = true;
-                }
+                _currentTarget = seenTarget;
+                _graceTimer = _loseGraceTime;
+                _lastKnownPosition = _currentTarget.position;
+                _hasLastKnownPosition = true;
                 return;
             }
 
@@ -184,7 +172,6 @@ namespace AI
 
             // 유예가 끝나면 놓친다. 마지막 목격 위치는 남아 수색이 이어받는다
             _currentTarget = null;
-            _awareness = Mathf.Max(0.0f, _awareness - (_detectInterval / Mathf.Max(_awarenessDecayTime, Mathf.Epsilon)));
         }
 
         /// <summary>

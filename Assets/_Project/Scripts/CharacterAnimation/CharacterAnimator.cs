@@ -11,6 +11,15 @@ namespace CharacterAnimation
     {
         #region Constants
         private const string UPPER_BODY_LAYER_NAME = "UpperBody";
+        // 이동 방향이 정확히 옆(±90°)일 때 계산 오차로 뒤쪽으로 판정되지 않도록 앞쪽 반원을 이 각도(도)만큼 넓힌다
+        private const float BOARD_SIDE_TOLERANCE = 1.0f;
+        // 피격 방향 판정: 몸 정면과 이 각도(도) 이내면 앞, (180 - 이 각도) 밖이면 뒤, 나머지는 좌/우
+        private const float HIT_FRONT_HALF_ANGLE = 45.0f;
+        // Animator HitDirection 값
+        private const int HIT_DIRECTION_FRONT = 0;
+        private const int HIT_DIRECTION_BACK = 1;
+        private const int HIT_DIRECTION_LEFT = 2;
+        private const int HIT_DIRECTION_RIGHT = 3;
         #endregion
 
         #region Serialized Fields
@@ -44,6 +53,18 @@ namespace CharacterAnimation
         [Tooltip("Animator 의 특수 Idle 상태 개수. SpecialIdleIndex 를 0 ~ (개수 - 1) 중 랜덤으로 고른다.")]
         [SerializeField, Min(1)] private int _specialIdleCount = 2;
 
+        [Header("Riding")]
+        [Tooltip("탑승 자세(Riding)일 때 보드 방향 기준으로 하체(골반)를 돌릴 yaw 각도(도). 음수면 왼쪽. 상체는 정면을 유지한다.")]
+        [SerializeField] private float _ridingLowerBodyYaw = -90.0f;
+        [Tooltip("탑승 하체 회전이 켜지고 꺼지는 데 걸리는 시간(초).")]
+        [SerializeField, Min(0.0f)] private float _ridingTurnBlendTime = 0.15f;
+        [Tooltip("탑승 중 보드(와 하체)가 목표 방향으로 도는 속도(도/초).")]
+        [SerializeField, Min(0.0f)] private float _boardTurnSpeed = 720.0f;
+        [Tooltip("탈것 위에 서 있는 동안 몸(_bodyName)을 올릴 높이. 탈것이 생성될 때 올리고 제거될 때 되돌린다.")]
+        [SerializeField] private float _ridingBodyHeight = 0.3f;
+        [Tooltip("몸 정면을 읽을 Transform 이름. CharacterRotator 가 돌리는 대상이다.")]
+        [SerializeField] private string _bodyName = "SK_ZMike";
+
         [Header("Death")]
         [Tooltip("사망 루프(DeathLoop) 상태를 이 횟수만큼 재생하면 사망 애니메이션 종료를 알린다.")]
         [SerializeField, Min(0.0f)] private float _deathLoopCount = 2.0f;
@@ -71,6 +92,17 @@ namespace CharacterAnimation
         private float _lastFireTime;
         private float _aimWeight;
         private bool _isRolling;
+        private bool _isRiding;
+        private float _ridingTurnWeight;
+        private Vector3 _rollDirection;
+        // 탑승 중 보드가 바라보는 월드 yaw. 하체도 이 방향을 기준으로 돌린다
+        private float _boardYaw;
+        private Transform _ridingBoard;
+        private Transform _body;
+        // 몸의 기준 자세(yaw 제외)의 역회전. 몸 localRotation 에서 yaw 만 뽑을 때 쓴다
+        private Quaternion _bodyRestInverse = Quaternion.identity;
+        // 몸의 기준 로컬 위치. 탑승 중 높이를 더하고 하차 시 되돌릴 때 쓴다
+        private Vector3 _bodyRestPosition;
         private float _idleTime;
         private Vector3 _lastViewForward;
         private bool _isDead;
@@ -80,6 +112,8 @@ namespace CharacterAnimation
         #region Events
         /// <summary>사망 애니메이션(사망 루프 정해진 횟수 재생)이 끝났을 때 한 번 발생한다.</summary>
         public event Action OnDeathAnimationEnded;
+        /// <summary>특수 Idle 재생을 시작할 때 재생할 특수 Idle 인덱스(SpecialIdleIndex)를 알린다.</summary>
+        public event Action<int> OnSpecialIdleStarted;
         #endregion
 
         #region Unity Lifecycle
@@ -96,6 +130,7 @@ namespace CharacterAnimation
             }
 
             CacheAimTransforms();
+            CacheBody();
             _upperBodyLayer = _animator.GetLayerIndex(UPPER_BODY_LAYER_NAME);
         }
 
@@ -120,6 +155,8 @@ namespace CharacterAnimation
             float blendSpeed = (_aimBlendTime > 0.0f) ? (deltaTime / _aimBlendTime) : 1.0f;
             _aimWeight = Mathf.MoveTowards(_aimWeight, targetWeight, blendSpeed);
 
+            UpdateRidingTurnWeight(deltaTime);
+            UpdateBoardYaw(deltaTime);
             UpdateSpecialIdle(deltaTime);
             UpdateDeath();
         }
@@ -129,6 +166,8 @@ namespace CharacterAnimation
             // Animator 가 포즈를 적용한 뒤 상체를 정면으로 맞추고, 총신이 조준점을 향하도록 조준 뼈를 돌린다
             CapturePelvisReference();
             ApplyUpperBodyTwist();
+            ApplyRidingTurn();
+            ApplyBoardYaw();
 
             if (!_aimBone || !_muzzle || !_aimBone.parent) return;
 
@@ -279,6 +318,7 @@ namespace CharacterAnimation
 
         /// <summary>
         /// 점프 시작을 알린다. 점프 시작 → 상승 → 공중 순서로 재생된다. 공중에서 다시 점프하면 처음부터 재생한다.
+        /// 탑승 중에는 탑승 자세를 유지하고 공중 여부만 기록한다 (공중에서 하차하면 공중 애니메이션으로 간다).
         /// </summary>
         public void PlayJump()
         {
@@ -286,6 +326,8 @@ namespace CharacterAnimation
 
             ResetSpecialIdle();
             _animator.SetBool(AnimHash.IsJumping, true);
+            if (_isRiding) return;
+
             _animator.SetTrigger(AnimHash.Jump);
         }
 
@@ -302,7 +344,7 @@ namespace CharacterAnimation
         }
 
         /// <summary>
-        /// 구르기 시작을 알린다. 구르는 동안 구르기 애니메이션을 재생한다.
+        /// 구르기 시작을 알린다. 구르는 동안 구르기 애니메이션을 재생한다. 탑승 중에는 탑승 자세를 유지한다.
         /// </summary>
         public void PlayRoll()
         {
@@ -311,7 +353,19 @@ namespace CharacterAnimation
             ResetSpecialIdle();
             _isRolling = true;
             _animator.SetBool(AnimHash.IsRolling, true);
+            if (_isRiding) return;
+
             _animator.SetTrigger(AnimHash.Roll);
+        }
+
+        /// <summary>
+        /// 구르기 시작을 구르기 방향과 함께 알린다. 탑승 중이면 구르는 동안 보드가 구르기 방향을 본다.
+        /// </summary>
+        /// <param name="direction">구르기 방향 (월드 기준)</param>
+        public void PlayRoll(Vector3 direction)
+        {
+            _rollDirection = Vector3.ProjectOnPlane(direction, Vector3.up);
+            PlayRoll();
         }
 
         /// <summary>
@@ -324,6 +378,66 @@ namespace CharacterAnimation
             _isRolling = false;
             _animator.SetBool(AnimHash.IsRolling, false);
             _animator.ResetTrigger(AnimHash.Roll);
+        }
+
+        /// <summary>
+        /// 탈것 탑승 상태를 설정한다. 탑승하면 탑승 점프 후 탑승 자세를 유지하고,
+        /// 하차하면 공중이면 공중 애니메이션, 아니면 Idle/Locomotion 으로 돌아간다.
+        /// </summary>
+        /// <param name="isRiding">탑승 중이면 true</param>
+        public void SetRiding(bool isRiding)
+        {
+            if (!enabled) return;
+
+            _isRiding = isRiding;
+            _animator.SetBool(AnimHash.IsRiding, isRiding);
+            if (!isRiding || _isDead)
+            {
+                _animator.ResetTrigger(AnimHash.Mount);
+                return;
+            }
+
+            ResetSpecialIdle();
+            // 보드는 몸 정면에서 출발해 이동 방향으로 돈다
+            _boardYaw = GetBodyYaw();
+            // 탑승 직전에 들어온 점프·구르기 Trigger 가 탑승 점프를 덮지 않게 한다
+            _animator.ResetTrigger(AnimHash.Jump);
+            _animator.ResetTrigger(AnimHash.Roll);
+            _animator.SetTrigger(AnimHash.Mount);
+        }
+
+        /// <summary>
+        /// 탑승 중 이동 방향으로 돌릴 보드(탈것)를 설정한다. 위치는 그대로 두고 회전만 덮어쓴다.
+        /// 보드가 있으면 몸을 탈것 위 높이로 올리고, 없으면 원래 높이로 되돌린다.
+        /// </summary>
+        /// <param name="board">탈것 Transform. 없으면 null</param>
+        public void SetRidingBoard(Transform board)
+        {
+            _ridingBoard = board;
+            if (_body) _body.localPosition = _bodyRestPosition + (board ? Vector3.up * _ridingBodyHeight : Vector3.zero);
+        }
+
+        /// <summary>
+        /// 피격을 알린다. 기준 위치가 몸 정면 기준 어느 쪽(앞/뒤/좌/우)인지 판정해 상체 피격 애니메이션을 재생한다.
+        /// </summary>
+        /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치). null 이면 앞쪽 피격</param>
+        public void PlayHit(Vector3? hitSource)
+        {
+            if (!enabled || _isDead) return;
+
+            ResetSpecialIdle();
+            _animator.SetInteger(AnimHash.HitDirection, CalculateHitDirection(hitSource));
+            _animator.SetTrigger(AnimHash.Hit);
+        }
+
+        /// <summary>
+        /// 기준 위치가 몸 정면 기준 어느 쪽인지 판정해 피격 방향(HitDirection)을 반환한다.
+        /// </summary>
+        /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치). null 이면 앞쪽 피격</param>
+        /// <returns>0: 앞, 1: 뒤, 2: 왼쪽, 3: 오른쪽</returns>
+        public int GetHitDirection(Vector3? hitSource)
+        {
+            return CalculateHitDirection(hitSource);
         }
 
         /// <summary>
@@ -348,6 +462,8 @@ namespace CharacterAnimation
             _animator.ResetTrigger(AnimHash.Fire);
             _animator.ResetTrigger(AnimHash.Jump);
             _animator.ResetTrigger(AnimHash.Roll);
+            _animator.ResetTrigger(AnimHash.Mount);
+            _animator.ResetTrigger(AnimHash.Hit);
             _animator.SetTrigger(AnimHash.Death);
         }
         #endregion
@@ -384,9 +500,11 @@ namespace CharacterAnimation
             if (_idleTime < _specialIdleDelay) return;
 
             _idleTime = 0.0f;
-            _animator.SetInteger(AnimHash.SpecialIdleIndex, UnityEngine.Random.Range(0, _specialIdleCount));
+            int specialIdleIndex = UnityEngine.Random.Range(0, _specialIdleCount);
+            _animator.SetInteger(AnimHash.SpecialIdleIndex, specialIdleIndex);
             _animator.SetBool(AnimHash.IsSpecialIdle, true);
             _animator.SetTrigger(AnimHash.SpecialIdle);
+            OnSpecialIdleStarted?.Invoke(specialIdleIndex);
         }
 
         /// <summary>
@@ -416,6 +534,25 @@ namespace CharacterAnimation
             if (!_twistBone) Debug.LogWarning($"[{name}] 상체 비틀림 뼈 '{_twistBoneName}'을(를) 찾지 못했습니다.", this);
             if (!_aimBone) Debug.LogWarning($"[{name}] 조준 뼈 '{_aimBoneName}'을(를) 찾지 못했습니다.", this);
             if (!_muzzle) Debug.LogWarning($"[{name}] 총구 '{_muzzleName}'을(를) 찾지 못했습니다.", this);
+        }
+
+        /// <summary>
+        /// Animator 하위에서 몸(CharacterRotator 회전 대상)을 이름으로 찾아 캐싱하고, yaw 를 뺀 기준 자세를 저장한다.
+        /// CharacterRotator 와 같은 방식(현재 localRotation 의 x, z)으로 기준 자세를 잡는다.
+        /// </summary>
+        private void CacheBody()
+        {
+            Transform[] children = _animator.GetComponentsInChildren<Transform>(true);
+            _body = Array.Find(children, child => child.name == _bodyName);
+            if (!_body)
+            {
+                Debug.LogWarning($"[{name}] 몸 '{_bodyName}'을(를) 찾지 못했습니다. 탑승 하체 방향은 시점 기준으로 계산합니다.", this);
+                return;
+            }
+
+            Vector3 restEuler = _body.localRotation.eulerAngles;
+            _bodyRestInverse = Quaternion.Inverse(Quaternion.Euler(restEuler.x, 0.0f, restEuler.z));
+            _bodyRestPosition = _body.localPosition;
         }
 
         /// <summary>
@@ -451,6 +588,134 @@ namespace CharacterAnimation
 
             float pelvisYaw = Vector3.SignedAngle(Vector3.forward, turnedForward, Vector3.up);
             _twistBone.rotation = Quaternion.AngleAxis(-pelvisYaw * _aimWeight, Vector3.up) * _twistBone.rotation;
+        }
+
+        /// <summary>
+        /// 탑승 중이고 하체가 탑승 자세(Riding)로 들어가는 중이거나 들어가 있으면 탑승 하체 회전과 탑승 상체(IsRidingPose)를 켜고, 아니면 끈다.
+        /// </summary>
+        /// <param name="deltaTime">이번 프레임 경과 시간</param>
+        private void UpdateRidingTurnWeight(float deltaTime)
+        {
+            bool isRidingState = _animator.IsInTransition(0)
+                ? (_animator.GetNextAnimatorStateInfo(0).shortNameHash == AnimHash.RidingState)
+                : (_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == AnimHash.RidingState);
+            bool isRidingPose = _isRiding && !_isDead && isRidingState;
+            _animator.SetBool(AnimHash.IsRidingPose, isRidingPose);
+
+            float targetWeight = isRidingPose ? 1.0f : 0.0f;
+            float blendSpeed = (_ridingTurnBlendTime > 0.0f) ? (deltaTime / _ridingTurnBlendTime) : 1.0f;
+            _ridingTurnWeight = Mathf.MoveTowards(_ridingTurnWeight, targetWeight, blendSpeed);
+        }
+
+        /// <summary>
+        /// 탑승 중 보드 방향(월드 yaw)을 목표 방향으로 회전 속도에 맞춰 돌린다.
+        /// 구르는 중이면 구르기 방향, 이동 입력이 있으면 이동 방향(뒤쪽이면 반대 방향), 입력이 없으면 그대로 둔다.
+        /// </summary>
+        /// <param name="deltaTime">이번 프레임 경과 시간</param>
+        private void UpdateBoardYaw(float deltaTime)
+        {
+            if (!_isRiding || _isDead) return;
+
+            float targetYaw;
+            if (_isRolling && (_rollDirection.sqrMagnitude > Mathf.Epsilon))
+            {
+                targetYaw = GetYaw(_rollDirection);
+            }
+            else if (_moveDirection.sqrMagnitude > Mathf.Epsilon)
+            {
+                targetYaw = CalculateBoardTargetYaw(GetYaw(_moveDirection));
+            }
+            else
+            {
+                return;
+            }
+
+            _boardYaw = Mathf.MoveTowardsAngle(_boardYaw, targetYaw, _boardTurnSpeed * deltaTime);
+        }
+
+        /// <summary>
+        /// 이동 방향이 시점 앞쪽 반원이면 이동 방향을, 뒤쪽 반원이면 반대 방향을 보드 목표 방향으로 고른다.
+        /// 뒤로 갈 때는 보드가 앞을 본 채 미끄러진다. 정확히 옆이면 이동 방향을 본다.
+        /// </summary>
+        /// <param name="moveYaw">이동 방향 월드 yaw</param>
+        /// <returns>보드 목표 월드 yaw</returns>
+        private float CalculateBoardTargetYaw(float moveYaw)
+        {
+            float relativeYaw = Mathf.DeltaAngle(GetYaw(_viewForward), moveYaw);
+            bool isForward = Mathf.Abs(relativeYaw) <= (90.0f + BOARD_SIDE_TOLERANCE);
+            return isForward ? moveYaw : moveYaw + 180.0f;
+        }
+
+        /// <summary>
+        /// 탑승 자세일 때 골반을 수평으로 돌려 하체가 보드 방향 기준 스탠스 각도를 보게 한다.
+        /// 비틀림 뼈(상체)는 돌리기 전 월드 회전으로 되돌려 정면을 유지한다. 상체 비틀림 보정 뒤, 조준 보정 전에 호출한다.
+        /// </summary>
+        private void ApplyRidingTurn()
+        {
+            if ((_ridingTurnWeight <= 0.0f) || !_twistBone || !_twistBone.parent) return;
+
+            Transform pelvis = _twistBone.parent;
+            Quaternion upperBodyRotation = _twistBone.rotation;
+
+            // 애니메이션 골반은 몸 정면 기준이므로, 몸 정면 → 보드 방향 차이에 스탠스 각도를 더해 돌린다
+            float turnYaw = Mathf.DeltaAngle(GetBodyYaw(), _boardYaw) + _ridingLowerBodyYaw;
+            pelvis.rotation = Quaternion.AngleAxis(turnYaw * _ridingTurnWeight, Vector3.up) * pelvis.rotation;
+            _twistBone.rotation = upperBodyRotation;
+        }
+
+        /// <summary>
+        /// 탑승 중 보드의 회전을 보드 방향(월드 yaw)으로 덮어쓴다.
+        /// </summary>
+        private void ApplyBoardYaw()
+        {
+            if (!_ridingBoard || !_isRiding) return;
+
+            _ridingBoard.rotation = Quaternion.AngleAxis(_boardYaw, Vector3.up);
+        }
+
+        /// <summary>
+        /// 몸(CharacterRotator 가 돌리는 대상)이 바라보는 월드 yaw 를 반환한다. 몸을 찾지 못했으면 시점 yaw 를 쓴다.
+        /// </summary>
+        /// <returns>몸 정면 월드 yaw (도)</returns>
+        private float GetBodyYaw()
+        {
+            if (!_body) return GetYaw(_viewForward);
+
+            Quaternion parentRotation = _body.parent ? _body.parent.rotation : Quaternion.identity;
+            Vector3 bodyForward = parentRotation * (_body.localRotation * _bodyRestInverse) * Vector3.forward;
+            return GetYaw(bodyForward);
+        }
+
+        /// <summary>
+        /// 기준 위치가 몸 정면 기준 어느 방향인지 Animator HitDirection 값으로 반환한다.
+        /// 기준 위치가 없거나 몸과 수평 위치가 같으면 앞쪽으로 본다.
+        /// </summary>
+        /// <param name="hitSource">피격 방향 기준 월드 위치</param>
+        /// <returns>HitDirection 값 (0 앞, 1 뒤, 2 왼쪽, 3 오른쪽)</returns>
+        private int CalculateHitDirection(Vector3? hitSource)
+        {
+            if (!hitSource.HasValue) return HIT_DIRECTION_FRONT;
+
+            Vector3 origin = _body ? _body.position : _animator.transform.position;
+            Vector3 toSource = Vector3.ProjectOnPlane(hitSource.Value - origin, Vector3.up);
+            if (toSource.sqrMagnitude <= Mathf.Epsilon) return HIT_DIRECTION_FRONT;
+
+            float relativeYaw = Mathf.DeltaAngle(GetBodyYaw(), GetYaw(toSource));
+            float absYaw = Mathf.Abs(relativeYaw);
+            if (absYaw <= HIT_FRONT_HALF_ANGLE) return HIT_DIRECTION_FRONT;
+            if (absYaw >= 180.0f - HIT_FRONT_HALF_ANGLE) return HIT_DIRECTION_BACK;
+
+            return (relativeYaw > 0.0f) ? HIT_DIRECTION_RIGHT : HIT_DIRECTION_LEFT;
+        }
+
+        /// <summary>
+        /// 월드 방향의 수평 yaw(도)를 반환한다. +z 가 0, +x 가 90 이다.
+        /// </summary>
+        /// <param name="direction">월드 방향</param>
+        /// <returns>yaw (도)</returns>
+        private static float GetYaw(Vector3 direction)
+        {
+            return Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
         }
 
         /// <summary>
@@ -546,9 +811,15 @@ namespace CharacterAnimation
             public static readonly int IsSpecialIdle = Animator.StringToHash("IsSpecialIdle");
             public static readonly int SpecialIdleIndex = Animator.StringToHash("SpecialIdleIndex");
             public static readonly int Death = Animator.StringToHash("Death");
+            public static readonly int IsRiding = Animator.StringToHash("IsRiding");
+            public static readonly int Mount = Animator.StringToHash("Mount");
+            public static readonly int IsRidingPose = Animator.StringToHash("IsRidingPose");
+            public static readonly int Hit = Animator.StringToHash("Hit");
+            public static readonly int HitDirection = Animator.StringToHash("HitDirection");
             public static readonly int FireHoldState = Animator.StringToHash("FireHold");
             public static readonly int IdleState = Animator.StringToHash("Idle");
             public static readonly int DeathLoopState = Animator.StringToHash("DeathLoop");
+            public static readonly int RidingState = Animator.StringToHash("Riding");
         }
         #endregion
     }

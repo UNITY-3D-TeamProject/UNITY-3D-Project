@@ -12,6 +12,15 @@ namespace Mediator.SubMediators
         public void ClearMoveRequest();
         public void ClearJumpRequest();
     }
+
+    /// <summary>
+    /// 점프 입력을 뗐을 때를 알려줄 수 있는 컨트롤러. 누름만 알리는 IMoveController 와 따로 둔다.
+    /// </summary>
+    public interface IJumpReleaseController
+    {
+        public void SetJumpReleaseRequest(Action callback);
+        public void ClearJumpReleaseRequest();
+    }
     
     /// <summary>
     /// 이동 입력을 MoveDirectionCalculator 로 넘기고, 계산된 이동 방향과 점프 입력·속도 어트리뷰트를 CharacterMotor 로 전달하는 접착 컴포넌트.
@@ -33,9 +42,13 @@ namespace Mediator.SubMediators
         
         #region Private Fields
         private IMoveController _moveController;
+        private IJumpReleaseController _jumpReleaseController;
         private Vector3 _lastDirection;
         private Vector3 _rollDirection;
         private float _jumpPower;
+        private float _baseGravity;
+        private float _moveSpeedRatio = 1.0f;
+        private float _jumpPowerRatio = 1.0f;
         #endregion
 
         #region Properties
@@ -61,6 +74,8 @@ namespace Mediator.SubMediators
         public event Action OnJumpEnded;
         /// <summary>공중에서 점프 입력이 들어왔을 때 발생한다. 점프 여부는 구독하는 쪽이 판단해 CommandAirJump 로 요청한다.</summary>
         public event Action OnAirJumpRequested;
+        /// <summary>점프 입력을 뗐을 때 발생한다.</summary>
+        public event Action OnJumpReleased;
         /// <summary>구르기를 시작했을 때 구르기 방향(월드, 정규화되지 않음)과 함께 발생한다.</summary>
         public event Action<Vector3> OnRollStarted;
         /// <summary>구르기가 끝났거나 중단되었을 때 발생한다.</summary>
@@ -75,6 +90,8 @@ namespace Mediator.SubMediators
             ResolveComponent(ref _motor);
             ResolveComponent(ref _moveDirectionCalculator);
             ResolveComponent(ref _rollMover);
+            if (_motor) _baseGravity = _motor.Gravity;
+            _jumpReleaseController = GetComponentInParent<IJumpReleaseController>();
             MoveController = GetComponentInParent<IMoveController>();
         }
 
@@ -156,7 +173,62 @@ namespace Mediator.SubMediators
             if (!_motor) return;
             if (_rollMover && _rollMover.IsRolling) return;
 
-            _motor.Jump(_jumpPower * Mathf.Sqrt(powerRatio));
+            _motor.Jump(_jumpPower * _jumpPowerRatio * Mathf.Sqrt(powerRatio));
+        }
+
+        /// <summary>
+        /// 이동속도 어트리뷰트에 곱할 배율을 설정한다.
+        /// </summary>
+        /// <param name="ratio">배율. 1 이면 변화 없음</param>
+        public void SetMoveSpeedRatio(float ratio)
+        {
+            _moveSpeedRatio = ratio;
+            if (_motor && AttributeGetter != null) _motor.Speed = AttributeGetter.Invoke(_speedValueKey) * _moveSpeedRatio;
+        }
+
+        /// <summary>
+        /// 점프력 어트리뷰트에 곱할 배율을 설정한다. 지상·공중 점프 모두에 적용된다.
+        /// </summary>
+        /// <param name="ratio">배율. 1 이면 변화 없음</param>
+        public void SetJumpPowerRatio(float ratio)
+        {
+            _jumpPowerRatio = ratio;
+        }
+
+        /// <summary>
+        /// CharacterMotor 의 기본 중력에 곱할 배율을 설정한다.
+        /// </summary>
+        /// <param name="ratio">배율. 1 이면 변화 없음</param>
+        public void SetGravityRatio(float ratio)
+        {
+            if (_motor) _motor.Gravity = _baseGravity * ratio;
+        }
+
+        /// <summary>
+        /// 자동 전진을 켜거나 끈다. MoveDirectionCalculator 로 전달한다.
+        /// </summary>
+        /// <param name="isEnabled">켜면 true</param>
+        /// <param name="turnSpeed">전진 방향이 시점 방향을 따라 도는 속도(도/초)</param>
+        public void SetAutoForward(bool isEnabled, float turnSpeed)
+        {
+            if (!_moveDirectionCalculator) return;
+
+            _moveDirectionCalculator.SetAutoForward(isEnabled, turnSpeed);
+        }
+
+        /// <summary>
+        /// 일정 속도 상승(요시 점프)을 시작하거나 끝낸다. CharacterMotor 로 전달한다.
+        /// </summary>
+        /// <param name="isHovering">시작이면 true</param>
+        /// <param name="riseSpeed">상승 속도. 끝낼 때는 쓰지 않는다</param>
+        public void SetHover(bool isHovering, float riseSpeed)
+        {
+            if (!_motor) return;
+
+            if (isHovering)
+                _motor.StartHover(riseSpeed);
+            else
+                _motor.StopHover();
         }
         #endregion
 
@@ -168,7 +240,7 @@ namespace Mediator.SubMediators
         {
             AttributeCallback.TryAdd(_speedValueKey, data =>
             {
-                if (_motor != null) _motor.Speed = data.NewValue;
+                if (_motor != null) _motor.Speed = data.NewValue * _moveSpeedRatio;
             });
 
             AttributeCallback.TryAdd(_jumpSpeedValueKey, data =>
@@ -184,7 +256,7 @@ namespace Mediator.SubMediators
         {
             if (_motor == null || AttributeGetter == null) return;
 
-            _motor.Speed = AttributeGetter.Invoke(_speedValueKey);
+            _motor.Speed = AttributeGetter.Invoke(_speedValueKey) * _moveSpeedRatio;
             _jumpPower = AttributeGetter.Invoke(_jumpSpeedValueKey);
         }
         #endregion
@@ -230,7 +302,7 @@ namespace Mediator.SubMediators
                 return;
             }
 
-            _motor.Jump(_jumpPower);
+            _motor.Jump(_jumpPower * _jumpPowerRatio);
         }
         
         /// <summary>
@@ -240,6 +312,7 @@ namespace Mediator.SubMediators
         {
             MoveController?.SetMoveRequest(SendMoveInput);
             MoveController?.SetJumpRequest(CommandJump);
+            _jumpReleaseController?.SetJumpReleaseRequest(NotifyJumpReleased);
         }
 
         /// <summary>
@@ -249,6 +322,7 @@ namespace Mediator.SubMediators
         {
             MoveController?.ClearMoveRequest();
             MoveController?.ClearJumpRequest();
+            _jumpReleaseController?.ClearJumpReleaseRequest();
         }
 
         /// <summary>
@@ -275,6 +349,14 @@ namespace Mediator.SubMediators
         private void NotifyJumpStarted()
         {
             OnJumpStarted?.Invoke();
+        }
+
+        /// <summary>
+        /// 점프 입력을 뗀 것을 외부로 알린다.
+        /// </summary>
+        private void NotifyJumpReleased()
+        {
+            OnJumpReleased?.Invoke();
         }
 
         /// <summary>

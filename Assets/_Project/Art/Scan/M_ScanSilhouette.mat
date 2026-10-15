@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: M_ScanSilhouette
-  m_Shader: {fileID: -6465566751694194690, guid: 3c5b8f0e1d6a4f7e9b2a4c8d6e1f0a37, type: 3}
+  m_Shader: {fileID: 4800000, guid: 13dbd9d951f934440954b906e1771479, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -38,10 +38,21 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _FillAlpha: 0.2
+    - _FlickerRate: 15
+    - _FlickerStrength: 0.35
+    - _LineDim: 0.4
+    - _LinePeriod: 4
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _RimPower: 2
+    - _RimStrength: 1
+    - _SweepSpacing: 3
+    - _SweepSpeed: 1.2
+    - _SweepStrength: 0.8
+    - _SweepWidth: 0.15
     m_Colors:
-    - _Color: {r: 0.2285066, g: 0.6132076, b: 0.3718266, a: 0.6}
+    - _Color: {r: 0.3, g: 1.2, b: 0.6, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &6472166596473584321

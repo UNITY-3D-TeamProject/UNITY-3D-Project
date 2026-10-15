@@ -2,7 +2,7 @@
 
 - **우선순위**: 낮음
 - **상태**: 완료
-- **관련 작업**: [09. Hit 방향별 모션](../09-directional-hit-motion.md), [10. 피격 시 깜빡임 + 무적](10-hit-blink-invincibility.md), [14. 사격·조준 중 이동 속도 감소](14-fire-aim-move-slow.md)
+- **관련 작업**: [09. Hit 방향별 모션](09-directional-hit-motion.md), [10. 피격 시 깜빡임 + 무적](10-hit-blink-invincibility.md), [14. 사격·조준 중 이동 속도 감소](14-fire-aim-move-slow.md)
 
 ## 목표
 캐릭터가 사망하면 사망 애니메이션을 재생하고 사망 이벤트를 발행한 뒤 정리한다.

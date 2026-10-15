@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Attribute.Core;
+using Attribute.Effect;
 using Mediator;
 
 namespace Facade.Player
@@ -49,6 +50,8 @@ namespace Facade.Player
         public event Action OnDeathEnded;
         /// <summary>플레이어가 스킬을 사용했을 때 (스킬 이름, 쿨타임)을 알린다. 사용 1회당 1번 발생한다.</summary>
         public event Action<string, float> OnSkillUsed;
+        /// <summary>카메라가 상호작용 대상을 바라보는지 여부가 바뀔 때 발생한다. 대상이 있으면 true.</summary>
+        public event Action<bool> OnInteractableChanged;
         /// <summary>설정창 열기 입력이 들어왔을 때 발생한다.</summary>
         public event Action OnOpenSettingsRequested;
         /// <summary>설정창 닫기 입력이 들어왔을 때 발생한다.</summary>
@@ -107,6 +110,26 @@ namespace Facade.Player
         }
 
         /// <summary>
+        /// 출처 정보 없이 effect 를 플레이어에 적용한다.
+        /// </summary>
+        /// <param name="effect">적용할 효과</param>
+        /// <returns>적용했으면 true. 효과·대상 어트리뷰트가 없거나 cursor 가 필요한 효과면 false</returns>
+        public bool ApplyEffect(SOAttributeEffect effect)
+        {
+            return _characterMediator && _characterMediator.ApplyEffect(effect);
+        }
+
+        /// <summary>
+        /// context.Effect 를 출처 정보와 함께 플레이어에 적용한다.
+        /// </summary>
+        /// <param name="context">적용할 효과(Effect)와 출처 정보. ValueSource 가 Attribute 인 효과는 Cursor 가 필요하다</param>
+        /// <returns>적용했으면 true. 효과·대상 어트리뷰트가 없거나 필요한 cursor 가 없으면 false</returns>
+        public bool ApplyEffect(SEffectContext context)
+        {
+            return _characterMediator && _characterMediator.ApplyEffect(context);
+        }
+
+        /// <summary>
         /// 스킬을 활성화/비활성화한다.
         /// </summary>
         /// <param name="skillName">대상 스킬 이름</param>
@@ -158,6 +181,7 @@ namespace Facade.Player
                 _characterMediator.OnDeath += RelayDeath;
                 _characterMediator.OnDeathEnded += RelayDeathEnded;
                 _characterMediator.OnSkillUsed += RelaySkillUsed;
+                _characterMediator.OnInteractableChanged += RelayInteractableChanged;
             }
 
             if (!_playerInput || _playerInput.actions == null) return;
@@ -181,6 +205,7 @@ namespace Facade.Player
                 _characterMediator.OnDeath -= RelayDeath;
                 _characterMediator.OnDeathEnded -= RelayDeathEnded;
                 _characterMediator.OnSkillUsed -= RelaySkillUsed;
+                _characterMediator.OnInteractableChanged -= RelayInteractableChanged;
             }
 
             if (_openSettingsAction != null) _openSettingsAction.performed -= HandleOpenSettings;
@@ -213,6 +238,12 @@ namespace Facade.Player
         private void RelaySkillUsed(string skillName, float cooldown)
         {
             OnSkillUsed?.Invoke(skillName, cooldown);
+        }
+
+        private void RelayInteractableChanged(bool hasTarget)
+        {
+            Debug.Log($"[PlayerFacade] OnInteractableChanged : {hasTarget}"); // TODO: 테스트용 로그, 검증 후 제거
+            OnInteractableChanged?.Invoke(hasTarget);
         }
 
         private void HandleOpenSettings(InputAction.CallbackContext context)

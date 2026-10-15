@@ -2,7 +2,7 @@
 
 - **우선순위**: 중간
 - **상태**: 완료
-- **관련 작업**: [09. Hit 방향별 모션](../09-directional-hit-motion.md), [15. 캐릭터 사망 시 처리](15-character-death.md)
+- **관련 작업**: [09. Hit 방향별 모션](09-directional-hit-motion.md), [15. 캐릭터 사망 시 처리](15-character-death.md)
 
 ## 목표
 피격 후 일정 시간 무적이 되고, 그동안 플레이어가 깜빡인다.

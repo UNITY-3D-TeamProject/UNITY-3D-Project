@@ -27,6 +27,7 @@ namespace Core
             NewGame, // 새 게임 
             SceneTransition, // 씬 변경될 때
             RoundRecovery, // 사망 후 라운드 체크포인트에서 다시 스폰할 때
+            StageRestart, // 첫 라운드 사망 후 씬을 다시 불러와 스폰할 때
         }
 
         // 플레이어 스폰 이유는 초기값은 당연히 NewGame으로 설정 
@@ -159,7 +160,10 @@ namespace Core
 
             // 스포너에서 초기 Effect 적용은 이미 끝난 상태다.
             // 씬 이동이라면 여기서 이전 씬의 능력치를 복원한다.
-            bool shouldRestore = SpawnReason == EPlayerSpawnReason.SceneTransition;
+            // 씬 재시작이면 씬 입장 때 저장해 둔 능력치를 다시 복원한다.
+            bool shouldRestore =
+                (SpawnReason == EPlayerSpawnReason.SceneTransition) ||
+                (SpawnReason == EPlayerSpawnReason.StageRestart);
 
             if (shouldRestore)
             {

@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using Map.Gimmicks;
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Core.Stage
 {
@@ -24,6 +25,10 @@ namespace Core.Stage
         [SerializeField] private FallZoneTrigger[] _fallZones;
         [Tooltip("낙하 구역에 닿았을 때 플레이어에게 적용할 Effect (예: CurrentHp 감소)")]
         [SerializeField] private SOAttributeEffect _fallEffect;
+
+        [Header("Restart")]
+        [Tooltip("첫 라운드(다음 라운드 체크포인트 도달 전)에 사망하면 체크포인트 재스폰 대신 씬을 다시 불러옵니다.")]
+        [SerializeField] private bool _restartSceneOnFirstRoundDeath;
 
         // 현재 라운드. 0부터 시작하며 -1은 아직 시작하지 않은 상태.
         private int _currentRoundIndex = -1;
@@ -494,6 +499,7 @@ namespace Core.Stage
 
         // 플레이어가 죽었다는 이벤트를 받았을 때, 현재 라운드의 체크포인트에서 다시 스폰을 요청하는 함수
         // 사망한 플레이어를 여기서 파괴하고 이동이 아니라 재스폰한다. 스폰 위치는 GetSpawnPoint가 알려준다.
+        // Restart Scene On First Round Death가 켜져 있고 첫 라운드라면 재스폰 대신 현재 씬을 다시 불러온다.
         // [이벤트] PlayerFacade.OnDeathEnded(사망 애니메이션 종료)가 발생하면 호출된다. (BindPlayer에서 구독)
         // [이후] OnPlayerRespawnRequested 발생 -> PlayerSpawner.HandleRespawnRequested -> 다음 프레임 재스폰.
         private void HandlePlayerDeath()
@@ -502,6 +508,16 @@ namespace Core.Stage
             // 낙하 사망과 전투 사망이 겹치거나 사망 이벤트가 반복되어도 복구는 한 번만 처리된다.
             if (!IsRunning || _isRecovering)
             {
+                return;
+            }
+
+            // 첫 라운드 사망이면 씬을 다시 불러온다. 능력치는 씬 입장 때 저장된 값으로 복원된다.
+            // SceneLoader는 순서상 다음 씬만 허용하고 전환 이벤트로 능력치를 덮어쓰므로 직접 불러온다.
+            if (_restartSceneOnFirstRoundDeath && _currentRoundIndex == 0)
+            {
+                _isRecovering = true;
+                _gameManager.PrepareSpawn(GameManager.EPlayerSpawnReason.StageRestart);
+                SceneManager.LoadScene(gameObject.scene.buildIndex);
                 return;
             }
 
