@@ -7,6 +7,10 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-15** — 보행자가 뜬 채로 스폰되는 문제: 점프 중 풀에 반납되면 `CharacterMotor`의 수직 속도·점프 상태가 남아 있다가, 다시 꺼낼 때 점프를 이어서 했다. `CharacterMotor.OnDisable`에서 이동 상태를 초기화한다. 컴파일 에러 0, **Play 관찰 검증 미완**: [풀 반납 시 모터 상태 초기화](./2026-10-15/pooled-motor-state-reset.md)
+- **2026-10-15** — 보행자 추월 점프 복구: `Pedstrian.prefab`의 `CrowdController._detectLayers`가 31번 레이어 비트가 빠진 64로 바뀌어 다른 보행자를 감지하지 못하던 것을 2147483712로 되돌렸다(코드 무변경). Play에서 점프 시작 확인, 에러 0. **보행자가 이름 없는 31번 레이어라 같은 문제 재발 가능**: [보행자 점프 감지 레이어](./2026-10-15/pedestrian-jump-detect-layer.md)
+- **2026-10-15** — AI 애니메이션 코드 1차(intent-025): `EnemyAnimator`·`JumpAnimator`·`EnemyAnimationMediator` 신규, `CharacterMediator`·`SkillMediator`(`OnSkillStopped`)에 추가만. **컴파일 미확인, 컨트롤러·프리팹은 [USER] 가이드대로 작성 필요**: [AI 애니메이션 코드](./2026-10-15/enemy-animation-code.md)
+- **2026-10-15** — 열린 레인 스폰 간격 랜덤화: `CrowdLane._spawnInterval`을 `_minSpawnInterval`(1.5) / `_maxSpawnInterval`(3.5)로 바꾸고, 꺼낼 때마다 그 사이에서 다음 간격을 새로 뽑는다(첫 개체는 바로). 컴파일 에러 0, Play에서 레인별 간격이 다르게 뽑히는 것 확인, 에러 0: [스폰 간격 랜덤화](./2026-10-15/crowd-random-spawn-interval.md)
 - **2026-10-15** — 열린 레인 차례대로 생성: `CrowdLane.Start()`가 열린 레인은 일괄 생성을 건너뛰고 첫 대만 바로 꺼내며, 이후는 기존 `Update` 재생성 로직이 `_spawnInterval`마다 시작점에서 꺼낸다(닫힌 레인은 기존대로). Play에서 시작 직후 레인당 1대, 14초에 14대 확인, 에러 0: [열린 레인 차례대로 생성](./2026-10-15/car-lane-sequential-spawn.md)
 - **2026-10-15** — 차량 레인 끝 Release 안 되던 문제: Car_Lane_1~3 끝 2.5~4m가 건물 콜라이더와 겹쳐 차(CC r1.4)가 막히는 바람에, 남은 거리 1m 반납 조건에 도달하지 못했다. 씬에서 끝 knot를 겹침 지점 + 1.5m 앞으로 당겼다(코드 무변경). Play 37초 동안 Release·재사용 순환을 확인했고 에러 0. **Car `_detectLayers`가 Player만 켜져 있는 것은 미수정**: [차량 레인 끝 Release](./2026-10-15/car-lane-end-release.md)
 - **2026-10-14** — Melee(Metal Robot 교체) CC·근접 판정 맞춤: 테스트 씬 인스턴스만 CC center (0,0.55,0)·r 0.3·h 1.1, HitPoint (0,0.6,0.6)로 변경(프리팹·코드 무변경). Play에서 0.9~2m 피격·2.5m 빗나감, 실제 AI 공격 적중, 에러 0. **`Sensor._eye`/`_body` 빈 참조 유지, 프리팹 Apply는 모델 확정 후**: [Melee Metal Robot 맞춤](./2026-10-14/melee-metal-robot-fit.md)
