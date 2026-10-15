@@ -8,6 +8,7 @@
 - **[Stage / Player State]** PlayerFacade 기반 낙하 복귀(이동)·사망 복구(파괴 후 재스폰) 구현, 사망 시 Destroy 전제 확인 필요 → [문서](../HANDOVER/SungJun/intent/intent-017-fall-death-recovery-playerfacade.md)
 - **[UI / Stage]** HUD를 PlayerFacade 기반으로 전환, 스킬 쿨(구르기·블루투스·스캔) UI 추가, 낙하 데미지를 Effect SO로 변경 → [문서](../HANDOVER/SungJun/intent/intent-018-hud-facade-skill-cooldown.md)
 - **[Skill / Scan / Core]** 스캔 스킬 구현 — 파동이 닿은 대상이 IScannable 반응으로 드러났다가 duration 후 서서히 사라짐 → [문서](../HANDOVER/SungJun/intent/intent-019-scan-system.md)
+- **[Scene Transition]** 씬 이동 시 로딩씬을 거쳐 목적지 씬 켜기 렉(특히 로비)을 로딩 화면 뒤로 숨김 → [문서](../HANDOVER/SungJun/intent/intent-020-loading-scene.md)
 <!-- 파트별로 묶어서 나열. 형식: - **[파트]** 문제 한 줄 요약 → [문서](./intent-NNN-slug.md) -->
 - **[AI / Enemy / Combat]** 적을 어디에 맞혀도 같은 피해. 적마다 후보 5곳 중 무작위 약점을 두고, 맞은 지점과 약점 중심의 거리로 치명타를 판정한다. 1단계는 판정 로그만, 피해 곱은 2단계 → [문서](./intent-023-weak-point-critical.md)
 - **[Movement System]** 이동 코어에 경로/회전/탑승 정책이 섞여 있음 → [문서](./intent-002-movement-core-scope.md)
