@@ -9,7 +9,7 @@ using UnityEngine;
 namespace Skill.Skills
 {
     /// <summary>
-    /// 탈것에 탑승하고, 다시 발동하면 하차하는 토글 스킬. 탈것 오브젝트는 탑승 연출이 끝날 때 AttachVehicle 로 생성한다. 탑승 중에는 버프 배율을 적용하고 같은 GameObject 의 DrainCost 로 자원을 계속 소모한다.
+    /// 탈것에 탑승하고, 다시 발동하면 하차하는 토글 스킬. 탈것 오브젝트는 탑승 연출이 끝날 때 AttachVehicle 로 생성한다. 탑승 중에는 버프 배율을 적용하고, 탈것이 생성된 뒤부터 같은 GameObject 의 DrainCost 로 자원을 계속 소모한다.
     /// 자원이 바닥나거나 스킬이 꺼지거나 Stop 되면 하차한다. 코스트(쿨타임)는 하차할 때 지불한다.
     /// 탑승/하차할 때마다 발동을 알리며, 받는 쪽은 IsRiding 과 BuffRatios 로 상태를 읽는다.
     /// 탑승 중에는 체공당 1회 요시 점프(일정 속도 상승)를 쓸 수 있고, 그동안 자원을 추가로 소모한다. 시작·종료는 OnHoverChanged 로 알린다.
@@ -18,7 +18,7 @@ namespace Skill.Skills
     {
         #region Serialized Fields
         [Header("Vehicle")]
-        [Tooltip("탑승 시 플레이어 루트 아래에 생성할 탈것 프리팹. 비어 있으면 생성하지 않는다.")]
+        [Tooltip("탑승 시 플레이어 루트 아래에 생성할 탈것 프리팹. 비어 있으면 같은 GameObject 의 NotNullCondition 으로 탑승을 막는다.")]
         [SerializeField] private GameObject _vehiclePrefab;
         [Tooltip("플레이어 루트 기준 탈것 생성 위치")]
         [SerializeField] private Vector3 _vehicleOffset = Vector3.zero;
@@ -121,7 +121,7 @@ namespace Skill.Skills
         }
 
         /// <summary>
-        /// 탑승 중이고 아직 탈것이 없으면 플레이어 루트 아래에 탈것을 생성한다.
+        /// 탑승 중이고 아직 탈것이 없으면 플레이어 루트 아래에 탈것을 생성하고 자원 소모를 시작한다.
         /// 탑승 시 뛰어오르는 연출이 끝난 뒤(착지) 호출한다.
         /// </summary>
         public void AttachVehicle()
@@ -131,6 +131,7 @@ namespace Skill.Skills
             _vehicle = Instantiate(_vehiclePrefab, transform.root);
             _vehicle.transform.localPosition = _vehicleOffset;
             _vehicle.transform.localRotation = Quaternion.identity;
+            if (_drainCost) _drainCost.StartDrain();
         }
 
         /// <summary>
@@ -187,11 +188,10 @@ namespace Skill.Skills
 
         #region Private Methods
         /// <summary>
-        /// 자원 소모를 시작한 뒤 탑승을 알린다. 탈것은 AttachVehicle 로 따로 생성한다.
+        /// 탑승을 알린다. 탈것 생성과 자원 소모 시작은 AttachVehicle 에서 한다.
         /// </summary>
         private void Mount()
         {
-            if (_drainCost) _drainCost.StartDrain();
             IsRiding = true;
             base.Execute();
         }

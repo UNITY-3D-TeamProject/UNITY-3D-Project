@@ -51,6 +51,9 @@ namespace Mediator
                 return _attributeSet ? _attributeSet : null;
             }
         }
+
+        /// <summary>사격 차지 진행도(0~1). 차지 중이 아니면 0.</summary>
+        public float FireChargeRatio => _skillMediator ? _skillMediator.FireChargeRatio : 0.0f;
         #endregion
 
         #region Events
@@ -73,6 +76,8 @@ namespace Mediator
         public event Action<string, float> OnSkillUsed;
         /// <summary>상호작용 대상을 바라보는지 여부가 바뀔 때 발생한다. 대상이 있으면 true.</summary>
         public event Action<bool> OnInteractableChanged;
+        /// <summary>사격 차지 상태 변경. 차지 시작이면 true, 발사·취소로 끝나면 false.</summary>
+        public event Action<bool> OnFireChargeChanged;
         #endregion
 
         #region Unity Lifecycle
@@ -319,6 +324,11 @@ namespace Mediator
             OnInteractableChanged?.Invoke(hasTarget);
         }
 
+        private void OnFireChargeChangedCallback(bool isCharging)
+        {
+            OnFireChargeChanged?.Invoke(isCharging);
+        }
+
         /// <summary>
         /// 스캔 발동 위치를 펫에게 정하게 하고, 정해지면 그 위치에서 스캔을 시작한다. 펫이 없으면 캐릭터 위치에서 바로 시작한다.
         /// </summary>
@@ -511,6 +521,7 @@ namespace Mediator
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested += OnFireCallback;
             if (_skillMediator) _skillMediator.OnSkillUsed += OnSkillUsedCallback;
             if (_skillMediator) _skillMediator.OnInteractableChanged += OnInteractableChangedCallback;
+            if (_skillMediator) _skillMediator.OnFireChargeChanged += OnFireChargeChangedCallback;
             if (_skillMediator) _skillMediator.OnScanRequested += OnScanRequestedCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnCriticalHit += OnCriticalHitCallback;
@@ -568,6 +579,7 @@ namespace Mediator
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested -= OnFireCallback;
             if (_skillMediator) _skillMediator.OnSkillUsed -= OnSkillUsedCallback;
             if (_skillMediator) _skillMediator.OnInteractableChanged -= OnInteractableChangedCallback;
+            if (_skillMediator) _skillMediator.OnFireChargeChanged -= OnFireChargeChangedCallback;
             if (_skillMediator) _skillMediator.OnScanRequested -= OnScanRequestedCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnCriticalHit -= OnCriticalHitCallback;

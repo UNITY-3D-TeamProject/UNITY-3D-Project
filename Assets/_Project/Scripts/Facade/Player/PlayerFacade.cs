@@ -37,6 +37,9 @@ namespace Facade.Player
         #region Properties
         /// <summary>효과 적용 대상/주체로 사용할 플레이어 어트리뷰트. 없으면 null.</summary>
         public IEffectTarget EffectTarget => _characterMediator ? _characterMediator.EffectTarget : null;
+
+        /// <summary>사격 차지 진행도(0~1). 차지 중이 아니면(발사·취소 후, 재차지 대기 중) 0.</summary>
+        public float FireChargeRatio => _characterMediator ? _characterMediator.FireChargeRatio : 0.0f;
         #endregion
 
         #region Events
@@ -52,6 +55,11 @@ namespace Facade.Player
         public event Action<string, float> OnSkillUsed;
         /// <summary>카메라가 상호작용 대상을 바라보는지 여부가 바뀔 때 발생한다. 대상이 있으면 true.</summary>
         public event Action<bool> OnInteractableChanged;
+        /// <summary>
+        /// 사격 차지 상태가 바뀔 때 발생한다. 차지 시작이면 true, 발사·취소로 끝나면 false.
+        /// true 를 받으면 false 를 받을 때까지 FireChargeRatio 를 읽어 게이지를 갱신한다.
+        /// </summary>
+        public event Action<bool> OnFireChargeChanged;
         /// <summary>설정창 열기 입력이 들어왔을 때 발생한다.</summary>
         public event Action OnOpenSettingsRequested;
         /// <summary>설정창 닫기 입력이 들어왔을 때 발생한다.</summary>
@@ -182,6 +190,7 @@ namespace Facade.Player
                 _characterMediator.OnDeathEnded += RelayDeathEnded;
                 _characterMediator.OnSkillUsed += RelaySkillUsed;
                 _characterMediator.OnInteractableChanged += RelayInteractableChanged;
+                _characterMediator.OnFireChargeChanged += RelayFireChargeChanged;
             }
 
             if (!_playerInput || _playerInput.actions == null) return;
@@ -206,6 +215,7 @@ namespace Facade.Player
                 _characterMediator.OnDeathEnded -= RelayDeathEnded;
                 _characterMediator.OnSkillUsed -= RelaySkillUsed;
                 _characterMediator.OnInteractableChanged -= RelayInteractableChanged;
+                _characterMediator.OnFireChargeChanged -= RelayFireChargeChanged;
             }
 
             if (_openSettingsAction != null) _openSettingsAction.performed -= HandleOpenSettings;
@@ -244,6 +254,11 @@ namespace Facade.Player
         {
             Debug.Log($"[PlayerFacade] OnInteractableChanged : {hasTarget}"); // TODO: 테스트용 로그, 검증 후 제거
             OnInteractableChanged?.Invoke(hasTarget);
+        }
+
+        private void RelayFireChargeChanged(bool isCharging)
+        {
+            OnFireChargeChanged?.Invoke(isCharging);
         }
 
         private void HandleOpenSettings(InputAction.CallbackContext context)
