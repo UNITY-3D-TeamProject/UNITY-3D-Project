@@ -4,11 +4,15 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Spawner]** 몬스터 종류별 DB SO(SOMonsterData)로 초기값 적용 + 개체마다 MoveSpeed 비율 오차(±%) → [문서](../HANDOVER/SungJun/intent/intent-025-monster-attribute-variance.md)
 - **[Stage / Player State]** StageManager 체크포인트 컴포넌트 연결 및 도달 처리 → [문서](../HANDOVER/SungJun/intent/intent-016-stage-checkpoint-events.md)
 - **[Stage / Player State]** PlayerFacade 기반 낙하 복귀(이동)·사망 복구(파괴 후 재스폰) 구현, 사망 시 Destroy 전제 확인 필요 → [문서](../HANDOVER/SungJun/intent/intent-017-fall-death-recovery-playerfacade.md)
 - **[UI / Stage]** HUD를 PlayerFacade 기반으로 전환, 스킬 쿨(구르기·블루투스·스캔) UI 추가, 낙하 데미지를 Effect SO로 변경 → [문서](../HANDOVER/SungJun/intent/intent-018-hud-facade-skill-cooldown.md)
 - **[Skill / Scan / Core]** 스캔 스킬 구현 — 파동이 닿은 대상이 IScannable 반응으로 드러났다가 duration 후 서서히 사라짐 → [문서](../HANDOVER/SungJun/intent/intent-019-scan-system.md)
+- **[Scene Transition]** 씬 이동 시 로딩씬을 거쳐 목적지 씬 켜기 렉(특히 로비)을 로딩 화면 뒤로 숨김 → [문서](../HANDOVER/SungJun/intent/intent-020-loading-scene.md)
 <!-- 파트별로 묶어서 나열. 형식: - **[파트]** 문제 한 줄 요약 → [문서](./intent-NNN-slug.md) -->
+- **[AI / Animation / Mediator]** 적·군중에 애니메이션이 없음. 플레이어와 같은 구조로 `EnemyAnimator` ↔ `EnemyAnimationMediator`를 두고 `CharacterMediator`가 연결한다. 스킬별 모션은 매핑 데이터, 객체 전용 로직(보행자 점프)은 별도 컴포넌트, 컨트롤러는 베이스 + Override → [문서](./intent-025-enemy-animation.md)
+- **[AI / Enemy / Skill]** 플레이어 위치를 흔드는 적이 없음. 점점 세지는 바람 + 마지막 넉백으로 밀어내는 특수 몹 `Special`(Melee 골격 + 바람 스킬, 쿨타임은 BT 블랙보드 준비 시각). 설계 확정, 구현 전 → [문서](./intent-024-wind-enemy.md)
 - **[AI / Enemy / Combat]** 적을 어디에 맞혀도 같은 피해. 적마다 후보 5곳 중 무작위 약점을 두고, 맞은 지점과 약점 중심의 거리로 치명타를 판정한다. 1단계는 판정 로그만, 피해 곱은 2단계 → [문서](./intent-023-weak-point-critical.md)
 - **[Movement System]** 이동 코어에 경로/회전/탑승 정책이 섞여 있음 → [문서](./intent-002-movement-core-scope.md)
 - **[Movement System]** PlayMode 테스트로 발견된 이동 자체 버그 4건 → [문서](./intent-003-movement-playtest-bugfixes.md)
@@ -25,6 +29,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[Spawner]** 플레이어 스폰 Effect를 PlayerFacade.ApplyEffect로 적용, MonsterSpawner에 Fixed/Random 소환 선택 추가 → [문서](../HANDOVER/SungJun/intent/clear/intent-024-spawner-facade-effect-random-monster.md) (resolved: 2026-10-15)
 - **[Stage / Player State]** Core 기준 생존 낙하 복귀와 라운드 사망 복구 설계 완료, 구현 전 → [문서](../HANDOVER/SungJun/intent/clear/intent-015-stage-round-recovery-design.md) (resolved: 2026-10-08)
 - **[UI / Game State]** 초기 Playing, GameManager 커서 처리, 설정창 열기·닫기 액션 구독 구현 → [문서](../HANDOVER/SungJun/intent/intent-013-settings-input-flow.md) (resolved: 2026-10-05)
 <!-- 형식: - **[파트]** 문제 한 줄 요약 → [문서](./clear/intent-NNN-slug.md) (resolved: YYYY-MM-DD) -->

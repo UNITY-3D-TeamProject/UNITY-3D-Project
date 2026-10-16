@@ -73,6 +73,9 @@ namespace Mediator.SubMediators
         /// </summary>
         public event Action<string, float> OnSkillUsed;
 
+        /// <summary>정지 요청으로 스킬을 멈췄을 때 발생한다. (스킬 이름)</summary>
+        public event Action<string> OnSkillStopped;
+
         /// <summary>상호작용 대상을 바라보는지 여부가 바뀔 때 발생한다. 대상이 있으면 true.</summary>
         public event Action<bool> OnInteractableChanged;
 
@@ -287,7 +290,7 @@ namespace Mediator.SubMediators
             if (_skillController == null || _skillRequestController == null) return;
 
             _skillRequestController.SetRequestExecuteSkill(OnRequestExecuteSkill);
-            _skillRequestController.SetRequestStopSkill(_skillController.StopSkill);
+            _skillRequestController.SetRequestStopSkill(OnRequestStopSkill);
             _skillController.SetGetAttribute(key => AttributeGetter?.Invoke(key) ?? 0.0f);
             _skillController.SetRequestPay(OnRequestPay);
             _skillController.SetNotifyExecuted(OnSkillExecuted);
@@ -321,6 +324,16 @@ namespace Mediator.SubMediators
             if (IsSpawnVehicleSkill(skillName)) return;
 
             OnSkillUsed?.Invoke(skillName, _skillController.GetSkillCooldown(skillName));
+        }
+
+        /// <summary>
+        /// 스킬 정지 요청 처리. 스킬을 멈추고 정지를 알린다.
+        /// </summary>
+        /// <param name="skillName">정지할 스킬 이름</param>
+        private void OnRequestStopSkill(string skillName)
+        {
+            _skillController.StopSkill(skillName);
+            OnSkillStopped?.Invoke(skillName);
         }
 
         /// <summary>

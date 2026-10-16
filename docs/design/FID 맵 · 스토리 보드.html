@@ -1,0 +1,734 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>FID 맵 · 스토리 보드</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* layout: 왼쪽에 파트 버튼 목록, 오른쪽에 선택한 파트 한 장. 스테이지는 고유 색 하나로 구분 */
+:root{
+  --bg:#edf1f4; --surface:#ffffff; --sunk:#e3e9ee; --ink:#15202b; --muted:#566575; --line:#cbd4dc;
+  --c-tut:#cf4f1b; --c-lobby:#5f4fd0; --c-insta:#cf2d79; --c-file:#a87600; --c-sec:#168a5e; --c-live:#d12636;
+  --warn:#9a5b00; --warn-bg:#fff3d6;
+  --f-display:"Black Han Sans","IBM Plex Sans KR",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e141a; --surface:#172029; --sunk:#111920; --ink:#e5ebf1; --muted:#94a2b2; --line:#2a3643;
+    --c-tut:#ff8a55; --c-lobby:#a195ff; --c-insta:#ff6fae; --c-file:#f0bd3c; --c-sec:#4fd3a0; --c-live:#ff6b76;
+    --warn:#f3c264; --warn-bg:#33280f; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e141a; --surface:#172029; --sunk:#111920; --ink:#e5ebf1; --muted:#94a2b2; --line:#2a3643;
+  --c-tut:#ff8a55; --c-lobby:#a195ff; --c-insta:#ff6fae; --c-file:#f0bd3c; --c-sec:#4fd3a0; --c-live:#ff6b76;
+  --warn:#f3c264; --warn-bg:#33280f; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 72px;display:flex;flex-direction:column;gap:24px}
+h1,h2,h3,p,ul,ol,figure{margin:0}
+ul,ol{padding-left:1.15em;display:flex;flex-direction:column;gap:4px}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(24px,3.6vw,32px);line-height:1.15}
+h2{font-family:var(--f-display);font-weight:400;font-size:clamp(24px,3.4vw,32px);line-height:1.15;text-wrap:balance;color:var(--hue,var(--ink))}
+h3{font-family:var(--f-mono);font-weight:500;font-size:12px;letter-spacing:.08em;color:var(--muted)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--muted)}
+.lede{color:var(--muted);max-width:62ch}
+.top{display:flex;flex-direction:column;gap:4px}
+.s-tut{--hue:var(--c-tut)} .s-lobby{--hue:var(--c-lobby)} .s-insta{--hue:var(--c-insta)}
+.s-file{--hue:var(--c-file)} .s-sec{--hue:var(--c-sec)} .s-live{--hue:var(--c-live)}
+
+/* 좌측 버튼 + 본문 */
+.app{display:grid;grid-template-columns:200px minmax(0,1fr);gap:32px;align-items:start}
+.nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);display:flex;flex-direction:column;gap:4px}
+.nav .grp{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;color:var(--muted);padding:10px 12px 2px}
+.nav button{font:inherit;font-size:14px;text-align:left;color:var(--ink);background:transparent;border:1px solid transparent;border-radius:5px;padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:9px;white-space:nowrap}
+.nav button:hover{border-color:var(--line)}
+.nav button[aria-current="true"]{background:var(--surface);border-color:var(--line);font-weight:600}
+.nav button i{width:9px;height:9px;border-radius:50%;background:var(--hue,var(--muted));flex:none}
+button:focus-visible,a:focus-visible{outline:2px solid var(--hue,var(--ink));outline-offset:2px}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr);gap:16px}
+  .nav{flex-direction:row;overflow-x:auto;top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:8px;border-bottom:1px solid var(--line);z-index:2}
+  .nav .grp{padding:8px 4px 0 10px;white-space:nowrap}
+}
+.panel{display:flex;flex-direction:column;gap:22px;min-width:0;border-top:3px solid var(--hue,var(--ink));padding-top:18px}
+.panel-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.tag{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);border-radius:3px;padding:1px 7px;color:var(--muted);background:var(--surface)}
+.cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:1040px){.cols{grid-template-columns:minmax(0,1fr)}}
+.fig,.info{display:flex;flex-direction:column;min-width:0}
+.fig{gap:8px}.info{gap:18px}
+.fig figcaption,.cap{font-size:13px;color:var(--muted)}
+.block{display:flex;flex-direction:column;gap:6px;min-width:0}
+.story{border-left:2px solid var(--hue,var(--ink));padding-left:14px}
+.todo{background:var(--warn-bg);color:var(--warn);border-radius:4px;padding:10px 14px;font-size:14px}
+.todo h3{color:var(--warn)}.todo ul{margin-top:4px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+svg{display:block;font-family:var(--f-body)}
+svg text{fill:var(--ink)}
+svg .sub{fill:var(--muted);font-size:11px}
+svg .mono{font-family:var(--f-mono);font-size:10.5px;fill:var(--muted)}
+
+.cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.cells>div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.cells b{font-weight:600}
+.cells span{color:var(--muted);font-size:14px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px 28px}
+#p-player>.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:860px){#p-player>.two{grid-template-columns:minmax(0,1fr)}}
+
+.steps{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;font-size:14px;min-width:0}
+.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--f-mono);font-size:11px;color:var(--hue)}
+.steps small{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.steps .new{border-color:var(--hue)}
+
+.mazes{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px}
+.maze{flex:1 1 130px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.maze svg{width:100%;height:auto}
+.maze path{stroke:var(--ink);stroke-width:1.4;fill:none;stroke-linecap:square}
+.maze b{font-size:13px;font-weight:600}
+.maze span{font-size:12px;color:var(--muted)}
+.bridge{flex:0 0 auto;font-family:var(--f-mono);font-size:11px;color:var(--hue)}
+.btn{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:5px 12px;cursor:pointer;align-self:flex-start}
+.btn:hover{border-color:var(--hue)}
+
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-weight:500;font-size:12px;color:var(--muted)}
+td.k{font-family:var(--f-mono);font-size:13px;white-space:nowrap}
+.del{text-decoration:line-through;color:var(--muted)}
+a{color:inherit}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <span class="eyebrow">FRAGMENT IN DEVICE · 기획서 2026-09-27 + 맵 답변 2026-10-07 · 기획 수정 2026-10-15</span>
+  <h1>FID 기획 보드</h1>
+</header>
+
+<div class="app">
+
+<nav class="nav" id="nav" aria-label="파트">
+  <button type="button" data-p="intro" aria-current="true"><i></i>게임 소개</button>
+  <button type="button" data-p="player"><i></i>플레이어</button>
+  <button type="button" data-p="ai"><i></i>AI</button>
+  <button type="button" data-p="system"><i></i>시스템</button>
+  <span class="grp">맵 · 스테이지</span>
+  <button type="button" data-p="flow"><i></i>동선 · 공통 규칙</button>
+  <button type="button" data-p="tut" class="s-tut"><i></i>튜토리얼</button>
+  <button type="button" data-p="lobby" class="s-lobby"><i></i>로비</button>
+  <button type="button" data-p="insta" class="s-insta"><i></i>피드 (인스타)</button>
+  <button type="button" data-p="file" class="s-file"><i></i>파일 (미로)</button>
+  <button type="button" data-p="sec" class="s-sec"><i></i>보안 (전투)</button>
+  <button type="button" data-p="live" class="s-live"><i></i>라이브 (엔딩)</button>
+  <span class="grp">이야기</span>
+  <button type="button" data-p="story"><i></i>스토리</button>
+  <button type="button" data-p="open"><i></i>확인 필요</button>
+</nav>
+
+<main>
+
+<!-- 게임 소개 -->
+<section class="panel" id="p-intro">
+  <div class="panel-head"><h2>게임 소개</h2><span class="tag">3D 플랫포머 + TPS</span><span class="tag">PC · 싱글플레이</span><span class="tag">4명</span></div>
+  <p class="lede">스마트폰 속 앱 세계를 탐험하며, 여러 능력과 이동수단, 데이터 무기로 에피소드를 해결하고 이야기를 진행하는 3D 플랫포머.</p>
+  <div class="block"><h3>핵심 게임 시스템</h3>
+    <div class="cells">
+      <div><b>스캔</b><span>스마트폰 내부 데이터를 스캔해 숨겨진 정보, 적의 약점, 퍼즐 단서를 찾는다.</span></div>
+      <div><b>배터리로 관리하는 스킬</b><span>블루투스, 스캔 같은 능력이 배터리 자원 하나를 함께 쓴다. 상황에 맞는 자원 관리가 중요하다.</span></div>
+      <div><b>상호작용 2종류</b><span>직접 다가가 쓰는 근거리 상호작용, 데이터 패킷을 쏴서 작동시키는 원거리 상호작용.</span></div>
+      <div><b>퍼즐 · 미로 · TPS</b><span>스테이지마다 하나의 성격을 갖고, 마지막 보스 맵에서는 세 요소가 모두 합쳐진다.</span></div>
+    </div></div>
+  <div class="two">
+    <div class="block"><h3>K-Culture 요소</h3><ul>
+      <li>폰 주인은 K-POP 가수 지망생이다. 메인 스토리가 K-POP을 중심으로 흘러간다.</li>
+      <li>K-POP, K-Culture 소식을 피드와 팝업으로 중간중간 계속 노출한다.</li>
+      <li>폰 주인의 알고리즘이 K-Culture로 채워져 있다.</li></ul></div>
+    <div class="block"><h3>파트 분배</h3>
+      <div class="tbl"><table>
+        <tr><th>담당</th><th>파트</th><th>범위</th></tr>
+        <tr><td>양준범</td><td>맵 / 레벨</td><td>맵 배치, 씬 전환</td></tr>
+        <tr><td>이세훈</td><td>플레이어 / 전투</td><td>플레이어 이동, 전투, 탈것</td></tr>
+        <tr><td>이정빈</td><td>적 / NPC AI</td><td>일반 몹, 보스 몹, NPC, 경찰과 도둑</td></tr>
+        <tr><td>김성준</td><td>시스템 / UI / 연출</td><td>카메라 연출, 시스템, UI</td></tr>
+      </table></div></div>
+  </div>
+</section>
+
+<!-- 플레이어 -->
+<section class="panel" id="p-player" hidden>
+  <div class="panel-head"><h2>플레이어</h2><span class="tag">이동 · 전투 · 탈것</span></div>
+  <div class="two">
+    <div class="block"><h3>키 세팅</h3>
+      <div class="tbl"><table>
+        <tr><th>동작</th><th>키</th><th>비고</th></tr>
+        <tr><td>이동</td><td class="k">W A S D</td><td></td></tr>
+        <tr><td>점프, 이단점프</td><td class="k">Space</td><td>이단점프는 배터리를 쓰지 않는다</td></tr>
+        <tr><td>구르기</td><td class="k">Left Shift</td><td></td></tr>
+        <tr><td>차지샷</td><td class="k">마우스 우클릭 유지</td><td>누르고 있으면 충전과 발사를 자동으로 반복한다</td></tr>
+        <tr><td>일반 사격</td><td class="k">마우스 좌클릭</td><td>꾹 누르면 일반 총알이 계속 나간다</td></tr>
+        <tr><td>상호작용</td><td class="k">E</td><td>근거리</td></tr>
+        <tr><td>스캔</td><td class="k">Q</td><td></td></tr>
+        <tr><td>블루투스 이동</td><td class="k">F</td><td></td></tr>
+        <tr><td>일시 정지</td><td class="k">ESC</td><td></td></tr>
+        <tr><td class="del">와이파이 이동</td><td class="k del">지점에서 E</td><td>삭제</td></tr>
+      </table></div>
+      <p class="cap">캐릭터는 기본으로 총을 들고 있다. 원거리에서도 데이터 패킷으로 상호작용을 하기 위해서다.</p></div>
+    <div class="block"><h3>총기 시스템</h3><ul>
+      <li>탄약 대신 과열 게이지를 쓴다.</li>
+      <li>사격할수록 과열 게이지가 오른다. 차지샷은 일반 총알보다 과열 게이지가 더 빠르게 오른다.</li>
+      <li>최대치에 닿으면 일정 시간 사격할 수 없다.</li>
+      <li>사격을 멈추면 게이지가 자동으로 내려간다.</li>
+      <li>무한 사격을 막고 사격 타이밍과 자원 관리를 유도한다.</li></ul></div>
+    <div class="block"><h3>차지샷 · 충전과 발사</h3><ul>
+      <li>오른쪽 마우스를 꾹 누르면 충전한다. 계속 누르고 있으면 차지샷의 충전 → 발사를 자동으로 반복한다.</li>
+      <li>발사 판정 시 충전 게이지가 정해진 기준선을 넘으면 차지샷, 넘지 못하면 일반 총알이 나간다.</li>
+      <li>충전 게이지는 발사 종류를 결정하고, 과열 게이지는 사격 가능 여부를 결정한다.</li>
+      <li>과열 최대치에서는 차지샷을 포함해 일정 시간 사격할 수 없다.</li></ul>
+      <div class="cells">
+        <div><b>기준선 미달</b><span>일반 총알 발사</span></div>
+        <div><b>기준선 초과</b><span>차지샷 발사 · 과열 상승이 더 빠름</span></div>
+      </div>
+      <p class="cap">충전 기준값·충전 시간·반복 간격·발사 판정 시점(버튼을 놓을 때의 처리 포함)은 미정.</p></div>
+    <div class="block"><h3>배터리(마나)</h3>
+      <div class="tbl"><table>
+        <tr><th>스킬</th><th>소모</th></tr>
+        <tr><td>구르기</td><td>사용 시 일정량</td></tr>
+        <tr><td>블루투스 이동</td><td>사용하는 동안 계속</td></tr>
+        <tr><td>스캔</td><td>사용 시 일정량</td></tr>
+      </table></div>
+      <ul>
+        <li>배터리는 시간이 지나도 자동으로 차지 않는다. 충전 아이템과 로비에서 회복한다.</li>
+        <li>모든 스테이지는 배터리를 쓰지 않아도 클리어할 수 있게 만든다.</li>
+        <li>배터리를 쓰면 이동, 전투, 탐색 난이도가 내려간다.</li></ul></div>
+    <div class="block"><h3>상호작용</h3><ul>
+      <li>근거리: 오브젝트에 다가가 E로 직접 조작. 버튼, NPC 대화, 문 열기, 데이터 단말기.</li>
+      <li>원거리: 오브젝트를 총으로 쏴서 작동. 원거리 스위치, 플랫폼 기믹, 퍼즐 장치, 접근하기 어려운 장치.</li>
+      <li>화면에서 색과 외곽선으로 두 방식을 구분한다. 상호작용 가능한 아이템에 스캔이 닿으면 실루엣이 보인다.</li></ul></div>
+    <div class="block"><h3>블루투스 (이동수단)</h3>
+      <div class="tbl"><table>
+        <tr><th>동작</th><th>키</th></tr>
+        <tr><td>자동 전진</td><td>W를 누르지 않아도 앞으로 계속 이동</td></tr>
+        <tr><td>점프 / 더블점프</td><td class="k">Space</td></tr>
+        <tr><td>마지막 요시점프</td><td>가능 · 세부 입력과 동작은 미정</td></tr>
+        <tr><td>차지샷 / 일반 사격</td><td class="k">우클릭 유지 / 좌클릭</td></tr>
+      </table></div>
+      <ul>
+        <li>탑승 중 이동속도와 점프속도가 기본 상태보다 빨라진다.</li>
+        <li>더블점프가 가능하고, 마지막에 요시점프를 사용할 수 있다.</li>
+        <li>자동 전진 중에도 점프를 조작하며 이동한다.</li>
+        <li>사용하는 동안 배터리를 계속 소모한다.</li></ul>
+      <p class="cap">이동속도·점프속도의 증가량, 방향 전환·감속 조작, 요시점프의 발동 조건과 탑승 해제 여부는 미정.</p></div>
+    <div class="block"><h3>인게임 화면에 둘 것</h3><ul>
+      <li>체력</li><li>과열 게이지</li><li>차지샷 충전 게이지와 발사 기준선</li><li>전체 배터리 게이지</li><li>조준점</li></ul>
+      <p class="cap">UI 위치는 나중에 의견을 모아 정한다. 구르기, 블루투스, 스캔을 지금 쓸 수 있는지 보여 주는 표시는 고민 중이다.</p></div>
+  </div>
+  <div class="block"><h3>플레이어 수치</h3>
+    <div class="tbl"><table>
+      <tr><th>값</th><th>수치</th><th>값</th><th>수치</th></tr>
+      <tr><td class="k">MaxHP</td><td>100</td><td class="k">MaxBattery</td><td>100</td></tr>
+      <tr><td class="k">AttackDamage</td><td>10</td><td class="k">RollBatteryCost</td><td>1</td></tr>
+      <tr><td class="k">InvincibleTime</td><td>1초</td><td class="k">ScanBatteryCost</td><td>15</td></tr>
+      <tr><td class="k">MaxHeat</td><td>100</td><td class="k">BluetoothBatteryCost</td><td>초당 1</td></tr>
+      <tr><td class="k">HeatPerShot (일반)</td><td>10</td><td class="k">HeatRecoveryRate</td><td>초당 5</td></tr>
+      <tr><td class="k">FireIntervalRate (일반)</td><td>0.2초 (좌클릭 유지 시 일반 사격 간격)</td><td class="k">MoveSpeed · JumpPower</td><td>미정</td></tr>
+      <tr><td class="k">BulletRange</td><td>미정</td><td class="k">InteractionRange</td><td>미정</td></tr>
+    </table></div></div>
+  <div class="todo"><h3>미정</h3><ul>
+    <li>블루투스 탈것의 형태. 기획서에 두 안이 있고 “둘 중 하나로” 정하기로 되어 있다.</li>
+    <li>블루투스를 탔을 때 이동 권한을 탈것으로 넘길지.</li>
+    <li>블루투스 이동·점프속도 증가량, 방향 전환·감속 조작, 요시점프의 세부 동작.</li>
+    <li>차지샷 기준값·충전 시간·반복 간격·피해량·과열 증가량과 발사 판정 시점.</li>
+    <li>우클릭 차지샷과 기존 조준 동작의 병행 여부, 좌우 클릭 동시 입력 처리.</li></ul></div>
+</section>
+
+<!-- AI -->
+<section class="panel" id="p-ai" hidden>
+  <div class="panel-head"><h2>AI</h2><span class="tag">적 · NPC</span></div>
+  <div class="two">
+    <div class="block"><h3>로비 NPC · 인도를 걷는 사람</h3><ul>
+      <li>플레이어가 앞에 있으면 멈춘다.</li>
+      <li>뒤에 대열이 있으면 같이 멈춘다.</li>
+      <li>대화나 상호작용은 하지 않는다.</li>
+      <li>다른 행동을 하는 NPC는 필요하면 추가한다.</li></ul></div>
+    <div class="block"><h3>로비 NPC · 자동차</h3><ul>
+      <li>공중에서 플랫폼처럼 움직이는 자동차가 있다.</li>
+      <li>플레이어가 앞에 있으면 멈춘다.</li>
+      <li>바닥은 차도와 인도가 나뉘고, 차는 차도로만, 사람은 인도로만 다닌다.</li>
+      <li>두 NPC 모두 충돌 처리를 한다.</li></ul></div>
+    <div class="block"><h3>적 시스템</h3><ul>
+      <li>날아다니는 적은 만들지 않는다.</li>
+      <li>일반 몹(근거리, 원거리)은 보안 앱에서 나온다.</li>
+      <li>적에게 스캔이 닿으면 약점 부위가 생기고 체력이 보인다. 약점은 몬스터마다 다르고, 맞히면 치명상을 입힌다.</li>
+      <li>보안 앱 3라운드에 이동형 보스와 고정형 보스, 총 2명이 나온다. 각 보스는 고유 패턴을 가진다. 이동형 보스를 먼저 2번 그로기시켜야 고정형 보스에게 피해를 줄 수 있다.</li>
+      <li>적 AI를 고려해 과한 점프 위주의 플랫폼 구성은 피한다.</li></ul></div>
+    <div class="block"><h3>파일 앱 3라운드의 도망자</h3><ul>
+      <li>미로에서 플레이어를 피해 도망다니는 역할만 한다.</li>
+      <li>공격하지 않는다.</li></ul></div>
+  </div>
+  <div class="block"><h3>적 종류</h3>
+    <div class="cells">
+      <div><b>근접</b><span>이동이 빠르지만 공격 범위가 짧다. 일정 거리 안에서 공격한다.</span></div>
+      <div><b>원거리</b><span>플레이어가 다가오면 물러나거나 자리를 바꾼다. 플레이어 위치를 기준으로 투사체를 쏜다.</span></div>
+      <div><b>특수</b><span>체력이 아주 많고 스캔해서 약점을 노려야 하는 적. 구상 단계.</span></div>
+      <div><b>보스 2명</b><span>움직이는 이동형 + 가만히 있는 고정형. 이동형의 그로기 2회를 먼저 달성하면 고정형 공격이 가능해진다. 각 보스의 구체적인 패턴은 미정.</span></div>
+    </div></div>
+  <div class="todo"><h3>미정</h3><ul>
+    <li>적 수치 전부: MaxHP, MoveSpeed, AttackDamage, AttackRange, AttackCooldown, AttackInterval(원거리 몬스터가 한 번에 1~3발을 쏠 때 발 사이 간격).</li>
+    <li>드랍 보상(배터리 충전, 체력 회복)을 넣을지.</li>
+    <li>적의 외형(근접은 강아지형, 원거리는 인간형 안).</li></ul></div>
+</section>
+
+<!-- 시스템 -->
+<section class="panel" id="p-system" hidden>
+  <div class="panel-head"><h2>시스템</h2><span class="tag">스캔 · 상호작용 · 연출 · UI</span></div>
+  <div class="two">
+    <div class="block"><h3>스캔 시스템 · 대상에 닿았을 때</h3>
+      <p>Q로 스캔을 사용한다. 스캔이 닿은 대상의 종류에 따라 아래 효과가 나타난다.</p>
+      <div class="tbl"><table>
+        <tr><th>대상</th><th>스캔 접촉 효과</th></tr>
+        <tr><td>적</td><td>약점 부위가 생긴다. 약점을 맞히면 치명타가 들어간다.</td></tr>
+        <tr><td>피드맵의 숨겨진 플랫폼</td><td>평소 보이지 않다가 스캔이 닿으면 플랫폼이 보인다.</td></tr>
+        <tr><td>미로맵의 벽 뒤 아이템</td><td>스캔이 닿으면 벽 너머에서도 아이템의 실루엣과 위치가 보인다.</td></tr>
+        <tr><td>상호작용 가능한 아이템</td><td>스캔이 닿으면 실루엣이 보인다.</td></tr>
+      </table></div>
+      <ul><li>글자나 색으로 오브젝트를 구별해 준다.</li>
+      <li>범위와 지속시간이 있고, 지속시간 동안에만 기능이 켜진다.</li></ul></div>
+    <div class="block"><h3>상호작용 표시</h3><ul>
+      <li>근거리, 원거리 상호작용이 되는 물체에 기본으로 서로 다른 색을 준다.</li>
+      <li>스캔이 닿은 상호작용 아이템은 실루엣으로 드러나며, 근거리·원거리 구분도 더 두드러진다.</li>
+      <li>근거리: NPC 대화, 아이템 획득, 데이터 삽입.</li>
+      <li>원거리: 접근하기 어렵거나 전투, 플랫폼 이동 중에 빠르게 작동해야 하는 장치.</li>
+      <li>작동에 성공하면 효과음과 이펙트로 알려 준다.</li></ul></div>
+    <div class="block"><h3>연출 장면</h3><ol>
+      <li>폰 주인이 폰을 들고 가다 떨어뜨리는 장면.</li>
+      <li>인스타에 올라간 피드를 폰 주인이 보고, 이 노래를 만들어야겠다고 다짐하는 장면.</li>
+      <li>완성한 곡을 직접 업로드하고 곡이 유명해지는 장면.</li>
+      <li>공연 요청을 받고 무대에 서기 전에 고민하는 장면.</li>
+      <li>마지막 무대 장면.</li></ol></div>
+    <div class="block"><h3>그 밖의 시스템</h3><ul>
+      <li>스테이지마다 목표 UI를 띄워 방향을 잡아 준다.</li>
+      <li>필요하면 플레이어의 독백을 대사로 띄운다.</li>
+      <li>세이브와 진행도 시스템은 넣을 수 있으면 넣는다.</li>
+      <li>맵 답변으로 시스템 파트에 넘어온 것: 체크포인트, 아이템, 인스타 Stage 구분과 피드 완성 표현, 파일 앱 NPC 대결 판정, 스캔으로 숫자 노드와 적 위치 표시, 로비 음악 앱의 배경음 변경.</li></ul></div>
+  </div>
+  <div class="todo"><h3>미정</h3><ul>
+    <li>다음에 어느 스테이지로 가야 하는지 알려 줄지.</li><li>스캔 범위·지속시간과 벽 너머 표시 방식의 세부 수치.</li></ul></div>
+</section>
+
+<!-- 동선 · 공통 규칙 -->
+<section class="panel" id="p-flow" hidden>
+  <div class="panel-head"><h2>동선 · 공통 규칙</h2><span class="tag">모든 맵은 3D 플랫폼 형태</span></div>
+  <div class="scroll">
+    <svg viewBox="0 0 920 196" width="920" height="196" role="img" aria-label="튜토리얼, 로비, 피드, 로비, 파일, 로비, 보안, 로비, 라이브 순서의 동선">
+      <line x1="160" y1="132" x2="760" y2="132" stroke="var(--c-lobby)" stroke-width="1.5" stroke-dasharray="4 5"/>
+      <polyline points="60,62 160,132 260,62 360,132 460,62 560,132 660,62 760,132 860,62" fill="none" stroke="var(--line)" stroke-width="2"/>
+      <g text-anchor="middle" font-size="14" font-weight="600">
+        <a href="#tut"><circle cx="60" cy="62" r="15" fill="var(--c-tut)"/><text x="60" y="30">튜토리얼</text></a>
+        <a href="#insta"><circle cx="260" cy="62" r="15" fill="var(--c-insta)"/><text x="260" y="30">피드 (인스타)</text></a>
+        <a href="#file"><circle cx="460" cy="62" r="15" fill="var(--c-file)"/><text x="460" y="30">파일 (미로)</text></a>
+        <a href="#sec"><circle cx="660" cy="62" r="15" fill="var(--c-sec)"/><text x="660" y="30">보안 (전투)</text></a>
+        <a href="#live"><circle cx="860" cy="62" r="15" fill="var(--c-live)"/><text x="860" y="30">라이브 (엔딩)</text></a>
+        <a href="#lobby">
+          <circle cx="160" cy="132" r="11" fill="var(--c-lobby)"/><circle cx="360" cy="132" r="11" fill="var(--c-lobby)"/>
+          <circle cx="560" cy="132" r="11" fill="var(--c-lobby)"/><circle cx="760" cy="132" r="11" fill="var(--c-lobby)"/>
+        </a>
+      </g>
+      <g text-anchor="middle">
+        <text x="160" y="162" class="sub">로비 · 첫 도착</text>
+        <text x="360" y="162" class="sub">로비 · 회복</text>
+        <text x="560" y="162" class="sub">로비 · 회복</text>
+        <text x="760" y="162" class="sub">로비 · 라이브 점등 컷신</text>
+        <text x="460" y="184" class="mono">로비는 스테이지 사이마다 돌아오는 허브</text>
+      </g>
+    </svg>
+  </div>
+  <p class="cap">동그라미를 누르면 그 스테이지로 넘어간다. 기능을 먼저 만들고 꾸미는 것은 나중에 한다.</p>
+  <div class="cells">
+    <div><b>클리어 조건</b><span>스테이지마다 다르게 만든다. 기획서의 클리어 게이지는 삭제.</span></div>
+    <div><b>체력 0</b><span>해당 스테이지를 처음부터 다시 시작한다.</span></div>
+    <div><b>바닥으로 추락</b><span>체력을 일정량 깎고 체크포인트로 이동한다.</span></div>
+    <div><b>회복</b><span>로비에서 체력과 배터리를 채운다. 스테이지 안에 체력·배터리 회복 아이템을 둘 수 있다.</span></div>
+    <div><b>와이파이 이동</b><span>삭제. 이동 스킬은 구르기와 블루투스만 남는다.</span></div>
+    <div><b>맵 파트 범위</b><span>맵 배치와 씬 전환까지. 판정, 아이템, 스캔 표시는 시스템 파트.</span></div>
+  </div>
+</section>
+
+<!-- 튜토리얼 -->
+<section class="panel s-tut" id="p-tut" hidden>
+  <div class="panel-head"><h2>튜토리얼</h2><span class="tag">데이터 소각장</span><span class="tag">연속된 맵 1개</span><span class="tag">전투 없음</span></div>
+  <div class="cols">
+    <div class="fig">
+      <h3>진행 순서와 배우는 조작</h3>
+      <ol class="steps">
+        <li>발판을 타고 이동<small>이동 · 점프</small></li>
+        <li class="new">멈춘 발판을 쏴서 다시 움직이기<small>원거리 상호작용 · 추가됨</small></li>
+        <li>노래 파일을 쏴서 재생 시도, 비밀번호로 잠겨 있음<small>원거리 상호작용</small></li>
+        <li>되돌아가 비밀번호 찾기<small>근거리 상호작용 (E)</small></li>
+        <li>잠금 해제, 재생, 노래 파일 획득<small>근거리 + 원거리</small></li>
+        <li>보이지 않는 플랫폼을 찾아 건너기<small>스캔 (Q)</small></li>
+        <li>떨어지는 것을 굴러서 피하기<small>구르기 (Shift)</small></li>
+        <li>뒤에서 무너지는 구간을 타고 탈출<small>블루투스 (F) · 자동 전진 / 더블점프 / 요시점프</small></li>
+      </ol>
+      <p class="cap">마지막 구간은 컷신이 아니라 직접 조작하는 추격 구간이다. 블루투스의 자동 전진, 빨라진 이동·점프, 더블점프와 마지막 요시점프를 배우는 자리다.</p>
+    </div>
+    <div class="info">
+      <div class="block story"><h3>스토리</h3>
+        <p>폰 주인이 길에서 휴대폰을 떨어뜨린다. 충격으로 생긴 오류 데이터가 플레이어다. 어디선가 들리는 노랫소리를 따라가 잠긴 파일을 열자 제목이 보인다. “이번에도 떨어지면 이제 그만해야 할지도 모르겠다.” 플레이어는 이 노래를 더 못 듣게 되는 것이 싫어서 파일을 들고 소각장을 빠져나온다.</p></div>
+      <div class="block"><h3>맵 구성</h3><ul>
+        <li>구간을 나누지 않고 하나로 이어진 맵.</li>
+        <li>도입부(폰 낙하, 오류 메시지, 캐릭터가 일어남)는 별도 컷신.</li>
+        <li>탈출 지점이 로비의 시작 위치로 이어진다.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- 로비 -->
+<section class="panel s-lobby" id="p-lobby" hidden>
+  <div class="panel-head"><h2>로비</h2><span class="tag">허브</span><span class="tag">기존 로비 씬을 이어서 사용</span></div>
+  <div class="cols">
+    <figure class="fig">
+      <div class="scroll">
+      <svg viewBox="0 0 520 380" width="100%" role="img" aria-label="로비 배치 약도">
+        <rect x="10" y="10" width="500" height="360" fill="var(--sunk)" stroke="var(--line)"/>
+        <rect x="10" y="176" width="500" height="26" fill="var(--line)"/><rect x="246" y="10" width="26" height="360" fill="var(--line)"/>
+        <g font-size="13" font-weight="600" text-anchor="middle">
+          <rect x="24" y="24" width="84" height="56" fill="var(--c-sec)"/><text x="66" y="50">보안</text><text x="66" y="68" class="mono" style="fill:var(--ink)">입구 3 · 구석</text>
+          <rect x="372" y="56" width="92" height="64" fill="var(--c-file)"/><text x="418" y="86">파일</text><text x="418" y="104" class="mono" style="fill:var(--ink)">입구 2</text>
+          <rect x="56" y="262" width="96" height="76" fill="var(--c-insta)"/><text x="104" y="298">인스타</text><text x="104" y="316" class="mono" style="fill:var(--ink)">입구 1 · 옥상</text>
+          <rect x="212" y="150" width="94" height="78" fill="var(--c-live)"/><text x="259" y="186">라이브</text><text x="259" y="204" class="mono" style="fill:var(--ink)">입구 4 · 엔딩</text>
+          <g fill="none" stroke="var(--c-lobby)" stroke-width="1.5" stroke-dasharray="5 4">
+            <rect x="140" y="40" width="88" height="48"/><rect x="34" y="112" width="60" height="50"/><rect x="392" y="282" width="66" height="50"/></g>
+          <text x="184" y="69">캘린더</text><text x="64" y="142">날씨</text><text x="425" y="312">음악</text>
+          <path d="M259 332l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="var(--c-tut)"/>
+          <text x="282" y="352" class="sub" text-anchor="start">튜토리얼 탈출 지점</text>
+        </g>
+      </svg></div>
+      <figcaption>색이 채워진 곳은 스테이지 입구, 점선은 상호작용만 되는 앱. 위치는 기획서 스케치를 따른 예시이고 입구 위치는 앱마다 다르게 잡는다.</figcaption>
+    </figure>
+    <div class="info">
+      <div class="block story"><h3>스토리</h3>
+        <p>소각장을 빠져나온 플레이어가 처음 보는 스마트폰 속 도시다. 폰 주인의 취향을 따라 도시의 전광판과 알고리즘은 K-POP, K-Culture로 채워져 있다. 스테이지를 하나 끝낼 때마다 여기로 돌아와 숨을 고른다.</p></div>
+      <div class="block"><h3>맵 구성</h3><ul>
+        <li>스테이지 입구 4곳: 인스타, 파일, 보안, 라이브. 입장 순서는 고정.</li>
+        <li>상호작용 앱 3곳: 캘린더, 날씨, 음악. 기획서의 “위젯 플랫폼”은 이 세 앱으로 대체한다.</li>
+        <li>옥상으로 올라가는 발판은 여러 종류의 플랫폼 프리팹으로 따로 만든다.</li>
+        <li>전광판이 있다. 사람과 차가 지나다닌다.</li>
+        <li>체력과 배터리를 채우는 장소.</li></ul></div>
+      <div class="block"><h3>다른 파트 담당</h3><ul>
+        <li>시스템: 음악 앱의 배경음 변경.</li>
+        <li>AI: 인도의 사람 NPC, 차도의 자동차 NPC.</li></ul></div>
+      <div class="todo"><h3>미정</h3><ul>
+        <li>아직 갈 수 없는 앱을 막는 방법 (나중에 추가).</li>
+        <li>하늘의 데이터 조각과 랜덤 도움말은 이번 기획에서 뺀다.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- 인스타 -->
+<section class="panel s-insta" id="p-insta" hidden>
+  <div class="panel-head"><h2>피드 (인스타)</h2><span class="tag">플랫폼 + 퍼즐</span><span class="tag">전면 수정</span><span class="tag">2 Stage</span></div>
+  <div class="cols">
+    <figure class="fig">
+      <div class="scroll">
+      <svg viewBox="0 0 520 470" width="100%" role="img" aria-label="인스타 스테이지 단면 약도">
+        <rect x="0" y="0" width="520" height="470" fill="var(--sunk)"/>
+        <rect x="150" y="96" width="220" height="12" fill="var(--c-insta)"/>
+        <g font-family="var(--f-mono)" font-size="13" text-anchor="middle">
+          <g fill="var(--surface)" stroke="var(--c-insta)" stroke-width="1.5"><rect x="26" y="70" width="56" height="30" rx="15"/><rect x="100" y="70" width="40" height="30" rx="15"/><rect x="380" y="70" width="40" height="30" rx="15"/><rect x="438" y="70" width="56" height="30" rx="15"/></g>
+          <text x="54" y="90">#</text><text x="120" y="90">#</text><text x="400" y="90">#</text><text x="466" y="90">#</text>
+        </g>
+        <text x="260" y="30" text-anchor="middle" font-size="13" font-weight="600">2 Stage · 해시태그로 피드 날리기</text>
+        <text x="260" y="50" text-anchor="middle" class="sub">일반 피드 6 + 플레이어 피드 1 = 7개를 총으로 쏴서 보낸다</text>
+        <rect x="236" y="108" width="48" height="340" fill="var(--line)"/>
+        <g fill="var(--ink)">
+          <rect x="284" y="418" width="74" height="7"/><rect x="162" y="386" width="74" height="7"/>
+          <rect x="284" y="352" width="74" height="7"/><rect x="162" y="320" width="74" height="7"/>
+          <rect x="284" y="286" width="74" height="7"/><rect x="162" y="254" width="74" height="7"/>
+          <rect x="284" y="220" width="74" height="7"/><rect x="162" y="188" width="74" height="7"/>
+          <rect x="284" y="154" width="74" height="7"/><rect x="162" y="126" width="74" height="7"/>
+        </g>
+        <g font-size="12" font-weight="600">
+          <g fill="var(--c-insta)"><rect x="338" y="396" width="20" height="20"/><rect x="162" y="298" width="20" height="20"/><rect x="338" y="264" width="20" height="20"/><rect x="162" y="166" width="20" height="20"/><rect x="338" y="132" width="20" height="20"/></g>
+          <g fill="none" stroke="var(--ink)" stroke-width="1.5"><circle cx="308" cy="404" r="8"/><circle cx="212" cy="306" r="8"/><circle cx="308" cy="272" r="8"/><circle cx="212" cy="174" r="8"/><circle cx="308" cy="140" r="8"/></g>
+          <text x="368" y="410">제목</text><text x="368" y="278">음악</text><text x="368" y="146">해시태그</text>
+          <text x="152" y="312" text-anchor="end">사진</text><text x="152" y="180" text-anchor="end">내용</text>
+        </g>
+        <g fill="var(--surface)" stroke="var(--muted)" stroke-width="1.2">
+          <rect x="34" y="150" width="34" height="42"/><rect x="74" y="340" width="34" height="42"/><rect x="24" y="250" width="34" height="42"/>
+          <rect x="442" y="200" width="34" height="42"/><rect x="424" y="330" width="34" height="42"/><rect x="460" y="120" width="34" height="42"/>
+        </g>
+        <text x="260" y="462" text-anchor="middle" font-size="13" font-weight="600">1 Stage · 기둥을 감싼 회오리 플랫폼 오르기</text>
+      </svg></div>
+      <figcaption>■ 미끼 피드 5개(길을 막음) · ○ 피드 재료 아이템 5종 · 흰 카드는 주위를 떠다니는 일반 피드 6개. 아이템 순서는 예시다.</figcaption>
+    </figure>
+    <div class="info">
+      <div class="block story"><h3>스토리</h3>
+        <p>플레이어가 튜토리얼에서 가져온 데모곡을 폰 주인 몰래 인스타에 올린다. 피드를 손봐서 노래를 알린다. 폰 주인은 “내가 언제 이걸 올렸지” 싶지만 반응이 예상보다 좋아 게시물을 남겨 두고, 노래를 계속 만들어 볼까 하며 다시 작업을 시작한다.</p></div>
+      <div class="block"><h3>1 Stage · 오르면서 피드 만들기</h3><ul>
+        <li>기둥을 감싸는 회오리 형태 플랫폼을 올라 기둥 꼭대기에 도착한다.</li>
+        <li>오르는 길에 제목, 사진, 음악, 내용, 해시태그를 하나씩 얻어 플레이어 피드를 완성한다.</li>
+        <li>피드는 모두 11개다. 일반 피드 6개, 악성 미끼 피드 5개.</li>
+        <li>미끼 피드가 아이템 앞을 막고 있다. 제거해야 아이템을 얻는다.</li>
+        <li>일반 피드는 플랫폼 주위를 떠다닌다.</li>
+        <li>평소 보이지 않는 플랫폼은 스캔이 닿으면 드러난다.</li></ul></div>
+      <div class="block"><h3>2 Stage · 올바른 해시태그로 보내기</h3><ul>
+        <li>완성한 플레이어 피드와 일반 피드 6개, 합쳐 7개로 시작한다.</li>
+        <li>각 피드를 총으로 쏴서 정해진 위치의 해시태그 안으로 날려 보낸다.</li></ul></div>
+      <div class="block"><h3>미끼 피드 제거 방식</h3>
+        <div class="tbl"><table><tr><th>번호</th><th>방식</th></tr>
+          <tr><td>1</td><td>상호작용</td></tr><tr><td>2</td><td>풍선에 매달린 악성 피드</td></tr><tr><td>3</td><td>스타포스</td></tr><tr><td>4 · 5</td><td>나중에 결정</td></tr></table></div></div>
+      <div class="block"><h3>담당</h3><ul>
+        <li>맵: 악성 피드, 플레이어를 쫓아오는 악성 데이터(발판을 무시하고 추적), 2 Stage 진입 때 일반 피드 이동.</li>
+        <li>시스템: Stage 구분, 체크포인트, 아이템, 피드 완성 표현, 스캔 접촉 시 숨겨진 플랫폼 표시.</li></ul></div>
+      <div class="todo"><h3>미정</h3><ul>
+        <li>미끼 피드를 제거하면 악성 데이터 조각이 날아오는 것은 나중에 추가.</li>
+        <li>제거 방식 4번, 5번.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- 파일 -->
+<section class="panel s-file" id="p-file" hidden>
+  <div class="panel-head"><h2>파일 (미로)</h2><span class="tag">미로 + 퍼즐</span><span class="tag">씬 1개 · 미로 3개</span></div>
+  <div class="cols">
+    <div class="fig">
+      <div class="mazes" id="mazes"></div>
+      <button type="button" class="btn" id="regen">미로 다시 생성</button>
+      <p class="cap">세 미로를 한 씬에 동적으로 생성하고 다리로 잇는다. 2, 3라운드 미로는 나중에 층(계단)을 나눠 단계별로 어렵게 만든다. 위 미로는 구조를 보여 주는 예시 생성이다.</p>
+    </div>
+    <div class="info">
+      <div class="block story"><h3>스토리</h3>
+        <p>피드 반응을 본 폰 주인이 곡을 완성하려 한다. 플레이어는 복잡한 폴더 구조 속에서 예전 가사 메모, 멜로디 녹음, 코드 진행 메모, 흩어진 데모 파일을 찾아 건넨다. 3라운드에서 자료를 훔쳐 달아나는 작은 바이러스는 다음 스테이지에서 벌어질 대규모 감염의 전조다.</p></div>
+      <div class="block"><h3>1 라운드 · 미로 탈출</h3><ul>
+        <li>함정을 여러 종류 쓴다: 위에서 떨어지는 장애물, 돌면서 방해하는 장애물, 사라졌다가 다시 나타나는 발판 등.</li></ul></div>
+      <div class="block"><h3>2 라운드 · 숫자 퍼즐</h3><ul>
+        <li>이 미로가 음악 관련 파일 보관 영역이다. 파일 관리자 NPC가 음악 파일을 지키고 있고, 검증 대결을 통과해야 얻는다.</li>
+        <li>연산자 노드(+, -, /, *)와 피연산자 노드(1~9)를 미로에 랜덤 배치한다.</li>
+        <li>연산자 2개와 피연산자 3개를 모아 출구의 NPC와 대결한다. 내 식의 값이 더 높은 쪽이 이기는 방식과 더 낮은 쪽이 이기는 방식 중 하나가 정해진다.</li>
+        <li>NPC는 연산자 4개 중 2개, 내가 먹지 않은 피연산자 중 3개를 랜덤으로 뽑아 가장 좋은 값을 낸다.</li>
+        <li>가비지 컬렉터는 없앤다. 대신 정해진 시간 안에 노드를 모아야 한다.</li></ul></div>
+      <div class="block"><h3>3 라운드 · 경찰과 도둑</h3><ul>
+        <li>도망다니는 바이러스를 제한 시간 안에 모두 잡아 음악 자료를 되찾는다. 바이러스는 공격하지 않는다.</li></ul></div>
+      <div class="block"><h3>다른 파트 담당</h3><ul>
+        <li>시스템: 스캔이 닿은 벽 뒤 아이템을 벽 너머에서도 실루엣으로 표시. 숫자 노드와 3라운드 적 위치 표시, NPC 대결 방식과 판정.</li>
+        <li>AI: 도망다니는 바이러스.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- 보안 -->
+<section class="panel s-sec" id="p-sec" hidden>
+  <div class="panel-head"><h2>보안 (전투)</h2><span class="tag">3라운드</span><span class="tag">일반 전투 → 진입 구간 → 보스 2명</span></div>
+  <div class="cols">
+    <figure class="fig">
+      <div class="scroll">
+      <svg viewBox="0 0 520 590" width="100%" role="img" aria-label="보안맵 3라운드 진행: 일반 몹 전투, 장애물과 플랫포머 진입 구간, 이동형과 고정형 보스전. 이동형 보스 그로기 2회 후 고정형 공격 가능">
+        <rect width="520" height="590" fill="var(--sunk)"/>
+        <g fill="var(--surface)" stroke="var(--c-sec)" stroke-width="1.5">
+          <rect x="28" y="24" width="464" height="88" rx="6"/>
+          <rect x="28" y="146" width="464" height="100" rx="6"/>
+          <rect x="28" y="280" width="464" height="282" rx="6"/>
+        </g>
+        <g stroke="var(--c-sec)" stroke-width="2" fill="none">
+          <path d="M260 112v28m-6-6 6 6 6-6"/>
+          <path d="M260 246v28m-6-6 6 6 6-6"/>
+        </g>
+        <g text-anchor="middle" font-size="17" font-weight="600">
+          <text x="260" y="58">1라운드 · 일반 몹 전투</text>
+          <text x="260" y="87" class="sub" font-weight="400">일반 몹 중심의 전투 구간</text>
+          <text x="260" y="181">2라운드 · 보스전으로 가는 길</text>
+          <text x="260" y="213" class="sub" font-weight="400">장애물 + 약간의 플랫포머 + 일반 적</text>
+          <text x="260" y="316">3라운드 · 보스 2명</text>
+        </g>
+        <g fill="var(--sunk)" stroke="var(--line)">
+          <rect x="48" y="338" width="198" height="76" rx="5"/>
+          <rect x="274" y="338" width="198" height="76" rx="5"/>
+        </g>
+        <g text-anchor="middle" font-size="15" font-weight="600">
+          <text x="147" y="368">이동형 보스</text><text x="373" y="368">고정형 보스</text>
+          <text x="147" y="394" class="sub" font-weight="400">움직임 · 고유 패턴</text>
+          <text x="373" y="394" class="sub" font-weight="400">제자리 · 고유 패턴</text>
+        </g>
+        <g text-anchor="middle" font-size="14">
+          <text x="260" y="446">이동형 보스를 먼저 그로기</text>
+          <rect x="86" y="461" width="148" height="32" rx="16" fill="var(--surface)" stroke="var(--c-sec)"/>
+          <rect x="286" y="461" width="148" height="32" rx="16" fill="var(--surface)" stroke="var(--c-sec)"/>
+          <text x="160" y="483">1회</text><text x="260" y="483">→</text><text x="360" y="483">2회</text>
+          <text x="260" y="534" font-weight="600" style="fill:var(--c-sec)">그로기 2회 달성 → 고정형 보스 공격 가능</text>
+        </g>
+      </svg></div>
+      <figcaption>3라운드의 진행과 보스 공격 조건을 보여 주는 개념도. 실제 지형 배치와 보스별 패턴은 미정.</figcaption>
+    </figure>
+    <div class="info">
+      <div class="block story"><h3>스토리</h3>
+        <p>플레이어가 여기저기 드나든 탓에 바이러스가 들어와 보안 앱이 감염됐다. 바이러스는 플레이어가 건드린 파일을 모두 지우려 한다. 플레이어가 싸우는 동안 폰 주인은 곡을 완성해 이번에는 직접 인스타에 올린다. 마지막에 플레이어는 바이러스 왕과 함께 쓰러진다.</p></div>
+      <div class="block"><h3>라운드 구성</h3><ol>
+        <li><b>1라운드 · 잡몹맵:</b> 일반 몹을 상대하는 전투 구간.</li>
+        <li><b>2라운드 · 보스전 진입 과정:</b> 장애물, 약간의 플랫포머, 일반 적을 지나 보스전 장소로 향한다.</li>
+        <li><b>3라운드 · 보스전:</b> 가만히 있는 고정형 보스와 움직이는 이동형 보스, 총 2명이 등장한다.</li></ol></div>
+      <div class="block"><h3>보스전의 핵심 규칙</h3><ul>
+        <li>이동형 보스를 먼저 2번 그로기시켜야 한다.</li>
+        <li>그로기 2회를 달성하기 전에는 고정형 보스에게 피해를 줄 수 없다.</li>
+        <li>그로기 2회를 달성하면 고정형 보스를 공격해 피해를 줄 수 있다.</li>
+        <li>두 보스는 각각 고유 패턴을 가진다. 구체적인 패턴 내용은 미정.</li></ul></div>
+      <div class="block"><h3>전투 기믹</h3><ul>
+        <li>원거리 상호작용 장치: 엄폐물 생성, 플랫폼 생성, 폭발물, 플랫폼 위치 변경.</li>
+        <li>적에게 스캔이 닿으면 약점 부위가 생기고, 약점을 맞히면 치명상을 입힌다.</li>
+        <li>차지샷은 우클릭 유지로 반복 발사하지만 일반 사격보다 빠르게 과열된다.</li></ul></div>
+      <div class="block"><h3>클리어 뒤</h3><ul>
+        <li>보스와 함께 쓰러지며 플레이어 사망.</li>
+        <li>마지막 로비에서 라이브 앱에 불이 들어오고, 라이브 씬으로 들어가는 컷신이 재생된다.</li></ul></div>
+      <div class="todo"><h3>미정</h3><ul>
+        <li>1·2라운드 적 구성, 장애물·플랫포머 배치, 라운드별 종료 조건.</li>
+        <li>각 보스의 구체적 패턴, 이동형 보스의 그로기 발생 조건.</li>
+        <li>고정형 보스의 공격 가능 시간, 그로기 횟수 초기화·반복 여부.</li>
+        <li>두 보스의 처치 조건과 전투 종료 판정, 실제 등장 위치.</li>
+        <li>기존 스토리의 바이러스 왕이 두 보스 중 어느 보스인지.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- 라이브 -->
+<section class="panel s-live" id="p-live" hidden>
+  <div class="panel-head"><h2>라이브 (엔딩)</h2><span class="tag">조작 없음</span><span class="tag">마무리 씬</span></div>
+  <div class="cols">
+    <figure class="fig">
+      <div class="scroll">
+      <svg viewBox="0 0 520 250" width="100%" role="img" aria-label="라이브 방송 화면 약도">
+        <rect x="0" y="0" width="520" height="250" fill="var(--sunk)"/>
+        <rect x="70" y="26" width="380" height="198" rx="18" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="88" y="42" width="344" height="166" fill="var(--line)"/>
+        <rect x="100" y="54" width="52" height="22" rx="3" fill="var(--c-live)"/>
+        <text x="126" y="70" text-anchor="middle" font-family="var(--f-mono)" font-size="12" font-weight="500">LIVE</text>
+        <circle cx="260" cy="110" r="20" fill="var(--muted)"/><path d="M222 196c0-34 16-52 38-52s38 18 38 52z" fill="var(--muted)"/>
+        <path d="M300 152v-34l20-6v30" fill="none" stroke="var(--c-live)" stroke-width="2"/><circle cx="295" cy="152" r="5" fill="var(--c-live)"/><circle cx="315" cy="142" r="5" fill="var(--c-live)"/>
+      </svg></div>
+      <figcaption>폰 밖에서 노래하는 주인의 영상이 라이브 방송으로 재생되는 화면.</figcaption>
+    </figure>
+    <div class="info">
+      <div class="block story"><h3>스토리</h3>
+        <p>좋은 반응이 이어지고 공연 제안이 들어온다. 실패가 두려워 망설이던 폰 주인은 결국 무대에 선다. 플레이어는 그 공연을 지켜보지 못하고 쓰러졌고, 화면에는 노래하는 폰 주인의 라이브 영상만 남는다. 무대에 서기로 한 것은 폰 주인 자신의 선택이었다.</p></div>
+      <div class="block"><h3>맵 구성</h3><ul>
+        <li>내부 맵 없이, 라이브 영상이 재생되는 씬 하나로 끝낸다.</li>
+        <li>기획서의 “입장 직전에 소멸”은 “보스와 함께 쓰러진 뒤 로비 컷신”으로 바뀌었다.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- 스토리 -->
+<section class="panel" id="p-story" hidden>
+  <div class="panel-head"><h2>스토리</h2><span class="tag">메인 스토리 1</span></div>
+  <div class="block"><h3>전체 흐름</h3>
+    <div class="tbl"><table>
+      <tr><th>구간</th><th>일어나는 일</th></tr>
+      <tr><td>튜토리얼</td><td>폰 주인이 폰을 떨어뜨리고, 오류 데이터인 플레이어가 생긴다. 공개하지 않은 미완성 데모곡을 발견하고, 노래가 좋다고 느껴 폰 주인을 돕기로 한다.</td></tr>
+      <tr><td>피드</td><td>플레이어가 데모곡을 몰래 인스타에 올리고 피드를 조정해 노래를 알린다. 반응이 좋자 폰 주인이 게시물을 남겨 두고 다시 작업을 시작한다.</td></tr>
+      <tr><td>파일</td><td>곡을 완성하는 데 필요한 자료를 플레이어가 미로에서 모은다. 예전 가사 메모, 멜로디 녹음, 코드 진행, 데모 파일.</td></tr>
+      <tr><td>보안</td><td>폰 주인이 회수한 자료로 곡을 완성하고 이번에는 직접 인스타에 올린다. 그동안 플레이어는 보안 앱에서 바이러스와 싸우고, 바이러스 왕과 함께 쓰러진다.</td></tr>
+      <tr><td>로비 (마지막)</td><td>좋은 반응과 공연 제안이 이어진다. 폰 주인은 고민 끝에 공연에 서기로 한다. 라이브 앱에 불이 들어온다.</td></tr>
+      <tr><td>라이브</td><td>폰 주인이 공연하는 모습으로 끝난다.</td></tr>
+    </table></div>
+    <p class="cap">기획서에 있던 “로비에서 댓글, DM, 응원 메시지를 폰 주인에게 전달하는 장면”은 뺐다.</p></div>
+  <div class="two">
+    <div class="block story"><h3>플레이어가 폰 주인을 돕는 이유</h3><ol>
+      <li>스마트폰 안의 데이터는 원래 감정이 없다.</li>
+      <li>플레이어는 시스템 오류로 생긴 존재라서 감정을 갖게 됐다.</li>
+      <li>잠긴 노래 파일의 이름은 “이번에도 떨어지면 이제 그만해야겠다”였다. 인간의 감정이 데이터로 남을 수 있다는 것을 알게 된다.</li>
+      <li>노래를 들으며 처음으로 “좋다”는 감정을 느낀다.</li>
+      <li>이런 노래를 더 들을 수 없게 되는 것이 싫다. 폰 주인이 음악을 포기하려는 모습도 보게 된다.</li>
+      <li>이 사람이 다시 노래를 만들었으면 좋겠다고 생각한다.</li></ol>
+      <p class="cap">표현할 수 있을지는 미정: 플레이어는 있어서는 안 되는 오류이고, 폰 주인은 인정받지 못한 음악가라서 서로 닮았다고 느낀다.</p></div>
+    <div class="block story"><h3>지키려는 느낌</h3><ul>
+      <li>플레이어는 “내가 이 곡을 만든 건 아니지만 내가 도왔다”고 느끼게 한다.</li>
+      <li>폰 주인은 노래 자체가 좋아서 성공한다. 플레이어는 돕는 쪽이고, 스스로 성공할 재능이 원래 있었다.</li>
+      <li>마지막 공연에 설지 말지는 플레이어가 도왔더라도 결국 폰 주인의 선택이었음을 보여 준다.</li></ul></div>
+  </div>
+  <div class="todo"><h3>미정 · 메인 스토리 2</h3><ul>
+    <li>주인공이 자신이 왜 태어났는지 모른 채 스마트폰 속을 돌아다니며 탄생의 단서를 찾는 이야기. 메인 스토리 1과 함께 넣을 수 있을지 정해지지 않았다.</li></ul></div>
+</section>
+
+<!-- 확인 필요 -->
+<section class="panel" id="p-open" hidden>
+  <div class="panel-head"><h2>확인 필요</h2><span class="tag">아직 정하지 않은 것</span></div>
+  <div class="cells">
+    <div><b>블루투스 세부 동작</b><span>탈것 형태와 이동 권한, 이동·점프속도 증가량, 방향 전환·감속, 마지막 요시점프의 입력·발동 조건·탑승 해제 여부.</span></div>
+    <div><b>차지샷 세부 규칙</b><span>충전 기준값·충전 시간·반복 간격·피해량·과열 증가량, 미달 시 일반 총알의 발사 판정 시점과 버튼 해제 처리. 우클릭 조준 병행 여부와 좌우 클릭 동시 입력.</span></div>
+    <div><b>스캔 수치</b><span>스캔 범위와 표시 지속시간. 대상별 접촉 효과는 시스템 탭에 정리.</span></div>
+    <div><b>미로에서 죽었을 때</b><span>기획서는 라운드마다 다시 시작, 맵 답변은 스테이지 처음부터. 이 보드는 스테이지 처음부터로 적었다.</span></div>
+    <div><b>추락 피해량과 회복 아이템</b><span>추락 때 깎이는 체력, 스테이지 안 회복 아이템을 실제로 둘지.</span></div>
+    <div><b>로비 앱 잠금</b><span>순서가 안 된 앱 입구를 막는 방법과 표시.</span></div>
+    <div><b>미끼 피드 제거 4 · 5번</b><span>그리고 제거 뒤 날아오는 악성 데이터 조각의 추가 시점.</span></div>
+    <div><b>보안 3라운드 · 보스 2명</b><span>라운드별 적·장애물·종료 조건, 두 보스의 개별 패턴·위치·처치 조건. 이동형 그로기 발생 조건, 고정형 공격 가능 시간과 그로기 횟수 초기화·반복 여부. 바이러스 왕의 역할.</span></div>
+    <div><b>수치</b><span>플레이어의 MoveSpeed, JumpPower, BulletRange, InteractionRange. 적 수치 전부.</span></div>
+    <div><b>적 드랍 보상</b><span>배터리 충전, 체력 회복을 떨어뜨릴지.</span></div>
+    <div><b>UI</b><span>UI 위치, 스킬 사용 가능 표시, 다음 스테이지 안내 여부.</span></div>
+    <div><b>메인 스토리 2</b><span>주인공의 정체 찾기를 함께 풀지.</span></div>
+  </div>
+</section>
+
+</main>
+</div>
+</div>
+
+<script>
+(function(){
+  var nav=document.getElementById('nav'),btns=nav.querySelectorAll('button'),panels=document.querySelectorAll('.panel');
+  function show(id,scroll){
+    if(!document.getElementById('p-'+id))return;
+    panels.forEach(function(p){p.hidden=p.id!=='p-'+id;});
+    btns.forEach(function(b){
+      var on=b.dataset.p===id;
+      if(on){b.setAttribute('aria-current','true');if(b.scrollIntoView&&scroll)b.scrollIntoView({block:'nearest',inline:'nearest'});}
+      else b.removeAttribute('aria-current');
+    });
+    if(scroll)window.scrollTo(0,0);
+  }
+  nav.addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    try{history.replaceState(null,'','#'+b.dataset.p);}catch(_){}
+    show(b.dataset.p,true);
+  });
+  window.addEventListener('hashchange',function(){show(location.hash.slice(1),true);});
+  if(location.hash)show(location.hash.slice(1),false);
+
+  var rounds=[{n:7,t:'1 라운드',d:'미로 탈출 · 함정'},{n:9,t:'2 라운드',d:'숫자 퍼즐 · 음악 파일 보관 영역'},{n:11,t:'3 라운드',d:'경찰과 도둑'}];
+  var seed=27;
+  function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+  function maze(n,s){
+    var r=rng(s),c=12,seen=[],H=[],V=[],x,y;
+    for(y=0;y<=n;y++){H.push(new Array(n).fill(1));}
+    for(y=0;y<n;y++){V.push(new Array(n+1).fill(1));seen.push(new Array(n).fill(0));}
+    var st=[[0,0]];seen[0][0]=1;
+    while(st.length){
+      var cur=st[st.length-1];x=cur[0];y=cur[1];
+      var nb=[[x+1,y],[x-1,y],[x,y+1],[x,y-1]].filter(function(p){return p[0]>=0&&p[1]>=0&&p[0]<n&&p[1]<n&&!seen[p[1]][p[0]]});
+      if(!nb.length){st.pop();continue;}
+      var p=nb[Math.floor(r()*nb.length)];
+      if(p[0]!==x)V[y][Math.max(p[0],x)]=0;else H[Math.max(p[1],y)][x]=0;
+      seen[p[1]][p[0]]=1;st.push(p);
+    }
+    V[0][0]=0;V[n-1][n]=0;
+    var d='';
+    for(y=0;y<=n;y++)for(x=0;x<n;x++)if(H[y][x])d+='M'+x*c+' '+y*c+'h'+c;
+    for(y=0;y<n;y++)for(x=0;x<=n;x++)if(V[y][x])d+='M'+x*c+' '+y*c+'v'+c;
+    var w=n*c;
+    return '<svg viewBox="-2 -2 '+(w+4)+' '+(w+4)+'" role="img" aria-label="예시 미로"><path d="'+d+'"/></svg>';
+  }
+  function draw(){
+    var h='';
+    rounds.forEach(function(o,i){
+      if(i)h+='<span class="bridge">다리 →</span>';
+      h+='<div class="maze">'+maze(o.n,seed+i*101)+'<b>'+o.t+'</b><span>'+o.d+'</span></div>';
+    });
+    document.getElementById('mazes').innerHTML=h;
+  }
+  draw();
+  document.getElementById('regen').addEventListener('click',function(){seed+=7;draw();});
+})();
+</script>
+
+</body></html>

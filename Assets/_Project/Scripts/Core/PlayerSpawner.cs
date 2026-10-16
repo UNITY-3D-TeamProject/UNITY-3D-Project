@@ -132,7 +132,7 @@ public class PlayerSpawner : SpawnerBase
             _playerPrefab,
             spawnPoint,
             out GameObject player,
-            out AttributeSet _spawnedPlayerattributeSet))
+            out AttributeSet _))
         {
             return;
         }
@@ -159,7 +159,7 @@ public class PlayerSpawner : SpawnerBase
 
         if (shouldInitialize)
         {
-            ApplySpawnEffects(_spawnedPlayerattributeSet, _playerEffects);
+            ApplyPlayerEffects(playerFacade);
         }
 
         // player.SetActive(true);
@@ -171,6 +171,29 @@ public class PlayerSpawner : SpawnerBase
         if (_isLobbySpawner)
         {
             gameManager.ClearSpawnStage();
+        }
+    }
+
+    // 시작 Effect는 플레이어 내부(AttributeSet)에 직접 적용하지 않고 PlayerFacade를 통해 적용한다.
+    // [호출] SpawnPlayer에서 새 게임·라운드 복구·스테이지 재시작 스폰일 때 호출한다.
+    private void ApplyPlayerEffects(PlayerFacade playerFacade)
+    {
+        if (_playerEffects == null)
+        {
+            return;
+        }
+
+        foreach (SOAttributeEffect effect in _playerEffects)
+        {
+            if (effect == null)
+            {
+                continue;
+            }
+
+            if (!playerFacade.ApplyEffect(effect))
+            {
+                Debug.LogWarning($"[{effect.name}] 플레이어에 적용하지 못했습니다. 대상 어트리뷰트를 확인하세요.", this);
+            }
         }
     }
 
