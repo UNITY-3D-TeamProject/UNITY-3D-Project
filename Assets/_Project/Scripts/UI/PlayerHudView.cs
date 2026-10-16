@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace UI
 {
@@ -12,6 +13,11 @@ namespace UI
         [SerializeField] private Slider _hpSlider;
         [SerializeField] private Slider _batterySlider;
         [SerializeField] private Slider _heatSlider;
+
+        // HP 칸 게이지들. 최대 HP를 칸 개수로 나눈 값이 한 칸의 HP가 된다. (10칸, 최대 HP 100 => 한 칸 10)
+        [Header("HP Cells")]
+        [SerializeField] private Slider[] _hpCellSliders;
+        [SerializeField] private TMP_Text _hpPercentText;
 
         [Header("Skill Cooldowns")]
         [SerializeField] private Slider _rollCooldownSlider;
@@ -43,6 +49,7 @@ namespace UI
         public void SetHp(float currentValue, float maxValue)
         {
             SetGaugeValue(_hpSlider, currentValue, maxValue);
+            SetHpCells(currentValue, maxValue);
         }
 
         public void SetBattery(float currentValue, float maxValue)
@@ -69,6 +76,30 @@ namespace UI
         public void SetScanCooldown(float remainingRatio)
         {
             SetGaugeValue(_scanCooldownSlider, remainingRatio, 1.0f);
+        }
+
+        // HP를 칸마다 나눠 채우고 퍼센트 글자를 갱신하는 함수
+        // ex) 최대 100, 10칸 => 한 칸 10. 현재 85 => 앞 8칸 가득, 9번째 칸 절반, 10번째 칸 빔
+        private void SetHpCells(float currentValue, float maxValue)
+        {
+            if (_hpPercentText != null)
+            {
+                float ratio = maxValue > 0.0f ? Mathf.Clamp01(currentValue / maxValue) : 0.0f;
+                _hpPercentText.text = $"{Mathf.RoundToInt(ratio * 100.0f)}%";
+            }
+
+            if ((_hpCellSliders == null) || (_hpCellSliders.Length == 0))
+            {
+                return;
+            }
+
+            float hpPerCell = maxValue / _hpCellSliders.Length;
+
+            for (int i = 0; i < _hpCellSliders.Length; i++)
+            {
+                // 이 칸이 시작하는 HP를 뺀 나머지가 이 칸에 담기는 HP
+                SetGaugeValue(_hpCellSliders[i], currentValue - (hpPerCell * i), hpPerCell);
+            }
         }
 
         private void SetGaugeValue(Slider slider, float currentValue, float maxValue)

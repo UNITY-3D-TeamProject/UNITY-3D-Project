@@ -31,6 +31,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI / HUD]** HP 패널 10칸을 Shift 슬라이더 게이지로 바꾸고 실제 플레이어 HP와 연결(한 칸 = MaxHp/10, 칸 안 부분 채움, 퍼센트 글자 연동) → [문서](./clear/intent-033-hp-segment-gauge.md) (resolved: 2026-10-16)
 - **[UI / Main Menu]** 메인 메뉴 로직 MVP 연결(아무 키로 스플래시 → 메뉴, 설정창 ESC 닫기, CONTINUE 비활성, EXIT, START → `SceneLoader.TryStartNewGame`으로 튜토리얼) → [문서](./clear/intent-032-main-menu-logic.md) (resolved: 2026-10-16)
 - **[UI / Test Scene]** Test MainScene을 UITestScene으로 바꾸고 새 MainScene에 메인 메뉴·설정창 Canvas 배치 → [문서](./clear/intent-031-main-menu-scene.md) (resolved: 2026-10-16)
 - **[UI / Test Scene]** Shift 고유 연출(그림자·그라데이션·Big 글로우 프레임)을 입힌 HUD 비교용 Canvas `Canvas_Shift` → [문서](./clear/intent-030-shift-style-hud-canvas.md) (resolved: 2026-10-16)
