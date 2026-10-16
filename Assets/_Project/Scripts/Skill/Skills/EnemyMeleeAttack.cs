@@ -1,4 +1,5 @@
 using UnityEngine;
+using AI;
 using Attribute.Core;
 using Attribute.Effect;
 using Hit;
@@ -9,6 +10,8 @@ namespace Skill.Skills
     /// <summary>
     /// 적의 근접 공격 스킬. 발동 시 공격 지점에 근접 판정(MeleeHitController)을 만들고,
     /// 판정이 범위 안 대상에게 효과를 적용한다. CooldownCost 를 같이 붙이면 그 Cooldown 값이 공격 간격이 된다.
+    /// Hold Duration 이 0 보다 크면 발동 순간 대상 쪽을 바라본 채 그 시간 동안 몸을 붙잡아(AIController.Hold)
+    /// 공격 모션 도중 추격으로 미끄러지지 않게 한다.
     /// </summary>
     public class EnemyMeleeAttack : SkillBase
     {
@@ -20,10 +23,15 @@ namespace Skill.Skills
         [SerializeField] private Transform _hitPoint;
         [Tooltip("피격 대상에 적용할 효과")]
         [SerializeField] private SOAttributeEffect _hitEffect;
+
+        [Header("Hold")]
+        [Tooltip("발동 후 제자리에 붙잡아 둘 시간(초). 공격 모션 길이에 맞춘다. 0 이면 붙잡지 않는다. 붙잡힌 동안에는 경직하지 않는다.")]
+        [SerializeField, Min(0.0f)] private float _holdDuration;
         #endregion
 
         #region Private Fields
         private IEffectTarget _cursor;
+        private AIController _controller;
         #endregion
 
         #region Unity Lifecycle
@@ -31,6 +39,7 @@ namespace Skill.Skills
         {
             base.Awake();
             _cursor = GetComponentInParent<IEffectTarget>();
+            _controller = GetComponentInParent<AIController>();
 
             Debug.Assert(_hitPrefab != null, $"[{name}] 근접 판정 프리팹이 연결되지 않았습니다.");
             Debug.Assert(_hitPoint != null, $"[{name}] 판정 생성 지점이 연결되지 않았습니다.");
@@ -45,6 +54,11 @@ namespace Skill.Skills
             {
                 MeleeHitController hit = Instantiate(_hitPrefab, _hitPoint.position, _hitPoint.rotation);
                 hit.Initialize(_hitEffect, _cursor);
+            }
+
+            if ((_holdDuration > 0.0f) && _controller && _controller.HasVisibleTarget)
+            {
+                _controller.Hold(_controller.VisibleTarget.position - _controller.Position, _holdDuration);
             }
 
             base.Execute();
