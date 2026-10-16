@@ -22,6 +22,11 @@ namespace AI
         private int _lastIndex = -1;
         #endregion
 
+        #region Properties
+        /// <summary>현재 순찰 지점 목록 (읽기 전용).</summary>
+        public IReadOnlyList<Vector3> Waypoints => _waypoints;
+        #endregion
+
         #region Unity Lifecycle
         private void Awake()
         {

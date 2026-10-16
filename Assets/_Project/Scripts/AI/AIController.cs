@@ -432,6 +432,28 @@ namespace AI
         }
 
         /// <summary>
+        /// 순찰 지점 중 위협에게서 달아날 지점을 골라 목적지로 삼는다. 후보마다 경로 계산을 하므로 자주 부르지 않는다.
+        /// </summary>
+        /// <param name="threatPosition">위협 위치</param>
+        /// <param name="maxPathLength">허용하는 최대 경로 길이(m)</param>
+        /// <param name="avoidRadius">경로가 위협에 이 거리 안으로 들어가면 후보에서 뺀다(m)</param>
+        /// <returns>달아날 지점을 찾아 유효한 목적지를 잡았으면 true</returns>
+        public bool MoveAwayFrom(Vector3 threatPosition, float maxPathLength, float avoidRadius)
+        {
+            if (!_patrolRoute || _patrolRoute.Waypoints.Count == 0) return false;
+
+            bool hasPoint = FleePointFinder.TryFind(
+                Position,
+                threatPosition,
+                _patrolRoute.Waypoints,
+                maxPathLength,
+                avoidRadius,
+                out Vector3 point);
+
+            return hasPoint && MoveTo(point);
+        }
+
+        /// <summary>
         /// 이동을 멈추고 목적지를 비운다.
         /// </summary>
         public void StopMove()
