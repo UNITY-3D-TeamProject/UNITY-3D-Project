@@ -1,5 +1,6 @@
 using Core.ObjectPool;
 using Mediator;
+using Unity.Behavior;
 using UnityEngine;
 
 namespace AI
@@ -13,12 +14,15 @@ namespace AI
         #region Serialized Fields
         [Header("References")]
         [SerializeField] private CharacterMediator _characterMediator;
+        [Tooltip("풀에 반납될 때 끝내고 다시 꺼낼 때 처음부터 돌릴 BT. 비워두면 이 오브젝트에서 찾는다.")]
+        [SerializeField] private BehaviorGraphAgent _graphAgent;
         #endregion
 
         #region Unity Lifecycle
         private void Awake()
         {
             if (!_characterMediator) _characterMediator = GetComponent<CharacterMediator>();
+            if (!_graphAgent) _graphAgent = GetComponent<BehaviorGraphAgent>();
         }
 
         private void OnEnable()
@@ -30,6 +34,10 @@ namespace AI
         private void OnDisable()
         {
             _characterMediator.OnDeathEnded -= OnDeathEndedCallback;
+
+            // BehaviorGraphAgent 는 꺼져도 그래프를 멈추기만 해서, 다시 꺼내면 하던 노드를 이어서 돈다.
+            // 꺼진 상태의 Restart 는 실행 중인 노드의 OnEnd(후퇴 감속 복구 등)를 부르고, 다음 Update 에서 처음부터 시작하게 한다
+            if (_graphAgent) _graphAgent.Restart();
         }
         #endregion
 

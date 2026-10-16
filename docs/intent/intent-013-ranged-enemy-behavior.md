@@ -52,6 +52,8 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 ## 열린 질문 (Open questions)
 - ~~후퇴하는 동안 몸이 이동 방향을 보므로 등을 보인다~~ → 2026-10-14 결정 사항으로 해결
 - 후퇴 도중 적이 비활성화되면 `OnEnd`가 불리지 않아 MoveSpeed가 낮은 채로 남는다. 다시 활성화하면 그래프가 이어서 돌며 `OnEnd`에서 복구되는 것은 확인했다. 사망·풀 재사용 시 그래프를 새로 시작하는 경로가 있다면 복구되지 않을 수 있다(미확인)
+  - (2026-10-16) 원인 확인: `BehaviorGraphAgent`에는 `OnEnable`/`OnDisable`이 없어서 반납해도 그래프가 멈추기만 하고, 다시 꺼내면 하던 노드를 이어서 돈다. 사망 애니메이션 중에도 BT는 돈다. 스포너가 다시 꺼낼 때 DB MoveSpeed를 Set하므로, 남아 있던 후퇴 노드가 끝나면 ×2.5(1/0.4)가 곱해져 **재사용 개체가 2.5배 빨라진다**
+  - 수정: `EnemyPoolReturner.OnDisable`에서 `BehaviorGraphAgent.Restart()`를 호출한다. 꺼진 상태에서 부르면 `End()`(실행 중인 노드의 `OnEnd` → 감속 복구)만 하고 `m_IsStarted = false`로 두어 다음 `Update`에서 처음부터 시작한다. `End()`만 부르면 `m_IsStarted`가 true로 남아 끝난 그래프만 Tick하는 정지 상태가 되므로 쓰지 않는다. 컴파일 에러 0, **Play 검증 미완**
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:
