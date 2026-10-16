@@ -2,6 +2,7 @@ using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
 using Movement;
+using Core.ObjectPool;
 
 namespace Projectile
 {
@@ -9,6 +10,7 @@ namespace Projectile
     /// 총알의 직진 이동과 피격 처리를 담당한다.
     /// 매 프레임 SphereCollider 반지름으로 이동 구간을 SphereCast 해 피격을 감지하고,
     /// 맞힌 대상의 IEffectTarget 에 SOAttributeEffect 를 적용한 뒤 소멸한다.
+    /// 풀에서 꺼낸 총알은 소멸 시 풀에 반납하고, 그 외(Instantiate)는 파괴한다.
     /// </summary>
     public class BulletController : MonoBehaviour
     {
@@ -42,12 +44,18 @@ namespace Projectile
             Debug.Assert(_sphereCollider != null, $"[{name}] SphereCollider가 연결되지 않았습니다.");
         }
 
+        private void OnEnable()
+        {
+            // 풀에서 재사용될 때 수명을 처음부터 다시 잰다
+            _elapsedTime = 0.0f;
+        }
+
         private void Update()
         {
             _elapsedTime += Time.deltaTime;
             if (_elapsedTime >= _lifeSpan)
             {
-                Destroy(gameObject);
+                Despawn();
                 return;
             }
 
@@ -66,7 +74,7 @@ namespace Projectile
                 return;
 
             ApplyHitEffect(other);
-            Destroy(gameObject);
+            Despawn();
         }
         #endregion
 
@@ -108,6 +116,18 @@ namespace Projectile
             // TODO: 테스트용으로 우선 사용. 트리거에 처음 겹친 순간의 총알 중심을 맞은 지점으로 쓴다
             //       (탄도 방향 최대 약 0.33m 오차, 정밀한 표면 진입점 계산은 추후 검토)
             _hitEffect.Apply(other.gameObject, new SEffectContext(_cursor, hitPoint: transform.position, direction: _direction));
+        }
+
+        /// <summary>
+        /// 총알을 소멸시킨다. 풀 매니저가 있으면 반납하고(풀 출신이 아니면 매니저가 파괴한다), 없으면 파괴한다.
+        /// </summary>
+        // 매니저가 없는 씬에서도 맵 기믹·적이 Instantiate 로 쓰므로 Destroy 로 대체한다
+        private void Despawn()
+        {
+            if (ObjectPoolManager.Instance != null)
+                ObjectPoolManager.Instance.Release(gameObject);
+            else
+                Destroy(gameObject);
         }
         #endregion
     }
