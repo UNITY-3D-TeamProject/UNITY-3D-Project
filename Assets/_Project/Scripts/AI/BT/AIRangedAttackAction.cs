@@ -84,7 +84,11 @@ namespace AI.BT
             if (_isWindingUp && Controller) Controller.StopSkill(WINDUP_SKILL);
             _isWindingUp = false;
 
-            if (Controller) Controller.ShouldFaceMoveDirection = true;
+            if (Controller)
+            {
+                Controller.ShouldFaceMoveDirection = true;
+                Controller.IsSuperArmor = false;
+            }
         }
         #endregion
 
@@ -107,10 +111,14 @@ namespace AI.BT
             Controller.FaceDirection(toTarget);
 
             if (Time.time < _phaseEndTime) return;
+            // 경직 중에는 조준선 스킬이 무시되므로, 조준선 없이 쏘지 않도록 풀릴 때까지 예비 동작을 미룬다
+            if (Controller.IsStunned) return;
 
             _aimDirection = toTarget;
             _isWindingUp = true;
             _phaseEndTime = Time.time + WindupDuration.Value;
+            // 예비 동작 중에는 경직되지 않아 조준한 사격이 끊기지 않는다
+            Controller.IsSuperArmor = true;
             Controller.ExecuteSkill(WINDUP_SKILL);
         }
 
@@ -127,6 +135,7 @@ namespace AI.BT
             Controller.ExecuteSkill(ATTACK_SKILL);
             // 누르고 있는 동안 반복되는 스킬이어도 한 번만 발동하도록 바로 뗀다
             Controller.StopSkill(ATTACK_SKILL);
+            Controller.IsSuperArmor = false;
 
             BeginWait();
         }

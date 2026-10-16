@@ -67,6 +67,10 @@ namespace AI
         [Header("Hit Reaction")]
         [Tooltip("피격 시 이동을 멈추고 맞은 쪽을 바라보는 시간(초). 0 이면 반응하지 않는다. CharacterRotator 회전 속도로 180° 돌 수 있는 시간 이상이어야 뒤에서 맞아도 완전히 돌아선다.")]
         [SerializeField, Min(0.0f)] private float _hitLookDuration = 1.0f;
+        [Tooltip("피격 시 이동과 스킬 요청을 멈추는 경직 시간(초). 0 이면 경직하지 않는다. 대상이 보이는 중에도 걸린다.")]
+        [SerializeField, Min(0.0f)] private float _hitStunDuration = 0.4f;
+        [Tooltip("경직이 끝난 뒤 다시 경직되지 않는 시간(초). 연사로 계속 묶이지 않게 한다. 피격 애니메이션은 이 동안에도 재생된다.")]
+        [SerializeField, Min(0.0f)] private float _hitStunImmuneDuration = 1.5f;
         #endregion
 
         #region Private Fields
@@ -82,6 +86,9 @@ namespace AI
 
         private float _hitLookTimer;
         private Vector2 _hitLookDirection;
+
+        private float _hitStunTimer;
+        private float _hitStunImmuneTimer;
 
         private float _holdTimer;
         private Vector2 _holdDirection;
@@ -154,6 +161,15 @@ namespace AI
 
         /// <summary>Hold 로 붙잡혀 제자리에 멈춰 있는지 여부.</summary>
         public bool IsHolding => _holdTimer > 0.0f;
+
+        /// <summary>피격 경직 중인지 여부. 경직 중에는 이동하지 않고 스킬 요청(ExecuteSkill)도 무시한다.</summary>
+        public bool IsStunned => _hitStunTimer > 0.0f;
+
+        /// <summary>
+        /// 피격되어도 경직하지 않는지 여부. 기본 false.
+        /// Hold 로 붙잡히지 않는 스킬(원거리 예비 동작 등)을 쓰는 동안 BT 노드가 켜 둔다.
+        /// </summary>
+        public bool IsSuperArmor { get; set; }
         #endregion
 
         #region Unity Lifecycle
@@ -196,6 +212,8 @@ namespace AI
 
             // NavMesh 밖에서도 안전 타이머가 흘러야 영구히 붙잡히지 않으므로 아래 early return 보다 앞에 둔다
             if (_holdTimer > 0.0f) _holdTimer -= Time.deltaTime;
+            if (_hitStunTimer > 0.0f) _hitStunTimer -= Time.deltaTime;
+            if (_hitStunImmuneTimer > 0.0f) _hitStunImmuneTimer -= Time.deltaTime;
 
             if (!_agent || !_agent.isOnNavMesh)
             {
@@ -221,6 +239,13 @@ namespace AI
                 _hitLookTimer = HasVisibleTarget ? 0.0f : _hitLookTimer - Time.deltaTime;
                 RequestMove(Vector2.zero);
                 RequestRotate(_hitLookDirection);
+                return;
+            }
+
+            // 경직 중에는 목적지를 유지한 채 멈춘다. 끝나면 하던 이동을 이어간다
+            if (IsStunned)
+            {
+                RequestMove(Vector2.zero);
                 return;
             }
 
@@ -254,6 +279,9 @@ namespace AI
             // 오브젝트 풀에서 다시 꺼냈을 때 멈춤이 남아 있지 않게 한다
             _hitLookTimer = 0.0f;
             _holdTimer = 0.0f;
+            _hitStunTimer = 0.0f;
+            _hitStunImmuneTimer = 0.0f;
+            IsSuperArmor = false;
 
             // 비활성화 시 마지막 이동 명령이 남아 계속 미끄러지지 않도록 정지시킨다
             RequestMove(Vector2.zero);
@@ -484,11 +512,13 @@ namespace AI
 
         /// <summary>
         /// 지정한 이름의 스킬 발동을 요청한다. 자동으로 떼지 않으므로
-        /// 유지형 스킬(조준선 등)은 끝낼 때 StopSkill 을 호출해야 한다.
+        /// 유지형 스킬(조준선 등)은 끝낼 때 StopSkill 을 호출해야 한다. 경직 중에는 무시한다.
         /// </summary>
         /// <param name="skillName">발동할 스킬 이름</param>
         public void ExecuteSkill(string skillName)
         {
+            if (IsStunned) return;
+
             _requestExecuteSkill?.Invoke(skillName);
         }
 
@@ -573,12 +603,22 @@ namespace AI
         }
 
         /// <summary>
-        /// 피격되면 잠시 멈춰 맞은 쪽을 바라보게 한다.
-        /// 대상이 보이는 중(전투 중)에는 공격이 이미 대상을 바라보므로 추격·사격이 끊기지 않게 무시한다.
+        /// 피격되면 짧게 경직시키고, 대상이 안 보이면 잠시 멈춰 맞은 쪽을 바라보게 한다.
+        /// 경직은 스킬 사용 중(Hold·슈퍼아머)이거나 직전 경직의 면역 시간 안이면 걸리지 않는다.
+        /// 대상이 보이는 중(전투 중)에는 공격이 이미 대상을 바라보므로 돌아보기는 하지 않는다.
         /// </summary>
         /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치)</param>
         private void OnHitFromCallback(Vector3 hitSource)
         {
+            bool canStun = (_hitStunDuration > 0.0f) &&
+                (!IsHolding && !IsSuperArmor) &&
+                (_hitStunImmuneTimer <= 0.0f);
+            if (canStun)
+            {
+                _hitStunTimer = _hitStunDuration;
+                _hitStunImmuneTimer = _hitStunDuration + _hitStunImmuneDuration;
+            }
+
             if (HasVisibleTarget) return;
 
             Vector3 toSource = Vector3.ProjectOnPlane(hitSource - _body.position, Vector3.up);
