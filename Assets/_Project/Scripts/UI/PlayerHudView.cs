@@ -45,6 +45,15 @@ namespace UI
         [SerializeField] private Slider _bluetoothCooldownSlider;
         [SerializeField] private Slider _scanCooldownSlider;
 
+        // 스킬 카드의 원형 쿨타임 바(Filled 이미지)와 남은 시간 글자
+        [Header("Skill Cards")]
+        [SerializeField] private Image _rollCooldownBar;
+        [SerializeField] private TMP_Text _rollCooldownText;
+        [SerializeField] private Image _bluetoothCooldownBar;
+        [SerializeField] private TMP_Text _bluetoothCooldownText;
+        [SerializeField] private Image _scanCooldownBar;
+        [SerializeField] private TMP_Text _scanCooldownText;
+
         // 루트가 연결되어있는지, 활성화 상태인지 체크
         public bool IsVisible => _root != null && _root.activeSelf;
 
@@ -85,20 +94,23 @@ namespace UI
             SetArcCells(_heatArcCells, _heatPercentText, currentValue, maxValue);
         }
 
-        // 남은 쿨타임 비율(0~1)을 표시한다. 1 = 방금 사용, 0 = 사용 가능
-        public void SetRollCooldown(float remainingRatio)
+        // 남은 쿨타임 비율(0~1)과 남은 시간(초)을 표시한다. 비율 1 = 방금 사용, 0 = 사용 가능
+        public void SetRollCooldown(float remainingRatio, float remainingTime)
         {
             SetGaugeValue(_rollCooldownSlider, remainingRatio, 1.0f);
+            SetCooldownGauge(_rollCooldownBar, _rollCooldownText, remainingRatio, remainingTime);
         }
 
-        public void SetBluetoothCooldown(float remainingRatio)
+        public void SetBluetoothCooldown(float remainingRatio, float remainingTime)
         {
             SetGaugeValue(_bluetoothCooldownSlider, remainingRatio, 1.0f);
+            SetCooldownGauge(_bluetoothCooldownBar, _bluetoothCooldownText, remainingRatio, remainingTime);
         }
 
-        public void SetScanCooldown(float remainingRatio)
+        public void SetScanCooldown(float remainingRatio, float remainingTime)
         {
             SetGaugeValue(_scanCooldownSlider, remainingRatio, 1.0f);
+            SetCooldownGauge(_scanCooldownBar, _scanCooldownText, remainingRatio, remainingTime);
         }
 
         // HP를 칸마다 나눠 채우고 퍼센트 글자를 갱신하는 함수
@@ -168,6 +180,23 @@ namespace UI
             {
                 // 빈 칸은 글로우도 끈다. (늘린 끝부분만 남아 보이지 않도록)
                 cell.GlowImage.fillAmount = cellValue > 0.0f ? arcFill + GLOW_EXTRA_FILL : 0.0f;
+            }
+        }
+
+        // 쿨타임 게이지(Filled 이미지)는 쓰면 빈 채로 시작해 쿨타임이 끝나면 꽉 찬다.
+        // 남은 시간 글자는 쿨 중에만 보인다. ex) 2.8s, 사용 가능하면 빈 글자
+        private void SetCooldownGauge(Image cooldownBar, TMP_Text cooldownText, float remainingRatio, float remainingTime)
+        {
+            if (cooldownBar != null)
+            {
+                cooldownBar.fillAmount = 1.0f - Mathf.Clamp01(remainingRatio);
+            }
+
+            if (cooldownText != null)
+            {
+                // 0.1초 단위로 올림해서 끝나기 직전에도 0.0s가 보이지 않게 한다.
+                float shownTime = Mathf.Ceil(remainingTime * 10.0f) / 10.0f;
+                cooldownText.text = remainingTime > 0.0f ? $"{shownTime:F1}s" : string.Empty;
             }
         }
 

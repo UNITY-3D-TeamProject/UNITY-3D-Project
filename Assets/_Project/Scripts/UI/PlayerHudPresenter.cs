@@ -22,6 +22,11 @@ namespace UI
             public float RemainingRatio => Duration > 0.0f
                 ? Mathf.Clamp01((EndTime - Time.time) / Duration)
                 : 0.0f;
+
+            // 남은 쿨타임 (초, 사용 가능하면 0)
+            public float RemainingTime => Duration > 0.0f
+                ? Mathf.Max(0.0f, EndTime - Time.time)
+                : 0.0f;
         }
 
         [Header("References")]
@@ -219,9 +224,9 @@ namespace UI
                 return;
             }
 
-            _view.SetRollCooldown(_rollCooldown.RemainingRatio);
-            _view.SetBluetoothCooldown(_bluetoothCooldown.RemainingRatio);
-            _view.SetScanCooldown(_scanCooldown.RemainingRatio);
+            _view.SetRollCooldown(_rollCooldown.RemainingRatio, _rollCooldown.RemainingTime);
+            _view.SetBluetoothCooldown(_bluetoothCooldown.RemainingRatio, _bluetoothCooldown.RemainingTime);
+            _view.SetScanCooldown(_scanCooldown.RemainingRatio, _scanCooldown.RemainingTime);
         }
 
         private void UpdateHpHud()
