@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[UI / Skill]** 차지샷 진행률을 보여주는 칸형 바 추가. 시각물은 MainScene에 배치, Fire 50% 판정·진행률 연결은 결정 대기 → [문서](./intent-029-charge-shot-bar.md)
 - **[Spawner]** 몬스터 종류별 DB SO(SOMonsterData)로 초기값 적용 + 개체마다 MoveSpeed 비율 오차(±%) → [문서](../HANDOVER/SungJun/intent/intent-025-monster-attribute-variance.md)
 - **[Stage / Player State]** StageManager 체크포인트 컴포넌트 연결 및 도달 처리 → [문서](../HANDOVER/SungJun/intent/intent-016-stage-checkpoint-events.md)
 - **[Stage / Player State]** PlayerFacade 기반 낙하 복귀(이동)·사망 복구(파괴 후 재스폰) 구현, 사망 시 Destroy 전제 확인 필요 → [문서](../HANDOVER/SungJun/intent/intent-017-fall-death-recovery-playerfacade.md)
@@ -31,6 +32,8 @@
 
 ## 해결됨 (Resolved)
 - **[UI / Main Menu]** 메인 메뉴 로직 MVP 연결(아무 키로 스플래시 → 메뉴, 설정창 ESC 닫기, CONTINUE 비활성, EXIT, START → `SceneLoader.TryStartNewGame`으로 튜토리얼) → [문서](./clear/intent-032-main-menu-logic.md) (resolved: 2026-10-16)
+- **[UI / Test Scene]** Test MainScene을 UITestScene으로 바꾸고 새 MainScene에 메인 메뉴·설정창 Canvas 배치 → [문서](./clear/intent-031-main-menu-scene.md) (resolved: 2026-10-16)
+- **[UI / Test Scene]** Shift 고유 연출(그림자·그라데이션·Big 글로우 프레임)을 입힌 HUD 비교용 Canvas `Canvas_Shift` → [문서](./clear/intent-030-shift-style-hud-canvas.md) (resolved: 2026-10-16)
 - **[UI / Test Scene]** 카드형 스킬 HUD 시안 Canvas(아이콘·키·이름·소모값·쿨타임 숫자·쿨타임 바) → [문서](./clear/intent-028-skill-card-hud.md) (resolved: 2026-10-16)
 - **[UI / Test Scene]** 로비 참고 HUD를 Test MainScene으로 이동하고 Canvas 9개를 프리팹화 → [문서](./clear/intent-027-main-scene-canvas-prefabs.md) (resolved: 2026-10-16)
 - **[UI / Lobby]** 로비 참고 이미지 HUD 시안 Canvas 추가 → [문서](./clear/intent-026-lobby-hud-reference.md) (resolved: 2026-10-16)
