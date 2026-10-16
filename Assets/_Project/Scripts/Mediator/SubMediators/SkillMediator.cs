@@ -32,6 +32,7 @@ namespace Mediator.SubMediators
         #region Private Fields
         private ISkillRequestController _skillRequestController;
         private Func<bool> _getGrounded;
+        private Fire _fireSkill;
         private Interact _interactSkill;
         private SpawnVehicle _spawnVehicleSkill;
         private Scan _scanSkill;
@@ -46,6 +47,11 @@ namespace Mediator.SubMediators
         private bool _wasFireEnabled;
         private bool _wasRollEnabled;
         private bool _wasMultiJumpEnabled;
+        #endregion
+
+        #region Properties
+        /// <summary>사격 차지 진행도(0~1). 차지 중이 아니거나 Fire 스킬이 없으면 0.</summary>
+        public float FireChargeRatio => _fireSkill ? _fireSkill.ChargeRatio : 0.0f;
         #endregion
 
         #region Events
@@ -108,6 +114,7 @@ namespace Mediator.SubMediators
             base.Awake();
             ResolveComponent(ref _skillController);
             _skillRequestController = GetComponentInParent<ISkillRequestController>();
+            if (_skillController) _fireSkill = _skillController.GetComponentInChildren<Fire>(true);
             if (_skillController) _interactSkill = _skillController.GetComponentInChildren<Interact>(true);
             if (_skillController) _spawnVehicleSkill = _skillController.GetComponentInChildren<SpawnVehicle>(true);
             if (_skillController) _scanSkill = _skillController.GetComponentInChildren<Scan>(true);

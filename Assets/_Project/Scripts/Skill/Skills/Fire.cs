@@ -48,6 +48,8 @@ namespace Skill.Skills
         private Coroutine _rechargeCoroutine;
         // 발동(누름) ~ Stop(뗌). 누르고 있는 동안 자동 발사 후 다시 차지한다
         private bool _isHeld;
+        // 현재 차지를 시작한 시각(Time.time). 차지 진행도 계산에 쓴다
+        private float _chargeStartTime;
         #endregion
 
         #region Properties
@@ -59,6 +61,20 @@ namespace Skill.Skills
 
         /// <summary>마지막 발사가 차지샷인지 여부. Phase 가 Fired 일 때 읽는다.</summary>
         public bool IsCharged { get; private set; }
+
+        /// <summary>
+        /// 차지 진행도(0~1). 차지 중이 아니면(발사·취소 후, 재차지 대기 중) 0.
+        /// </summary>
+        public float ChargeRatio
+        {
+            get
+            {
+                if (!IsCharging) return 0.0f;
+                if (_chargeTime <= 0.0f) return 1.0f;
+
+                return Mathf.Clamp01((Time.time - _chargeStartTime) / _chargeTime);
+            }
+        }
 
         protected override bool IsPayOnExecute => false;
 
@@ -118,6 +134,7 @@ namespace Skill.Skills
             EndRecharge();
             IsCharged = false;
             Phase = EFirePhase.ChargeStarted;
+            _chargeStartTime = Time.time;
             _chargeCoroutine = StartCoroutine(CoCharge());
 
             base.Execute();
