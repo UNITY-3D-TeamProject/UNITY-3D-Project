@@ -2,7 +2,7 @@
 
 - **우선순위**: 미정
 - **상태**: 완료
-- **관련 작업**: [25. 점프 버퍼링](../25-jump-buffering.md) — 둘 다 `MoveMediator.CommandJump` 의 접지 판정을 바꾼다. [02. 멀티점프](02-multi-jump.md)
+- **관련 작업**: [25. 점프 버퍼링](25-jump-buffering.md) — 둘 다 `MoveMediator.CommandJump` 의 접지 판정을 바꾼다. [02. 멀티점프](02-multi-jump.md)
 
 ## 목표
 발판 끝에서 떨어진 직후 짧은 시간 동안은 지상 점프를 허용한다.
