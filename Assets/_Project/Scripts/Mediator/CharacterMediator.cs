@@ -24,7 +24,7 @@ namespace Mediator
         [SerializeField] private SkillMediator _skillMediator;
         [SerializeField] private RotateMediator _rotateMediator;
         [SerializeField] private SpawnMediator _spawnMediator;
-        [SerializeField] private AnimationMediator _animationMediator;
+        [SerializeField] private PlayerAnimationMediator _playerAnimationMediator;
         [Tooltip("AI(적·군중) 전용 애니메이션 중재자. 플레이어는 비워 둔다.")]
         [SerializeField] private EnemyAnimationMediator _enemyAnimationMediator;
         [SerializeField] private PetMediator _petMediator;
@@ -227,7 +227,7 @@ namespace Mediator
                 if (_moveMediator) _spawnMediator.SetGetFireDirection(_moveMediator.GetViewDirection);
                 if (_cameraMediator) _spawnMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
             }
-            if (_animationMediator && _cameraMediator) _animationMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
+            if (_playerAnimationMediator && _cameraMediator) _playerAnimationMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
             if (_skillMediator && _moveMediator) _skillMediator.SetGetGrounded(_moveMediator.IsGrounded);
             if (_skillMediator && _cameraMediator) _skillMediator.SetGetAimRay(_cameraMediator.GetAimRay);
             if (_attributeMediator && _combatMediator) _attributeMediator.SetIsDamageBlocked(_combatMediator.IsDamageBlocked);
@@ -250,7 +250,7 @@ namespace Mediator
                 _spawnMediator.ClearGetFireDirection();
                 _spawnMediator.ClearGetAimPoint();
             }
-            if (_animationMediator) _animationMediator.ClearGetAimPoint();
+            if (_playerAnimationMediator) _playerAnimationMediator.ClearGetAimPoint();
             if (_skillMediator) _skillMediator.ClearGetGrounded();
             if (_skillMediator) _skillMediator.ClearGetAimRay();
             if (_attributeMediator) _attributeMediator.ClearIsDamageBlocked();
@@ -278,7 +278,7 @@ namespace Mediator
 
             if (_moveMediator) _moveMediator.SetViewForward(viewForward);
             if (_rotateMediator) _rotateMediator.SetViewForward(viewForward);
-            if (_animationMediator) _animationMediator.SetViewForward(viewForward);
+            if (_playerAnimationMediator) _playerAnimationMediator.SetViewForward(viewForward);
         }
         /// <summary>
         /// 스킬 중재자의 코스트 지불 요청을 어트리뷰트에 반영
@@ -390,7 +390,7 @@ namespace Mediator
         /// <param name="direction">구르기 방향 (월드 기준)</param>
         private void OnRollStartedCallback(Vector3 direction)
         {
-            _animationMediator.NotifyRollStarted(GetRollLookDirection(direction));
+            _playerAnimationMediator.NotifyRollStarted(GetRollLookDirection(direction));
         }
 
         /// <summary>
@@ -433,10 +433,9 @@ namespace Mediator
             if (!_combatMediator.IsDead())
             {
                 Vector3? hitSource = GetHitSource(_lastChangeContext);
-                if (_animationMediator) _animationMediator.NotifyHit(hitSource);
+                if (_playerAnimationMediator) _playerAnimationMediator.NotifyHit(hitSource);
                 if (_enemyAnimationMediator) _enemyAnimationMediator.NotifyHit(hitSource);
-                if (_petMediator) _petMediator.NotifyHit(_animationMediator ? _animationMediator.GetHitDirection(hitSource) : 0);
-                if (hitSource.HasValue) OnHitFrom?.Invoke(hitSource.Value);
+                if (_petMediator) _petMediator.NotifyHit(_playerAnimationMediator ? _playerAnimationMediator.GetHitDirection(hitSource) : 0);
             }
             OnHit?.Invoke();
         }
@@ -467,13 +466,13 @@ namespace Mediator
             DisableControl();
             if (_petMediator) _petMediator.NotifyDeath();
 
-            if (!_animationMediator && !_enemyAnimationMediator)
+            if (!_playerAnimationMediator && !_enemyAnimationMediator)
             {
                 EndDeath();
                 return;
             }
 
-            if (_animationMediator) _animationMediator.NotifyDeath();
+            if (_playerAnimationMediator) _playerAnimationMediator.NotifyDeath();
             if (_enemyAnimationMediator) _enemyAnimationMediator.NotifyDeath();
         }
 
@@ -526,23 +525,23 @@ namespace Mediator
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnCriticalHit += OnCriticalHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
-            if (_animationMediator) _animationMediator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
-            if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged += _animationMediator.SetMoveDirection;
-            if (_skillMediator && _animationMediator) _skillMediator.OnFireRequested += _animationMediator.NotifyFire;
-            if (_skillMediator && _animationMediator) _skillMediator.OnFireChargeChanged += _animationMediator.NotifyFireCharge;
-            if (_moveMediator && _animationMediator) _moveMediator.OnJumpStarted += _animationMediator.NotifyJumpStarted;
-            if (_moveMediator && _animationMediator) _moveMediator.OnJumpEnded += _animationMediator.NotifyJumpEnded;
-            if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted += OnRollStartedCallback;
-            if (_moveMediator && _animationMediator) _moveMediator.OnRollEnded += _animationMediator.NotifyRollEnded;
+            if (_playerAnimationMediator) _playerAnimationMediator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnMoveDirectionChanged += _playerAnimationMediator.SetMoveDirection;
+            if (_skillMediator && _playerAnimationMediator) _skillMediator.OnFireRequested += _playerAnimationMediator.NotifyFire;
+            if (_skillMediator && _playerAnimationMediator) _skillMediator.OnFireChargeChanged += _playerAnimationMediator.NotifyFireCharge;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnJumpStarted += _playerAnimationMediator.NotifyJumpStarted;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnJumpEnded += _playerAnimationMediator.NotifyJumpEnded;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnRollStarted += OnRollStartedCallback;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnRollEnded += _playerAnimationMediator.NotifyRollEnded;
             if (_moveMediator && _rotateMediator) _moveMediator.OnRollStarted += OnRollLookCallback;
             if (_moveMediator && _rotateMediator) _moveMediator.OnRollEnded += _rotateMediator.UnlockLookDirection;
             if (_moveMediator && _skillMediator) _moveMediator.OnAirJumpRequested += _skillMediator.RequestMultiJump;
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested += _moveMediator.CommandAirJump;
             if (_skillMediator) _skillMediator.OnBuffRatiosChanged += OnBuffRatiosChangedCallback;
             if (_skillMediator) _skillMediator.OnRidingChanged += OnRidingChangedCallback;
-            if (_skillMediator && _animationMediator) _skillMediator.OnRidingChanged += _animationMediator.NotifyRidingChanged;
+            if (_skillMediator && _playerAnimationMediator) _skillMediator.OnRidingChanged += _playerAnimationMediator.NotifyRidingChanged;
             if (_skillMediator && _moveMediator) _skillMediator.OnMountJumpRequested += _moveMediator.CommandAirJump;
-            if (_skillMediator && _animationMediator) _skillMediator.OnVehicleAttached += _animationMediator.SetRidingBoard;
+            if (_skillMediator && _playerAnimationMediator) _skillMediator.OnVehicleAttached += _playerAnimationMediator.SetRidingBoard;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded += _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted += _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted += _skillMediator.NotifyRollStarted;
@@ -554,12 +553,12 @@ namespace Mediator
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded += _cameraMediator.NotifyRollEnded;
             if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged += _combatMediator.NotifyFireCharge;
             if (_cameraMediator && _combatMediator) _cameraMediator.OnAimChanged += _combatMediator.NotifyAim;
-            if (_cameraMediator && _animationMediator) _cameraMediator.OnAimChanged += _animationMediator.NotifyAim;
-            if (_combatMediator && _animationMediator) _combatMediator.OnInvincibilityEnded += _animationMediator.NotifyInvincibilityEnded;
+            if (_cameraMediator && _playerAnimationMediator) _cameraMediator.OnAimChanged += _playerAnimationMediator.NotifyAim;
+            if (_combatMediator && _playerAnimationMediator) _combatMediator.OnInvincibilityEnded += _playerAnimationMediator.NotifyInvincibilityEnded;
             if (_combatMediator) _combatMediator.OnMoveSpeedReduceRequested += OnMoveSpeedReduceCallback;
             if (_moveMediator && _petMediator) _moveMediator.OnJumpStarted += _petMediator.NotifyJumpStarted;
             if (_moveMediator && _petMediator) _moveMediator.OnJumpEnded += _petMediator.NotifyJumpEnded;
-            if (_animationMediator && _petMediator) _animationMediator.OnSpecialIdleStarted += _petMediator.NotifySpecialIdle;
+            if (_playerAnimationMediator && _petMediator) _playerAnimationMediator.OnSpecialIdleStarted += _petMediator.NotifySpecialIdle;
             if (_enemyAnimationMediator) _enemyAnimationMediator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
             if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnMoveDirectionChanged += _enemyAnimationMediator.SetMoveDirection;
             if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnJumpStarted += _enemyAnimationMediator.NotifyJumpStarted;
@@ -584,23 +583,23 @@ namespace Mediator
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnCriticalHit -= OnCriticalHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
-            if (_animationMediator) _animationMediator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
-            if (_moveMediator && _animationMediator) _moveMediator.OnMoveDirectionChanged -= _animationMediator.SetMoveDirection;
-            if (_skillMediator && _animationMediator) _skillMediator.OnFireRequested -= _animationMediator.NotifyFire;
-            if (_skillMediator && _animationMediator) _skillMediator.OnFireChargeChanged -= _animationMediator.NotifyFireCharge;
-            if (_moveMediator && _animationMediator) _moveMediator.OnJumpStarted -= _animationMediator.NotifyJumpStarted;
-            if (_moveMediator && _animationMediator) _moveMediator.OnJumpEnded -= _animationMediator.NotifyJumpEnded;
-            if (_moveMediator && _animationMediator) _moveMediator.OnRollStarted -= OnRollStartedCallback;
-            if (_moveMediator && _animationMediator) _moveMediator.OnRollEnded -= _animationMediator.NotifyRollEnded;
+            if (_playerAnimationMediator) _playerAnimationMediator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnMoveDirectionChanged -= _playerAnimationMediator.SetMoveDirection;
+            if (_skillMediator && _playerAnimationMediator) _skillMediator.OnFireRequested -= _playerAnimationMediator.NotifyFire;
+            if (_skillMediator && _playerAnimationMediator) _skillMediator.OnFireChargeChanged -= _playerAnimationMediator.NotifyFireCharge;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnJumpStarted -= _playerAnimationMediator.NotifyJumpStarted;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnJumpEnded -= _playerAnimationMediator.NotifyJumpEnded;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnRollStarted -= OnRollStartedCallback;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnRollEnded -= _playerAnimationMediator.NotifyRollEnded;
             if (_moveMediator && _rotateMediator) _moveMediator.OnRollStarted -= OnRollLookCallback;
             if (_moveMediator && _rotateMediator) _moveMediator.OnRollEnded -= _rotateMediator.UnlockLookDirection;
             if (_moveMediator && _skillMediator) _moveMediator.OnAirJumpRequested -= _skillMediator.RequestMultiJump;
             if (_skillMediator && _moveMediator) _skillMediator.OnMultiJumpRequested -= _moveMediator.CommandAirJump;
             if (_skillMediator) _skillMediator.OnBuffRatiosChanged -= OnBuffRatiosChangedCallback;
             if (_skillMediator) _skillMediator.OnRidingChanged -= OnRidingChangedCallback;
-            if (_skillMediator && _animationMediator) _skillMediator.OnRidingChanged -= _animationMediator.NotifyRidingChanged;
+            if (_skillMediator && _playerAnimationMediator) _skillMediator.OnRidingChanged -= _playerAnimationMediator.NotifyRidingChanged;
             if (_skillMediator && _moveMediator) _skillMediator.OnMountJumpRequested -= _moveMediator.CommandAirJump;
-            if (_skillMediator && _animationMediator) _skillMediator.OnVehicleAttached -= _animationMediator.SetRidingBoard;
+            if (_skillMediator && _playerAnimationMediator) _skillMediator.OnVehicleAttached -= _playerAnimationMediator.SetRidingBoard;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded -= _skillMediator.NotifyLanded;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpStarted -= _skillMediator.NotifyJumpStarted;
             if (_moveMediator && _skillMediator) _moveMediator.OnRollStarted -= _skillMediator.NotifyRollStarted;
@@ -612,12 +611,12 @@ namespace Mediator
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded -= _cameraMediator.NotifyRollEnded;
             if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged -= _combatMediator.NotifyFireCharge;
             if (_cameraMediator && _combatMediator) _cameraMediator.OnAimChanged -= _combatMediator.NotifyAim;
-            if (_cameraMediator && _animationMediator) _cameraMediator.OnAimChanged -= _animationMediator.NotifyAim;
-            if (_combatMediator && _animationMediator) _combatMediator.OnInvincibilityEnded -= _animationMediator.NotifyInvincibilityEnded;
+            if (_cameraMediator && _playerAnimationMediator) _cameraMediator.OnAimChanged -= _playerAnimationMediator.NotifyAim;
+            if (_combatMediator && _playerAnimationMediator) _combatMediator.OnInvincibilityEnded -= _playerAnimationMediator.NotifyInvincibilityEnded;
             if (_combatMediator) _combatMediator.OnMoveSpeedReduceRequested -= OnMoveSpeedReduceCallback;
             if (_moveMediator && _petMediator) _moveMediator.OnJumpStarted -= _petMediator.NotifyJumpStarted;
             if (_moveMediator && _petMediator) _moveMediator.OnJumpEnded -= _petMediator.NotifyJumpEnded;
-            if (_animationMediator && _petMediator) _animationMediator.OnSpecialIdleStarted -= _petMediator.NotifySpecialIdle;
+            if (_playerAnimationMediator && _petMediator) _playerAnimationMediator.OnSpecialIdleStarted -= _petMediator.NotifySpecialIdle;
             if (_enemyAnimationMediator) _enemyAnimationMediator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
             if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnMoveDirectionChanged -= _enemyAnimationMediator.SetMoveDirection;
             if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnJumpStarted -= _enemyAnimationMediator.NotifyJumpStarted;
