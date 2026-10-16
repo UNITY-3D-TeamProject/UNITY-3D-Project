@@ -40,6 +40,8 @@ namespace Mediator.SubMediators
         [SerializeField] private string _jumpSpeedValueKey;
         [Tooltip("발판에서 떨어진 뒤 지상 점프를 허용하는 유예 시간(초)")]
         [SerializeField, Min(0.0f)] private float _coyoteTime = 0.1f;
+        [Tooltip("공중에서 쓰이지 않은 점프 입력을 기억했다가 착지 시 지상 점프로 실행하는 시간(초)")]
+        [SerializeField, Min(0.0f)] private float _jumpBufferTime = 0.1f;
         #endregion
 
         #region Private Fields
@@ -52,6 +54,7 @@ namespace Mediator.SubMediators
         private float _moveSpeedRatio = 1.0f;
         private float _jumpPowerRatio = 1.0f;
         private float _lastGroundedTime = float.NegativeInfinity;
+        private float _lastJumpPressedTime = float.NegativeInfinity;
         private bool _hasJumpedSinceGrounded;
         #endregion
 
@@ -110,6 +113,7 @@ namespace Mediator.SubMediators
         {
             // 코요테 타임 판정을 위해 마지막으로 접지한 시각을 기록
             if (_motor && _motor.IsGrounded) _lastGroundedTime = Time.time;
+            TryBufferedJump();
         }
 
         private void OnDisable()
@@ -120,6 +124,7 @@ namespace Mediator.SubMediators
             // 모터도 비활성화되면 착지 알림 없이 점프 상태가 풀리므로 함께 초기화
             _hasJumpedSinceGrounded = false;
             _lastGroundedTime = float.NegativeInfinity;
+            _lastJumpPressedTime = float.NegativeInfinity;
             Unsubscribe();
             UnBindRequest();
         }
@@ -231,11 +236,13 @@ namespace Mediator.SubMediators
 
         /// <summary>
         /// 일정 속도 상승(요시 점프)을 시작하거나 끝낸다. CharacterMotor 로 전달한다.
+        /// 시작하면 그 점프 입력은 쓰인 것이므로 점프 버퍼를 비운다.
         /// </summary>
         /// <param name="isHovering">시작이면 true</param>
         /// <param name="riseSpeed">상승 속도. 끝낼 때는 쓰지 않는다</param>
         public void SetHover(bool isHovering, float riseSpeed)
         {
+            if (isHovering) _lastJumpPressedTime = float.NegativeInfinity;
             if (!_motor) return;
 
             if (isHovering)
@@ -305,6 +312,7 @@ namespace Mediator.SubMediators
         /// <summary>
         /// 점프 명령을 전달한다. 구르는 중이면 무시하고, 공중이면 공중 점프를 요청한다.
         /// 걸어서 떨어진 직후 코요테 타임 안이면 지상 점프로 처리한다.
+        /// 공중 입력은 버퍼에 기록하고, 공중 점프·요시 점프로 쓰이면 그 자리에서 버퍼가 비워진다.
         /// </summary>
         private void CommandJump()
         {
@@ -312,9 +320,22 @@ namespace Mediator.SubMediators
             if (_rollMover && _rollMover.IsRolling) return;
             if (!_motor.IsGrounded && !IsInCoyoteTime())
             {
+                _lastJumpPressedTime = Time.time;
                 OnAirJumpRequested?.Invoke();
                 return;
             }
+
+            _motor.Jump(_jumpPower * _jumpPowerRatio);
+        }
+
+        /// <summary>
+        /// 접지 상태에서 점프 버퍼 시간 안에 쓰이지 않은 공중 입력이 있으면 지상 점프한다. 구르는 중이면 무시한다.
+        /// </summary>
+        private void TryBufferedJump()
+        {
+            if (!_motor || !_motor.IsGrounded) return;
+            if (_rollMover && _rollMover.IsRolling) return;
+            if (Time.time - _lastJumpPressedTime > _jumpBufferTime) return;
 
             _motor.Jump(_jumpPower * _jumpPowerRatio);
         }
@@ -373,6 +394,8 @@ namespace Mediator.SubMediators
         {
             // 점프 직후 유예 시간 안에 지상 점프가 다시 나가지 않도록 막는다
             _hasJumpedSinceGrounded = true;
+            // 지상·공중·버퍼 점프 모두 입력이 쓰였으므로 버퍼를 비운다
+            _lastJumpPressedTime = float.NegativeInfinity;
             OnJumpStarted?.Invoke();
         }
 
