@@ -2856,7 +2856,7 @@ MonoBehaviour:
   _skillMediator: {fileID: 8471388793956935183}
   _rotateMediator: {fileID: 8808901908423996939}
   _spawnMediator: {fileID: 3514931562783129404}
-  _animationMediator: {fileID: 8297248364056095495}
+  _playerAnimationMediator: {fileID: 8297248364056095495}
   _enemyAnimationMediator: {fileID: 0}
   _petMediator: {fileID: 2944535639652233221}
 --- !u!114 &-5684068917259078666
@@ -4761,7 +4761,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4937914228170210391, guid: 234329bd487a47c4bac980e0b60231e0, type: 3}
       propertyPath: m_Name
-      value: AnimationPrefab
+      value: PlayerAnimationPrefab
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4831,7 +4831,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 736735d256c9ce64bb9d425c64b9719d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.AnimationMediator
+  m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.PlayerAnimationMediator
 --- !u!1001 &9051379680040839308
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 383052029023243934}
   - component: {fileID: 487081635824483599}
   m_Layer: 0
-  m_Name: AnimationPrefab
+  m_Name: PlayerAnimationPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -44,7 +44,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c5ce148b5dfef504098c8a36dad649f0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimation.CharacterAnimator
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimation.PlayerAnimator
   _moveDirectionDampTime: 0.1
   _referenceMoveSpeed: 5
   _fireHoldDuration: 3
@@ -67,6 +67,6 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 736735d256c9ce64bb9d425c64b9719d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.AnimationMediator
-  _characterAnimator: {fileID: 383052029023243934}
+  m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.PlayerAnimationMediator
+  _playerAnimator: {fileID: 383052029023243934}
   _speedValueKey: MoveSpeed

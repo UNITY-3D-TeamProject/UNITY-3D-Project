@@ -7,7 +7,7 @@ namespace CharacterAnimation
     /// 캐릭터 Animator 파라미터를 설정하는 컴포넌트.
     /// Animator는 캐릭터 루트에 두고, 이 스크립트는 자식에 있어도 된다.
     /// </summary>
-    public class CharacterAnimator : MonoBehaviour
+    public class PlayerAnimator : MonoBehaviour
     {
         #region Constants
         private const string UPPER_BODY_LAYER_NAME = "UpperBody";
