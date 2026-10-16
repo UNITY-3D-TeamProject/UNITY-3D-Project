@@ -69,6 +69,9 @@ namespace Tutorial
 
         [Tooltip("켜면 시작할 때 분류장과 나가는 줄이 이미 차 있는 상태로 만든다.")]
         [SerializeField] private bool _shouldPrewarm = true;
+
+        [Tooltip("켜면 멈춘 상태로 시작한다. ResumeFlow() 를 호출해야 움직인다. (예: 원거리 스위치로 작동)")]
+        [SerializeField] private bool _isPausedAtStart;
         #endregion
 
         #region Private Fields
@@ -128,6 +131,8 @@ namespace Tutorial
 
             _inbound  = new FlowPlatform[_inboundCount];
             _outbound = new FlowPlatform[_outboundCount];
+
+            IsPaused = _isPausedAtStart;
         }
 
         private void Start()
