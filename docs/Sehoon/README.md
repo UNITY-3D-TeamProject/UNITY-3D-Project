@@ -64,7 +64,7 @@
 | 30 | 전체 사운드 + VFX 작업 | [30-sound-vfx.md](30-sound-vfx.md) | 대기 |
 | 31 | 카메라가 가까워지면 캐릭터 숨김 처리 | [31-camera-near-hide-character.md](done/31-camera-near-hide-character.md) | 완료 |
 | 32 | 차지샷 누르고 있으면 자동 재차지 | [32-charge-shot-auto-recharge.md](done/32-charge-shot-auto-recharge.md) | 완료 |
-| 33 | 블루투스 배터리 소모 시작 시점 수정 (실제 탑승 후부터 소모) | [33-bluetooth-drain-start-timing.md](33-bluetooth-drain-start-timing.md) | 대기 |
+| 33 | 블루투스 배터리 소모 시작 시점 수정 (실제 탑승 후부터 소모) | [33-bluetooth-drain-start-timing.md](done/33-bluetooth-drain-start-timing.md) | 완료 |
 
 ## 같은 우선순위 안에서 순서를 정한 근거
 - **최우선** (사용자 지정, 고정)
