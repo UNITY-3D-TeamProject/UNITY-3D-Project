@@ -21,6 +21,7 @@ namespace Skill.Skills
     /// 누르고 있는 동안 차지하고 한 발을 쏘는 차지샷 스킬.
     /// 발동(TryExecute)하면 조건·코스트 판정만 하고 차지를 시작한다.
     /// 차지 시간이 차면 차지샷을 자동 발사하고, 그 전에 Stop 이 오면 비차지샷을 쏜다.
+    /// 자동 발사 후에도 Stop 이 오지 않으면(누르고 있으면) 잠시 기다렸다가 다시 차지한다.
     /// 코스트는 발사하는 순간 지불하며, 지불에 실패하면 쏘지 않고 차지만 끝낸다.
     /// 차지 시작·발사·취소마다 발동 알림을 보내며, 외부는 Phase, IsCharged, FirePosition 을 읽어 처리한다.
     /// </summary>
@@ -32,6 +33,8 @@ namespace Skill.Skills
         [SerializeField, Min(0.0f)] private float _chargeTime = 1.0f;
         [Tooltip("차지샷 발사 시 배수를 적용할 수 있는 코스트(IScalableCost)에 곱할 배수")]
         [SerializeField, Min(0.0f)] private float _chargedCostScale = 2.0f;
+        [Tooltip("차지샷 자동 발사 후 계속 누르고 있을 때 다시 차지를 시작하기까지 기다리는 시간(초)")]
+        [SerializeField, Min(0.0f)] private float _rechargeDelay = 0.1f;
 
         [Header("References")]
         [Tooltip("총알이 생성될 위치. 비어 있을 때 발동을 막으려면 NotNullCondition 에 연결한다.")]
@@ -40,7 +43,11 @@ namespace Skill.Skills
 
         #region Private Fields
         private WaitForSeconds _waitChargeTime;
+        private WaitForSeconds _waitRechargeDelay;
         private Coroutine _chargeCoroutine;
+        private Coroutine _rechargeCoroutine;
+        // 발동(누름) ~ Stop(뗌). 누르고 있는 동안 자동 발사 후 다시 차지한다
+        private bool _isHeld;
         #endregion
 
         #region Properties
@@ -63,6 +70,7 @@ namespace Skill.Skills
         {
             base.Awake();
             _waitChargeTime = new WaitForSeconds(_chargeTime);
+            _waitRechargeDelay = new WaitForSeconds(_rechargeDelay);
 
             if (_firePoint == null)
             {
@@ -70,18 +78,31 @@ namespace Skill.Skills
             }
         }
 
+        private void OnEnable()
+        {
+            // 비활성화된 동안 계속 누르고 있었으면 바로 다시 차지한다. 실패하면 다시 눌러야 한다
+            if (!_isHeld) return;
+
+            if (!TryExecute()) _isHeld = false;
+        }
+
         private void OnDisable()
         {
+            // 누름 상태는 유지해 다시 켜질 때 차지를 이어간다
+            EndRecharge();
             Cancel();
         }
         #endregion
 
         #region Public Methods
         /// <summary>
-        /// 차지 시간 전이면 비차지샷을 쏜다. 이미 자동 발사했거나 차지 중이 아니면 아무것도 하지 않는다.
+        /// 누름이 끝났음을 알린다. 차지 시간 전이면 비차지샷을 쏜다.
+        /// 이미 자동 발사했거나 재차지 대기 중이면 재차지만 멈추고 쏘지 않는다.
         /// </summary>
         public override void Stop()
         {
+            _isHeld = false;
+            EndRecharge();
             if (!IsCharging) return;
 
             Shoot(false);
@@ -93,6 +114,8 @@ namespace Skill.Skills
         {
             if (IsCharging) return;
 
+            _isHeld = true;
+            EndRecharge();
             IsCharged = false;
             Phase = EFirePhase.ChargeStarted;
             _chargeCoroutine = StartCoroutine(CoCharge());
@@ -104,6 +127,7 @@ namespace Skill.Skills
         #region Private Methods
         /// <summary>
         /// 차지를 끝내고 코스트를 지불한 뒤 한 발을 쏜다. 지불에 실패하면 쏘지 않고 취소로 알린다.
+        /// 쏜 뒤에도 누르고 있으면 대기 후 다시 차지하고, 지불에 실패하면 재차지하지 않는다.
         /// </summary>
         /// <param name="isCharged">차지샷이면 true</param>
         private void Shoot(bool isCharged)
@@ -114,6 +138,14 @@ namespace Skill.Skills
             Phase = PayCosts(costScale) ? EFirePhase.Fired : EFirePhase.Canceled;
 
             base.Execute();
+
+            if (Phase == EFirePhase.Canceled)
+            {
+                _isHeld = false;
+                return;
+            }
+
+            if (_isHeld && isActiveAndEnabled) _rechargeCoroutine = StartCoroutine(CoRecharge());
         }
 
         /// <summary>
@@ -139,6 +171,17 @@ namespace Skill.Skills
             StopCoroutine(_chargeCoroutine);
             _chargeCoroutine = null;
         }
+
+        /// <summary>
+        /// 재차지 대기 코루틴을 멈춘다.
+        /// </summary>
+        private void EndRecharge()
+        {
+            if (_rechargeCoroutine == null) return;
+
+            StopCoroutine(_rechargeCoroutine);
+            _rechargeCoroutine = null;
+        }
         #endregion
 
         #region Coroutines
@@ -149,6 +192,18 @@ namespace Skill.Skills
             // 실행 중인 자기 자신을 StopCoroutine 하지 않도록 먼저 비운다
             _chargeCoroutine = null;
             Shoot(true);
+        }
+
+        /// <summary>
+        /// 대기 시간 뒤 조건·코스트 판정을 거쳐 다시 차지한다. 실패하면 재차지를 멈추고 다시 눌러야 한다.
+        /// </summary>
+        private IEnumerator CoRecharge()
+        {
+            yield return _waitRechargeDelay;
+
+            // Execute 의 EndRecharge 가 실행 중인 자기 자신을 StopCoroutine 하지 않도록 먼저 비운다
+            _rechargeCoroutine = null;
+            if (!TryExecute()) _isHeld = false;
         }
         #endregion
     }
