@@ -82,6 +82,9 @@ namespace AI
 
         private float _hitLookTimer;
         private Vector2 _hitLookDirection;
+
+        private float _holdTimer;
+        private Vector2 _holdDirection;
         #endregion
 
         #region Events
@@ -148,6 +151,9 @@ namespace AI
         /// 이동하면서 대상을 바라봐야 할 때(후퇴 중 사격 등) false 로 두면 회전은 FaceDirection 요청만 따른다.
         /// </summary>
         public bool ShouldFaceMoveDirection { get; set; } = true;
+
+        /// <summary>Hold 로 붙잡혀 제자리에 멈춰 있는지 여부.</summary>
+        public bool IsHolding => _holdTimer > 0.0f;
         #endregion
 
         #region Unity Lifecycle
@@ -188,6 +194,9 @@ namespace AI
         {
             if (HasVisibleTarget) _lastTargetSeenTime = Time.time;
 
+            // NavMesh 밖에서도 안전 타이머가 흘러야 영구히 붙잡히지 않으므로 아래 early return 보다 앞에 둔다
+            if (_holdTimer > 0.0f) _holdTimer -= Time.deltaTime;
+
             if (!_agent || !_agent.isOnNavMesh)
             {
                 RequestMove(Vector2.zero);
@@ -196,6 +205,14 @@ namespace AI
 
             // CharacterMotor 가 옮긴 실제 위치를 Agent 에 되돌려야 다음 경로가 어긋나지 않는다
             _agent.nextPosition = _body.position;
+
+            // 붙잡힌 동안에는 목적지를 유지한 채 멈춰서 고정 방향을 바라본다. 풀리면 하던 이동을 이어간다
+            if (IsHolding)
+            {
+                RequestMove(Vector2.zero);
+                RequestRotate(_holdDirection);
+                return;
+            }
 
             // 피격 직후에는 목적지를 유지한 채 멈춰서 맞은 쪽을 바라본다. 끝나면 하던 이동을 이어간다
             if (_hitLookTimer > 0.0f)
@@ -236,6 +253,7 @@ namespace AI
             if (_mediator) _mediator.OnHitFrom -= OnHitFromCallback;
             // 오브젝트 풀에서 다시 꺼냈을 때 멈춤이 남아 있지 않게 한다
             _hitLookTimer = 0.0f;
+            _holdTimer = 0.0f;
 
             // 비활성화 시 마지막 이동 명령이 남아 계속 미끄러지지 않도록 정지시킨다
             RequestMove(Vector2.zero);
@@ -413,6 +431,30 @@ namespace AI
 
             float speed = _mediator.GetAttribute(_speedAttributeKey);
             _mediator.SetAttribute(_speedAttributeKey, speed * ratio);
+        }
+
+        /// <summary>
+        /// 지정한 월드 방향을 바라보며 지정한 시간 동안 제자리에 멈춘다. 이미 붙잡혀 있으면 방향과 시간을 덮어쓴다.
+        /// 목적지는 건드리지 않으므로 풀리면 BT 가 다시 이동을 정한다. 시간은 안전 장치이며,
+        /// 끝나는 시점을 아는 쪽은 ReleaseHold 로 직접 푼다.
+        /// </summary>
+        /// <param name="worldDirection">바라볼 월드 방향 (수직 성분은 무시)</param>
+        /// <param name="seconds">붙잡아 둘 최대 시간(초)</param>
+        public void Hold(Vector3 worldDirection, float seconds)
+        {
+            Vector3 flat = Vector3.ProjectOnPlane(worldDirection, Vector3.up);
+            if (flat.sqrMagnitude <= Mathf.Epsilon) flat = _body.forward;
+
+            _holdDirection = new Vector2(flat.x, flat.z);
+            _holdTimer = Mathf.Max(0.0f, seconds);
+        }
+
+        /// <summary>
+        /// 붙잡힘을 즉시 푼다.
+        /// </summary>
+        public void ReleaseHold()
+        {
+            _holdTimer = 0.0f;
         }
 
         /// <summary>
