@@ -6,9 +6,9 @@ using Visual;
 namespace Mediator.SubMediators
 {
     /// <summary>
-    /// 다른 Mediator 에서 온 캐릭터 상태를 CharacterAnimator 로 전달하는 접착 컴포넌트.
+    /// 다른 Mediator 에서 온 캐릭터 상태를 PlayerAnimator 로 전달하는 접착 컴포넌트.
     /// </summary>
-    public class AnimationMediator : MediatorBase
+    public class PlayerAnimationMediator : MediatorBase
     {
         #region Constants
         private const float MIN_SQR_MAGNITUDE = 0.0001f;
@@ -16,18 +16,18 @@ namespace Mediator.SubMediators
 
         #region Serialized Fields
         [Header("References")]
-        [SerializeField] private CharacterAnimator _characterAnimator;
+        [SerializeField] private PlayerAnimator _playerAnimator;
         [Tooltip("피격 후 무적 동안 캐릭터를 깜빡이게 하는 컴포넌트")]
         [SerializeField] private RendererBlinker _blinker;
         [Header("Settings")]
-        [Tooltip("CharacterAnimator.SetMoveSpeed 로 연결할 이동속도 어트리뷰트 이름")]
+        [Tooltip("PlayerAnimator.SetMoveSpeed 로 연결할 이동속도 어트리뷰트 이름")]
         [SerializeField] private string _speedValueKey;
         #endregion
 
         #region Events
-        /// <summary>CharacterAnimator 의 사망 애니메이션이 끝났을 때 발생한다.</summary>
+        /// <summary>PlayerAnimator 의 사망 애니메이션이 끝났을 때 발생한다.</summary>
         public event Action OnDeathAnimationEnded;
-        /// <summary>CharacterAnimator 가 특수 Idle 재생을 시작할 때 (특수 Idle 인덱스)를 알린다.</summary>
+        /// <summary>PlayerAnimator 가 특수 Idle 재생을 시작할 때 (특수 Idle 인덱스)를 알린다.</summary>
         public event Action<int> OnSpecialIdleStarted;
         #endregion
 
@@ -35,164 +35,164 @@ namespace Mediator.SubMediators
         protected override void Awake()
         {
             base.Awake();
-            ResolveComponent(ref _characterAnimator);
+            ResolveComponent(ref _playerAnimator);
             ResolveComponent(ref _blinker);
         }
 
         protected override void OnEnable()
         {
-            if (_characterAnimator) _characterAnimator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
-            if (_characterAnimator) _characterAnimator.OnSpecialIdleStarted += OnSpecialIdleStartedCallback;
+            if (_playerAnimator) _playerAnimator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
+            if (_playerAnimator) _playerAnimator.OnSpecialIdleStarted += OnSpecialIdleStartedCallback;
             base.OnEnable();
         }
 
         private void OnDisable()
         {
-            if (_characterAnimator) _characterAnimator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
-            if (_characterAnimator) _characterAnimator.OnSpecialIdleStarted -= OnSpecialIdleStartedCallback;
+            if (_playerAnimator) _playerAnimator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
+            if (_playerAnimator) _playerAnimator.OnSpecialIdleStarted -= OnSpecialIdleStartedCallback;
         }
         #endregion
 
         #region Public Methods
         /// <summary>
-        /// 이동 방향을 받아 이동 중 여부와 이동 방향을 CharacterAnimator 에 전달한다.
+        /// 이동 방향을 받아 이동 중 여부와 이동 방향을 PlayerAnimator 에 전달한다.
         /// </summary>
         /// <param name="direction">이동 입력으로 계산된 월드 이동 방향</param>
         public void SetMoveDirection(Vector3 direction)
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.SetMoving(direction.sqrMagnitude > MIN_SQR_MAGNITUDE);
-            _characterAnimator.SetMoveDirection(direction);
+            _playerAnimator.SetMoving(direction.sqrMagnitude > MIN_SQR_MAGNITUDE);
+            _playerAnimator.SetMoveDirection(direction);
         }
 
         /// <summary>
-        /// 카메라가 보는 방향을 CharacterAnimator 로 전달한다. 이동 방향 블렌드의 기준이 된다.
+        /// 카메라가 보는 방향을 PlayerAnimator 로 전달한다. 이동 방향 블렌드의 기준이 된다.
         /// </summary>
         /// <param name="viewForward">카메라가 보는 방향 (월드 기준)</param>
         public void SetViewForward(Vector3 viewForward)
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.SetViewForward(viewForward);
+            _playerAnimator.SetViewForward(viewForward);
         }
 
         /// <summary>
-        /// 조준점 델리게이트를 CharacterAnimator 로 전달한다.
+        /// 조준점 델리게이트를 PlayerAnimator 로 전달한다.
         /// </summary>
         /// <param name="getAimPoint">조준점을 반환하는 함수</param>
         public void SetGetAimPoint(Func<Vector3> getAimPoint)
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.SetGetAimPoint(getAimPoint);
+            _playerAnimator.SetGetAimPoint(getAimPoint);
         }
 
         /// <summary>
-        /// CharacterAnimator 의 조준점 델리게이트를 제거한다.
+        /// PlayerAnimator 의 조준점 델리게이트를 제거한다.
         /// </summary>
         public void ClearGetAimPoint()
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.ClearGetAimPoint();
+            _playerAnimator.ClearGetAimPoint();
         }
 
         /// <summary>
-        /// 사격 요청을 CharacterAnimator 로 전달해 사격 상체 애니메이션을 재생한다.
+        /// 사격 요청을 PlayerAnimator 로 전달해 사격 상체 애니메이션을 재생한다.
         /// </summary>
         /// <param name="firePosition">총알 생성 위치 (사용하지 않음)</param>
         /// <param name="isCharged">차지샷 여부 (사용하지 않음)</param>
         public void NotifyFire(Vector3 firePosition, bool isCharged)
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.PlayFire();
+            _playerAnimator.PlayFire();
         }
 
         /// <summary>
-        /// 사격 차지 상태를 CharacterAnimator 로 전달한다. 차지 중에는 사격 자세를 유지한다.
+        /// 사격 차지 상태를 PlayerAnimator 로 전달한다. 차지 중에는 사격 자세를 유지한다.
         /// </summary>
         /// <param name="isCharging">차지 중이면 true</param>
         public void NotifyFireCharge(bool isCharging)
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.SetCharging(isCharging);
+            _playerAnimator.SetCharging(isCharging);
         }
 
         /// <summary>
-        /// 조준 상태를 CharacterAnimator 로 전달한다. 조준 중에는 사격 자세를 유지한다.
+        /// 조준 상태를 PlayerAnimator 로 전달한다. 조준 중에는 사격 자세를 유지한다.
         /// </summary>
         /// <param name="isAiming">조준 중이면 true</param>
         public void NotifyAim(bool isAiming)
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.SetAiming(isAiming);
+            _playerAnimator.SetAiming(isAiming);
         }
 
         /// <summary>
-        /// 점프 시작을 CharacterAnimator 로 전달한다.
+        /// 점프 시작을 PlayerAnimator 로 전달한다.
         /// </summary>
         public void NotifyJumpStarted()
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.PlayJump();
+            _playerAnimator.PlayJump();
         }
 
         /// <summary>
-        /// 착지를 CharacterAnimator 로 전달한다.
+        /// 착지를 PlayerAnimator 로 전달한다.
         /// </summary>
         public void NotifyJumpEnded()
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.PlayLand();
+            _playerAnimator.PlayLand();
         }
 
         /// <summary>
-        /// 구르기 시작을 CharacterAnimator 로 전달한다.
+        /// 구르기 시작을 PlayerAnimator 로 전달한다.
         /// </summary>
         /// <param name="direction">구르기 방향 (탑승 중 보드 방향에 사용)</param>
         public void NotifyRollStarted(Vector3 direction)
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.PlayRoll(direction);
+            _playerAnimator.PlayRoll(direction);
         }
 
         /// <summary>
-        /// 구르기 종료를 CharacterAnimator 로 전달한다.
+        /// 구르기 종료를 PlayerAnimator 로 전달한다.
         /// </summary>
         public void NotifyRollEnded()
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.StopRoll();
+            _playerAnimator.StopRoll();
         }
 
         /// <summary>
-        /// 탈것 탑승 상태를 CharacterAnimator 로 전달한다.
+        /// 탈것 탑승 상태를 PlayerAnimator 로 전달한다.
         /// </summary>
         /// <param name="isRiding">탑승 중이면 true</param>
         public void NotifyRidingChanged(bool isRiding)
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.SetRiding(isRiding);
+            _playerAnimator.SetRiding(isRiding);
         }
 
         /// <summary>
-        /// 탑승 중 이동 방향으로 돌릴 보드(탈것)를 CharacterAnimator 로 전달한다.
+        /// 탑승 중 이동 방향으로 돌릴 보드(탈것)를 PlayerAnimator 로 전달한다.
         /// </summary>
         /// <param name="board">탈것 Transform. 하차해 제거되었으면 null</param>
         public void SetRidingBoard(Transform board)
         {
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.SetRidingBoard(board);
+            _playerAnimator.SetRidingBoard(board);
         }
 
         /// <summary>
@@ -202,19 +202,19 @@ namespace Mediator.SubMediators
         public void NotifyHit(Vector3? hitSource)
         {
             if (_blinker) _blinker.Play();
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.PlayHit(hitSource);
+            _playerAnimator.PlayHit(hitSource);
         }
 
         /// <summary>
-        /// 기준 위치가 몸 정면 기준 어느 쪽인지 CharacterAnimator 로 판정한 피격 방향을 반환한다.
+        /// 기준 위치가 몸 정면 기준 어느 쪽인지 PlayerAnimator 로 판정한 피격 방향을 반환한다.
         /// </summary>
         /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치). null 이면 전방 피격</param>
-        /// <returns>0: 앞, 1: 뒤, 2: 왼쪽, 3: 오른쪽. CharacterAnimator 가 없으면 0</returns>
+        /// <returns>0: 앞, 1: 뒤, 2: 왼쪽, 3: 오른쪽. PlayerAnimator 가 없으면 0</returns>
         public int GetHitDirection(Vector3? hitSource)
         {
-            return _characterAnimator ? _characterAnimator.GetHitDirection(hitSource) : 0;
+            return _playerAnimator ? _playerAnimator.GetHitDirection(hitSource) : 0;
         }
 
         /// <summary>
@@ -228,14 +228,14 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 사망을 CharacterAnimator 로 전달해 사망 애니메이션을 재생한다. 깜빡임은 멈춘다.
+        /// 사망을 PlayerAnimator 로 전달해 사망 애니메이션을 재생한다. 깜빡임은 멈춘다.
         /// </summary>
         public void NotifyDeath()
         {
             if (_blinker) _blinker.Stop();
-            if (!_characterAnimator) return;
+            if (!_playerAnimator) return;
 
-            _characterAnimator.PlayDeath();
+            _playerAnimator.PlayDeath();
         }
         #endregion
 
@@ -244,7 +244,7 @@ namespace Mediator.SubMediators
         {
             AttributeCallback.TryAdd(_speedValueKey, data =>
             {
-                if (_characterAnimator) _characterAnimator.SetMoveSpeed(data.NewValue);
+                if (_playerAnimator) _playerAnimator.SetMoveSpeed(data.NewValue);
             });
         }
 
