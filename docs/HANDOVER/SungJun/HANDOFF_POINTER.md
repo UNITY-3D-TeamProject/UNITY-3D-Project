@@ -5,6 +5,8 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-16** — Test MainScene에 카드형 스킬 HUD `Canvas_SkillCards`(키·아이콘·원형 쿨타임 바·쿨타임 숫자·이름·소모값, 3장) 추가, Test 프리팹·MainScene 저장(커밋 안 함): [작업 기록](./2026-10-16/skill-card-hud.md)
+- **2026-10-16** — MainScene `Canvas/Crosshair`를 참고 이미지형(점 + 작은 링, 위 반원 빨강·아래 반원 파랑 꽉 채움, 라벨 끔)으로 수정 후 저장, 이어서 원호 지름 176 → 84로 크로스헤어에 붙임, 저장(커밋 안 함): [작업 기록](./2026-10-16/crosshair-half-arcs.md)
 - **2026-10-16** — HUD 시안(`Canvas_HpWide`, `Canvas_HudReference` 크로스헤어 위 반원 빨강/아래 반원 파랑, 100% = 반원) 포함 MainScene 저장, Test 저장소 90a4ca2 커밋(push 안 함): [작업 기록](./2026-10-16/sci-fi-ui-gallery-v1v2.md)
 - **2026-10-16** — 갤러리에 CrosshairAssembler 318개(미리보기 이미지) 추가·저장. MainScene에 참고 이미지 HUD 시안 `Canvas_HudReference`(HP 바·크로스헤어 열/배터리 원호·스킬) 추가, **MainScene 미저장**: [작업 기록](./2026-10-16/sci-fi-ui-gallery-v1v2.md)
 - **2026-10-16** — 넓고 낮은 HP 아치 시안 `Canvas_HpWide`(R 1800, 칸 62×20, 더 아래, 스킬 0.8배) 추가. **MainScene 미저장**(사용자 변경 포함): [작업 기록](./2026-10-16/sci-fi-ui-gallery-v1v2.md)

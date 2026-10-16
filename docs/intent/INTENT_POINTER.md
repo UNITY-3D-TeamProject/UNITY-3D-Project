@@ -30,6 +30,9 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI / Test Scene]** 카드형 스킬 HUD 시안 Canvas(아이콘·키·이름·소모값·쿨타임 숫자·쿨타임 바) → [문서](./clear/intent-028-skill-card-hud.md) (resolved: 2026-10-16)
+- **[UI / Test Scene]** 로비 참고 HUD를 Test MainScene으로 이동하고 Canvas 9개를 프리팹화 → [문서](./clear/intent-027-main-scene-canvas-prefabs.md) (resolved: 2026-10-16)
+- **[UI / Lobby]** 로비 참고 이미지 HUD 시안 Canvas 추가 → [문서](./clear/intent-026-lobby-hud-reference.md) (resolved: 2026-10-16)
 - **[Spawner]** 플레이어 스폰 Effect를 PlayerFacade.ApplyEffect로 적용, MonsterSpawner에 Fixed/Random 소환 선택 추가 → [문서](../HANDOVER/SungJun/intent/clear/intent-024-spawner-facade-effect-random-monster.md) (resolved: 2026-10-15)
 - **[Stage / Player State]** Core 기준 생존 낙하 복귀와 라운드 사망 복구 설계 완료, 구현 전 → [문서](../HANDOVER/SungJun/intent/clear/intent-015-stage-round-recovery-design.md) (resolved: 2026-10-08)
 - **[UI / Game State]** 초기 Playing, GameManager 커서 처리, 설정창 열기·닫기 액션 구독 구현 → [문서](../HANDOVER/SungJun/intent/intent-013-settings-input-flow.md) (resolved: 2026-10-05)
