@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4027413288509265592}
   - component: {fileID: 4546795741421077499}
   - component: {fileID: 2752148484722071969}
+  - component: {fileID: 8643280041519452706}
   m_Layer: 0
   m_Name: SpawnVehicle
   m_TagString: Untagged
@@ -49,6 +50,11 @@ MonoBehaviour:
   _skillName: SpawnVehicle
   _vehiclePrefab: {fileID: 3453756293661828566, guid: cd6f3a052cd2eb84ba8ca2f6a1550e6a, type: 3}
   _vehicleOffset: {x: 0, y: 0, z: 0}
+  _mountJumpPowerRatio: 0.15
+  _forwardTurnSpeed: 720
+  _hoverDuration: 1.5
+  _hoverRiseSpeed: 1.5
+  _hoverExtraDrainPerSecond: 10
   _buffRatios:
   - Target: 0
     Ratio: 1.5
@@ -83,3 +89,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.DrainCost
   _drainPerSecond: 10
   _resourceKey: CurrentBattery
+--- !u!114 &8643280041519452706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3300303827777807749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2345ca72abf58e429e6e8971704815e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Skill.Conditions.NotNullCondition
+  _references:
+  - {fileID: 3453756293661828566, guid: cd6f3a052cd2eb84ba8ca2f6a1550e6a, type: 3}

@@ -527,7 +527,7 @@ MonoBehaviour:
   Lens:
     FieldOfView: 45
     OrthographicSize: 5
-    NearClipPlane: 0.3
+    NearClipPlane: 0.1
     FarClipPlane: 1000
     Dutch: 0
     ModeOverride: 0
@@ -2450,7 +2450,7 @@ MonoBehaviour:
   Lens:
     FieldOfView: 60.000004
     OrthographicSize: 5
-    NearClipPlane: 0.3
+    NearClipPlane: 0.1
     FarClipPlane: 1000
     Dutch: 0
     ModeOverride: 0
@@ -2857,6 +2857,7 @@ MonoBehaviour:
   _rotateMediator: {fileID: 8808901908423996939}
   _spawnMediator: {fileID: 3514931562783129404}
   _animationMediator: {fileID: 8297248364056095495}
+  _enemyAnimationMediator: {fileID: 0}
   _petMediator: {fileID: 2944535639652233221}
 --- !u!114 &-5684068917259078666
 MonoBehaviour:
@@ -4769,6 +4770,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4937914228170210391, guid: 234329bd487a47c4bac980e0b60231e0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8625362638581051837}
+    - targetCorrespondingSourceObject: {fileID: 4937914228170210391, guid: 234329bd487a47c4bac980e0b60231e0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8282923004692947637}
   m_SourcePrefab: {fileID: 100100000, guid: 234329bd487a47c4bac980e0b60231e0, type: 3}
 --- !u!1 &3558186288895011423 stripped
 GameObject:
@@ -4793,6 +4797,25 @@ MonoBehaviour:
   - {fileID: 1938034053395535606}
   - {fileID: 1384721517039797321}
   _interval: 0.1
+--- !u!114 &8282923004692947637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3558186288895011423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ec59b17751f0834990641082c32aaf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Visual.CameraNearHider
+  _renderers:
+  - {fileID: 1550438965082863050}
+  - {fileID: 6719511100910839607}
+  - {fileID: 1938034053395535606}
+  - {fileID: 1384721517039797321}
+  _pivot: {fileID: 5695181362534383725}
+  _hideDistance: 1
 --- !u!4 &4824726177162882491 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3968541684005632947, guid: 234329bd487a47c4bac980e0b60231e0, type: 3}
