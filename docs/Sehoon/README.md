@@ -55,7 +55,7 @@
 | 19 | 펫 시스템 (따라다니기 + 애니메이션 동기화, 스캔 대리 사용은 07-3 으로 이관) | [19-pet-system.md](done/19-pet-system.md) | 완료 |
 | 20 | 카메라 가림 처리 (7, 10번 레이어) | [20-camera-occlusion.md](done/20-camera-occlusion.md) | 완료 |
 | 23 | 펫 Mediator 구조 정리 (Spawner 는 생성만, Mediator 가 이동·애니메이션 연결) | [23-pet-mediator-refactor.md](done/23-pet-mediator-refactor.md) | 완료 |
-| 24 | 코요테 타임 | [24-coyote-time.md](24-coyote-time.md) | 대기 |
+| 24 | 코요테 타임 | [24-coyote-time.md](done/24-coyote-time.md) | 완료 |
 | 25 | 점프 버퍼링 | [25-jump-buffering.md](25-jump-buffering.md) | 대기 |
 | 26 | 차지샷 대미지 하드코딩 수정 | [26-charge-shot-damage.md](26-charge-shot-damage.md) | 대기 |
 | 27 | 차지샷 게이지 퍼사드 노출 (0~1) | [27-charge-gauge-facade.md](27-charge-gauge-facade.md) | 대기 |

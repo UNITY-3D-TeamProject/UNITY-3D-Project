@@ -1,8 +1,8 @@
 # 24. 코요테 타임
 
 - **우선순위**: 미정
-- **상태**: 대기
-- **관련 작업**: [25. 점프 버퍼링](25-jump-buffering.md) — 둘 다 `MoveMediator.CommandJump` 의 접지 판정을 바꾼다. [02. 멀티점프](done/02-multi-jump.md)
+- **상태**: 완료
+- **관련 작업**: [25. 점프 버퍼링](../25-jump-buffering.md) — 둘 다 `MoveMediator.CommandJump` 의 접지 판정을 바꾼다. [02. 멀티점프](02-multi-jump.md)
 
 ## 목표
 발판 끝에서 떨어진 직후 짧은 시간 동안은 지상 점프를 허용한다.
@@ -17,8 +17,8 @@
 - 유예 시간 Inspector 노출.
 
 ## 열린 질문
-- [ ] 유예 시간 값 (예: 0.1~0.15초)
-- [ ] 값을 어디에 두는가 (`CharacterMotor` / `MoveMediator`)
-- [ ] 코요테 점프 후 `MultiJump` 횟수: 지상 점프로 쳐서 공중 점프를 그대로 남기는가
-- [ ] 구르기·탈것 탑승 중에도 적용하는가
-- [ ] AI 에도 적용되는가 (`MoveMediator` 공용 여부)
+- [x] 유예 시간 값 → **0.1초**, Inspector 노출.
+- [x] 값을 어디에 두는가 → **`MoveMediator`**. 마지막 접지 시각도 `MoveMediator` 가 기록한다 (`CharacterMotor` 무수정).
+- [x] 코요테 점프 후 `MultiJump` 횟수 → 지상 점프로 친다. `MultiJump.ResetState()` 가 이미 지상 점프를 사용한 상태로 두므로 공중 점프는 그대로 남는다 (코드 확인, `MultiJump` 무수정).
+- [x] 구르기·탈것 탑승 중에도 적용하는가 → 둘 다 그대로 적용. 구르는 중 입력은 기존처럼 무시한다.
+- [x] AI 에도 적용되는가 → `MoveMediator` 공용 그대로 적용 (같은 기본값).

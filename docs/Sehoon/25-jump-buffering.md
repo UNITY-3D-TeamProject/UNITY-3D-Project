@@ -2,7 +2,7 @@
 
 - **우선순위**: 미정
 - **상태**: 대기
-- **관련 작업**: [24. 코요테 타임](24-coyote-time.md), [02. 멀티점프](done/02-multi-jump.md)
+- **관련 작업**: [24. 코요테 타임](done/24-coyote-time.md), [02. 멀티점프](done/02-multi-jump.md)
 
 ## 목표
 착지 직전에 누른 점프 입력을 기억했다가 착지하는 순간 점프한다.
@@ -10,6 +10,7 @@
 ## 현재 상황
 - 점프 입력은 `MoveMediator.CommandJump` (`Assets/_Project/Scripts/Mediator/SubMediators/MoveMediator.cs:295`) 에서 즉시 처리한다. 공중이면 `OnAirJumpRequested` → `MultiJump` 판단으로 넘어가고, 입력은 저장하지 않는다.
 - 착지 알림: `CharacterMotor.OnJumpEnded` → `MoveMediator.OnJumpEnded`. 착지 시 `MultiJump` 횟수가 초기화된다.
+- 24(코요테 타임) 이후 `CommandJump` 는 `_motor.IsGrounded` 이거나 `IsInCoyoteTime()` 이면 지상 점프한다. 코요테 판정은 `_lastGroundedTime`(Update 에서 기록)과 `_hasJumpedSinceGrounded`(점프 시작 시 true, 착지 시 false)를 쓴다.
 - 공중 점프 횟수가 남아 있으면 착지 직전 입력이 공중 점프로 소모된다. 버퍼와 어떻게 나눌지 정해야 한다.
 
 ## 작업 범위 (예상)
