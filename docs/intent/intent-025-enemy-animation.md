@@ -31,11 +31,13 @@ intent-017(군중)과 intent-021(GC)은 애니메이션을 범위 밖으로 두�
   - 신규: `CharacterAnimation/EnemyAnimator.cs`, `CharacterAnimation/JumpAnimator.cs`, `Mediator/SubMediators/EnemyAnimationMediator.cs`
   - 수정(추가만): `Mediator/CharacterMediator.cs`(필드·구독·피격·사망), `Mediator/SubMediators/SkillMediator.cs`(`OnSkillStopped` 이벤트)
   - 에셋 [USER]: `Animations/Enemy/` 컨트롤러, 프리팹 Animator 설정
+  - 추가(2026-10-16): `CharacterAnimation/TurnAnimator.cs` — 특수가 제자리에서 돌 때 `TurnDirection`(-1/0/+1)을 넣어 `Special.controller`의 TurnLeft/TurnRight를 재생
 
 ## 제약 (Constraints)
 - `CharacterMediator`와 `SkillMediator`는 이세훈 담당이다. 추가만 하고 기존 줄은 바꾸지 않으며, 변경 내용을 공유한다.
 - `feature/AI/Enemy` 브랜치도 `CharacterMediator`를 수정하므로(`ResetForReuse`, `OnHitFrom`) 머지 충돌에 주의한다.
 - 클립 원본은 `Assets/ThirdParty`(Git 제외)에 있다. 사용할 클립은 `_Project`로 복제해서 쓴다.
+  - 보충(2026-10-16): 원본 키프레임을 그대로 담은 사본(.anim)은 만들지 않는다. 퍼블릭 레포에 올리면 Asset Store EULA상 재배포가 되기 때문이다. 컨트롤러는 FBX를 GUID로만 참조한다. 클립을 고쳐야 하면 FBX 임포트 설정(예: Mask)으로 하고, 이 설정은 `.FBX.meta`에 저장되어 Git에 올라가지 않으니 팀원 PC마다 같은 설정을 해야 한다.
 - 컨트롤러는 MCP로 만들지 않는다. 사용자가 가이드(`docs/features/enemy-animation-controller-guide.md`)를 보고 에디터에서 직접 만든다.
 - Animator의 Apply Root Motion은 끈다(CharacterMotor와 충돌).
 
