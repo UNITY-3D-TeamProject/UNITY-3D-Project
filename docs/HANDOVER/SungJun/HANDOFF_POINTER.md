@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-16** — 크로스헤어 열(빨강)·배터리(파랑) 원호 4칸·퍼센트를 `PlayerHudView`(`SArcCell` 배열·퍼센트 글자)로 실제 플레이어 값에 연결(0~50% 첫 칸, 50~100% 둘째 칸, 글로우 동기화). Test `Canvas.prefab` 연결·저장(Test 저장소 d5c1c61), Play 확인: [작업 기록](./2026-10-16/crosshair-heat-battery-arcs.md)
 - **2026-10-16** — HP 패널 10칸을 Shift 슬라이더 게이지 `HpCell`로 교체하고 `PlayerHudView`(`_hpCellSliders`·`_hpPercentText`)로 실제 플레이어 HP 연결(한 칸 = MaxHp/10, 부분 채움, 퍼센트 연동). Test `Canvas.prefab` 저장(Test 저장소 4f6e542), Play 확인: [작업 기록](./2026-10-16/hp-segment-gauge.md)
 - **2026-10-16** — 메인 메뉴 START → 튜토리얼 연결: `SceneLoader.TryStartNewGame()`(순서 처음부터, 로딩씬 경유) 추가, Play로 튜토리얼 진입·플레이어 스폰 확인, intent-032 해결. 커밋 안 함: [작업 기록](./2026-10-16/main-menu-logic.md)
 - **2026-10-16** — 메인 메뉴 로직을 MVP(`MainMenuView`·`MainMenuPresenter`)로 추가: 아무 키 → 스플래시에서 메뉴, 설정창 닫기 버튼·ESC, CONTINUE 비활성, EXIT. START는 씬 전환 결정 대기. Test MainScene·프리팹 저장, 커밋 안 함: [작업 기록](./2026-10-16/main-menu-logic.md)

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -6,6 +7,19 @@ namespace UI
 {
     public class PlayerHudView : MonoBehaviour
     {
+        // 크로스헤어 원호 한 칸(90°). 원호·심은 같은 fill로, 글로우는 양 끝을 늘린 만큼 더 채운다.
+        [Serializable]
+        private struct SArcCell
+        {
+            public Image[] FillImages;
+            public Image GlowImage;
+        }
+
+        // 원호 한 칸의 최대 fill (90° / 360°)
+        private const float ARC_CELL_MAX_FILL = 0.25f;
+        // 글로우는 칸 양 끝을 6°씩 늘려 두었으므로 그만큼 더 채운다. (12° / 360°)
+        private const float GLOW_EXTRA_FILL = 12.0f / 360.0f;
+
         [Header("Root")]
         [SerializeField] private GameObject _root;
 
@@ -18,6 +32,13 @@ namespace UI
         [Header("HP Cells")]
         [SerializeField] private Slider[] _hpCellSliders;
         [SerializeField] private TMP_Text _hpPercentText;
+
+        // 크로스헤어 원호 칸들. 앞 칸부터 차례로 채운다. (2칸 => 0~50% 첫 칸, 50~100% 둘째 칸)
+        [Header("Crosshair Arcs")]
+        [SerializeField] private SArcCell[] _heatArcCells;
+        [SerializeField] private TMP_Text _heatPercentText;
+        [SerializeField] private SArcCell[] _batteryArcCells;
+        [SerializeField] private TMP_Text _batteryPercentText;
 
         [Header("Skill Cooldowns")]
         [SerializeField] private Slider _rollCooldownSlider;
@@ -55,11 +76,13 @@ namespace UI
         public void SetBattery(float currentValue, float maxValue)
         {
             SetGaugeValue(_batterySlider, currentValue, maxValue);
+            SetArcCells(_batteryArcCells, _batteryPercentText, currentValue, maxValue);
         }
 
         public void SetHeat(float currentValue, float maxValue)
         {
             SetGaugeValue(_heatSlider, currentValue, maxValue);
+            SetArcCells(_heatArcCells, _heatPercentText, currentValue, maxValue);
         }
 
         // 남은 쿨타임 비율(0~1)을 표시한다. 1 = 방금 사용, 0 = 사용 가능
@@ -99,6 +122,52 @@ namespace UI
             {
                 // 이 칸이 시작하는 HP를 뺀 나머지가 이 칸에 담기는 HP
                 SetGaugeValue(_hpCellSliders[i], currentValue - (hpPerCell * i), hpPerCell);
+            }
+        }
+
+        // 비율을 원호 칸마다 나눠 채우고 퍼센트 글자를 갱신하는 함수
+        // ex) 2칸, 현재 75% => 첫 칸 가득, 둘째 칸 절반
+        private void SetArcCells(SArcCell[] cells, TMP_Text percentText, float currentValue, float maxValue)
+        {
+            float ratio = maxValue > 0.0f ? Mathf.Clamp01(currentValue / maxValue) : 0.0f;
+
+            if (percentText != null)
+            {
+                percentText.text = $"{Mathf.RoundToInt(ratio * 100.0f)}%";
+            }
+
+            if (cells == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < cells.Length; i++)
+            {
+                // 앞 칸들이 담은 몫을 뺀 나머지가 이 칸에 담기는 비율
+                float cellValue = Mathf.Clamp01((ratio * cells.Length) - i);
+                FillArcCell(cells[i], cellValue);
+            }
+        }
+
+        private void FillArcCell(SArcCell cell, float cellValue)
+        {
+            float arcFill = ARC_CELL_MAX_FILL * cellValue;
+
+            if (cell.FillImages != null)
+            {
+                foreach (Image fillImage in cell.FillImages)
+                {
+                    if (fillImage != null)
+                    {
+                        fillImage.fillAmount = arcFill;
+                    }
+                }
+            }
+
+            if (cell.GlowImage != null)
+            {
+                // 빈 칸은 글로우도 끈다. (늘린 끝부분만 남아 보이지 않도록)
+                cell.GlowImage.fillAmount = cellValue > 0.0f ? arcFill + GLOW_EXTRA_FILL : 0.0f;
             }
         }
 
