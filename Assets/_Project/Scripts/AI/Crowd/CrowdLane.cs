@@ -8,7 +8,7 @@ namespace AI.Crowd
     /// <summary>
     /// 스플라인 하나를 군중 레인으로 쓰고, 개체를 생성해 이동시킨다.
     /// 닫힌 스플라인은 씬 시작 시 전체에 일정 간격으로 깔고, 개체가 계속 돈다.
-    /// 열린 스플라인은 시작점에서 차례대로 꺼내고, 끝에 닿은 개체를 풀에 반납한 뒤 시작점에서 다시 꺼낸다.
+    /// 열린 스플라인은 씬 시작 시 일부를 미리 깔고 나머지는 시작점에서 차례대로 꺼내며, 끝에 닿은 개체를 풀에 반납한 뒤 시작점에서 다시 꺼낸다.
     /// 시작점과 개체 수는 0번 스플라인 기준이다. 갈림길은 같은 컨테이너 안에서 Knot 으로부터 바깥쪽으로 새 스플라인을 그려 만든다 (개체가 무작위로 고른다).
     /// 개체는 씬의 ObjectPoolManager(Crowd 카테고리)에서 꺼내므로 프리팹이 매니저에 등록돼 있어야 한다.
     /// 개체의 속도는 프리팹 SOAttributeData 의 기본 속도에 이 레인의 배율과 개체별 무작위 배율(조종부 설정)을 곱한 값이다.
@@ -40,6 +40,9 @@ namespace AI.Crowd
         [SerializeField] private float _minSpawnInterval = 1.5f;
         [Tooltip("시작점에서 개체를 꺼내는 시간 간격(초)의 최대값.")]
         [SerializeField] private float _maxSpawnInterval = 3.5f;
+        [Tooltip("씬 시작 시 0번 스플라인 위에 미리 깔아 둘 개체 비율(개수 대비). 나머지는 시작점에서 차례대로 꺼낸다. 0 이면 미리 깔지 않는다.")]
+        [Range(0.0f, 1.0f)]
+        [SerializeField] private float _initialFillRatio = 0.3f;
 
         [Header("Speed")]
         [SerializeField] private string _speedAttributeKey = "MoveSpeed";
@@ -90,8 +93,12 @@ namespace AI.Crowd
 
             _isReady = true;
 
-            // 열린 레인은 한꺼번에 깔지 않고 Update 가 시작점에서 차례대로 꺼낸다. 첫 간격이 0 이라 첫 개체는 바로 나온다.
-            if (!_isLaneClosed) return;
+            // 열린 레인은 일부만 미리 깔고 나머지는 Update 가 시작점에서 차례대로 꺼낸다. 첫 간격이 0 이라 첫 개체는 바로 나온다.
+            if (!_isLaneClosed)
+            {
+                FillInitialMembers();
+                return;
+            }
 
             float spacing = _laneLength / _spawnCount;
             for (int i = 0; i < _spawnCount; i++)
@@ -188,6 +195,23 @@ namespace AI.Crowd
         }
 
         /// <summary>
+        /// 열린 레인의 0번 스플라인을 균등한 칸으로 나누고, 칸마다 위치를 조금씩 흔들어 개체를 미리 깐다.
+        /// 칸 길이가 최소 간격 이상이고 흔들림을 (칸 - 최소 간격)의 절반으로 제한하므로 이웃 개체는 최소 간격 이상 떨어진다.
+        /// </summary>
+        private void FillInitialMembers()
+        {
+            int count = Mathf.RoundToInt(_spawnCount * _initialFillRatio);
+            if (count <= 0) return;
+
+            float slot = _laneLength / count;
+            float jitter = Mathf.Max(0.0f, slot - _minSpacing) * 0.5f;
+            for (int i = 0; i < count; i++)
+            {
+                SpawnMember((i + 0.5f) * slot + Random.Range(-jitter, jitter));
+            }
+        }
+
+        /// <summary>
         /// 끝에 닿은 개체를 풀에 반납한다.
         /// </summary>
         /// <param name="member">반납할 개체의 조종부</param>
@@ -250,7 +274,6 @@ namespace AI.Crowd
             member.OnLaneEndReached += ReleaseMember;
             _activeCount++;
 
-            // SetLane 이 현재 위치를 기준점으로 저장하므로 위치를 먼저 옮긴다
             member.SetLane(_lane, distance, lateralOffset);
         }
         #endregion
