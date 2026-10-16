@@ -33,6 +33,7 @@ Melee와 같은 골격(순찰·감지·추격·근접 공격)에 **바람 스킬
   - 신규 `Scripts/Skill/Skills/EnemyWindBlast.cs`
   - 신규 `Scripts/AI/BT/AIUseSkillAndWaitAction.cs`, `AIIsTimeReachedCondition.cs`, `AISetReadyTimeAction.cs`
   - 신규 에셋([USER]): `EnemyWindBlast.prefab`, `Special.prefab`, `EnemyAI_Special.asset`
+  - 신규 애니메이션 에셋(2026-10-16): `Animations/Enemy/Special.controller`, `Clips/Special_WindCharge.anim`, `Special_WindMask.mask` — `Special.prefab`의 Animator·`EnemyAnimator`에 연결 (코드 변경 없음)
 
 ## 제약 (Constraints)
 - `SkillMediator`, `ISkillRequestController`, `CharacterMediator`, `Map/Gimmicks/` 는 수정하지 않는다 (담당 영역 밖).

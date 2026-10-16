@@ -11,6 +11,7 @@
 - **[Skill / Scan / Core]** 스캔 스킬 구현 — 파동이 닿은 대상이 IScannable 반응으로 드러났다가 duration 후 서서히 사라짐 → [문서](../HANDOVER/SungJun/intent/intent-019-scan-system.md)
 - **[Scene Transition]** 씬 이동 시 로딩씬을 거쳐 목적지 씬 켜기 렉(특히 로비)을 로딩 화면 뒤로 숨김 → [문서](../HANDOVER/SungJun/intent/intent-020-loading-scene.md)
 <!-- 파트별로 묶어서 나열. 형식: - **[파트]** 문제 한 줄 요약 → [문서](./intent-NNN-slug.md) -->
+- **[AI / Enemy / Combat]** 적이 맞아도 애니메이션만 나오고 추격·공격을 계속함. 짧은 경직(이동·스킬 요청 정지) + 경직 후 면역 시간, 스킬 사용 중에는 슈퍼아머 → [문서](./intent-026-enemy-hit-stun.md)
 - **[AI / Animation / Mediator]** 적·군중에 애니메이션이 없음. 플레이어와 같은 구조로 `EnemyAnimator` ↔ `EnemyAnimationMediator`를 두고 `CharacterMediator`가 연결한다. 스킬별 모션은 매핑 데이터, 객체 전용 로직(보행자 점프)은 별도 컴포넌트, 컨트롤러는 베이스 + Override → [문서](./intent-025-enemy-animation.md)
 - **[AI / Enemy / Skill]** 플레이어 위치를 흔드는 적이 없음. 점점 세지는 바람 + 마지막 넉백으로 밀어내는 특수 몹 `Special`(Melee 골격 + 바람 스킬, 쿨타임은 BT 블랙보드 준비 시각). 설계 확정, 구현 전 → [문서](./intent-024-wind-enemy.md)
 - **[AI / Enemy / Combat]** 적을 어디에 맞혀도 같은 피해. 적마다 후보 5곳 중 무작위 약점을 두고, 맞은 지점과 약점 중심의 거리로 치명타를 판정한다. 1단계는 판정 로그만, 피해 곱은 2단계 → [문서](./intent-023-weak-point-critical.md)
@@ -24,7 +25,7 @@
 - **[AI / Combat]** 적이 근거리 한 종류뿐. 프로토타입용으로 `EnemyRangedAttack`(스킬이 총알을 직접 생성) 구현. 풀링 도입 시 Factory 경로로 옮기는 것이 기술 부채. 코드 완료, 에디터 배선(`[USER]`)과 Play 검증 남음 → [문서](./intent-012-enemy-ranged-attack.md)
 - **[Movement System]** 점프력이 모터에 고정되고 공중 점프 불가, 시작/착지 이벤트 없음. `Jump(float jumpPower)` 무조건 실행 + `OnJumpStarted`/`OnJumpEnded` 추가, 접지 정책은 MoveMediator로. 코드 완료·컴파일 0에러, Play 검증 남음 → [문서](./intent-015-jump-power-param-and-events.md)
 - **[AI / Enemy]** 미로 라운드 2에 시간 압박 요소가 없음. 시간에 따라 빨라지는 무적 추격자 GC(웨이포인트 순찰·추격·공격 1회 + 멈춤, 최대 HP ÷ n 피해)를 기존 적 골격으로 구현. 웨이포인트·NavMesh·벽 레이어는 맵 담당 요청 → [문서](./intent-021-garbage-collector.md)
-- **[Attribute / Mediator / Combat]** 데미지 경로에 출처(누가·어디서)가 없어 피격 반응 불가. `SEffectContext{Cursor, Origin}`를 Apply→어트리뷰트 콜백까지 관통(C안). 1차 전달 경로 진행, 2차(원점 기록·CombatMediator 연결·AI 반응) 남음 → [문서](./intent-016-hit-context.md)
+- **[Attribute / Mediator / Combat]** 데미지 경로에 출처(누가·어디서)가 없어 피격 반응 불가. `SEffectContext{Cursor, Origin}`를 Apply→어트리뷰트 콜백까지 관통(C안). 1차 전달 경로 진행, AI 반응은 2026-10-15 `OnHitFrom` + `AIController` 피격 돌아보기로 대체 구현. 맞혔을 때 UI 등 열린 질문 남음 → [문서](./intent-016-hit-context.md)
 - **[AI / Enemy]** 적이 같은 목표를 쫓거나 공격할 때 뭉치고 서로 올라탐. Enemy ↔ Enemy 충돌 해제 + `AllySeparationPusher`(약한 밀어내기)로 해결. AIController 조향·BT 간격 벌리기 가지는 차례로 폐기. 적 프리팹 레이어 Obstacle → Enemy 이동(플레이어 총알 판정 레이어 동반 수정). 실제 전투 Play 검증 남음 → [문서](./intent-022-enemy-separation.md)
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 

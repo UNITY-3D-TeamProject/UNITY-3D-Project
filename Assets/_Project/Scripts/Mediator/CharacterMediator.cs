@@ -63,6 +63,11 @@ namespace Mediator
         public event Action OnHit;
         /// <summary>약점에 명중했을 때 맞은 지점을 알린다. OnHit 보다 먼저 발생한다.</summary>
         public event Action<Vector3?> OnCriticalHit;
+        /// <summary>
+        /// 피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치)를 알린다. OnHit 보다 먼저 발생한다.
+        /// 기준 위치가 없는 피격이나 사망을 일으킨 피격에는 발생하지 않는다.
+        /// </summary>
+        public event Action<Vector3> OnHitFrom;
         /// <summary>캐릭터가 사망한 즉시 한 번 발생한다.</summary>
         public event Action OnDeath;
         /// <summary>사망 후 처리(사망 애니메이션)가 끝나 GameObject 를 파괴하기 직전에 한 번 발생한다.</summary>
@@ -179,6 +184,17 @@ namespace Mediator
         public bool IsSkillEnabled(string skillName)
         {
             return _skillMediator && _skillMediator.IsSkillEnabled(skillName);
+        }
+
+        /// <summary>
+        /// 사망 처리로 바뀐 상태를 되돌린다. 오브젝트 풀에서 다시 꺼낸 캐릭터가 재사용될 때 호출한다.
+        /// </summary>
+        public void ResetForReuse()
+        {
+            _isDead = false;
+            if (_moveMediator) _moveMediator.enabled = true;
+            if (_skillMediator) _skillMediator.enabled = true;
+            if (_rotateMediator) _rotateMediator.enabled = true;
         }
         #endregion
 
@@ -420,6 +436,7 @@ namespace Mediator
                 if (_playerAnimationMediator) _playerAnimationMediator.NotifyHit(hitSource);
                 if (_enemyAnimationMediator) _enemyAnimationMediator.NotifyHit(hitSource);
                 if (_petMediator) _petMediator.NotifyHit(_playerAnimationMediator ? _playerAnimationMediator.GetHitDirection(hitSource) : 0);
+                if (hitSource.HasValue) OnHitFrom?.Invoke(hitSource.Value);
             }
             OnHit?.Invoke();
         }

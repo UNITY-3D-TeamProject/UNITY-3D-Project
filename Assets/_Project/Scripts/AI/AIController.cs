@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.AI;
+using Mediator;
 using Mediator.SubMediators;
 
 namespace AI
@@ -56,6 +57,20 @@ namespace AI
         [Header("Separation")]
         [Tooltip("주변 동료로 볼 레이어. 비워두면 동료를 찾지 않는다.")]
         [SerializeField] private LayerMask _separationLayers;
+
+        [Header("Speed")]
+        [Tooltip("이동 속도 어트리뷰트를 바꿀 중재자. 비워두면 이 오브젝트에서 찾는다.")]
+        [SerializeField] private CharacterMediator _mediator;
+        [Tooltip("이동 속도 어트리뷰트 이름.")]
+        [SerializeField] private string _speedAttributeKey = "MoveSpeed";
+
+        [Header("Hit Reaction")]
+        [Tooltip("피격 시 이동을 멈추고 맞은 쪽을 바라보는 시간(초). 0 이면 반응하지 않는다. CharacterRotator 회전 속도로 180° 돌 수 있는 시간 이상이어야 뒤에서 맞아도 완전히 돌아선다.")]
+        [SerializeField, Min(0.0f)] private float _hitLookDuration = 1.0f;
+        [Tooltip("피격 시 이동과 스킬 요청을 멈추는 경직 시간(초). 0 이면 경직하지 않는다. 대상이 보이는 중에도 걸린다.")]
+        [SerializeField, Min(0.0f)] private float _hitStunDuration = 0.4f;
+        [Tooltip("경직이 끝난 뒤 다시 경직되지 않는 시간(초). 연사로 계속 묶이지 않게 한다. 피격 애니메이션은 이 동안에도 재생된다.")]
+        [SerializeField, Min(0.0f)] private float _hitStunImmuneDuration = 1.5f;
         #endregion
 
         #region Private Fields
@@ -68,6 +83,15 @@ namespace AI
         private float _stuckCheckTimer;
         private float _destinationTimer;
         private bool _isStuck;
+
+        private float _hitLookTimer;
+        private Vector2 _hitLookDirection;
+
+        private float _hitStunTimer;
+        private float _hitStunImmuneTimer;
+
+        private float _holdTimer;
+        private Vector2 _holdDirection;
         #endregion
 
         #region Events
@@ -128,6 +152,24 @@ namespace AI
         /// 제한 시간을 넘겨도 도착하지 못하면 true 가 된다. 목적지가 없으면 false.
         /// </summary>
         public bool IsStuck => _isStuck;
+
+        /// <summary>
+        /// 이동 중 몸통을 이동 방향으로 돌릴지 여부. 기본 true.
+        /// 이동하면서 대상을 바라봐야 할 때(후퇴 중 사격 등) false 로 두면 회전은 FaceDirection 요청만 따른다.
+        /// </summary>
+        public bool ShouldFaceMoveDirection { get; set; } = true;
+
+        /// <summary>Hold 로 붙잡혀 제자리에 멈춰 있는지 여부.</summary>
+        public bool IsHolding => _holdTimer > 0.0f;
+
+        /// <summary>피격 경직 중인지 여부. 경직 중에는 이동하지 않고 스킬 요청(ExecuteSkill)도 무시한다.</summary>
+        public bool IsStunned => _hitStunTimer > 0.0f;
+
+        /// <summary>
+        /// 피격되어도 경직하지 않는지 여부. 기본 false.
+        /// Hold 로 붙잡히지 않는 스킬(원거리 예비 동작 등)을 쓰는 동안 BT 노드가 켜 둔다.
+        /// </summary>
+        public bool IsSuperArmor { get; set; }
         #endregion
 
         #region Unity Lifecycle
@@ -137,6 +179,7 @@ namespace AI
             if (!_patrolRoute) _patrolRoute = GetComponent<WaypointPatrolRoute>();
             if (!_agent) _agent = GetComponent<NavMeshAgent>();
             if (!_body) _body = transform;
+            if (!_mediator) _mediator = GetComponent<CharacterMediator>();
 
             if (!_agent)
             {
@@ -148,6 +191,11 @@ namespace AI
             _agent.updatePosition = false;
             _agent.updateRotation = false;
             _agent.updateUpAxis = false;
+        }
+
+        private void OnEnable()
+        {
+            if (_mediator) _mediator.OnHitFrom += OnHitFromCallback;
         }
 
         private void Start()
@@ -162,6 +210,11 @@ namespace AI
         {
             if (HasVisibleTarget) _lastTargetSeenTime = Time.time;
 
+            // NavMesh 밖에서도 안전 타이머가 흘러야 영구히 붙잡히지 않으므로 아래 early return 보다 앞에 둔다
+            if (_holdTimer > 0.0f) _holdTimer -= Time.deltaTime;
+            if (_hitStunTimer > 0.0f) _hitStunTimer -= Time.deltaTime;
+            if (_hitStunImmuneTimer > 0.0f) _hitStunImmuneTimer -= Time.deltaTime;
+
             if (!_agent || !_agent.isOnNavMesh)
             {
                 RequestMove(Vector2.zero);
@@ -170,6 +223,31 @@ namespace AI
 
             // CharacterMotor 가 옮긴 실제 위치를 Agent 에 되돌려야 다음 경로가 어긋나지 않는다
             _agent.nextPosition = _body.position;
+
+            // 붙잡힌 동안에는 목적지를 유지한 채 멈춰서 고정 방향을 바라본다. 풀리면 하던 이동을 이어간다
+            if (IsHolding)
+            {
+                RequestMove(Vector2.zero);
+                RequestRotate(_holdDirection);
+                return;
+            }
+
+            // 피격 직후에는 목적지를 유지한 채 멈춰서 맞은 쪽을 바라본다. 끝나면 하던 이동을 이어간다
+            if (_hitLookTimer > 0.0f)
+            {
+                // 돌아보는 중 대상을 발견하면 바로 전투로 넘어가도록 멈춤을 끝낸다
+                _hitLookTimer = HasVisibleTarget ? 0.0f : _hitLookTimer - Time.deltaTime;
+                RequestMove(Vector2.zero);
+                RequestRotate(_hitLookDirection);
+                return;
+            }
+
+            // 경직 중에는 목적지를 유지한 채 멈춘다. 끝나면 하던 이동을 이어간다
+            if (IsStunned)
+            {
+                RequestMove(Vector2.zero);
+                return;
+            }
 
             UpdateStuckState();
 
@@ -192,11 +270,19 @@ namespace AI
             RequestMove(desired2D);
             // 회전도 이동과 같은 방향으로 요청한다. 정지 시(위의 zero 경로)에는 요청을 보내지 않아
             // CharacterRotator 가 직전 방향을 유지하게 둔다.
-            RequestRotate(desired2D);
+            if (ShouldFaceMoveDirection) RequestRotate(desired2D);
         }
 
         private void OnDisable()
         {
+            if (_mediator) _mediator.OnHitFrom -= OnHitFromCallback;
+            // 오브젝트 풀에서 다시 꺼냈을 때 멈춤이 남아 있지 않게 한다
+            _hitLookTimer = 0.0f;
+            _holdTimer = 0.0f;
+            _hitStunTimer = 0.0f;
+            _hitStunImmuneTimer = 0.0f;
+            IsSuperArmor = false;
+
             // 비활성화 시 마지막 이동 명령이 남아 계속 미끄러지지 않도록 정지시킨다
             RequestMove(Vector2.zero);
         }
@@ -362,6 +448,44 @@ namespace AI
         }
 
         /// <summary>
+        /// 이동 속도 어트리뷰트에 배율을 곱한다. 되돌릴 때는 1/ratio 로 다시 호출한다.
+        /// 덮어쓰지 않고 곱하므로 감속 지대 등 다른 곳의 변경과 겹쳐도 어긋나지 않는다.
+        /// 중재자가 없거나 어트리뷰트가 없으면 무시한다.
+        /// </summary>
+        /// <param name="ratio">곱할 배율 (양수)</param>
+        public void ScaleMoveSpeed(float ratio)
+        {
+            if (!_mediator || !_mediator.IsValidAttribute(_speedAttributeKey)) return;
+
+            float speed = _mediator.GetAttribute(_speedAttributeKey);
+            _mediator.SetAttribute(_speedAttributeKey, speed * ratio);
+        }
+
+        /// <summary>
+        /// 지정한 월드 방향을 바라보며 지정한 시간 동안 제자리에 멈춘다. 이미 붙잡혀 있으면 방향과 시간을 덮어쓴다.
+        /// 목적지는 건드리지 않으므로 풀리면 BT 가 다시 이동을 정한다. 시간은 안전 장치이며,
+        /// 끝나는 시점을 아는 쪽은 ReleaseHold 로 직접 푼다.
+        /// </summary>
+        /// <param name="worldDirection">바라볼 월드 방향 (수직 성분은 무시)</param>
+        /// <param name="seconds">붙잡아 둘 최대 시간(초)</param>
+        public void Hold(Vector3 worldDirection, float seconds)
+        {
+            Vector3 flat = Vector3.ProjectOnPlane(worldDirection, Vector3.up);
+            if (flat.sqrMagnitude <= Mathf.Epsilon) flat = _body.forward;
+
+            _holdDirection = new Vector2(flat.x, flat.z);
+            _holdTimer = Mathf.Max(0.0f, seconds);
+        }
+
+        /// <summary>
+        /// 붙잡힘을 즉시 푼다.
+        /// </summary>
+        public void ReleaseHold()
+        {
+            _holdTimer = 0.0f;
+        }
+
+        /// <summary>
         /// 보이는 대상을 바라보며 공격 스킬을 한 번 요청한다. 보이는 대상이 없으면 무시한다.
         /// 실제 발동 여부와 간격은 스킬의 조건·코스트가 정하므로 매 틱 호출해도 된다.
         /// 이 캐릭터의 SkillController 에 SkillName 이 "Attack" 인 스킬이 등록되어 있어야 한다.
@@ -388,11 +512,13 @@ namespace AI
 
         /// <summary>
         /// 지정한 이름의 스킬 발동을 요청한다. 자동으로 떼지 않으므로
-        /// 유지형 스킬(조준선 등)은 끝낼 때 StopSkill 을 호출해야 한다.
+        /// 유지형 스킬(조준선 등)은 끝낼 때 StopSkill 을 호출해야 한다. 경직 중에는 무시한다.
         /// </summary>
         /// <param name="skillName">발동할 스킬 이름</param>
         public void ExecuteSkill(string skillName)
         {
+            if (IsStunned) return;
+
             _requestExecuteSkill?.Invoke(skillName);
         }
 
@@ -474,6 +600,32 @@ namespace AI
         private void RequestRotate(Vector2 direction)
         {
             _onBodyRotateRequested?.Invoke(direction);
+        }
+
+        /// <summary>
+        /// 피격되면 짧게 경직시키고, 대상이 안 보이면 잠시 멈춰 맞은 쪽을 바라보게 한다.
+        /// 경직은 스킬 사용 중(Hold·슈퍼아머)이거나 직전 경직의 면역 시간 안이면 걸리지 않는다.
+        /// 대상이 보이는 중(전투 중)에는 공격이 이미 대상을 바라보므로 돌아보기는 하지 않는다.
+        /// </summary>
+        /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치)</param>
+        private void OnHitFromCallback(Vector3 hitSource)
+        {
+            bool canStun = (_hitStunDuration > 0.0f) &&
+                (!IsHolding && !IsSuperArmor) &&
+                (_hitStunImmuneTimer <= 0.0f);
+            if (canStun)
+            {
+                _hitStunTimer = _hitStunDuration;
+                _hitStunImmuneTimer = _hitStunDuration + _hitStunImmuneDuration;
+            }
+
+            if (HasVisibleTarget) return;
+
+            Vector3 toSource = Vector3.ProjectOnPlane(hitSource - _body.position, Vector3.up);
+            if (toSource.sqrMagnitude <= Mathf.Epsilon) return;
+
+            _hitLookDirection = new Vector2(toSource.x, toSource.z);
+            _hitLookTimer = _hitLookDuration;
         }
 
         /// <summary>

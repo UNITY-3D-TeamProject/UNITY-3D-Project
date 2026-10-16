@@ -242,6 +242,7 @@ GameObject:
   - component: {fileID: 1369908204660790272}
   - component: {fileID: 9031708989183875549}
   - component: {fileID: 7585644405135888982}
+  - component: {fileID: 4564190703093895376}
   m_Layer: 8
   m_Name: Ranged
   m_TagString: Untagged
@@ -329,6 +330,11 @@ MonoBehaviour:
   _separationLayers:
     serializedVersion: 2
     m_Bits: 256
+  _mediator: {fileID: 0}
+  _speedAttributeKey: MoveSpeed
+  _hitLookDuration: 1
+  _hitStunDuration: 0.4
+  _hitStunImmuneDuration: 1.5
 --- !u!114 &5120159287565978398
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -460,6 +466,19 @@ MonoBehaviour:
   - {fileID: 924762729389229667}
   - {fileID: 5065884894039086192}
   - {fileID: 3440903531603295587}
+--- !u!114 &4564190703093895376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 681821616047237814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ebb06080a92e3b4f8715f3dd4ccb2e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.EnemyPoolReturner
+  _characterMediator: {fileID: 5120159287565978398}
 --- !u!1 &835412326865447768
 GameObject:
   m_ObjectHideFlags: 0
@@ -510,12 +529,12 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 835412326865447768}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: e14335db99f47444eacb2793fb52f7cc, type: 3}
   m_Controller: {fileID: 9100000, guid: 422df81025a428944bcead55fee99ca3, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
@@ -541,6 +560,9 @@ MonoBehaviour:
   - SkillName: Attack
     Parameter: Attack
     IsHold: 0
+  - SkillName: AttackWindup
+    Parameter: IsWindup
+    IsHold: 1
   _deathPlayCount: 1
 --- !u!1 &894696820916936218
 GameObject:

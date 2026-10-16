@@ -1,0 +1,251 @@
+using UnityEngine;
+using AI;
+using Movement;
+using Skill.Core;
+
+namespace Skill.Skills
+{
+    /// <summary>
+    /// 적의 바람 스킬. 발동하면 몸통을 대상 쪽으로 고정해 붙잡고(AIController.Hold),
+    /// 램프 시간 동안 점점 세지는 바람으로 부채꼴 안의 대상을 밀어낸 뒤, 끝나는 순간 범위 안이면 한 번 크게 넉백한다.
+    /// 피해는 없다. 쿨타임은 이 스킬이 아니라 BT 가 관리한다(CooldownCost 를 붙이지 않는다).
+    /// 끝나면(정상·대상 놓침·Stop·비활성화) 붙잡힘을 풀므로, BT 는 IsHolding 이 풀릴 때까지 기다리면 된다.
+    /// </summary>
+    [DefaultExecutionOrder(-50)]   // CharacterMotor(0)보다 먼저 실행해야 이번 프레임 이동에 합쳐진다
+    public class EnemyWindBlast : SkillBase
+    {
+        #region Constants
+        /// <summary>정상 종료는 ReleaseHold 가 맡으므로, 붙잡힘 안전 시간에 더하는 여유(초).</summary>
+        private const float HOLD_MARGIN = 0.5f;
+        #endregion
+
+        #region Serialized Fields
+        [Header("Wind")]
+        [Tooltip("램프 시작 시점의 미는 속도(m/s)")]
+        [SerializeField, Min(0.0f)] private float _minSpeed = 0.5f;
+        [Tooltip("램프 끝 시점의 미는 속도(m/s)")]
+        [SerializeField, Min(0.0f)] private float _maxSpeed = 2.0f;
+        [Tooltip("미는 속도가 최소에서 최대까지 선형으로 커지는 시간(초)")]
+        [SerializeField, Min(0.1f)] private float _rampDuration = 2.0f;
+
+        [Header("Range")]
+        [Tooltip("바람이 닿는 3D 거리(m)")]
+        [SerializeField, Min(0.0f)] private float _range = 6.0f;
+        [Tooltip("정면 기준 좌우 반각(도)")]
+        [SerializeField, Range(0.0f, 180.0f)] private float _horizontalHalfAngle = 30.0f;
+        [Tooltip("수평면 기준 위아래 반각(도)")]
+        [SerializeField, Range(0.0f, 90.0f)] private float _verticalHalfAngle = 30.0f;
+        [Tooltip("바람을 막는 장애물 레이어. 몹과 대상 사이에 있으면 밀지 않는다.")]
+        [SerializeField] private LayerMask _obstacleLayers;
+
+        [Header("Knockback")]
+        [Tooltip("램프가 끝나는 순간 범위 안이면 수평으로 밀어내는 거리(m)")]
+        [SerializeField, Min(0.0f)] private float _knockbackDistance = 4.0f;
+        [Tooltip("넉백에 걸리는 시간(초). 짧을수록 세게 튕긴다.")]
+        [SerializeField, Min(0.05f)] private float _knockbackDuration = 0.3f;
+
+        [Header("References")]
+        [Tooltip("바람이 나가는 기준점. 몸 중심 가슴 높이에 둔다.")]
+        [SerializeField] private Transform _windOrigin;
+        #endregion
+
+        #region Private Fields
+        private enum EWindPhase
+        {
+            Idle,
+            Ramp,
+            Knockback,
+        }
+
+        private AIController _controller;
+        private EWindPhase _phase;
+        private Transform _target;
+        private CharacterMotor _motor;
+        private Vector3 _forward;
+        private Vector3 _knockbackDirection;
+        private float _elapsed;
+        #endregion
+
+        #region Unity Lifecycle
+        protected override void Awake()
+        {
+            base.Awake();
+            _controller = GetComponentInParent<AIController>();
+
+            Debug.Assert(_controller != null, $"[{name}] AIController 를 찾을 수 없습니다.");
+            Debug.Assert(_windOrigin != null, $"[{name}] 바람 기준점이 연결되지 않았습니다.");
+        }
+
+        private void Update()
+        {
+            if (_phase == EWindPhase.Idle) return;
+
+            // 대상이나 모터가 파괴되었으면(플레이어 사망·재생성) 그 프레임에 끝낸다
+            if (!_target || !_motor)
+            {
+                End();
+                return;
+            }
+
+            if (_phase == EWindPhase.Ramp)
+            {
+                UpdateRamp();
+            }
+            else
+            {
+                UpdateKnockback();
+            }
+        }
+
+        private void OnDisable()
+        {
+            Stop();
+        }
+        #endregion
+
+        #region Public Methods
+        public override void Stop()
+        {
+            End();
+        }
+        #endregion
+
+        #region Protected Methods
+        protected override void Execute()
+        {
+            // 쿨타임 코스트가 없어 CanExecute 가 계속 true 이므로 진행 중 재발동은 여기서 무시한다
+            if (_phase != EWindPhase.Idle) return;
+            if (!_controller || !_windOrigin) return;
+
+            Transform target = _controller.VisibleTarget;
+            if (!target) return;
+
+            // 모터는 플레이어 루트가 아니라 자식에 있다
+            CharacterMotor motor = target.GetComponentInChildren<CharacterMotor>();
+            if (!motor) return;
+
+            _target = target;
+            _motor = motor;
+
+            // 몹→대상 수평 방향을 시작 순간에 고정한다. 판정 부채꼴도 이 방향 기준이다
+            Vector3 toTarget = Vector3.ProjectOnPlane(GetTargetPoint() - _windOrigin.position, Vector3.up);
+            _forward = (toTarget.sqrMagnitude > Mathf.Epsilon) ? toTarget.normalized : _windOrigin.forward;
+
+            _elapsed = 0.0f;
+            _phase = EWindPhase.Ramp;
+
+            _controller.Hold(_forward, _rampDuration + _knockbackDuration + HOLD_MARGIN);
+
+            base.Execute();
+        }
+        #endregion
+
+        #region Private Methods
+        private void UpdateRamp()
+        {
+            // 대상을 놓쳤으면 바로 끝낸다
+            if (!_controller || !_controller.HasVisibleTarget)
+            {
+                End();
+                return;
+            }
+
+            _elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(_elapsed / _rampDuration);
+            float speed = Mathf.Lerp(_minSpeed, _maxSpeed, t);
+
+            bool isInWind = IsTargetInWind();
+            Vector3 direction = GetPushDirection();
+            if (isInWind)
+            {
+                _motor.AddExternalDisplacement(direction * (speed * Time.deltaTime));
+            }
+
+            if (t < 1.0f) return;
+
+            // 램프가 끝나는 순간 범위 안이면 넉백, 아니면 그대로 끝
+            if (isInWind)
+            {
+                _knockbackDirection = direction;
+                _elapsed = 0.0f;
+                _phase = EWindPhase.Knockback;
+            }
+            else
+            {
+                End();
+            }
+        }
+
+        private void UpdateKnockback()
+        {
+            // 처음에 빠르고 끝으로 갈수록 느려지게 미는 증분 방식 (KnockbackHazard 와 같다)
+            float previous = _elapsed;
+            _elapsed = Mathf.Min(_elapsed + Time.deltaTime, _knockbackDuration);
+            float moved = EaseOut(_elapsed / _knockbackDuration) - EaseOut(previous / _knockbackDuration);
+            _motor.AddExternalDisplacement(_knockbackDirection * (moved * _knockbackDistance));
+
+            if (_elapsed >= _knockbackDuration) End();
+        }
+
+        /// <summary>
+        /// 대상이 고정 정면 기준 부채꼴(수평·수직 각도, 3D 거리) 안에 있고 사이에 장애물이 없는지 판정한다.
+        /// </summary>
+        private bool IsTargetInWind()
+        {
+            Vector3 origin = _windOrigin.position;
+            Vector3 targetPoint = GetTargetPoint();
+            Vector3 toTarget = targetPoint - origin;
+
+            if (toTarget.magnitude > _range) return false;
+
+            Vector3 flat = Vector3.ProjectOnPlane(toTarget, Vector3.up);
+            if (Vector3.Angle(_forward, flat) > _horizontalHalfAngle) return false;
+
+            float verticalAngle = Mathf.Atan2(Mathf.Abs(toTarget.y), flat.magnitude) * Mathf.Rad2Deg;
+            if (verticalAngle > _verticalHalfAngle) return false;
+
+            bool isBlocked = Physics.Linecast(origin, targetPoint, _obstacleLayers, QueryTriggerInteraction.Ignore);
+            return !isBlocked;
+        }
+
+        /// <summary>
+        /// 몹에서 대상 쪽으로 미는 수평 방향. 겹쳐서 알 수 없으면 고정 정면을 쓴다.
+        /// </summary>
+        private Vector3 GetPushDirection()
+        {
+            Vector3 flat = Vector3.ProjectOnPlane(GetTargetPoint() - _windOrigin.position, Vector3.up);
+            return (flat.sqrMagnitude > Mathf.Epsilon) ? flat.normalized : _forward;
+        }
+
+        /// <summary>
+        /// 발밑이 아니라 몸통 중심을 판정 대상점으로 쓴다.
+        /// </summary>
+        private Vector3 GetTargetPoint()
+        {
+            return _target.TryGetComponent(out Collider targetCollider)
+                ? targetCollider.bounds.center
+                : _target.position;
+        }
+
+        /// <summary>
+        /// 상태를 초기화하고 붙잡힘을 푼다. 진행 중이 아니면 아무것도 하지 않는다.
+        /// </summary>
+        private void End()
+        {
+            if (_phase == EWindPhase.Idle) return;
+
+            _phase = EWindPhase.Idle;
+            _elapsed = 0.0f;
+            _target = null;
+            _motor = null;
+
+            if (_controller) _controller.ReleaseHold();
+        }
+
+        private static float EaseOut(float t)
+        {
+            return 1.0f - ((1.0f - t) * (1.0f - t));
+        }
+        #endregion
+    }
+}
