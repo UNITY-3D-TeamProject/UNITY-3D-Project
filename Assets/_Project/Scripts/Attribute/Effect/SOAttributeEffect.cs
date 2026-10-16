@@ -14,6 +14,18 @@ namespace Attribute.Effect
         Attribute
     }
 
+    /// <summary>ValueSource 에서 가져온 값에 적용할 후처리 계산.</summary>
+    [Serializable]
+    public enum EPostCalc
+    {
+        /// <summary>후처리 없음</summary>
+        None,
+        Add,
+        Subtract,
+        Multiply,
+        Divide
+    }
+
     /// <summary>
     /// 대상 어트리뷰트에 연산(EModifier)을 적용하는 효과 데이터 에셋.
     /// 수치는 고정값 또는 효과 발생 주체(cursor)의 어트리뷰트에서 가져온다.
@@ -32,6 +44,12 @@ namespace Attribute.Effect
         [SerializeField] private float _amount;
         [Tooltip("ValueSource 가 Attribute 일 때 cursor 에서 읽을 어트리뷰트 이름")]
         [SerializeField] private string _cursorAttribute;
+
+        [Header("Post Calc")]
+        [Tooltip("ValueSource 에서 가져온 값에 적용할 후처리 계산")]
+        [SerializeField] private EPostCalc _postCalc;
+        [Tooltip("PostCalc 가 None 이 아닐 때 사용할 수치")]
+        [SerializeField] private float _postCalcAmount;
         #endregion
 
         #region Properties
@@ -49,6 +67,12 @@ namespace Attribute.Effect
 
         /// <summary>ValueSource 가 Attribute 일 때 cursor 에서 읽을 어트리뷰트 이름.</summary>
         public string CursorAttribute => _cursorAttribute;
+
+        /// <summary>ValueSource 에서 가져온 값에 적용할 후처리 계산.</summary>
+        public EPostCalc PostCalc => _postCalc;
+
+        /// <summary>PostCalc 가 None 이 아닐 때 사용할 수치.</summary>
+        public float PostCalcAmount => _postCalcAmount;
         #endregion
 
         #region Public Methods
@@ -82,6 +106,7 @@ namespace Attribute.Effect
             }
 
             float amount = (_valueSource == EValueSource.Float) ? _amount : (cursor?.GetValue(_cursorAttribute) ?? 0);
+            amount = ApplyPostCalc(amount);
             float newValue = Modifiers.Modify(_modifier, target.GetValue(_targetAttribute), amount);
             target.SetValue(_targetAttribute, newValue, context);
         }
@@ -99,6 +124,21 @@ namespace Attribute.Effect
 
             Apply(effectTarget, context);
             return true;
+        }
+        #endregion
+
+        #region Private Methods
+        /// <summary>PostCalc 에 맞춰 value 에 후처리 계산을 적용한다. None 이면 그대로 반환한다.</summary>
+        private float ApplyPostCalc(float value)
+        {
+            switch (_postCalc)
+            {
+                case EPostCalc.Add:      return Modifiers.Modify(EModifier.Add, value, _postCalcAmount);
+                case EPostCalc.Subtract: return Modifiers.Modify(EModifier.Subtract, value, _postCalcAmount);
+                case EPostCalc.Multiply: return Modifiers.Modify(EModifier.Multiply, value, _postCalcAmount);
+                case EPostCalc.Divide:   return Modifiers.Modify(EModifier.Divide, value, _postCalcAmount);
+                default:                 return value;
+            }
         }
         #endregion
     }

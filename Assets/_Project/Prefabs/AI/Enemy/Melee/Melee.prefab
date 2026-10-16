@@ -41,6 +41,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1560770256787935999}
+  - component: {fileID: 1974688043365977630}
+  - component: {fileID: 8955765690406891356}
   m_Layer: 0
   m_Name: Metal Robot
   m_TagString: Untagged
@@ -68,6 +70,46 @@ Transform:
   - {fileID: 5295727096220098067}
   m_Father: {fileID: 6829823872737605967}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &1974688043365977630
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 190131007541991245}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 9a1a455d5ffc6224697b840286dc7450, type: 3}
+  m_Controller: {fileID: 22100000, guid: 02f4101c81fb37b4c8703751617f930e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &8955765690406891356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 190131007541991245}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a9aa3a253ccdfd42b9cac987621797e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimation.EnemyAnimator
+  _referenceMoveSpeed: 3
+  _skillAnimations:
+  - SkillName: Attack
+    Parameter: Attack
+    IsHold: 0
+  _deathPlayCount: 1
 --- !u!1 &598985433760566978
 GameObject:
   m_ObjectHideFlags: 0
@@ -544,6 +586,7 @@ Transform:
   - {fileID: 6343103990258496132}
   - {fileID: 1560770256787935999}
   - {fileID: 6090531665329726020}
+  - {fileID: 2471217831498792088}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &8801986771680523936
@@ -625,6 +668,8 @@ MonoBehaviour:
   _rotateMediator: {fileID: 4714147643135432338}
   _spawnMediator: {fileID: 0}
   _animationMediator: {fileID: 0}
+  _enemyAnimationMediator: {fileID: 4293860922213368321}
+  _petMediator: {fileID: 0}
 --- !u!114 &7616960562340131530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1970,6 +2015,87 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4184b676d9d003498c27f9ce1b7507b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Mediator.MoveMediator
+--- !u!1001 &6896754241382774549
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6829823872737605967}
+    m_Modifications:
+    - target: {fileID: 3440736212810742447, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_Name
+      value: EnemyAnimationPrefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 7215024659240875284, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: _enemyAnimator
+      value: 
+      objectReference: {fileID: 8955765690406891356}
+    - target: {fileID: 7215024659240875284, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: _speedValueKey
+      value: MoveSpeed
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.061415017
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.44605502
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.23201036
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+--- !u!4 &2471217831498792088 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+  m_PrefabInstance: {fileID: 6896754241382774549}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4293860922213368321 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7215024659240875284, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+  m_PrefabInstance: {fileID: 6896754241382774549}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7eec9ddd0155414499f71ce19e3c38c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.EnemyAnimationMediator
 --- !u!1001 &8599511173200116196
 PrefabInstance:
   m_ObjectHideFlags: 0

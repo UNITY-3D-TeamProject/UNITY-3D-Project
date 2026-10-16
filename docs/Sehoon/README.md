@@ -55,15 +55,16 @@
 | 19 | 펫 시스템 (따라다니기 + 애니메이션 동기화, 스캔 대리 사용은 07-3 으로 이관) | [19-pet-system.md](done/19-pet-system.md) | 완료 |
 | 20 | 카메라 가림 처리 (7, 10번 레이어) | [20-camera-occlusion.md](done/20-camera-occlusion.md) | 완료 |
 | 23 | 펫 Mediator 구조 정리 (Spawner 는 생성만, Mediator 가 이동·애니메이션 연결) | [23-pet-mediator-refactor.md](done/23-pet-mediator-refactor.md) | 완료 |
-| 24 | 코요테 타임 | [24-coyote-time.md](24-coyote-time.md) | 대기 |
-| 25 | 점프 버퍼링 | [25-jump-buffering.md](25-jump-buffering.md) | 대기 |
-| 26 | 차지샷 대미지 하드코딩 수정 | [26-charge-shot-damage.md](26-charge-shot-damage.md) | 대기 |
-| 27 | 차지샷 게이지 퍼사드 노출 (0~1) | [27-charge-gauge-facade.md](27-charge-gauge-facade.md) | 대기 |
+| 24 | 코요테 타임 | [24-coyote-time.md](done/24-coyote-time.md) | 완료 |
+| 25 | 점프 버퍼링 | [25-jump-buffering.md](done/25-jump-buffering.md) | 완료 |
+| 26 | 차지샷 대미지 하드코딩 수정 | [26-charge-shot-damage.md](done/26-charge-shot-damage.md) | 완료 |
+| 27 | 차지샷 게이지 퍼사드 노출 (0~1) | [27-charge-gauge-facade.md](done/27-charge-gauge-facade.md) | 완료 |
 | 28 | 총알 오브젝트 풀 연동 | [28-bullet-object-pool.md](28-bullet-object-pool.md) | 대기 |
 | 29 | 총알 메시 + FX | [29-bullet-mesh-fx.md](29-bullet-mesh-fx.md) | 대기 |
 | 30 | 전체 사운드 + VFX 작업 | [30-sound-vfx.md](30-sound-vfx.md) | 대기 |
-| 31 | 카메라가 가까워지면 캐릭터 숨김 처리 | [31-camera-near-hide-character.md](31-camera-near-hide-character.md) | 대기 |
-| 32 | 차지샷 누르고 있으면 자동 재차지 | [32-charge-shot-auto-recharge.md](32-charge-shot-auto-recharge.md) | 대기 |
+| 31 | 카메라가 가까워지면 캐릭터 숨김 처리 | [31-camera-near-hide-character.md](done/31-camera-near-hide-character.md) | 완료 |
+| 32 | 차지샷 누르고 있으면 자동 재차지 | [32-charge-shot-auto-recharge.md](done/32-charge-shot-auto-recharge.md) | 완료 |
+| 33 | 블루투스 배터리 소모 시작 시점 수정 (실제 탑승 후부터 소모) | [33-bluetooth-drain-start-timing.md](done/33-bluetooth-drain-start-timing.md) | 완료 |
 
 ## 같은 우선순위 안에서 순서를 정한 근거
 - **최우선** (사용자 지정, 고정)

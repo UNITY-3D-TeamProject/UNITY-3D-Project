@@ -15,6 +15,8 @@ namespace Attribute.Effect.Editor
         private SerializedProperty _valueSourceProp;
         private SerializedProperty _amountProp;
         private SerializedProperty _cursorAttributeProp;
+        private SerializedProperty _postCalcProp;
+        private SerializedProperty _postCalcAmountProp;
         #endregion
 
         #region Unity Lifecycle
@@ -25,6 +27,8 @@ namespace Attribute.Effect.Editor
             _valueSourceProp = serializedObject.FindProperty("_valueSource");
             _amountProp = serializedObject.FindProperty("_amount");
             _cursorAttributeProp = serializedObject.FindProperty("_cursorAttribute");
+            _postCalcProp = serializedObject.FindProperty("_postCalc");
+            _postCalcAmountProp = serializedObject.FindProperty("_postCalcAmount");
         }
         #endregion
 
@@ -46,6 +50,13 @@ namespace Attribute.Effect.Editor
             else
             {
                 EditorGUILayout.PropertyField(_cursorAttributeProp);
+            }
+
+            // 후처리가 있을 때만 수치 입력 필드 노출
+            EditorGUILayout.PropertyField(_postCalcProp);
+            if ((EPostCalc)_postCalcProp.enumValueIndex != EPostCalc.None)
+            {
+                EditorGUILayout.PropertyField(_postCalcAmountProp);
             }
 
             serializedObject.ApplyModifiedProperties();

@@ -32,6 +32,7 @@ namespace Mediator.SubMediators
         #region Private Fields
         private ISkillRequestController _skillRequestController;
         private Func<bool> _getGrounded;
+        private Fire _fireSkill;
         private Interact _interactSkill;
         private SpawnVehicle _spawnVehicleSkill;
         private Scan _scanSkill;
@@ -46,6 +47,11 @@ namespace Mediator.SubMediators
         private bool _wasFireEnabled;
         private bool _wasRollEnabled;
         private bool _wasMultiJumpEnabled;
+        #endregion
+
+        #region Properties
+        /// <summary>사격 차지 진행도(0~1). 차지 중이 아니거나 Fire 스킬이 없으면 0.</summary>
+        public float FireChargeRatio => _fireSkill ? _fireSkill.ChargeRatio : 0.0f;
         #endregion
 
         #region Events
@@ -72,6 +78,9 @@ namespace Mediator.SubMediators
         /// 요청 1회당 1번만 발생하며, 연사처럼 스킬 내부에서 반복 발동하는 경우는 알리지 않는다.
         /// </summary>
         public event Action<string, float> OnSkillUsed;
+
+        /// <summary>정지 요청으로 스킬을 멈췄을 때 발생한다. (스킬 이름)</summary>
+        public event Action<string> OnSkillStopped;
 
         /// <summary>상호작용 대상을 바라보는지 여부가 바뀔 때 발생한다. 대상이 있으면 true.</summary>
         public event Action<bool> OnInteractableChanged;
@@ -105,6 +114,7 @@ namespace Mediator.SubMediators
             base.Awake();
             ResolveComponent(ref _skillController);
             _skillRequestController = GetComponentInParent<ISkillRequestController>();
+            if (_skillController) _fireSkill = _skillController.GetComponentInChildren<Fire>(true);
             if (_skillController) _interactSkill = _skillController.GetComponentInChildren<Interact>(true);
             if (_skillController) _spawnVehicleSkill = _skillController.GetComponentInChildren<SpawnVehicle>(true);
             if (_skillController) _scanSkill = _skillController.GetComponentInChildren<Scan>(true);
@@ -287,7 +297,7 @@ namespace Mediator.SubMediators
             if (_skillController == null || _skillRequestController == null) return;
 
             _skillRequestController.SetRequestExecuteSkill(OnRequestExecuteSkill);
-            _skillRequestController.SetRequestStopSkill(_skillController.StopSkill);
+            _skillRequestController.SetRequestStopSkill(OnRequestStopSkill);
             _skillController.SetGetAttribute(key => AttributeGetter?.Invoke(key) ?? 0.0f);
             _skillController.SetRequestPay(OnRequestPay);
             _skillController.SetNotifyExecuted(OnSkillExecuted);
@@ -321,6 +331,16 @@ namespace Mediator.SubMediators
             if (IsSpawnVehicleSkill(skillName)) return;
 
             OnSkillUsed?.Invoke(skillName, _skillController.GetSkillCooldown(skillName));
+        }
+
+        /// <summary>
+        /// 스킬 정지 요청 처리. 스킬을 멈추고 정지를 알린다.
+        /// </summary>
+        /// <param name="skillName">정지할 스킬 이름</param>
+        private void OnRequestStopSkill(string skillName)
+        {
+            _skillController.StopSkill(skillName);
+            OnSkillStopped?.Invoke(skillName);
         }
 
         /// <summary>

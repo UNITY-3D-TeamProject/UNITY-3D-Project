@@ -48,7 +48,8 @@ GameObject:
   - component: {fileID: 3314283304832458301}
   - component: {fileID: 3750706564106249470}
   - component: {fileID: 2484129671692693122}
-  m_Layer: 31
+  - component: {fileID: 4600830364082667492}
+  m_Layer: 11
   m_Name: Pedstrian
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,6 +72,7 @@ Transform:
   - {fileID: 2043592245552113043}
   - {fileID: 4935804964253130984}
   - {fileID: 4722387118761515049}
+  - {fileID: 2275655891147322188}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2919861454489034020
@@ -105,7 +107,7 @@ CharacterController:
   m_Enabled: 1
   serializedVersion: 3
   m_Height: 1
-  m_Radius: 0.6
+  m_Radius: 0.3
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
@@ -124,12 +126,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdController
   _lookAheadDistance: 1
+  _lateralOffsetRange: 0.2
   _detectDistance: 1.5
   _detectRadius: 0.3
-  _detectHeight: 0.9
+  _detectHeight: 0.5
   _detectLayers:
     serializedVersion: 2
+    m_Bits: 2112
+  _playerLayers:
+    serializedVersion: 2
     m_Bits: 64
+  _speedVariation: 0.2
+  _canJumpOver: 1
+  _jumpOverSpeedMultiplier: 3
+  _noJumpEdgeDistance: 3
+  _jumpPowerAttributeKey: JumpPower
 --- !u!114 &3750706564106249470
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -150,6 +161,8 @@ MonoBehaviour:
   _rotateMediator: {fileID: 6405489376610710897}
   _spawnMediator: {fileID: 0}
   _animationMediator: {fileID: 0}
+  _enemyAnimationMediator: {fileID: 453065576457260501}
+  _petMediator: {fileID: 0}
 --- !u!114 &2484129671692693122
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -169,6 +182,21 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 9cea63686f334f44b94e294a93307cf2, type: 2}
   - {fileID: 2100000, guid: 7cc0faed9611f6d45839983b6b2175d2, type: 2}
   - {fileID: 2100000, guid: 743d5e1143919344c86ed4bd714df894, type: 2}
+--- !u!114 &4600830364082667492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 213700412472898322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2930ff96ba524e844932a36c02d93777, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdExpression
+  _crowdController: {fileID: 3314283304832458301}
+  _animator: {fileID: 3827001883462354350}
+  _holdDuration: 1.5
 --- !u!1 &688763360654728494
 GameObject:
   m_ObjectHideFlags: 0
@@ -752,6 +780,8 @@ GameObject:
   - component: {fileID: 4722387118761515049}
   - component: {fileID: 3827001883462354350}
   - component: {fileID: 4743503325587406695}
+  - component: {fileID: 3489368563177452454}
+  - component: {fileID: 6954956120894041549}
   m_Layer: 0
   m_Name: LilRobot
   m_TagString: Untagged
@@ -788,10 +818,10 @@ Animator:
   m_GameObject: {fileID: 7269956217856770921}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: d314a97dbb26b834a882d42db92820bd, type: 3}
-  m_Controller: {fileID: 9100000, guid: 810b84598c32744499d7496846593927, type: 2}
+  m_Controller: {fileID: 9100000, guid: dc511f9456b130844a5b776e87d3e349, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
@@ -824,6 +854,36 @@ Animation:
   m_AnimatePhysics: 0
   m_UpdateMode: 0
   m_CullingType: 0
+--- !u!114 &3489368563177452454
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7269956217856770921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a9aa3a253ccdfd42b9cac987621797e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimation.EnemyAnimator
+  _referenceMoveSpeed: 3
+  _skillAnimations:
+  - SkillName: Attack
+    Parameter: Attack
+    IsHold: 0
+  _deathPlayCount: 1
+--- !u!114 &6954956120894041549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7269956217856770921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 177c45a78790bcb428f04bda4cf78d40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimation.JumpAnimator
 --- !u!1 &7987424125598515920
 GameObject:
   m_ObjectHideFlags: 0
@@ -969,7 +1029,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4236341993996040545, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
       propertyPath: _jumpSpeedValueKey
-      value: 
+      value: JumpPower
       objectReference: {fileID: 0}
     - target: {fileID: 5837350018986070136, guid: 82d97e7c3a53e20448eb0851449635ed, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1032,6 +1092,91 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4184b676d9d003498c27f9ce1b7507b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Mediator.MoveMediator
+--- !u!1001 &7091328893642946753
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5019180908648998808}
+    m_Modifications:
+    - target: {fileID: 3440736212810742447, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_Name
+      value: EnemyAnimationPrefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 7215024659240875284, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: _jumpAnimator
+      value: 
+      objectReference: {fileID: 6954956120894041549}
+    - target: {fileID: 7215024659240875284, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: _enemyAnimator
+      value: 
+      objectReference: {fileID: 3489368563177452454}
+    - target: {fileID: 7215024659240875284, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: _speedValueKey
+      value: MoveSpeed
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.28374004
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.56046
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.14796066
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+--- !u!114 &453065576457260501 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7215024659240875284, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+  m_PrefabInstance: {fileID: 7091328893642946753}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7eec9ddd0155414499f71ce19e3c38c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.EnemyAnimationMediator
+--- !u!4 &2275655891147322188 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+  m_PrefabInstance: {fileID: 7091328893642946753}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7989178145706482183
 PrefabInstance:
   m_ObjectHideFlags: 0

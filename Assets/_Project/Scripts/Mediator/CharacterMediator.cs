@@ -25,6 +25,8 @@ namespace Mediator
         [SerializeField] private RotateMediator _rotateMediator;
         [SerializeField] private SpawnMediator _spawnMediator;
         [SerializeField] private AnimationMediator _animationMediator;
+        [Tooltip("AI(적·군중) 전용 애니메이션 중재자. 플레이어는 비워 둔다.")]
+        [SerializeField] private EnemyAnimationMediator _enemyAnimationMediator;
         [SerializeField] private PetMediator _petMediator;
         #endregion
 
@@ -49,6 +51,9 @@ namespace Mediator
                 return _attributeSet ? _attributeSet : null;
             }
         }
+
+        /// <summary>사격 차지 진행도(0~1). 차지 중이 아니면 0.</summary>
+        public float FireChargeRatio => _skillMediator ? _skillMediator.FireChargeRatio : 0.0f;
         #endregion
 
         #region Events
@@ -66,6 +71,8 @@ namespace Mediator
         public event Action<string, float> OnSkillUsed;
         /// <summary>상호작용 대상을 바라보는지 여부가 바뀔 때 발생한다. 대상이 있으면 true.</summary>
         public event Action<bool> OnInteractableChanged;
+        /// <summary>사격 차지 상태 변경. 차지 시작이면 true, 발사·취소로 끝나면 false.</summary>
+        public event Action<bool> OnFireChargeChanged;
         #endregion
 
         #region Unity Lifecycle
@@ -301,6 +308,11 @@ namespace Mediator
             OnInteractableChanged?.Invoke(hasTarget);
         }
 
+        private void OnFireChargeChangedCallback(bool isCharging)
+        {
+            OnFireChargeChanged?.Invoke(isCharging);
+        }
+
         /// <summary>
         /// 스캔 발동 위치를 펫에게 정하게 하고, 정해지면 그 위치에서 스캔을 시작한다. 펫이 없으면 캐릭터 위치에서 바로 시작한다.
         /// </summary>
@@ -406,6 +418,7 @@ namespace Mediator
             {
                 Vector3? hitSource = GetHitSource(_lastChangeContext);
                 if (_animationMediator) _animationMediator.NotifyHit(hitSource);
+                if (_enemyAnimationMediator) _enemyAnimationMediator.NotifyHit(hitSource);
                 if (_petMediator) _petMediator.NotifyHit(_animationMediator ? _animationMediator.GetHitDirection(hitSource) : 0);
             }
             OnHit?.Invoke();
@@ -437,13 +450,14 @@ namespace Mediator
             DisableControl();
             if (_petMediator) _petMediator.NotifyDeath();
 
-            if (!_animationMediator)
+            if (!_animationMediator && !_enemyAnimationMediator)
             {
                 EndDeath();
                 return;
             }
 
-            _animationMediator.NotifyDeath();
+            if (_animationMediator) _animationMediator.NotifyDeath();
+            if (_enemyAnimationMediator) _enemyAnimationMediator.NotifyDeath();
         }
 
         private void OnDeathAnimationEndedCallback()
@@ -490,6 +504,7 @@ namespace Mediator
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested += OnFireCallback;
             if (_skillMediator) _skillMediator.OnSkillUsed += OnSkillUsedCallback;
             if (_skillMediator) _skillMediator.OnInteractableChanged += OnInteractableChangedCallback;
+            if (_skillMediator) _skillMediator.OnFireChargeChanged += OnFireChargeChangedCallback;
             if (_skillMediator) _skillMediator.OnScanRequested += OnScanRequestedCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnCriticalHit += OnCriticalHitCallback;
@@ -528,6 +543,12 @@ namespace Mediator
             if (_moveMediator && _petMediator) _moveMediator.OnJumpStarted += _petMediator.NotifyJumpStarted;
             if (_moveMediator && _petMediator) _moveMediator.OnJumpEnded += _petMediator.NotifyJumpEnded;
             if (_animationMediator && _petMediator) _animationMediator.OnSpecialIdleStarted += _petMediator.NotifySpecialIdle;
+            if (_enemyAnimationMediator) _enemyAnimationMediator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
+            if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnMoveDirectionChanged += _enemyAnimationMediator.SetMoveDirection;
+            if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnJumpStarted += _enemyAnimationMediator.NotifyJumpStarted;
+            if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnJumpEnded += _enemyAnimationMediator.NotifyJumpEnded;
+            if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillUsed += _enemyAnimationMediator.NotifySkillUsed;
+            if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillStopped += _enemyAnimationMediator.NotifySkillStopped;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -541,6 +562,7 @@ namespace Mediator
             if (_skillMediator && _attributeMediator) _skillMediator.OnFireRequested -= OnFireCallback;
             if (_skillMediator) _skillMediator.OnSkillUsed -= OnSkillUsedCallback;
             if (_skillMediator) _skillMediator.OnInteractableChanged -= OnInteractableChangedCallback;
+            if (_skillMediator) _skillMediator.OnFireChargeChanged -= OnFireChargeChangedCallback;
             if (_skillMediator) _skillMediator.OnScanRequested -= OnScanRequestedCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnCriticalHit -= OnCriticalHitCallback;
@@ -579,6 +601,12 @@ namespace Mediator
             if (_moveMediator && _petMediator) _moveMediator.OnJumpStarted -= _petMediator.NotifyJumpStarted;
             if (_moveMediator && _petMediator) _moveMediator.OnJumpEnded -= _petMediator.NotifyJumpEnded;
             if (_animationMediator && _petMediator) _animationMediator.OnSpecialIdleStarted -= _petMediator.NotifySpecialIdle;
+            if (_enemyAnimationMediator) _enemyAnimationMediator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
+            if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnMoveDirectionChanged -= _enemyAnimationMediator.SetMoveDirection;
+            if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnJumpStarted -= _enemyAnimationMediator.NotifyJumpStarted;
+            if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnJumpEnded -= _enemyAnimationMediator.NotifyJumpEnded;
+            if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillUsed -= _enemyAnimationMediator.NotifySkillUsed;
+            if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillStopped -= _enemyAnimationMediator.NotifySkillStopped;
         }
         #endregion
     }
