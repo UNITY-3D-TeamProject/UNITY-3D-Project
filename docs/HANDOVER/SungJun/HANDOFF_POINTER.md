@@ -5,6 +5,8 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-16** — 메인 메뉴 START → 튜토리얼 연결: `SceneLoader.TryStartNewGame()`(순서 처음부터, 로딩씬 경유) 추가, Play로 튜토리얼 진입·플레이어 스폰 확인, intent-032 해결. 커밋 안 함: [작업 기록](./2026-10-16/main-menu-logic.md)
+- **2026-10-16** — 메인 메뉴 로직을 MVP(`MainMenuView`·`MainMenuPresenter`)로 추가: 아무 키 → 스플래시에서 메뉴, 설정창 닫기 버튼·ESC, CONTINUE 비활성, EXIT. START는 씬 전환 결정 대기. Test MainScene·프리팹 저장, 커밋 안 함: [작업 기록](./2026-10-16/main-menu-logic.md)
 - **2026-10-16** — Test MainScene에 카드형 스킬 HUD `Canvas_SkillCards`(키·아이콘·원형 쿨타임 바·쿨타임 숫자·이름·소모값, 3장) 추가, Test 프리팹·MainScene 저장(커밋 안 함): [작업 기록](./2026-10-16/skill-card-hud.md)
 - **2026-10-16** — MainScene `Canvas/Crosshair`를 참고 이미지형(점 + 작은 링, 위 반원 빨강·아래 반원 파랑 꽉 채움, 라벨 끔)으로 수정 후 저장, 이어서 원호 지름 176 → 84로 크로스헤어에 붙임, 저장(커밋 안 함): [작업 기록](./2026-10-16/crosshair-half-arcs.md)
 - **2026-10-16** — HUD 시안(`Canvas_HpWide`, `Canvas_HudReference` 크로스헤어 위 반원 빨강/아래 반원 파랑, 100% = 반원) 포함 MainScene 저장, Test 저장소 90a4ca2 커밋(push 안 함): [작업 기록](./2026-10-16/sci-fi-ui-gallery-v1v2.md)

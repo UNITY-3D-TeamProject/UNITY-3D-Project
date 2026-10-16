@@ -30,6 +30,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI / Main Menu]** 메인 메뉴 로직 MVP 연결(아무 키로 스플래시 → 메뉴, 설정창 ESC 닫기, CONTINUE 비활성, EXIT, START → `SceneLoader.TryStartNewGame`으로 튜토리얼) → [문서](./clear/intent-032-main-menu-logic.md) (resolved: 2026-10-16)
 - **[UI / Test Scene]** 카드형 스킬 HUD 시안 Canvas(아이콘·키·이름·소모값·쿨타임 숫자·쿨타임 바) → [문서](./clear/intent-028-skill-card-hud.md) (resolved: 2026-10-16)
 - **[UI / Test Scene]** 로비 참고 HUD를 Test MainScene으로 이동하고 Canvas 9개를 프리팹화 → [문서](./clear/intent-027-main-scene-canvas-prefabs.md) (resolved: 2026-10-16)
 - **[UI / Lobby]** 로비 참고 이미지 HUD 시안 Canvas 추가 → [문서](./clear/intent-026-lobby-hud-reference.md) (resolved: 2026-10-16)
