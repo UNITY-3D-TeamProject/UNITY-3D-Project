@@ -38,8 +38,10 @@ namespace Mediator.SubMediators
         [SerializeField] private string _speedValueKey;
         [Tooltip("점프력으로 사용할 어트리뷰트 이름")]
         [SerializeField] private string _jumpSpeedValueKey;
+        [Tooltip("발판에서 떨어진 뒤 지상 점프를 허용하는 유예 시간(초)")]
+        [SerializeField, Min(0.0f)] private float _coyoteTime = 0.1f;
         #endregion
-        
+
         #region Private Fields
         private IMoveController _moveController;
         private IJumpReleaseController _jumpReleaseController;
@@ -49,6 +51,8 @@ namespace Mediator.SubMediators
         private float _baseGravity;
         private float _moveSpeedRatio = 1.0f;
         private float _jumpPowerRatio = 1.0f;
+        private float _lastGroundedTime = float.NegativeInfinity;
+        private bool _hasJumpedSinceGrounded;
         #endregion
 
         #region Properties
@@ -102,11 +106,20 @@ namespace Mediator.SubMediators
             base.OnEnable();
         }
 
+        private void Update()
+        {
+            // 코요테 타임 판정을 위해 마지막으로 접지한 시각을 기록
+            if (_motor && _motor.IsGrounded) _lastGroundedTime = Time.time;
+        }
+
         private void OnDisable()
         {
             // 비활성화 시 입력 잔여값으로 계속 움직이지 않도록 정지
             if (_moveDirectionCalculator) _moveDirectionCalculator.SetMoveInput(Vector2.zero);
             if (_motor) _motor.Direction = Vector3.zero;
+            // 모터도 비활성화되면 착지 알림 없이 점프 상태가 풀리므로 함께 초기화
+            _hasJumpedSinceGrounded = false;
+            _lastGroundedTime = float.NegativeInfinity;
             Unsubscribe();
             UnBindRequest();
         }
@@ -291,18 +304,28 @@ namespace Mediator.SubMediators
 
         /// <summary>
         /// 점프 명령을 전달한다. 구르는 중이면 무시하고, 공중이면 공중 점프를 요청한다.
+        /// 걸어서 떨어진 직후 코요테 타임 안이면 지상 점프로 처리한다.
         /// </summary>
         private void CommandJump()
         {
             if (!_motor) return;
             if (_rollMover && _rollMover.IsRolling) return;
-            if (!_motor.IsGrounded)
+            if (!_motor.IsGrounded && !IsInCoyoteTime())
             {
                 OnAirJumpRequested?.Invoke();
                 return;
             }
 
             _motor.Jump(_jumpPower * _jumpPowerRatio);
+        }
+
+        /// <summary>
+        /// 점프 없이 지면을 벗어난 뒤 코요테 타임 안인지 반환한다.
+        /// </summary>
+        /// <returns>마지막 착지 이후 점프한 적이 없고, 마지막 접지로부터 _coyoteTime 이 지나지 않았으면 true</returns>
+        private bool IsInCoyoteTime()
+        {
+            return !_hasJumpedSinceGrounded && (Time.time - _lastGroundedTime <= _coyoteTime);
         }
         
         /// <summary>
@@ -348,6 +371,8 @@ namespace Mediator.SubMediators
         /// </summary>
         private void NotifyJumpStarted()
         {
+            // 점프 직후 유예 시간 안에 지상 점프가 다시 나가지 않도록 막는다
+            _hasJumpedSinceGrounded = true;
             OnJumpStarted?.Invoke();
         }
 
@@ -364,6 +389,7 @@ namespace Mediator.SubMediators
         /// </summary>
         private void NotifyJumpEnded()
         {
+            _hasJumpedSinceGrounded = false;
             OnJumpEnded?.Invoke();
         }
 
