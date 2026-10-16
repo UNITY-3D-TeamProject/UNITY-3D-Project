@@ -57,7 +57,7 @@
 | 23 | 펫 Mediator 구조 정리 (Spawner 는 생성만, Mediator 가 이동·애니메이션 연결) | [23-pet-mediator-refactor.md](done/23-pet-mediator-refactor.md) | 완료 |
 | 24 | 코요테 타임 | [24-coyote-time.md](done/24-coyote-time.md) | 완료 |
 | 25 | 점프 버퍼링 | [25-jump-buffering.md](done/25-jump-buffering.md) | 완료 |
-| 26 | 차지샷 대미지 하드코딩 수정 | [26-charge-shot-damage.md](26-charge-shot-damage.md) | 대기 |
+| 26 | 차지샷 대미지 하드코딩 수정 | [26-charge-shot-damage.md](done/26-charge-shot-damage.md) | 완료 |
 | 27 | 차지샷 게이지 퍼사드 노출 (0~1) | [27-charge-gauge-facade.md](27-charge-gauge-facade.md) | 대기 |
 | 28 | 총알 오브젝트 풀 연동 | [28-bullet-object-pool.md](28-bullet-object-pool.md) | 대기 |
 | 29 | 총알 메시 + FX | [29-bullet-mesh-fx.md](29-bullet-mesh-fx.md) | 대기 |
