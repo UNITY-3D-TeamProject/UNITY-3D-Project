@@ -61,6 +61,14 @@ namespace Rotation
             _yaw = restEuler.y;
         }
 
+        private void OnEnable()
+        {
+            // 풀에서 꺼낼 때처럼 꺼진 동안 회전이 바뀌었으면 그 방향에서 시작한다.
+            // Awake 에서만 읽으면 첫 Update 가 예전 yaw 로 덮어써 몸통이 튀었다가 돌아온다.
+            _yaw = _body.localRotation.eulerAngles.y;
+            _hasLookDirection = false;
+        }
+
         private void Update()
         {
             // 고정 방향이 있으면 그 방향을 유지한다 (LockLookDirection 에서 이미 돌려 둠)

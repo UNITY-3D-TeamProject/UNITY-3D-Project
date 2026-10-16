@@ -8,7 +8,7 @@
 | 플레이어 총알 | `BulletFactory`, `BulletController` | `Instantiate` → `Get`, `Destroy` → `Release`, `OnEnable` 초기화 |
 | 몬스터 | `EnemyRangedAttack`, 사망 처리(`CharacterMediator`), `AttributeSet` 등 | 적 총알 `Get`, 사망 시 `Release`, 재사용 초기화 |
 | 몬스터 스포너 | `MonsterSpawner` | `Instantiate` → `Get` |
-| NPC(Crowd) | 없음 | `CrowdLane`이 자체 풀을 쓰므로 적용하지 않는다 |
+| NPC(Crowd) | `CrowdLane` | 적용 완료: `Get(프리팹)`으로 꺼내고 레인 끝에서 `Release` |
 
 > **몬스터와 몬스터 스포너는 반드시 같이 적용한다.** 스포너만 `Get`으로 바꾸고 몬스터 쪽 초기화가 없으면, 죽었던 몬스터가 체력 0 상태로 다시 나온다.
 
@@ -24,7 +24,7 @@
 | Player Bullets | `Bullet` | `BulletFactory` (비차지) |
 | Player Charged Bullets | `ChargedBullet` | `BulletFactory` (차지) |
 | Enemy Bullets | `EnemyBullet` | `EnemyRangedAttack` |
-| Crowd | `Car`, `Pedestrian` | 등록만 돼 있음 (`CrowdLane`은 자체 풀 사용) |
+| Crowd | `Car`, `Pedestrian` | `CrowdLane` (레인의 프리팹 칸으로 꺼냄) |
 
 카테고리마다 인스펙터 값 3개가 **그 카테고리의 키 하나하나에 각각** 적용된다.
 

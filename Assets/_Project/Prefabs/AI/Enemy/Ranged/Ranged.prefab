@@ -267,6 +267,7 @@ Transform:
   - {fileID: 7631111125098639357}
   - {fileID: 3646732292349600105}
   - {fileID: 3110924223483423029}
+  - {fileID: 8125789449530482015}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &181254065960653664
@@ -348,6 +349,8 @@ MonoBehaviour:
   _rotateMediator: {fileID: 8465775487129008740}
   _spawnMediator: {fileID: 0}
   _animationMediator: {fileID: 0}
+  _enemyAnimationMediator: {fileID: 7573302190820598726}
+  _petMediator: {fileID: 0}
 --- !u!114 &5351093735736510952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -467,6 +470,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3110924223483423029}
   - component: {fileID: 8869906052547108447}
+  - component: {fileID: 661448197179527196}
   m_Layer: 0
   m_Name: Blast Robot Red
   m_TagString: Untagged
@@ -508,7 +512,7 @@ Animator:
   m_GameObject: {fileID: 835412326865447768}
   m_Enabled: 0
   m_Avatar: {fileID: 9000000, guid: e14335db99f47444eacb2793fb52f7cc, type: 3}
-  m_Controller: {fileID: 9100000, guid: ff9cc93d2e6a37d4089eb0c348939121, type: 2}
+  m_Controller: {fileID: 9100000, guid: 422df81025a428944bcead55fee99ca3, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -520,6 +524,24 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &661448197179527196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 835412326865447768}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a9aa3a253ccdfd42b9cac987621797e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimation.EnemyAnimator
+  _referenceMoveSpeed: 3
+  _skillAnimations:
+  - SkillName: Attack
+    Parameter: Attack
+    IsHold: 0
+  _deathPlayCount: 1
 --- !u!1 &894696820916936218
 GameObject:
   m_ObjectHideFlags: 0
@@ -1950,6 +1972,87 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07d16cf869a0cf24ebbbe2d1c7f6a568, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatMediator
+--- !u!1001 &952841745088960210
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7864393348264980712}
+    m_Modifications:
+    - target: {fileID: 3440736212810742447, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_Name
+      value: EnemyAnimationPrefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 7215024659240875284, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: _enemyAnimator
+      value: 
+      objectReference: {fileID: 661448197179527196}
+    - target: {fileID: 7215024659240875284, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: _speedValueKey
+      value: MoveSpeed
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.003070116
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.0315094
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+--- !u!114 &7573302190820598726 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7215024659240875284, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+  m_PrefabInstance: {fileID: 952841745088960210}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7eec9ddd0155414499f71ce19e3c38c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.EnemyAnimationMediator
+--- !u!4 &8125789449530482015 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9078613597798615949, guid: 8743136b3488fa243b5a4a5330035f2d, type: 3}
+  m_PrefabInstance: {fileID: 952841745088960210}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3336937868105744258
 PrefabInstance:
   m_ObjectHideFlags: 0
