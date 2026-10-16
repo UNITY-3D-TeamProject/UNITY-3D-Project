@@ -32,6 +32,11 @@ namespace Map.Maze
             public bool OpenWest;
         }
 
+        private static readonly EDirection[] AllDirections =
+        {
+            EDirection.North, EDirection.East, EDirection.South, EDirection.West
+        };
+
         // GenerateMaze 가 실행되는 동안 재귀 함수가 함께 쓰는 작업용 값
         private int _width;
         private int _height;
@@ -57,6 +62,37 @@ namespace Map.Maze
             }
 
             RecursiveBacktracking(startPos.x, startPos.y);
+            return _grid;
+        }
+
+        /// <summary>
+        /// Growing tree 로 미로를 만든 뒤 브레이드로 순환을 더한다. 같은 random(시드)에서는 항상 같은 미로가 나온다.
+        /// </summary>
+        /// <param name="newestRatio">다음에 뚫을 칸으로 가장 최근 칸을 고를 확률(0 ~ 1). 1 이면 긴 외길(재귀 백트래킹), 0 이면 짧은 곁가지가 많은 미로(프림)</param>
+        /// <param name="braidRatio">막다른 칸마다 막힌 벽 하나를 뚫을 확률(0 ~ 1). 0 이면 순환이 없다.</param>
+        public SCell[,] GenerateGrowingTreeMaze(
+            int width,
+            int height,
+            Vector2Int startPos,
+            float newestRatio,
+            float braidRatio,
+            System.Random random)
+        {
+            _random = random;
+            _width = width;
+            _height = height;
+            _grid = new SCell[width, height];
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    _grid[x, y] = new SCell { X = x, Y = y };
+                }
+            }
+
+            GrowingTree(startPos, newestRatio);
+            Braid(braidRatio);
             return _grid;
         }
 
@@ -116,6 +152,148 @@ namespace Map.Maze
                     }
                     RecursiveBacktracking(nx, ny);
                 }
+            }
+        }
+
+        // 활성 칸 목록에서 칸을 하나 골라(newestRatio 확률로 가장 최근 칸, 아니면 무작위 칸) 안 가 본 이웃으로 길을 뚫는다.
+        // 더 뚫을 이웃이 없는 칸은 목록에서 뺀다.
+        private void GrowingTree(Vector2Int startPos, float newestRatio)
+        {
+            var activeCells = new List<Vector2Int> { startPos };
+            var unvisitedDirections = new List<EDirection>(4);
+            _grid[startPos.x, startPos.y].IsVisited = true;
+
+            while (activeCells.Count > 0)
+            {
+                int index = (_random.NextDouble() < newestRatio) ? activeCells.Count - 1 : _random.Next(activeCells.Count);
+                Vector2Int cell = activeCells[index];
+
+                unvisitedDirections.Clear();
+                foreach (EDirection direction in AllDirections)
+                {
+                    Vector2Int neighbor = cell + GetOffset(direction);
+                    if (IsInside(neighbor) && !_grid[neighbor.x, neighbor.y].IsVisited)
+                    {
+                        unvisitedDirections.Add(direction);
+                    }
+                }
+
+                if (unvisitedDirections.Count == 0)
+                {
+                    activeCells.RemoveAt(index);
+                    continue;
+                }
+
+                EDirection picked = unvisitedDirections[_random.Next(unvisitedDirections.Count)];
+                Vector2Int next = cell + GetOffset(picked);
+                OpenWall(cell, picked);
+                _grid[next.x, next.y].IsVisited = true;
+                activeCells.Add(next);
+            }
+        }
+
+        // 막다른 칸(뚫린 방향이 하나뿐인 칸)마다 braidRatio 확률로 막힌 벽 하나를 뚫어 순환을 만든다.
+        // 옆 칸도 막다른 칸이면 그쪽을 먼저 뚫어 막다른 길 두 개를 한 번에 없앤다.
+        private void Braid(float braidRatio)
+        {
+            if (braidRatio <= 0.0f) return;
+
+            var closedDirections = new List<EDirection>(4);
+
+            for (int x = 0; x < _width; x++)
+            {
+                for (int y = 0; y < _height; y++)
+                {
+                    var cell = new Vector2Int(x, y);
+                    if (CountOpenings(cell) != 1) continue;
+                    if (_random.NextDouble() >= braidRatio) continue;
+
+                    closedDirections.Clear();
+                    foreach (EDirection direction in AllDirections)
+                    {
+                        if (!IsOpen(cell, direction) && IsInside(cell + GetOffset(direction)))
+                        {
+                            closedDirections.Add(direction);
+                        }
+                    }
+
+                    if (closedDirections.Count == 0) continue;
+
+                    EDirection picked = closedDirections[_random.Next(closedDirections.Count)];
+                    foreach (EDirection direction in closedDirections)
+                    {
+                        if (CountOpenings(cell + GetOffset(direction)) == 1)
+                        {
+                            picked = direction;
+                            break;
+                        }
+                    }
+
+                    OpenWall(cell, picked);
+                }
+            }
+        }
+
+        private static Vector2Int GetOffset(EDirection direction)
+        {
+            switch (direction)
+            {
+                case EDirection.North: return Vector2Int.up;
+                case EDirection.East:  return Vector2Int.right;
+                case EDirection.South: return Vector2Int.down;
+                default:               return Vector2Int.left;
+            }
+        }
+
+        private bool IsInside(Vector2Int cell)
+        {
+            return (cell.x >= 0) && (cell.x < _width) && (cell.y >= 0) && (cell.y < _height);
+        }
+
+        private bool IsOpen(Vector2Int cell, EDirection direction)
+        {
+            SCell value = _grid[cell.x, cell.y];
+            switch (direction)
+            {
+                case EDirection.North: return value.OpenNorth;
+                case EDirection.East:  return value.OpenEast;
+                case EDirection.South: return value.OpenSouth;
+                default:               return value.OpenWest;
+            }
+        }
+
+        private int CountOpenings(Vector2Int cell)
+        {
+            int count = 0;
+            foreach (EDirection direction in AllDirections)
+            {
+                if (IsOpen(cell, direction)) count++;
+            }
+            return count;
+        }
+
+        // 두 칸 사이의 벽을 양쪽 칸에서 모두 없앤다
+        private void OpenWall(Vector2Int cell, EDirection direction)
+        {
+            Vector2Int next = cell + GetOffset(direction);
+            switch (direction)
+            {
+                case EDirection.North:
+                    _grid[cell.x, cell.y].OpenNorth = true;
+                    _grid[next.x, next.y].OpenSouth = true;
+                    break;
+                case EDirection.East:
+                    _grid[cell.x, cell.y].OpenEast = true;
+                    _grid[next.x, next.y].OpenWest = true;
+                    break;
+                case EDirection.South:
+                    _grid[cell.x, cell.y].OpenSouth = true;
+                    _grid[next.x, next.y].OpenNorth = true;
+                    break;
+                case EDirection.West:
+                    _grid[cell.x, cell.y].OpenWest = true;
+                    _grid[next.x, next.y].OpenEast = true;
+                    break;
             }
         }
 

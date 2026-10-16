@@ -12,20 +12,86 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87b9010f4d7f53949bc18f27c6e79fcb, type: 3}
   m_Name: SOMazeChainSettings_File
   m_EditorClassIdentifier: Assembly-CSharp::Map.Maze.SOMazeChainSettings
-  _size: 20
+  _size: 10
   _tileSize: 5
   _wallThickness: 0.5
   _themes:
-  - WallPrefab: {fileID: 8519659671226843633, guid: 7cd21c63dc6f32947b5f1dddb79087b3, type: 3}
+  - WallPrefabs:
+    - {fileID: 8519659671226843633, guid: 7cd21c63dc6f32947b5f1dddb79087b3, type: 3}
+    - {fileID: 8519659671226843633, guid: 7cd21c63dc6f32947b5f1dddb79087b3, type: 3}
+    - {fileID: 8519659671226843633, guid: 7cd21c63dc6f32947b5f1dddb79087b3, type: 3}
+    - {fileID: 8519659671226843633, guid: 5b68283304bdbc54d861b5e792c1f5d5, type: 3}
+    - {fileID: 8519659671226843633, guid: 793b0a88cd6d0344c8b1f84112f855b5, type: 3}
+    - {fileID: 8519659671226843633, guid: df31cbc5e3cb43a4b830268ae7352449, type: 3}
+    PillarPrefabs:
+    - {fileID: 5088327986258452606, guid: 61d6532937e586648aa51af3225d110d, type: 3}
     GatePrefab: {fileID: 6781828260155600193, guid: fbc862a9ca7d2ab4ca502fe4350ad812, type: 3}
-    Placements: []
+    NewestCellRatio: 0.6
+    BraidRatio: 0.1
+    Placements:
+    - Prefab: {fileID: 8925117454919946858, guid: 98df82c52f76d25478ddc3ad50d66738, type: 3}
+      Count: 0
+      Offset: {x: 0, y: 0, z: 0}
+      Rule: 2
+      CellsBehind: 0
+      CellsAhead: 1
+    - Prefab: {fileID: 4098002433377150107, guid: 9ab63d83313a9b54ba4451b0f62a12d0, type: 3}
+      Count: 4
+      Offset: {x: 0, y: 0, z: 0}
+      Rule: 2
+      CellsBehind: 2
+      CellsAhead: 0
+    - Prefab: {fileID: 6602834316838318497, guid: 5faa1f4cc4e4aaf40810cf10a05f9980, type: 3}
+      Count: 4
+      Offset: {x: 0, y: 0, z: 0}
+      Rule: 1
+      CellsBehind: 0
+      CellsAhead: 0
+    - Prefab: {fileID: 3346505335921277440, guid: e782a2755fb9199418afbb6a8d57fe8b, type: 3}
+      Count: 4
+      Offset: {x: 0, y: 0, z: 0}
+      Rule: 1
+      CellsBehind: 0
+      CellsAhead: 0
+    - Prefab: {fileID: 8060906748008058527, guid: aee3950acc74bf245949e04c679af987, type: 3}
+      Count: 4
+      Offset: {x: 0, y: 0, z: 0}
+      Rule: 0
+      CellsBehind: 0
+      CellsAhead: 0
+    - Prefab: {fileID: 3739849782839380761, guid: 5f734f549f2b6aa4b96871de40dbe528, type: 3}
+      Count: 3
+      Offset: {x: 0, y: 0, z: 0}
+      Rule: 0
+      CellsBehind: 0
+      CellsAhead: 0
     ShouldBakeNavMesh: 0
-  - WallPrefab: {fileID: 8696989729492793409, guid: 2eb24309eb64fbf429ff1f1c3b873b37, type: 3}
+  - WallPrefabs:
+    - {fileID: 8696989729492793409, guid: 2eb24309eb64fbf429ff1f1c3b873b37, type: 3}
+    - {fileID: 8696989729492793409, guid: 2eb24309eb64fbf429ff1f1c3b873b37, type: 3}
+    - {fileID: 8696989729492793409, guid: 2eb24309eb64fbf429ff1f1c3b873b37, type: 3}
+    - {fileID: 8696989729492793409, guid: a043c9e8078316f4c8f3eafab456c9fa, type: 3}
+    - {fileID: 8696989729492793409, guid: aa94e18abc0dbcf48948aed7f811460b, type: 3}
+    - {fileID: 8696989729492793409, guid: f7151ca9e4ac6704996dcb04ba11c962, type: 3}
+    PillarPrefabs:
+    - {fileID: 2038370324933591478, guid: aebba0cee9cd660439b71a2803034c71, type: 3}
     GatePrefab: {fileID: 3475270242610638698, guid: 00b148209ba58c84fadf0fab4ef5a0d2, type: 3}
+    NewestCellRatio: 0.4
+    BraidRatio: 0.3
     Placements: []
     ShouldBakeNavMesh: 1
-  - WallPrefab: {fileID: 3120770528389404985, guid: c8b01abff4f56c94499cbf1250a2df3d, type: 3}
+  - WallPrefabs:
+    - {fileID: 3120770528389404985, guid: c8b01abff4f56c94499cbf1250a2df3d, type: 3}
+    - {fileID: 3120770528389404985, guid: c8b01abff4f56c94499cbf1250a2df3d, type: 3}
+    - {fileID: 3120770528389404985, guid: c8b01abff4f56c94499cbf1250a2df3d, type: 3}
+    - {fileID: 3120770528389404985, guid: 5547be8ed58836f4bbe0109e81c2cd85, type: 3}
+    - {fileID: 3120770528389404985, guid: 393755cd4d95ca441926aabe5fdadd0d, type: 3}
+    - {fileID: 3120770528389404985, guid: cbe32c10014516749aa449c49774b7b3, type: 3}
+    PillarPrefabs:
+    - {fileID: 8449751778281132823, guid: 8642a8e616d5c5c4fbe49d871bb66d47, type: 3}
     GatePrefab: {fileID: 3801399245816027665, guid: 5920bfa7eec30704785bff4f40d39b9c, type: 3}
+    NewestCellRatio: 0.3
+    BraidRatio: 0.15
     Placements: []
     ShouldBakeNavMesh: 1
   _bridgeTileCount: 4
