@@ -436,6 +436,7 @@ namespace Mediator
                 if (_playerAnimationMediator) _playerAnimationMediator.NotifyHit(hitSource);
                 if (_enemyAnimationMediator) _enemyAnimationMediator.NotifyHit(hitSource);
                 if (_petMediator) _petMediator.NotifyHit(_playerAnimationMediator ? _playerAnimationMediator.GetHitDirection(hitSource) : 0);
+                if (hitSource.HasValue) OnHitFrom?.Invoke(hitSource.Value);
             }
             OnHit?.Invoke();
         }
