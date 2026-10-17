@@ -7,9 +7,8 @@ namespace Map.Gimmicks
     /// <summary>
     /// 가까이에서 상호작용(E)하면 뚜껑이 열리고, 안에 든 아이템이 나와 플레이어에게 날아가는 상자.
     /// 내용물은 닿으면 획득되는 아이템 프리팹(FeedItem, Touch 방식 EffectItem)을 넣는다.
-    /// 입력은 같은 오브젝트의 PlayerInteractRelay 가 받아 넘겨준다(상호작용 거리는 그쪽의 Range).
+    /// 입력은 플레이어의 Interact 스킬이 카메라 레이로 찾아 넘겨준다. 콜라이더가 있는 오브젝트를 Interact 레이어로 둔다.
     /// </summary>
-    [RequireComponent(typeof(PlayerInteractRelay))]
     public class ItemBox : MonoBehaviour, IInteractable
     {
         #region Serialized Fields
