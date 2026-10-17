@@ -123,8 +123,6 @@ namespace UI
             _gameManager.PauseGame();
             _playerFacade.SwitchToUIInput();
 
-            // Presenter와 View를 활성화한 뒤 화면 표시.
-            _activeSettingsPresenter.gameObject.SetActive(true);
             _activeSettingsPresenter.Open();
         }
 
@@ -135,10 +133,9 @@ namespace UI
             SettingsPresenter presenter = _activeSettingsPresenter;
             _activeSettingsPresenter = null;
 
-            // 닫기 요청 해제 후 화면과 컴포넌트 비활성화.
+            // 닫기 요청 해제 후 설정창 닫기.
             presenter.CloseRequested -= CloseSettings;
             presenter.Close();
-            presenter.gameObject.SetActive(false);
 
             if (_playerFacade != null)
                 _playerFacade.SwitchToPlayerInput();

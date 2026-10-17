@@ -9,6 +9,7 @@ namespace SceneTransition
     /// 순서: 튜토리얼 → 로비 → 피드 → 로비 → 파일 → 로비 → 보안 → 로비 → 라이브.
     /// 현재 단계는 처음 사용할 때 활성 씬의 Build Settings 번호로 정한다.
     /// (로비는 순서에 여러 번 나오므로, 로비에서 바로 플레이를 시작하면 첫 번째 로비로 본다)
+    /// 메인 메뉴처럼 순서에 없는 씬에서는 TryStartNewGame으로 순서를 처음부터 시작한다.
     /// 전환할 때는 로딩씬을 지금 씬 위에 겹쳐 띄우고, 로딩씬의 LoadingScreen이 지금 씬을 정리한 뒤 목적지 씬을 비동기로 불러온다.
     /// </summary>
     public static class SceneLoader
@@ -91,19 +92,7 @@ namespace SceneTransition
                 return false;
             }
 
-            int buildIndex = (int)destination;
-            if (!Application.CanStreamedLevelBeLoaded(buildIndex))
-            {
-                Debug.LogError($"[SceneLoader] Build Settings {buildIndex}번에 {destination} 씬이 등록되지 않았습니다.");
-                return false;
-            }
-
-            // 로딩씬이 없으면 _isLoading이 풀리지 않고 멈추므로 상태를 바꾸기 전에 확인한다.
-            if (!Application.CanStreamedLevelBeLoaded(LOADING_SCENE_NAME))
-            {
-                Debug.LogError($"[SceneLoader] Build Settings에 {LOADING_SCENE_NAME} 씬이 등록되지 않았습니다.");
-                return false;
-            }
+            if (!IsLoadable(destination)) return false;
 
             ESceneType previous = Sequence[_step];
             _step++;
@@ -114,6 +103,29 @@ namespace SceneTransition
 
             // 로딩씬은 지금 씬 위에 겹쳐 띄운다. 지금 씬 정리와 목적지 불러오기는 로딩씬의 LoadingScreen이 한다.
             // _isLoading은 목적지 로드가 끝날 때 푼다.
+            PendingScene = destination;
+            SceneManager.LoadSceneAsync(LOADING_SCENE_NAME, LoadSceneMode.Additive);
+            return true;
+        }
+
+        /// <summary>
+        /// 새 게임을 시작한다. 순서를 처음(튜토리얼)으로 되돌리고 로딩씬을 거쳐 튜토리얼을 연다.
+        /// 메인 메뉴처럼 순서에 없는 씬에서 호출한다. 이전 씬이 없으므로 전환 직전 이벤트는 발행하지 않는다.
+        /// </summary>
+        /// <returns>전환을 시작했으면 true</returns>
+        public static bool TryStartNewGame()
+        {
+            if (_isLoading) return false;
+
+            ESceneType destination = Sequence[0];
+            if (!IsLoadable(destination)) return false;
+
+            _step = 0;
+            _hasStep = true;
+            _isLoading = true;
+            // 출발 씬이 없으므로 컷씬도 없다.
+            PreviousScene = null;
+
             PendingScene = destination;
             SceneManager.LoadSceneAsync(LOADING_SCENE_NAME, LoadSceneMode.Additive);
             return true;
@@ -150,6 +162,26 @@ namespace SceneTransition
             PreviousScene = null;
             PendingScene = null;
             OnBeforeSceneChange = null;
+        }
+
+        // 목적지와 로딩씬이 Build Settings에 등록돼 있는지 확인한다.
+        // 로딩씬이 없으면 _isLoading이 풀리지 않고 멈추므로 상태를 바꾸기 전에 확인한다.
+        private static bool IsLoadable(ESceneType destination)
+        {
+            int buildIndex = (int)destination;
+            if (!Application.CanStreamedLevelBeLoaded(buildIndex))
+            {
+                Debug.LogError($"[SceneLoader] Build Settings {buildIndex}번에 {destination} 씬이 등록되지 않았습니다.");
+                return false;
+            }
+
+            if (!Application.CanStreamedLevelBeLoaded(LOADING_SCENE_NAME))
+            {
+                Debug.LogError($"[SceneLoader] Build Settings에 {LOADING_SCENE_NAME} 씬이 등록되지 않았습니다.");
+                return false;
+            }
+
+            return true;
         }
 
         private static void EnsureStep()

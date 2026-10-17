@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[UI / Scene]** 맵 씬 6개가 아직 옛 HUD `Canvas_Legacy`를 씀. `Canvas_InGame`으로 교체, 연결·외부 참조 조사 완료, Maze 브랜치 충돌·EventSystem 등 열린 질문 확인 대기 → [문서](./intent-037-map-scenes-canvas-ingame.md)
 - **[Spawner]** 몬스터 종류별 DB SO(SOMonsterData)로 초기값 적용 + 개체마다 MoveSpeed 비율 오차(±%) → [문서](../HANDOVER/SungJun/intent/intent-025-monster-attribute-variance.md)
 - **[Stage / Player State]** StageManager 체크포인트 컴포넌트 연결 및 도달 처리 → [문서](../HANDOVER/SungJun/intent/intent-016-stage-checkpoint-events.md)
 - **[Stage / Player State]** PlayerFacade 기반 낙하 복귀(이동)·사망 복구(파괴 후 재스폰) 구현, 사망 시 Destroy 전제 확인 필요 → [문서](../HANDOVER/SungJun/intent/intent-017-fall-death-recovery-playerfacade.md)
@@ -30,6 +31,17 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI / MainMenu]** 메인 메뉴 씬을 `_Project/Scenes/MainScene.unity`로 옮기고 캔버스 4개를 `Canvas_MainMenu` 프리팹 하나(Menu·Settings·AnyPress 패널)로 합침, `Canvas_Splash` 제외 → [문서](./clear/intent-036-main-scene-team-share.md) (resolved: 2026-10-17)
+- **[UI / Skill]** 차지샷 칸형 바를 `PlayerFacade.OnFireChargeChanged`·`FireChargeRatio`에 연결(차지 중에만 보이고 빨간 칸이 차오름, Fire 판정은 그대로) → [문서](./clear/intent-029-charge-shot-bar.md) (resolved: 2026-10-17)
+- **[UI / HUD]** 스킬 카드 3장(SCAN·ROLL·BLUETOOTH) 원형 쿨타임 바·남은 시간을 `PlayerFacade.OnSkillUsed`에 연결(쓰면 빈 채로 시작해 차오름, 쿨 중에만 N.Ns 표시) → [문서](./clear/intent-035-skill-card-cooldown.md) (resolved: 2026-10-17)
+- **[UI / HUD]** 크로스헤어 열(빨강)·배터리(파랑) 원호 4칸과 퍼센트 글자를 실제 플레이어 값에 연결(색마다 90° 두 칸, 0~50% 첫 칸·50~100% 둘째 칸, 글로우 동기화) → [문서](./clear/intent-034-crosshair-heat-battery-arcs.md) (resolved: 2026-10-16)
+- **[UI / HUD]** HP 패널 10칸을 Shift 슬라이더 게이지로 바꾸고 실제 플레이어 HP와 연결(한 칸 = MaxHp/10, 칸 안 부분 채움, 퍼센트 글자 연동) → [문서](./clear/intent-033-hp-segment-gauge.md) (resolved: 2026-10-16)
+- **[UI / Main Menu]** 메인 메뉴 로직 MVP 연결(아무 키로 스플래시 → 메뉴, 설정창 ESC 닫기, CONTINUE 비활성, EXIT, START → `SceneLoader.TryStartNewGame`으로 튜토리얼) → [문서](./clear/intent-032-main-menu-logic.md) (resolved: 2026-10-16)
+- **[UI / Test Scene]** Test MainScene을 UITestScene으로 바꾸고 새 MainScene에 메인 메뉴·설정창 Canvas 배치 → [문서](./clear/intent-031-main-menu-scene.md) (resolved: 2026-10-16)
+- **[UI / Test Scene]** Shift 고유 연출(그림자·그라데이션·Big 글로우 프레임)을 입힌 HUD 비교용 Canvas `Canvas_Shift` → [문서](./clear/intent-030-shift-style-hud-canvas.md) (resolved: 2026-10-16)
+- **[UI / Test Scene]** 카드형 스킬 HUD 시안 Canvas(아이콘·키·이름·소모값·쿨타임 숫자·쿨타임 바) → [문서](./clear/intent-028-skill-card-hud.md) (resolved: 2026-10-16)
+- **[UI / Test Scene]** 로비 참고 HUD를 Test MainScene으로 이동하고 Canvas 9개를 프리팹화 → [문서](./clear/intent-027-main-scene-canvas-prefabs.md) (resolved: 2026-10-16)
+- **[UI / Lobby]** 로비 참고 이미지 HUD 시안 Canvas 추가 → [문서](./clear/intent-026-lobby-hud-reference.md) (resolved: 2026-10-16)
 - **[Spawner]** 플레이어 스폰 Effect를 PlayerFacade.ApplyEffect로 적용, MonsterSpawner에 Fixed/Random 소환 선택 추가 → [문서](../HANDOVER/SungJun/intent/clear/intent-024-spawner-facade-effect-random-monster.md) (resolved: 2026-10-15)
 - **[Stage / Player State]** Core 기준 생존 낙하 복귀와 라운드 사망 복구 설계 완료, 구현 전 → [문서](../HANDOVER/SungJun/intent/clear/intent-015-stage-round-recovery-design.md) (resolved: 2026-10-08)
 - **[UI / Game State]** 초기 Playing, GameManager 커서 처리, 설정창 열기·닫기 액션 구독 구현 → [문서](../HANDOVER/SungJun/intent/intent-013-settings-input-flow.md) (resolved: 2026-10-05)
