@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Map / Lobby / Rendering]** 로비 하늘 전광판 RT 카메라 4대가 매 프레임 SSAO까지 돌며 그려 약 18fps를 잡아먹음. SSAO 없는 전용 Renderer + 4대 번갈아 간격 렌더(기본 15Hz) → [문서](./intent-042-lobby-skysign-camera-cost.md)
 - **[UI / Scene]** 맵 씬 6개가 아직 옛 HUD `Canvas_Legacy`를 씀. `Canvas_InGame`으로 교체, 연결·외부 참조 조사 완료, Maze 브랜치 충돌·EventSystem 등 열린 질문 확인 대기 → [문서](./intent-037-map-scenes-canvas-ingame.md)
 - **[Spawner]** 몬스터 종류별 DB SO(SOMonsterData)로 초기값 적용 + 개체마다 MoveSpeed 비율 오차(±%) → [문서](../HANDOVER/SungJun/intent/intent-025-monster-attribute-variance.md)
 - **[Stage / Player State]** StageManager 체크포인트 컴포넌트 연결 및 도달 처리 → [문서](../HANDOVER/SungJun/intent/intent-016-stage-checkpoint-events.md)
