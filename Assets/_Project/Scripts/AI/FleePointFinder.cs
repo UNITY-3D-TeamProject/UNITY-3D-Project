@@ -23,6 +23,18 @@ namespace AI
 
         /// <summary>위협이 이미 회피 반경 안에 있을 때, 경로가 위협에 이만큼(현재 거리 대비)보다 가까워지지 않아야 한다.</summary>
         private const float CURRENT_DISTANCE_RATIO = 0.9f;
+
+        /// <summary>
+        /// 위협 옆을 지나가도 되는 거리(현재 거리 대비). 벽 모서리에서 대각선의 위협을 볼 때
+        /// 벽을 따라 빠져나가는 경로는 위협 옆을 현재 거리의 약 0.7배로 지나므로 이보다 낮아야 한다.
+        /// </summary>
+        private const float PASS_DISTANCE_RATIO = 0.65f;
+
+        /// <summary>
+        /// 위협 옆을 지나가도 되는 최소 거리(m). 통로(폭 약 3.5m) 가운데 선 위협 옆을 비집고 지나가지 않게
+        /// 통로 절반 폭보다 크게 둔다.
+        /// </summary>
+        private const float MIN_PASS_DISTANCE = 2.0f;
         #endregion
 
         #region Private Fields
@@ -129,10 +141,13 @@ namespace AI
         /// <summary>
         /// 경로가 위협에 이 거리보다 가까워지면 안 되는 기준 거리를 구한다.
         /// 위협이 이미 반경 안에 있으면 모든 경로의 출발점이 반경 안이므로, 기준을 "지금보다 가까워지지 않음"으로 낮춘다.
+        /// 가까이에서는 위협 옆을 지나가는 것도 허용한다. 벽 모서리에 몰린 채 대각선의 위협을 보면 어느 쪽으로 빠져나가든
+        /// 위협 옆을 지나야 하므로, 허용하지 않으면 아주 가까운 지점만 골라 제자리에서 옴싹달싹한다.
         /// </summary>
         private static float GetPassThreshold(float currentDistance, float avoidRadius)
         {
-            return Mathf.Min(avoidRadius, currentDistance * CURRENT_DISTANCE_RATIO);
+            float passDistance = Mathf.Max(currentDistance * PASS_DISTANCE_RATIO, MIN_PASS_DISTANCE);
+            return Mathf.Min(avoidRadius, passDistance, currentDistance * CURRENT_DISTANCE_RATIO);
         }
 
         /// <summary>
