@@ -106,6 +106,8 @@ namespace Core
         {
             CurrentState = GameState.Pause;
             Time.timeScale = 0f;
+            // 3D 효과음만 멈춘다. BGM·UI 소스는 ignoreListenerPause라 계속 들린다. (AudioManager)
+            AudioListener.pause = true;
             SetCursorLocked(false);
         }
 
@@ -113,6 +115,7 @@ namespace Core
         {
             CurrentState = GameState.Playing;
             Time.timeScale = 1f;
+            AudioListener.pause = false;
             SetCursorLocked(true);
         }
 
