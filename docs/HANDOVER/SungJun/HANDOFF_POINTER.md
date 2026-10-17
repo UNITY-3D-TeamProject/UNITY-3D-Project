@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-17** — AudioManager 영구 싱글톤, BGM/UI/3D 재생 분리, 자체 소스 풀, Mixer·Settings 연결 설계 제안. 런타임 구현 전: [설계 기록](./2026-10-17/audio-manager-design.md)
 - **2026-10-17** — UI 프리팹 이름 정리: `Canvas` → `Canvas_Legacy`, `RealCanvas` → `Canvas_InGame`(GUID 유지). 맵 씬은 아직 `Canvas_Legacy` 사용: [작업 기록](./2026-10-17/canvas-prefab-rename.md)
 - **2026-10-17** — 메인 메뉴 씬을 `_Project/Scenes/MainScene.unity`로 옮기고 캔버스 4개를 `Canvas_MainMenu` 프리팹 하나(Menu·Settings·AnyPress)로 합침, `Canvas_Splash` 제외, intent-036 해결. Play로 흐름 확인, 사용자가 에디터에서 화면 확인: [작업 기록](./2026-10-17/main-scene-team-share.md)
 - **2026-10-17** — 새 UI RealCanvas를 팀 공용 `Assets/_Project/Prefabs/UI/`로 이동, 프리팹·메타 해시와 GUID 유지. ThirdParty UI 에셋 필요: [작업 기록](./2026-10-17/real-canvas-team-prefab.md)
