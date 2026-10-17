@@ -26,6 +26,7 @@ namespace Map.Feed
     /// <summary>
     /// 피드 맵 2라운드. Begin 을 부르면 씬의 주위 피드(FeedPost)를 모두 하늘로 올려 홀로그램으로 바꾸고,
     /// 이 오브젝트를 중심으로 해시태그 벽(정다각형)과 고정 발판을 만들고, 바로 아래의 라운드 발판을 줄인다.
+    /// 1라운드 맵(이 오브젝트의 형제)은 지우고, 씬의 낙하 구역은 2라운드 발판 아래로 올린다.
     /// 피드는 총에 맞으면 플레이어에게서 멀어지는 방향(수평)으로 날아가 벽에 닿는다. 자기 태그의 벽이면 올라가고, 아니면 처음 자리로 돌아온다.
     /// 라운드 발판 윗면의 중앙에 놓는다(생성기의 Goal Prefab).
     /// </summary>
@@ -115,6 +116,10 @@ namespace Map.Feed
         [Tooltip("틀린 벽에 보냈을 때 플레이어에게 위에서부터 순서대로 적용할 Effect (ValueSource는 Float)")]
         [SerializeField] private SOAttributeEffect[] _wrongWallEffects;
 
+        [Header("Round 1")]
+        [Tooltip("시작하면 씬의 낙하 구역(FallZoneTrigger)을 옮길 높이 (이 오브젝트 기준)")]
+        [SerializeField] private float _fallZoneHeight = -10.0f;
+
         [Header("Event")]
         [Tooltip("2라운드가 시작될 때 실행할 동작")]
         [SerializeField] private UnityEvent _onStarted = new UnityEvent();
@@ -178,6 +183,8 @@ namespace Map.Feed
             BuildPlatforms();
             ShrinkCenter();
             RaiseFeeds();
+            ClearRound1();
+            RaiseFallZones();
 
             _onStarted.Invoke();
 
@@ -419,6 +426,40 @@ namespace Map.Feed
                 post.OnShot += HandlePostShot;
                 post.BecomeHologram();
                 post.MoveTo(slot, _riseDuration, () => target.SetShootable(true));
+            }
+        }
+
+        // 1라운드 맵에서 만든 것(이 오브젝트의 형제)을 지운다. 이 오브젝트와 바로 아래의 라운드 발판은 남긴다.
+        // 주위 피드는 1라운드 맵 아래에 있지만 2라운드에서 쓰므로, 먼저 이 오브젝트 아래로 옮긴다.
+        private void ClearRound1()
+        {
+            Transform mapRoot = transform.parent;
+            if (mapRoot == null) return;
+
+            foreach (FeedPost post in _slots.Keys)
+            {
+                post.transform.SetParent(transform, true);
+            }
+
+            Transform centerPlatform = FindCenterPlatform();
+
+            foreach (Transform sibling in mapRoot)
+            {
+                if (sibling == transform) continue;
+                if ((centerPlatform != null) && centerPlatform.IsChildOf(sibling)) continue;
+
+                Destroy(sibling.gameObject);
+            }
+        }
+
+        // 씬의 낙하 구역을 2라운드 발판 아래로 올린다.
+        private void RaiseFallZones()
+        {
+            foreach (FallZoneTrigger fallZone in FindObjectsByType<FallZoneTrigger>())
+            {
+                Vector3 position = fallZone.transform.position;
+                position.y = transform.position.y + _fallZoneHeight;
+                fallZone.transform.position = position;
             }
         }
 
