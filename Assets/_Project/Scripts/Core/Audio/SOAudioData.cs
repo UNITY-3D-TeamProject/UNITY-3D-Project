@@ -11,12 +11,14 @@ namespace Core.Audio
     public class SOAudioData : ScriptableObject
     {
         #region Serialized Fields
+        [Header("Common (BGM · UI · 3D 효과음 공용)")]
         [Tooltip("재생할 때마다 하나를 무작위로 고른다")]
         [SerializeField] private AudioClip[] _clips;
 
         [Range(0f, 1f)]
         [SerializeField] private float _volume = 1f;
 
+        [Header("Pitch (BGM · 3D 효과음 전용, UI는 무시)")]
         [Tooltip("재생할 때마다 이 범위에서 피치를 고른다. UI 소리는 피치를 쓰지 않는다")]
         [Range(0.1f, 3f)]
         [SerializeField] private float _minPitch = 1f;
@@ -24,10 +26,10 @@ namespace Core.Audio
         [Range(0.1f, 3f)]
         [SerializeField] private float _maxPitch = 1f;
 
+        [Header("BGM Only (UI · 3D 효과음은 무시)")]
         [Tooltip("BGM으로 쓸 때 클립이 2개 이상이면 플레이리스트가 된다. 켜면 무작위 순서, 끄면 위에서부터 차례로 튼다. 효과음·UI는 이 값과 상관없이 매번 무작위로 고른다")]
         [SerializeField] private bool _isShuffle;
 
-        [Header("BGM Fade")]
         [Tooltip("BGM 전용. 곡이 시작할 때 0에서 음량까지 키우는 시간 (초)")]
         [Min(0f)]
         [SerializeField] private float _fadeInDuration = 1f;
@@ -36,7 +38,7 @@ namespace Core.Audio
         [Min(0f)]
         [SerializeField] private float _fadeOutDuration = 1f;
 
-        [Header("3D SFX Distance")]
+        [Header("3D SFX Only (BGM · UI는 무시)")]
         [Tooltip("3D 효과음 전용. 이 거리 안에서는 최대 음량으로 들린다")]
         [Min(0.01f)]
         [SerializeField] private float _minDistance = 1f;
