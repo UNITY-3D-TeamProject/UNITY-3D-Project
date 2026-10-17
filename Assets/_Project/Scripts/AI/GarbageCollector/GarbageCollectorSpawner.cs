@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using Unity.Behavior;
 using UnityEngine;
-using Core;
-using Core.Stage;
+using AI.RoundSpawning;
 using Facade.Player;
 
 namespace AI.GarbageCollector
@@ -12,7 +11,7 @@ namespace AI.GarbageCollector
     /// 라운드 중 플레이어 재스폰 요청이 오면 제거 후 바로 다시 만들어 속도 시계를 0부터 시작한다.
     /// 웨이포인트는 NavMesh 위에 있어야 한다. 그렇지 않으면 생성 시 NavMeshAgent 가 경고를 낸다.
     /// </summary>
-    public class GarbageCollectorSpawner : MonoBehaviour
+    public class GarbageCollectorSpawner : RoundSpawnerBase
     {
         #region Constants
         /// <summary>BT 그래프 블랙보드에서 플레이어 몸체를 담는 GameObject 변수 이름.</summary>
@@ -21,12 +20,9 @@ namespace AI.GarbageCollector
 
         #region Serialized Fields
         [Header("References")]
-        [SerializeField] private StageManager _stageManager;
         [SerializeField] private GameObject _prefab;
 
         [Header("Spawn")]
-        [Tooltip("StageManager.CurrentRoundIndex 가 이 값일 때만 존재한다. 0 부터 시작하므로 라운드 2 는 1 이다.")]
-        [SerializeField] private int _activeRoundIndex = 1;
         [Tooltip("임시 입력. 맵 담당 웨이포인트 형식이 정해지면 교체한다.")]
         [SerializeField] private Transform[] _waypointTransforms;
         #endregion
@@ -34,61 +30,17 @@ namespace AI.GarbageCollector
         #region Private Fields
         private GameObject _instance;
         private BehaviorGraphAgent _graphAgent;
-        private GameManager _gameManager;
-        private bool _hasLoggedSpawnFailure;
         #endregion
 
-        #region Unity Lifecycle
-        private void OnEnable()
-        {
-            if (_stageManager) _stageManager.OnPlayerRespawnRequested += HandlePlayerRespawnRequested;
-
-            _gameManager = GameManager.Instance;
-            if (_gameManager) _gameManager.OnPlayerSpawned += HandlePlayerSpawned;
-        }
-
-        private void OnDisable()
-        {
-            if (_stageManager) _stageManager.OnPlayerRespawnRequested -= HandlePlayerRespawnRequested;
-
-            if (_gameManager) _gameManager.OnPlayerSpawned -= HandlePlayerSpawned;
-            _gameManager = null;
-        }
-
-        private void Update()
-        {
-            if (!_stageManager) return;
-
-            bool shouldExist = _stageManager.IsRunning && (_stageManager.CurrentRoundIndex == _activeRoundIndex);
-            bool isExisting = _instance != null;
-
-            if (shouldExist && !isExisting)
-            {
-                Spawn();
-            }
-            else if (!shouldExist && isExisting)
-            {
-                Despawn();
-            }
-        }
+        #region Properties
+        protected override bool IsSpawned => _instance != null;
         #endregion
 
-        #region Private Methods
-        /// <summary>
-        /// 라운드 중 플레이어 재스폰 요청이 오면 가비지 컬렉터를 새로 만든다.
-        /// </summary>
-        private void HandlePlayerRespawnRequested()
-        {
-            if (_instance == null) return;
-
-            Despawn();
-            Spawn();
-        }
-
+        #region Protected Methods
         /// <summary>
         /// 사망 후 재스폰하면 플레이어가 새로 만들어지므로, 가비지 컬렉터가 있으면 블랙보드의 플레이어를 바꿔 넣는다.
         /// </summary>
-        private void HandlePlayerSpawned(PlayerFacade playerFacade)
+        protected override void OnPlayerSpawned(PlayerFacade playerFacade)
         {
             if (_instance == null) return;
 
@@ -99,7 +51,7 @@ namespace AI.GarbageCollector
         /// 웨이포인트 중 플레이어 스폰 지점에서 가장 먼 곳에 가비지 컬렉터를 만들고 순찰 경로를 넘긴다.
         /// 실패하면 로그를 한 번만 남긴다. 매 프레임 재시도하며 로그가 쌓이지 않게 한다.
         /// </summary>
-        private void Spawn()
+        protected override void Spawn()
         {
             if (!_prefab)
             {
@@ -130,13 +82,15 @@ namespace AI.GarbageCollector
             SetPlayerVariable();
         }
 
-        private void Despawn()
+        protected override void Despawn()
         {
             Destroy(_instance);
             _instance = null;
             _graphAgent = null;
         }
+        #endregion
 
+        #region Private Methods
         /// <summary>
         /// 현재 플레이어의 몸체를 BT 블랙보드의 Player 변수에 넣는다. 플레이어가 아직 없으면 다음 스폰 이벤트를 기다린다.
         /// 위치 조회만 하므로 중재자를 거치지 않는다.
@@ -149,7 +103,7 @@ namespace AI.GarbageCollector
                 return;
             }
 
-            PlayerFacade playerFacade = _gameManager ? _gameManager.CurrentPlayerFacade : null;
+            PlayerFacade playerFacade = CurrentPlayerFacade;
             if (!playerFacade) return;
 
             // 실제로 움직이는 몸체는 CharacterController 가 붙은 오브젝트다 (StageManager.BindPlayer 와 같은 방식)
@@ -180,7 +134,7 @@ namespace AI.GarbageCollector
         /// </summary>
         private Vector3 FindFarthestWaypoint(List<Vector3> waypoints)
         {
-            Transform spawnPoint = _stageManager.GetSpawnPoint();
+            Transform spawnPoint = StageManager.GetSpawnPoint();
             if (!spawnPoint) return waypoints[0];
 
             Vector3 farthest = waypoints[0];
@@ -196,14 +150,6 @@ namespace AI.GarbageCollector
             }
 
             return farthest;
-        }
-
-        private void LogSpawnFailureOnce(string message)
-        {
-            if (_hasLoggedSpawnFailure) return;
-
-            _hasLoggedSpawnFailure = true;
-            Debug.LogError($"[{name}] {message}", this);
         }
         #endregion
     }

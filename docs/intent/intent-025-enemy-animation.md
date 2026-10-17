@@ -43,7 +43,7 @@ intent-017(군중)과 intent-021(GC)은 애니메이션을 범위 밖으로 두�
 
 ## 열린 질문 (Open questions)
 - 특수·도둑·보스는 코드와 프리팹이 없다. 생기면 각각 무엇을 할지 정한다: 매핑 항목 추가, 컨트롤러(Override 또는 복사본) 제작, 전용 컴포넌트가 필요한지 여부.
-- GC는 모델(SkinnedMesh)이 없다. 모델이 확정되면 Override를 붙인다.
+- ~~GC는 모델(SkinnedMesh)이 없다. 모델이 확정되면 Override를 붙인다.~~ → (2026-10-17 해결) ChompBot 모델에 `GC_Override`(Idle/Run/Attack/Hit, Death는 무적이라 교체 안 함)를 붙이고 도둑과 같은 구조(`EnemyAnimator` + `EnemyAnimationPrefab`)로 연결했다. 이번 작업은 사용자 결정으로 MCP로 진행했다.
 - 이 브랜치에는 적이 사망 후 풀로 돌아오는 흐름(`ResetForReuse`)이 없다. `feature/AI/Enemy`와 머지한 뒤 재사용 시 애니메이션 초기화를 다시 확인한다.
 
 ## 해결 기록 (Resolution) — 해결 후 작성

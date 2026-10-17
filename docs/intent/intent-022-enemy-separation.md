@@ -65,10 +65,31 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 유지: `AIController.TryGetAwayFromAllies`·`_separationLayers`(Pusher가 씀), Enemy 레이어, Enemy ↔ Enemy 충돌 해제, `Bullet._hitLayers`.
 - 위 "기대 결과"의 BT 항목, "제약"의 Guard/`SpreadReadyTime` 내용, "2차 수정"의 도착 지점 검사·원거리 사격 끊김 항목은 더 이상 적용되지 않는다(기록으로 남겨 둔다).
 
+## 5차: 도둑 — 에이전트 회피로 인한 웨이포인트 정체 (2026-10-17)
+- **증상(사용자 보고)**: 도둑 한 마리가 길에 서 있고, 뒤에 온 도둑이 못 지나가다가 겹쳐 붙고, 다른 도둑들도 끼어 한 덩어리가 된다.
+- **전제 정정**: "문제" 절의 "`desiredVelocity`는 회피가 반영되지 않은 경로 방향"은 틀렸다. NavMeshAgent 회피(Obstacle Avoidance)가 켜져 있으면 `desiredVelocity`에 다른 에이전트 회피가 섞인다. Play에서 정체된 도둑의 `desiredVelocity` 방향이 경로 방향(`steeringTarget`)과 크게 달랐다(예: (0.47,-1.18) vs (-0.68,-0.74)).
+- **원인(Play 관찰)**: 도둑 20마리가 웨이포인트 몇 곳을 나눠 쓴다. 같은 웨이포인트를 목적지로 잡은 도둑들이 서로를 회피하느라 도착 판정 거리(0.25m) 안으로 못 들어가고, 남은 거리 0.26~0.36m에서 맴돌았다. 몸끼리는 충돌이 꺼져 있어 겹치고, 맴도는 동안 조금씩은 움직여서 정체 판정(2초에 0.1m 미만)에도 잘 걸리지 않는다. 그 사이 같은 웨이포인트로 오는 도둑이 계속 합류해 **7마리가 0.4m 안에 겹친 덩어리**가 생겼다(스크린샷과 같은 모습). CC끼리 부딪혀 끼는 것이 아니다.
+- **밀어내기 반경 부족**: `Thief.prefab` 루트 스케일이 2라서 CC 실제 반지름은 0.6, 두 몸이 닿는 거리는 1.2m다. 그런데 `_pushRadius`는 Melee 값 0.9 그대로라서 0.9~1.2m에서는 겹쳐 보여도 밀지 않았다.
+- **수정(프리팹 값만, 코드 변경 없음)**: `Thief.prefab`
+  - `NavMeshAgent` Obstacle Avoidance Type: High Quality → **None**. Agent는 경로 계산 전용이고, 겹침 처리는 `AllySeparationPusher`가 맡는다.
+  - `AllySeparationPusher._pushRadius`: 0.9 → **1.4**(CC 실제 반지름 합 1.2보다 조금 크게).
+- **Play 측정**(`Map_3_File 1`, 도둑 20마리, 순찰만, 새 Play마다 약 250초, 0.5초 간격 샘플):
+
+  | | 수정 전 | 수정 후 |
+  |---|---|---|
+  | 1.2m 안에 동료가 있는 비율 | 13.1% | 5.0% |
+  | 0.6m 안에 겹친 비율 | 5.9% | 2.6% |
+  | 최대 덩어리 | 4마리(첫 실행에서는 7마리) | 3마리 |
+
+  첫 실행에서 회피만 런타임으로 끄자 7마리 덩어리가 약 30초 안에 풀렸다. 수정 후 이동 중 0.3m/0.5초 미만으로 느려진 최대 연속 시간은 1.0초였다.
+- **범위 밖**: `GC`·`Melee`·`Special`·`Ranged`도 회피가 High Quality이고, Melee·Special은 스케일 2 + `_pushRadius` 0.9로 같은 조건이다. 이번에는 바꾸지 않았다.
+
 ## 열린 질문 (Open questions)
 - 밀어내기 반경·속도(Melee 0.9m / Ranged 3.0m, 1.5m/s)가 적당한지 → 실제 전투 Play 후 조정
 - `Ranged` CC가 높이 2.88, 반지름 1.44인 구 형태라 모델보다 넓어 보인다. 의도한 값인지 확인 필요
 - BT 없이 Pusher만으로 공격 위치에서 뭉침이 충분히 풀리는지 → Play 확인
+- 다른 적 프리팹(Melee·Special·Ranged·GC)도 회피를 끌지(5차 참고) → 사용자 결정
+- 도둑 도망 중(플레이어가 쫓을 때) 겹침이 남는지 → Play 확인 필요(5차 측정은 순찰만)
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:
