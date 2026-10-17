@@ -4913,6 +4913,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4614786130704796, guid: e1494d10d49c1b3448e684cac6f7ec0d, type: 3}
   m_PrefabInstance: {fileID: 1965283122}
   m_PrefabAsset: {fileID: 0}
+--- !u!20 &92919446 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 41848944039094328, guid: ae1de9e654d6ff248941b174fa96723f, type: 3}
+  m_PrefabInstance: {fileID: 404032430}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &93602994
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -31385,6 +31390,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 529946821}
+  - component: {fileID: 529946822}
   m_Layer: 0
   m_Name: Sign
   m_TagString: Untagged
@@ -31411,6 +31417,24 @@ Transform:
   - {fileID: 679214764}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &529946822
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 529946820}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a1e4b9f5b2f2bf48b69da56e7297433, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Lobby.SkySign.SkySignCameraScheduler
+  _cameras:
+  - {fileID: 92919446}
+  - {fileID: 1051627621}
+  - {fileID: 1193967926}
+  - {fileID: 961841167}
+  _refreshRate: 15
 --- !u!1001 &530948762
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -58092,6 +58116,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4257549673306434, guid: ee81afb80bd75294cb740f6f220deafd, type: 3}
   m_PrefabInstance: {fileID: 960365601}
   m_PrefabAsset: {fileID: 0}
+--- !u!20 &961841167 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 2482009522539234846, guid: 606eb0f6ab5617b4b9a080449c7df2ae, type: 3}
+  m_PrefabInstance: {fileID: 783740107}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &963378838 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4490266632543506, guid: 42eeb2cb84e945f48bfbf7e4a450d54b, type: 3}
@@ -63233,6 +63262,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1051443486}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!20 &1051627621 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 5965379943964152437, guid: c53fcf5356549634998018dab6a04e6d, type: 3}
+  m_PrefabInstance: {fileID: 316873091}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1053048934
 GameObject:
   m_ObjectHideFlags: 0
@@ -71930,6 +71964,11 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 4877616340960066, guid: 247529b36066dff46b91d5c7fcf05451, type: 3}
   m_PrefabInstance: {fileID: 1192653531}
+  m_PrefabAsset: {fileID: 0}
+--- !u!20 &1193967926 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 1805841904290744507, guid: b9305570852d15d46b6f2da75173e02f, type: 3}
+  m_PrefabInstance: {fileID: 1740785537}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1195381617
 PrefabInstance:
