@@ -30,6 +30,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI / MainMenu]** 메인 메뉴 씬을 `_Project/Scenes/MainScene.unity`로 옮기고 캔버스 4개를 `Canvas_MainMenu` 프리팹 하나(Menu·Settings·AnyPress 패널)로 합침, `Canvas_Splash` 제외 → [문서](./clear/intent-036-main-scene-team-share.md) (resolved: 2026-10-17)
 - **[UI / Skill]** 차지샷 칸형 바를 `PlayerFacade.OnFireChargeChanged`·`FireChargeRatio`에 연결(차지 중에만 보이고 빨간 칸이 차오름, Fire 판정은 그대로) → [문서](./clear/intent-029-charge-shot-bar.md) (resolved: 2026-10-17)
 - **[UI / HUD]** 스킬 카드 3장(SCAN·ROLL·BLUETOOTH) 원형 쿨타임 바·남은 시간을 `PlayerFacade.OnSkillUsed`에 연결(쓰면 빈 채로 시작해 차오름, 쿨 중에만 N.Ns 표시) → [문서](./clear/intent-035-skill-card-cooldown.md) (resolved: 2026-10-17)
 - **[UI / HUD]** 크로스헤어 열(빨강)·배터리(파랑) 원호 4칸과 퍼센트 글자를 실제 플레이어 값에 연결(색마다 90° 두 칸, 0~50% 첫 칸·50~100% 둘째 칸, 글로우 동기화) → [문서](./clear/intent-034-crosshair-heat-battery-arcs.md) (resolved: 2026-10-16)
