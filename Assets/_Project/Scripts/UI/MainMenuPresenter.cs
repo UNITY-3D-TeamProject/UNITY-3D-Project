@@ -73,8 +73,6 @@ namespace UI
             _isSettingsOpen = true;
             _settingsPresenter.CloseRequested += CloseSettings;
 
-            // Presenter와 View를 활성화한 뒤 화면 표시.
-            _settingsPresenter.gameObject.SetActive(true);
             _settingsPresenter.Open();
         }
 
@@ -84,10 +82,9 @@ namespace UI
 
             _isSettingsOpen = false;
 
-            // 닫기 요청 해제 후 화면과 컴포넌트 비활성화.
+            // 닫기 요청 해제 후 설정창 닫기.
             _settingsPresenter.CloseRequested -= CloseSettings;
             _settingsPresenter.Close();
-            _settingsPresenter.gameObject.SetActive(false);
         }
 
         private void HandleAnyKeyPressed(InputControl control)
