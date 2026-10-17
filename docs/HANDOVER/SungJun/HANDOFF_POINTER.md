@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-17** — 차지샷 칸형 바를 `PlayerFacade.OnFireChargeChanged`·`FireChargeRatio`에 연결(차지 중에만 보이고 빨간 칸이 왼쪽부터 차오름, Fire 판정 그대로), intent-029 해결. Test `Canvas.prefab` 연결·저장(Test 저장소 29b27e5), Play 확인: [작업 기록](./2026-10-17/charge-bar-link.md)
 - **2026-10-17** — 스킬 카드 3장 원형 쿨타임 바·남은 시간을 `PlayerFacade.OnSkillUsed` → Presenter → View로 연결(쓰면 빈 채로 시작해 차오름, 쿨 중에만 `N.Ns`). Test `Canvas.prefab` 연결·저장(Test 저장소 3ac8c3a), Play 확인: [작업 기록](./2026-10-17/skill-card-cooldown.md)
 - **2026-10-16** — 크로스헤어 열(빨강)·배터리(파랑) 원호 4칸·퍼센트를 `PlayerHudView`(`SArcCell` 배열·퍼센트 글자)로 실제 플레이어 값에 연결(0~50% 첫 칸, 50~100% 둘째 칸, 글로우 동기화). Test `Canvas.prefab` 연결·저장(Test 저장소 d5c1c61), Play 확인: [작업 기록](./2026-10-16/crosshair-heat-battery-arcs.md)
 - **2026-10-16** — HP 패널 10칸을 Shift 슬라이더 게이지 `HpCell`로 교체하고 `PlayerHudView`(`_hpCellSliders`·`_hpPercentText`)로 실제 플레이어 HP 연결(한 칸 = MaxHp/10, 부분 채움, 퍼센트 연동). Test `Canvas.prefab` 저장(Test 저장소 4f6e542), Play 확인: [작업 기록](./2026-10-16/hp-segment-gauge.md)

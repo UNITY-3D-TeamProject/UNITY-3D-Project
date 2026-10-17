@@ -4,7 +4,6 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
-- **[UI / Skill]** 차지샷 진행률을 보여주는 칸형 바 추가. 시각물은 MainScene에 배치, Fire 50% 판정·진행률 연결은 결정 대기 → [문서](./intent-029-charge-shot-bar.md)
 - **[Spawner]** 몬스터 종류별 DB SO(SOMonsterData)로 초기값 적용 + 개체마다 MoveSpeed 비율 오차(±%) → [문서](../HANDOVER/SungJun/intent/intent-025-monster-attribute-variance.md)
 - **[Stage / Player State]** StageManager 체크포인트 컴포넌트 연결 및 도달 처리 → [문서](../HANDOVER/SungJun/intent/intent-016-stage-checkpoint-events.md)
 - **[Stage / Player State]** PlayerFacade 기반 낙하 복귀(이동)·사망 복구(파괴 후 재스폰) 구현, 사망 시 Destroy 전제 확인 필요 → [문서](../HANDOVER/SungJun/intent/intent-017-fall-death-recovery-playerfacade.md)
@@ -31,6 +30,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI / Skill]** 차지샷 칸형 바를 `PlayerFacade.OnFireChargeChanged`·`FireChargeRatio`에 연결(차지 중에만 보이고 빨간 칸이 차오름, Fire 판정은 그대로) → [문서](./clear/intent-029-charge-shot-bar.md) (resolved: 2026-10-17)
 - **[UI / HUD]** 스킬 카드 3장(SCAN·ROLL·BLUETOOTH) 원형 쿨타임 바·남은 시간을 `PlayerFacade.OnSkillUsed`에 연결(쓰면 빈 채로 시작해 차오름, 쿨 중에만 N.Ns 표시) → [문서](./clear/intent-035-skill-card-cooldown.md) (resolved: 2026-10-17)
 - **[UI / HUD]** 크로스헤어 열(빨강)·배터리(파랑) 원호 4칸과 퍼센트 글자를 실제 플레이어 값에 연결(색마다 90° 두 칸, 0~50% 첫 칸·50~100% 둘째 칸, 글로우 동기화) → [문서](./clear/intent-034-crosshair-heat-battery-arcs.md) (resolved: 2026-10-16)
 - **[UI / HUD]** HP 패널 10칸을 Shift 슬라이더 게이지로 바꾸고 실제 플레이어 HP와 연결(한 칸 = MaxHp/10, 칸 안 부분 채움, 퍼센트 글자 연동) → [문서](./clear/intent-033-hp-segment-gauge.md) (resolved: 2026-10-16)

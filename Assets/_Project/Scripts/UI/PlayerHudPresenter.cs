@@ -59,8 +59,14 @@ namespace UI
         private SSkillCooldown _bluetoothCooldown;
         private SSkillCooldown _scanCooldown;
 
+        // 사격 차지 중인지. true인 동안 매 프레임 차지 진행도를 읽어 차지 바를 갱신한다.
+        private bool _isFireCharging;
+
         private void OnEnable()
         {
+            // 차지 상태는 다음 차지 시작 알림을 받을 때까지 알 수 없으므로 차지 바를 숨겨둔다.
+            ResetFireChargeHud();
+
             if ((_playerFacade == null) || (_view == null))
             {
                 return;
@@ -75,12 +81,19 @@ namespace UI
         private void OnDisable()
         {
             UnsubscribePlayer();
+            ResetFireChargeHud();
         }
 
         private void Update()
         {
             // 스킬 쿨타임은 시간이 흐르는 동안 매 프레임 비율을 갱신한다. (Pause 중에는 Time.time이 멈춘다.)
             UpdateSkillCooldownHuds();
+
+            // 차지 진행도는 이벤트가 없어서 차지 중에만 매 프레임 읽는다.
+            if (_isFireCharging)
+            {
+                UpdateFireChargeHud();
+            }
         }
 
         public void Show() => _view?.Show();
@@ -101,6 +114,7 @@ namespace UI
             _rollCooldown = default;
             _bluetoothCooldown = default;
             _scanCooldown = default;
+            ResetFireChargeHud();
 
             if (_view == null)
             {
@@ -159,6 +173,7 @@ namespace UI
 
             _playerFacade.OnAttributeChanged += HandlePlayerAttributeChanged;
             _playerFacade.OnSkillUsed += HandleSkillUsed;
+            _playerFacade.OnFireChargeChanged += HandleFireChargeChanged;
         }
 
         private void UnsubscribePlayer()
@@ -170,6 +185,7 @@ namespace UI
 
             _playerFacade.OnAttributeChanged -= HandlePlayerAttributeChanged;
             _playerFacade.OnSkillUsed -= HandleSkillUsed;
+            _playerFacade.OnFireChargeChanged -= HandleFireChargeChanged;
         }
 
         // _playerFacade의 어트리뷰트가 변경되면 그에 맞춰 변경될 함수 => 얘가 직접적으로 불려지는게 아니라 이벤트에 의해 바뀌는것
@@ -227,6 +243,47 @@ namespace UI
             _view.SetRollCooldown(_rollCooldown.RemainingRatio, _rollCooldown.RemainingTime);
             _view.SetBluetoothCooldown(_bluetoothCooldown.RemainingRatio, _bluetoothCooldown.RemainingTime);
             _view.SetScanCooldown(_scanCooldown.RemainingRatio, _scanCooldown.RemainingTime);
+        }
+
+        // 사격 차지가 시작되면 차지 바를 보이고, 발사·취소로 끝나면 숨기는 함수
+        // PlayerFacade.OnFireChargeChanged가 (차지 시작이면 true, 끝나면 false)를 전달한다.
+        private void HandleFireChargeChanged(bool isCharging)
+        {
+            _isFireCharging = isCharging;
+
+            if (_view == null)
+            {
+                return;
+            }
+
+            _view.SetChargeBarVisible(isCharging);
+
+            // 보이자마자 이전 차지의 칸이 남아 보이지 않도록 바로 한 번 갱신한다.
+            if (isCharging)
+            {
+                UpdateFireChargeHud();
+            }
+        }
+
+        private void UpdateFireChargeHud()
+        {
+            if ((_view == null) || (_playerFacade == null))
+            {
+                return;
+            }
+
+            _view.SetChargeRatio(_playerFacade.FireChargeRatio);
+        }
+
+        // 차지 상태를 비우고 차지 바를 숨기는 함수
+        private void ResetFireChargeHud()
+        {
+            _isFireCharging = false;
+
+            if (_view != null)
+            {
+                _view.SetChargeBarVisible(false);
+            }
         }
 
         private void UpdateHpHud()

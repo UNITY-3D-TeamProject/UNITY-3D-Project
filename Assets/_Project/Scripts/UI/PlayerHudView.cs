@@ -54,6 +54,13 @@ namespace UI
         [SerializeField] private Image _scanCooldownBar;
         [SerializeField] private TMP_Text _scanCooldownText;
 
+        // 사격 차지 중에만 보이는 칸형 차지 바. 왼쪽 칸부터 빈 색 → 찬 색으로 차오른다.
+        [Header("Charge Bar")]
+        [SerializeField] private GameObject _chargeBarRoot;
+        [SerializeField] private Image[] _chargeCellImages;
+        [SerializeField] private Color _chargeCellFilledColor = new Color(1.0f, 0.42f, 0.31f, 1.0f);
+        [SerializeField] private Color _chargeCellEmptyColor = new Color(1.0f, 0.42f, 0.31f, 0.15f);
+
         // 루트가 연결되어있는지, 활성화 상태인지 체크
         public bool IsVisible => _root != null && _root.activeSelf;
 
@@ -111,6 +118,38 @@ namespace UI
         {
             SetGaugeValue(_scanCooldownSlider, remainingRatio, 1.0f);
             SetCooldownGauge(_scanCooldownBar, _scanCooldownText, remainingRatio, remainingTime);
+        }
+
+        public void SetChargeBarVisible(bool isVisible)
+        {
+            if (_chargeBarRoot != null)
+            {
+                _chargeBarRoot.SetActive(isVisible);
+            }
+        }
+
+        // 차지 진행도(0~1)를 칸마다 나눠 채우는 함수
+        // ex) 10칸, 진행도 0.35 => 앞 3칸 찬 색, 4번째 칸 절반쯤 밝아짐, 나머지 빈 색
+        public void SetChargeRatio(float chargeRatio)
+        {
+            if (_chargeCellImages == null)
+            {
+                return;
+            }
+
+            float ratio = Mathf.Clamp01(chargeRatio);
+
+            for (int i = 0; i < _chargeCellImages.Length; i++)
+            {
+                if (_chargeCellImages[i] == null)
+                {
+                    continue;
+                }
+
+                // 앞 칸들이 담은 몫을 뺀 나머지가 이 칸에 담기는 비율
+                float cellValue = Mathf.Clamp01((ratio * _chargeCellImages.Length) - i);
+                _chargeCellImages[i].color = Color.Lerp(_chargeCellEmptyColor, _chargeCellFilledColor, cellValue);
+            }
         }
 
         // HP를 칸마다 나눠 채우고 퍼센트 글자를 갱신하는 함수
