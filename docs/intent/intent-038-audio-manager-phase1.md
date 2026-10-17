@@ -35,6 +35,14 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 4. 그 밖의 씬(테스트 씬 등)은 현재 곡을 유지한다.
 - 씬 재시작(`StageManager`의 `LoadScene(buildIndex)`)도 같은 곡이 나오므로 이어서 재생된다.
 - 씬 안에서 곡을 바꾸는 경우(보스전 등)는 해당 코드가 `PlayBgm`을 직접 부른다 (1단계 범위 밖).
+- 표는 씬 진입 곡만 정한다. 실행 중에 표(SO)를 바꾸지 않는다 (에디터에서는 에셋에 남고, 표는 씬 로드 때만 읽는다).
+
+### BGM 플레이리스트 (2026-10-17 추가)
+- BGM용 `SOAudioData`에 클립이 2개 이상이면 플레이리스트로 재생한다. 한 곡이 끝나면 다음 곡을 바로 이어서 튼다 (곡 사이 페이드 없음). 클립이 1개면 지금처럼 반복 재생한다.
+- 순서는 SO의 `_isShuffle`로 정한다. 끄면 위에서부터 차례로(끝나면 처음으로), 켜면 무작위(같은 곡 연속 없음). 곡마다 피치 범위에서 피치를 다시 고른다.
+- 지금 몇 번째 곡인지는 SO가 아니라 AudioManager가 기억한다. 같은 SO를 다시 요청하면 플레이리스트를 처음부터 다시 틀지 않고 이어간다.
+- 곡이 끝났는지는 BGM 코루틴이 `isPlaying`으로 판단한다. BGM 소스는 `ignoreListenerPause`라 게임 일시정지 중에도 계속 흐르고, 에디터 일시정지·앱 비활성 중에는 코루틴도 멈춘다.
+- 효과음·UI는 지금처럼 매번 무작위로 클립을 고른다 (`_isShuffle`은 BGM에만 쓰인다).
 
 ### 공개 API (7개)
 `PlayBgm(SOAudioData)`, `StopBgm()`, `PlayUi(SOAudioData)`, `PlaySfx(SOAudioData, Vector3)`, `SetVolume(EAudioChannel, float)`, `GetVolume(EAudioChannel)`, `SaveVolume()`
@@ -79,7 +87,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 2. **맵 씬 EventSystem**: 이번 작업에서 다루지 않고 intent-037(Canvas_InGame 교체)에서 처리한다. 그 전까지 볼륨 슬라이더 검증은 MainScene 설정창으로 한다.
 3. **설정창 행 구성** (프리팹 확인 결과): `Canvas_MainMenu`·`Canvas_InGame` 모두 `Row_Audio`(라벨 "MASTER VOLUME")·`Row_Music`("MUSIC")·`Row_SFX`("SFX") 아래에 UGUI `Slider`(0~1, 정수 아님)가 있다. `Row_Audio` = Master, `Row_Music` = Music, `Row_SFX` = Sfx로 연결한다. `Row_Controls`는 제외한다.
 4. **검증용 음원**: Unity 엔진 자체에는 기본 제공 오디오 클립이 없다. 이미 프로젝트에 있는 ThirdParty 소리로 검증한다.
-   - BGM: `Shift - Complete Sci-Fi UI/Audio/Background.ogg` (MainScene), 곡 전환 확인용 두 번째 곡은 `Archanor/Sci-Fi Arsenal/.../Sound/Loops/loop_energy.wav` (튜토리얼)
+   - BGM: `Shift - Complete Sci-Fi UI/Audio/Background.ogg` (MainScene), 곡 전환 확인용 두 번째 곡은 `Archanor/Sci-Fi Arsenal/.../Sound/Loops/loop_energy.wav` (튜토리얼 → 2026-10-17 사용자 요청으로 표에서 Tutorial 항목 삭제, 튜토리얼은 메인메뉴 곡을 이어서 재생. `SOAudioData_BgmTutorial`은 예시로 남김)
    - UI: `Shift - Complete Sci-Fi UI/Audio/Click.ogg`
    - 3D: `Archanor/Sci-Fi Arsenal/.../Sound/Impact/shoot_laser.wav`
    - ThirdParty 폴더는 Git에 없으므로 이 클립을 참조하는 `SOAudioData`는 팀원도 같은 에셋을 가져와야 소리가 난다 (`Canvas_InGame`의 Shift 의존과 같은 조건). 정식 음원이 생기면 `Assets/_Project/Audio/`로 교체한다.
@@ -87,9 +95,11 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 
 ## 진행 상황 (2026-10-17)
 - **완료**: 스크립트 4개(`Core/Audio/`), GameManager·SettingsView·SettingsPresenter 수정, 컴파일 에러 0.
-- **완료**: `Assets/_Project/Audio/MainAudioMixer.mixer`(Master > Music, Sfx, 노출 파라미터 `MasterVolume`·`MusicVolume`·`SfxVolume`), `ScriptableObjects/Audio/`(SO 5개), `Prefabs/System/Manager/AudioManager.prefab`, `Canvas_MainMenu`·`Canvas_InGame`의 `SettingsView` 슬라이더 3개 연결.
-- **보류 (사용자 지시)**: AudioManager 프리팹의 씬 배치. MainScene·맵 씬 모두 아직 배치하지 않는다. Loading 씬은 단독 실행되지 않으므로 배치 대상에서 뺀다.
+- **완료**: `Assets/_Project/Audio/MainAudioMixer.mixer`(Master > Music, Sfx, 노출 파라미터 `MasterVolume`·`MusicVolume`·`SfxVolume`), `ScriptableObjects/Audio/`(SO 5개, 종류별 하위 폴더 `Bgm/`·`Ui/`·`Sfx/`, `SOBgmTable`은 `Audio/` 바로 아래), `Prefabs/System/Manager/AudioManager.prefab`, `Canvas_MainMenu`·`Canvas_InGame`의 `SettingsView` 슬라이더 3개 연결.
+- **씬 배치**: MainScene 루트에 AudioManager 프리팹 인스턴스 배치 완료 (2026-10-17, 오버라이드 없음). 맵 씬 6개는 아직 배치하지 않았다 (사용자 결정 대기). Loading 씬은 단독 실행되지 않으므로 배치 대상에서 뺀다.
 - **Play 검증** (MainScene에 저장하지 않은 임시 인스턴스, 에디터 일시정지 + 프레임 스텝): 메인메뉴 곡 → 로딩 중 유지 → 튜토리얼 곡 전환, 같은 곡 재요청 시 유지, 중복 매니저 제거, 슬라이더 → 믹서 dB(0.5 → -6.02, 0 → -80) → 닫을 때 PlayerPrefs 저장, 3D 소스 위치·끝나는 시각 기록, 같은 프레임 같은 클립 차단, 일시정지 시 `AudioListener.pause`·`Time.time` 정지 확인. 실제 소리는 에디터가 백그라운드라 듣지 못했다 → 사용자 청취 확인 필요.
+- **BGM 플레이리스트**: `SOAudioData._isShuffle`·`ClipCount`·`GetClip`, AudioManager `_bgmTrackIndex`·`PlayBgmTrack`·`PickNextTrackIndex` 추가, 컴파일 에러 0. 프레임 스텝 검증: 차례로(0→1→2→0 반복), 무작위(페이드인 이후 300곡 연속 중복 0), 클립 1개 SO는 `loop = true`로 반복. 실제 곡 길이만큼 기다렸다 넘어가는지는 에디터가 백그라운드라 실시간으로 확인하지 못했다. 예시 `Bgm/SOAudioData_BgmPlaylistExample`(Background → loop_energy, 차례로)은 어디에도 연결하지 않았다.
+- **수정**: `SettingsPresenter.Close`가 볼륨을 바꾸지 않았을 때도 `AudioManager.Instance`를 불러, 매니저 없는 씬·씬 정리 중에 "AudioManager이 없습니다" 에러가 났다 → 바꿨을 때만 저장하도록 수정 (Play로 확인).
 - **알려진 점**: 씬 활성화처럼 긴 프레임이 끼면 `unscaledDeltaTime`이 커서 BGM 페이드아웃이 한 프레임에 끝날 수 있다. `Canvas_MainMenu`·`Canvas_InGame`의 `SettingsPanel`에 Presenter가 참조하지 않는 두 번째 `SettingsView`가 붙어 있다(기존 상태, 손대지 않음). 클립 임포트 설정은 ThirdParty 에셋이라 바꾸지 않았다.
 
 ## 열린 질문 (Open questions)

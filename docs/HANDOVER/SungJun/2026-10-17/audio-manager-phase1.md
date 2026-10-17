@@ -13,7 +13,11 @@
   - `SettingsPresenter` — Open에서 현재 볼륨 표시, 변경 시 `AudioManager.SetVolume`, Close에서 `SaveVolume`.
 - 에셋
   - `Assets/_Project/Audio/MainAudioMixer.mixer` — Master > Music, Sfx. 노출 파라미터 `MasterVolume`·`MusicVolume`·`SfxVolume`. (공개 API가 없어 에디터 내부 `AudioMixerController`를 리플렉션으로 호출해 만들었다.)
-  - `Assets/_Project/ScriptableObjects/Audio/` — `SOAudioData_BgmMainMenu`(Shift Background), `SOAudioData_BgmTutorial`(Archanor loop_energy), `SOAudioData_UiClick`(Shift Click), `SOAudioData_SfxShootLaser`(Archanor shoot_laser), `SOBgmTable`(메인메뉴 + Tutorial).
+  - `Assets/_Project/ScriptableObjects/Audio/` — 종류별 하위 폴더로 나눈다. 새 소리 SO도 같은 규칙으로 넣는다.
+    - `Bgm/` — `SOAudioData_BgmMainMenu`(Shift Background), `SOAudioData_BgmTutorial`(Archanor loop_energy, 표에서는 뺌), `SOAudioData_BgmPlaylistExample`(클립 2개 플레이리스트 예시, 미연결)
+    - `Ui/` — `SOAudioData_UiClick`(Shift Click)
+    - `Sfx/` — `SOAudioData_SfxShootLaser`(Archanor shoot_laser)
+    - `SOBgmTable`(메인메뉴 곡만, Entries 비어 있음)은 소리 하나가 아니라 표라서 `Audio/` 바로 아래에 둔다.
   - `Assets/_Project/Prefabs/System/Manager/AudioManager.prefab` — 믹서·그룹·표 연결.
   - `Canvas_MainMenu`·`Canvas_InGame` — Presenter가 참조하는 `SettingsView`에 `Row_Audio/Row_Music/Row_SFX` 슬라이더 연결.
 
@@ -33,8 +37,16 @@
 - `SettingsPanel`에 Presenter가 쓰지 않는 두 번째 `SettingsView`가 있다 (기존 상태, 손대지 않음).
 - 테스트 음원이 ThirdParty(Git 미포함)라 팀원도 Shift·Archanor 에셋이 있어야 소리가 난다.
 
+## 추가 작업 (같은 날)
+- 커밋 `fa27e60`(구현)·`96ac171`(문서) 후 develop(PR #87까지)을 `feature/System/SoundManager`에 머지하고 push했다. `INTENT_POINTER.md` 충돌은 양쪽 줄을 모두 남겼다.
+- 사용자 요청으로 MainScene 루트에 `AudioManager.prefab` 인스턴스를 배치했다 (씬 diff는 PrefabInstance 블록과 SceneRoots 한 줄뿐).
+- Audio SO를 `Bgm/`·`Ui/`·`Sfx/` 하위 폴더로 옮겼다 (`AssetDatabase.MoveAsset`, GUID 유지 확인, `SOBgmTable` 참조 정상).
+- `SOBgmTable`에서 Tutorial 항목을 지웠다 → 튜토리얼은 메인메뉴 곡을 이어서 튼다. 씬 안에서 곡을 바꾸는 건 표를 고치지 않고 해당 코드가 `PlayBgm(다른 SO)`를 부르는 방식으로 정했다.
+- BGM 플레이리스트 추가: `SOAudioData`에 클립이 2개 이상이면 곡이 끝날 때마다 다음 곡을 이어서 튼다. `_isShuffle` 끄면 차례로, 켜면 무작위(같은 곡 연속 없음). 곡 번호는 AudioManager가 기억한다. 프레임 스텝으로 순서 로직만 확인했고, 실제 곡 길이 기준 전환은 사용자 청취 확인이 필요하다.
+- `SettingsPresenter.Close`가 볼륨을 바꾸지 않았으면 AudioManager를 찾지 않도록 수정 (매니저 없는 씬에서 설정창을 닫거나 씬 정리 중에 에러가 나던 문제).
+
 ## 다음 할 일 (Next Steps)
-1. AudioManager 프리팹 씬 배치 — 사용자 결정 대기. 맵 씬은 `feature/Map/Maze` 병합 이후(intent-037과 같은 시점)를 권장한다.
+1. 맵 씬 AudioManager 배치 — 사용자 결정 대기. 메인메뉴에서 시작하면 매니저가 씬을 넘어 유지되므로, 맵 씬 배치는 맵을 단독 Play할 때만 필요하다.
 2. 배치 후 에디터를 앞에 둔 상태에서 실제 청취 확인 (메인메뉴 곡, 튜토리얼 전환, 설정창 볼륨).
 3. 2단계: `CharacterMediator.OnFireCallback`에 사격음, `PlayerFacade.OnHit/OnDeath`에 피격·사망음 연결.
 4. 정식 음원이 생기면 `Assets/_Project/Audio/`로 옮기고 SO의 클립을 교체한다.
