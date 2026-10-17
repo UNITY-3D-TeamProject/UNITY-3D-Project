@@ -19,3 +19,6 @@
 ## 다음 할 일
 - 맵 씬 6개의 `Canvas_Legacy`를 `Canvas_InGame`으로 교체한다. `PlayerHudPresenter` 등 HUD 연결이 `Canvas_InGame`에 있는지 먼저 확인한다.
 - 교체가 끝나면 `Canvas_Legacy` 삭제 여부를 정한다.
+- 팀원 작업을 모두 합친 뒤 예전 1줄 게이지바 로직을 지운다(사용자 결정). 대상은 다음과 같다. `SetGaugeValue`는 HP 칸이 쓰므로 남긴다.
+  - `PlayerHudView`의 `_hpSlider`·`_batterySlider`·`_heatSlider`와 쿨타임 슬라이더 `_rollCooldownSlider`·`_bluetoothCooldownSlider`·`_scanCooldownSlider` 필드, 그리고 그 `SetGaugeValue` 호출
+  - `Canvas_InGame`의 `PlayerHudRoot/PlayerHUD/HpSlider`·`BatterySlider`·`HeatSlider`(꺼져 있음)

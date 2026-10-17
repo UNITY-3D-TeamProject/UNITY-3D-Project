@@ -45,3 +45,6 @@ MainScene (Assets/_Project/Scenes/)
 ## 다음 할 일
 - 원격에 push한다.
 - 메인 메뉴를 빌드 첫 씬으로 넣으려면 `ESceneType`·`SceneLoader` 빌드 번호 규칙과 함께 정한다.
+- 팀원 작업을 모두 합친 뒤 다음을 확인한다(사용자 결정).
+  - GameManager는 MainScene에 두지 않는다(검토 결론). 이유는 두 가지다. `Awake`에서 커서를 잠그고, `DontDestroyOnLoad`라서 메인으로 돌아오면 이전 판 `playerState`가 남는다. 지금은 `Map_0`~`Map_4`에만 있고 `Map_5_Live`에는 없다.
+  - 컷씬은 `Loading.unity`의 `LoadingScreen._cutsceneData`(`ScriptableObjects/SceneTransition/SOLoadingCutsceneData.asset`)가 (출발, 목적지) 쌍으로 고른다. 메인 → 튜토리얼은 `TryStartNewGame`이 출발 씬을 null로 두므로 컷씬을 넣을 수 없다. 오프닝 컷씬이 필요하면 구조 변경이 필요하다.
