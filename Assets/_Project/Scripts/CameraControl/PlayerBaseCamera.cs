@@ -33,11 +33,25 @@ namespace CameraControl
         [Tooltip("true 면 Y 입력 방향을 반전한다.")]
         [FormerlySerializedAs("invertY")]
         [SerializeField] private bool _shouldInvertY = false;
+
+        [Header("Fire Feedback")]
+        [Tooltip("사격 시 카메라 쉐이크를 보내는 Impulse Source. 차지샷 기준 세기(DefaultVelocity)로 설정한다.")]
+        [SerializeField] private CinemachineImpulseSource _fireImpulseSource;
+        [Tooltip("일반 사격의 쉐이크·반동 배율 (차지샷 = 1)")]
+        [SerializeField, Range(0.0f, 1.0f)] private float _normalShotRatio = 0.2f;
+        [Tooltip("조준 중 쉐이크·반동 배율")]
+        [SerializeField, Range(0.0f, 1.0f)] private float _aimShotRatio = 0.5f;
+        [Tooltip("차지샷 반동으로 피벗이 위로 튀는 각도 (도)")]
+        [SerializeField, Min(0.0f)] private float _recoilPitch = 3.0f;
+        [Tooltip("반동이 원래 시점으로 돌아오는 속도 (도/초)")]
+        [SerializeField, Min(0.0f)] private float _recoilRecoverySpeed = 20.0f;
         #endregion
 
         #region Private Fields
         private float _pitch;
         private float _yaw;
+        // 반동으로 위로 올라간 각도. 시점 입력 누적값(_pitch)과 따로 두고 시간이 지나면 0 으로 돌아온다
+        private float _recoilOffset;
         #endregion
 
         #region Properties
@@ -58,6 +72,14 @@ namespace CameraControl
             _yaw = eulerAngle.y;
             _pitch = Mathf.DeltaAngle(0f, eulerAngle.x);
         }
+
+        private void Update()
+        {
+            if (_recoilOffset <= 0.0f) return;
+
+            _recoilOffset = Mathf.MoveTowards(_recoilOffset, 0.0f, _recoilRecoverySpeed * Time.deltaTime);
+            ApplyPivotRotation();
+        }
         #endregion
 
         #region Public Methods
@@ -77,7 +99,24 @@ namespace CameraControl
             _pitch += _shouldInvertY ? delta.y : -delta.y;
             _pitch = Mathf.Clamp(_pitch, _pitchMin, _pitchMax);
 
-            _cameraPivot.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
+            ApplyPivotRotation();
+        }
+
+        /// <summary>
+        /// 사격 피드백(카메라 쉐이크 + 반동)을 재생한다. 일반 사격과 조준 중에는 각 배율만큼 약하게 한다.
+        /// </summary>
+        /// <param name="isCharged">차지샷이면 true</param>
+        public void PlayFireFeedback(bool isCharged)
+        {
+            float ratio = isCharged ? 1.0f : _normalShotRatio;
+            if (_aimCamera && _aimCamera.enabled) ratio *= _aimShotRatio;
+
+            if (_fireImpulseSource) _fireImpulseSource.GenerateImpulseWithForce(ratio);
+
+            if (!_cameraPivot) return;
+
+            _recoilOffset += _recoilPitch * ratio;
+            ApplyPivotRotation();
         }
 
         /// <summary>
@@ -102,6 +141,19 @@ namespace CameraControl
 
             Transform origin = _cameraPivot ? _cameraPivot : transform;
             return new Ray(origin.position, origin.forward);
+        }
+        #endregion
+
+        #region Private Methods
+        /// <summary>
+        /// 시점 입력 누적값에 반동을 더해 피벗 회전에 반영한다. 반동은 위쪽(pitch 감소)으로 적용한다.
+        /// </summary>
+        private void ApplyPivotRotation()
+        {
+            if (!_cameraPivot) return;
+
+            float pitch = Mathf.Clamp(_pitch - _recoilOffset, _pitchMin, _pitchMax);
+            _cameraPivot.rotation = Quaternion.Euler(pitch, _yaw, 0f);
         }
         #endregion
     }

@@ -151,6 +151,18 @@ namespace Mediator.SubMediators
 
             ApplyAim(_isAimInputHeld);
         }
+
+        /// <summary>
+        /// 사격을 알린다. 카메라 쉐이크와 반동을 재생한다.
+        /// </summary>
+        /// <param name="position">총알 생성 위치 (사용하지 않음)</param>
+        /// <param name="isCharged">차지샷이면 true</param>
+        public void NotifyFire(Vector3 position, bool isCharged)
+        {
+            if (_targetCamera == null) return;
+
+            _targetCamera.PlayFireFeedback(isCharged);
+        }
         #endregion
 
         #region Protected Methods

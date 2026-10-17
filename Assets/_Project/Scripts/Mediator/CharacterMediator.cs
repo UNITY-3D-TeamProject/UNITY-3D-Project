@@ -563,6 +563,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnAutoForwardChanged += OnAutoForwardChangedCallback;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted += _cameraMediator.NotifyRollStarted;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded += _cameraMediator.NotifyRollEnded;
+            if (_skillMediator && _cameraMediator) _skillMediator.OnFireRequested += _cameraMediator.NotifyFire;
             if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged += _combatMediator.NotifyFireCharge;
             if (_cameraMediator && _combatMediator) _cameraMediator.OnAimChanged += _combatMediator.NotifyAim;
             if (_cameraMediator && _playerAnimationMediator) _cameraMediator.OnAimChanged += _playerAnimationMediator.NotifyAim;
@@ -621,6 +622,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnAutoForwardChanged -= OnAutoForwardChangedCallback;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted -= _cameraMediator.NotifyRollStarted;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded -= _cameraMediator.NotifyRollEnded;
+            if (_skillMediator && _cameraMediator) _skillMediator.OnFireRequested -= _cameraMediator.NotifyFire;
             if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged -= _combatMediator.NotifyFireCharge;
             if (_cameraMediator && _combatMediator) _cameraMediator.OnAimChanged -= _combatMediator.NotifyAim;
             if (_cameraMediator && _playerAnimationMediator) _cameraMediator.OnAimChanged -= _playerAnimationMediator.NotifyAim;
