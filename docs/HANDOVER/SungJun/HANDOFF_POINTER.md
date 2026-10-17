@@ -6,6 +6,7 @@
 
 ## 변경 이력 (최신순)
 - **2026-10-17** — 메인 메뉴 씬을 `_Project/Scenes/MainScene.unity`로 옮기고 캔버스 4개를 `Canvas_MainMenu` 프리팹 하나(Menu·Settings·AnyPress)로 합침, `Canvas_Splash` 제외, intent-036 해결. Play로 흐름 확인, 사용자가 에디터에서 화면 확인: [작업 기록](./2026-10-17/main-scene-team-share.md)
+- **2026-10-17** — 새 UI RealCanvas를 팀 공용 `Assets/_Project/Prefabs/UI/`로 이동, 프리팹·메타 해시와 GUID 유지. ThirdParty UI 에셋 필요: [작업 기록](./2026-10-17/real-canvas-team-prefab.md)
 - **2026-10-17** — 설정창 열기·닫기 시 GameObject 활성화를 `SettingsPresenter.Open/Close` 안으로 옮기고 `UIManager`·`MainMenuPresenter`의 직접 `SetActive()` 제거. 프리팹 계층 전제 확인, 컴파일 미확인: [작업 기록](./2026-10-17/settings-presenter-open-close.md)
 - **2026-10-17** — UIManager 개선 전후 코드와 적용 조건 설명: [작업 기록](./2026-10-17/ui-manager-code-improvement-examples.md)
 - **2026-10-17** — UIManager 책임 분리·설정창 수명주기·입력 복구 설계 평가: [작업 기록](./2026-10-17/ui-manager-design-review.md)
