@@ -16,6 +16,7 @@ namespace Core.Audio
     //    (매니저가 없는 씬에서 Instance를 부르면 호출마다 씬 전체를 찾고 에러를 낸다.)
     // 2. Awake에서 스피커(AudioSource)를 자식으로 만든다.
     //    - BGM 1개: 곡이 바뀌면 줄였다가 교체하고 다시 키운다. 같은 곡이면 이어서 재생한다.
+    //      SOAudioData에 클립이 여러 개면 플레이리스트로 보고, 곡이 끝나면 다음 곡(차례로/무작위)을 이어서 튼다.
     //    - UI 1개: PlayOneShot으로 짧은 소리를 겹쳐 낸다.
     //    - 3D N개: 발생 위치로 옮겨 단발음을 낸다. 끝나는 시각만 적어 두고, 새 요청 때 끝난 소스를 고른다.
     // 3. 씬이 로드되면 SOBgmTable에서 그 씬의 곡을 찾아 튼다. 씬마다 BGM 컴포넌트를 두지 않는다.
@@ -81,6 +82,9 @@ namespace Core.Audio
         // 지금 틀고 있거나 바꾸는 중인 곡. 같은 곡 재요청을 거르는 데 쓴다.
         private SOAudioData _currentBgm;
         private Coroutine _bgmRoutine;
+
+        // _currentBgm이 플레이리스트일 때 지금 트는 곡 번호. 같은 SO를 공유하므로 SO가 아니라 여기서 기억한다.
+        private int _bgmTrackIndex;
         #endregion
 
         #region Unity Lifecycle
@@ -311,6 +315,25 @@ namespace Core.Audio
             _mixer.SetFloat(MixerParams[index], decibel);
         }
 
+        // 플레이리스트의 _bgmTrackIndex번 곡을 피치를 새로 골라 튼다.
+        private void PlayBgmTrack(SOAudioData data)
+        {
+            _musicSource.clip = data.GetClip(_bgmTrackIndex);
+            _musicSource.pitch = data.PickPitch();
+            _musicSource.Play();
+        }
+
+        // 플레이리스트의 다음 곡 번호. 차례로면 끝에서 처음으로 돌아가고, 무작위면 방금 곡은 빼고 고른다.
+        private int PickNextTrackIndex(SOAudioData data)
+        {
+            int clipCount = data.ClipCount;
+            if (!data.IsShuffle)
+                return (_bgmTrackIndex + 1) % clipCount;
+
+            int index = UnityEngine.Random.Range(0, clipCount - 1);
+            return (index >= _bgmTrackIndex) ? index + 1 : index;
+        }
+
         // 새 요청이 오면 진행 중인 곡 교체를 멈추고 마지막 요청만 적용한다.
         private void RestartBgmRoutine(IEnumerator routine)
         {
@@ -351,6 +374,7 @@ namespace Core.Audio
 
         #region Coroutines
         // 지금 곡을 줄여 끄고, 다음 곡이 있으면 바꿔서 키운다.
+        // 클립이 2개 이상이면 플레이리스트로 보고, 곡이 끝날 때마다 다음 곡을 바로 이어서 튼다.
         private IEnumerator CoSwitchBgm(SOAudioData next)
         {
             if (_musicSource.isPlaying)
@@ -361,19 +385,36 @@ namespace Core.Audio
             if (next == null)
                 yield break;
 
-            AudioClip clip = next.PickClip();
-            if (clip == null)
+            int clipCount = next.ClipCount;
+            if (clipCount == 0)
             {
                 Debug.LogWarning($"[AudioManager] BGM에 클립이 없습니다: '{next.name}'", this);
                 yield break;
             }
 
-            _musicSource.clip = clip;
-            _musicSource.pitch = next.PickPitch();
+            // 클립이 1개면 그 곡을 반복하고, 여러 개면 곡마다 끝나야 다음 곡으로 넘어간다.
+            bool isPlaylist = clipCount > 1;
+            _musicSource.loop = !isPlaylist;
             _musicSource.volume = 0f;
-            _musicSource.Play();
+            _bgmTrackIndex = next.IsShuffle ? UnityEngine.Random.Range(0, clipCount) : 0;
+            PlayBgmTrack(next);
 
             yield return CoFadeMusic(next.Volume);
+
+            if (!isPlaylist)
+                yield break;
+
+            while (true)
+            {
+                // 지금 곡이 끝날 때까지 기다린다.
+                // 에디터 일시정지·앱 비활성 중에는 코루틴도 멈추므로 그동안 곡을 넘기지 않는다.
+                while (_musicSource.isPlaying)
+                    yield return null;
+
+                _bgmTrackIndex = PickNextTrackIndex(next);
+                PlayBgmTrack(next);
+                yield return null;
+            }
         }
 
         // 일시정지(timeScale 0) 중에도 흐르도록 unscaledDeltaTime을 쓴다.

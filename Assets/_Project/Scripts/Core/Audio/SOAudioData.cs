@@ -23,10 +23,15 @@ namespace Core.Audio
 
         [Range(0.1f, 3f)]
         [SerializeField] private float _maxPitch = 1f;
+
+        [Tooltip("BGM으로 쓸 때 클립이 2개 이상이면 플레이리스트가 된다. 켜면 무작위 순서, 끄면 위에서부터 차례로 튼다. 효과음·UI는 이 값과 상관없이 매번 무작위로 고른다")]
+        [SerializeField] private bool _isShuffle;
         #endregion
 
         #region Properties
         public float Volume => _volume;
+        public bool IsShuffle => _isShuffle;
+        public int ClipCount => (_clips != null) ? _clips.Length : 0;
         #endregion
 
         #region Public Methods
@@ -41,6 +46,9 @@ namespace Core.Audio
 
             return _clips[Random.Range(0, _clips.Length)];
         }
+
+        // [호출] AudioManager가 BGM 플레이리스트에서 정한 순서대로 꺼낼 때
+        public AudioClip GetClip(int index) => _clips[index];
 
         public float PickPitch() => Random.Range(_minPitch, _maxPitch);
         #endregion
