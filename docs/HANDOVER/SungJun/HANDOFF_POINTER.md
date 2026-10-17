@@ -6,6 +6,7 @@
 
 ## 변경 이력 (최신순)
 - **2026-10-17** — AudioManager 1단계 구현(intent-038): `Core/Audio` 스크립트 4개, 믹서·SO·프리팹, 설정창 볼륨 슬라이더 연결, `AudioListener.pause` 일시정지. 컴파일 0에러·프레임 스텝 Play 로직 검증. 씬 배치는 사용자 지시로 보류, 실제 청취 미확인: [작업 기록](./2026-10-17/audio-manager-phase1.md)
+- **2026-10-17** — VFX 전제 EffectManager 씬 단위 싱글톤·기존 풀 재사용 설계 제안. 범위 및 사용자 결정 미확정, 코드 변경 없음: [설계 기록](./2026-10-17/effect-manager-design.md)
 - **2026-10-17** — AudioManager 영구 싱글톤, BGM/UI/3D 재생 분리, 자체 소스 풀, Mixer·Settings 연결 설계 제안. 런타임 구현 전: [설계 기록](./2026-10-17/audio-manager-design.md)
 - **2026-10-17** — UI 프리팹 이름 정리: `Canvas` → `Canvas_Legacy`, `RealCanvas` → `Canvas_InGame`(GUID 유지). 맵 씬은 아직 `Canvas_Legacy` 사용: [작업 기록](./2026-10-17/canvas-prefab-rename.md)
 - **2026-10-17** — 메인 메뉴 씬을 `_Project/Scenes/MainScene.unity`로 옮기고 캔버스 4개를 `Canvas_MainMenu` 프리팹 하나(Menu·Settings·AnyPress)로 합침, `Canvas_Splash` 제외, intent-036 해결. Play로 흐름 확인, 사용자가 에디터에서 화면 확인: [작업 기록](./2026-10-17/main-scene-team-share.md)
