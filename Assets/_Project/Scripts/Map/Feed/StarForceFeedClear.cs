@@ -9,7 +9,7 @@ namespace Map.Feed
     /// <summary>
     /// 악성 피드 미니게임 3: 막대 위를 왕복하는 표시가 가운데 성공 구간에 있을 때 상호작용하면 별 하나를 얻는다.
     /// 별을 모두 얻으면 제거된다. 구간 밖에서 누르면 실패 Effect 를 플레이어에게 적용하고 별은 유지한다.
-    /// 같은 오브젝트에 PlayerInteractRelay 를 붙여 상호작용 입력을 받는다.
+    /// 입력은 플레이어의 Interact 스킬이 카메라 레이로 찾아 넘겨준다. 콜라이더가 있는 오브젝트를 Interact 레이어로 둔다.
     /// </summary>
     [RequireComponent(typeof(MaliciousFeed))]
     public class StarForceFeedClear : MonoBehaviour, IInteractable

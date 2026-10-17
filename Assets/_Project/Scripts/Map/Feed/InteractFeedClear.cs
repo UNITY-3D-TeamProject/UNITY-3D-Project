@@ -5,7 +5,7 @@ namespace Map.Feed
 {
     /// <summary>
     /// 악성 피드 미니게임 1: 가까이에서 상호작용하면 바로 제거된다.
-    /// 같은 오브젝트에 PlayerInteractRelay 를 붙여 상호작용 입력을 받는다.
+    /// 입력은 플레이어의 Interact 스킬이 카메라 레이로 찾아 넘겨준다. 콜라이더가 있는 오브젝트를 Interact 레이어로 둔다.
     /// </summary>
     [RequireComponent(typeof(MaliciousFeed))]
     public class InteractFeedClear : MonoBehaviour, IInteractable
