@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Core.Audio;
 
@@ -13,7 +14,8 @@ namespace UI
 
         [Header("Volume")]
         [SerializeField] private Slider _masterSlider;
-        [SerializeField] private Slider _musicSlider;
+        [FormerlySerializedAs("_musicSlider")]
+        [SerializeField] private Slider _bgmSlider;
         [SerializeField] private Slider _sfxSlider;
 
         public event Action CloseClicked;
@@ -25,8 +27,8 @@ namespace UI
                 _closeButton.onClick.AddListener(HandleCloseClicked);
             if (_masterSlider != null)
                 _masterSlider.onValueChanged.AddListener(HandleMasterChanged);
-            if (_musicSlider != null)
-                _musicSlider.onValueChanged.AddListener(HandleMusicChanged);
+            if (_bgmSlider != null)
+                _bgmSlider.onValueChanged.AddListener(HandleBgmChanged);
             if (_sfxSlider != null)
                 _sfxSlider.onValueChanged.AddListener(HandleSfxChanged);
         }
@@ -37,8 +39,8 @@ namespace UI
                 _closeButton.onClick.RemoveListener(HandleCloseClicked);
             if (_masterSlider != null)
                 _masterSlider.onValueChanged.RemoveListener(HandleMasterChanged);
-            if (_musicSlider != null)
-                _musicSlider.onValueChanged.RemoveListener(HandleMusicChanged);
+            if (_bgmSlider != null)
+                _bgmSlider.onValueChanged.RemoveListener(HandleBgmChanged);
             if (_sfxSlider != null)
                 _sfxSlider.onValueChanged.RemoveListener(HandleSfxChanged);
         }
@@ -66,7 +68,7 @@ namespace UI
             return channel switch
             {
                 EAudioChannel.Master => _masterSlider,
-                EAudioChannel.Music => _musicSlider,
+                EAudioChannel.Bgm => _bgmSlider,
                 EAudioChannel.Sfx => _sfxSlider,
                 _ => null,
             };
@@ -82,9 +84,9 @@ namespace UI
             VolumeChanged?.Invoke(EAudioChannel.Master, value);
         }
 
-        private void HandleMusicChanged(float value)
+        private void HandleBgmChanged(float value)
         {
-            VolumeChanged?.Invoke(EAudioChannel.Music, value);
+            VolumeChanged?.Invoke(EAudioChannel.Bgm, value);
         }
 
         private void HandleSfxChanged(float value)

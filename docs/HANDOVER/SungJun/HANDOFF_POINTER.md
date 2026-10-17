@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-17** — AudioManager 과설계 정적 검토: 기본 구조 유지 권장, BGM 전환 중 Skip 초기화 누락 가능성과 UI까지 적용되는 공통 중복 제한 지적. 코드 변경·Play 검증 없음: [검토 기록](./2026-10-17/audio-manager-complexity-review.md)
 - **2026-10-17** — AudioManager 1단계 구현(intent-038): `Core/Audio` 스크립트 4개, 믹서·SO·프리팹, 설정창 볼륨 슬라이더 연결, `AudioListener.pause` 일시정지. 컴파일 0에러·프레임 스텝 Play 로직 검증. 씬 배치는 사용자 지시로 보류, 실제 청취 미확인: [작업 기록](./2026-10-17/audio-manager-phase1.md)
 - **2026-10-17** — VFX 전제 EffectManager 씬 단위 싱글톤·기존 풀 재사용 설계 제안. 범위 및 사용자 결정 미확정, 코드 변경 없음: [설계 기록](./2026-10-17/effect-manager-design.md)
 - **2026-10-17** — AudioManager 영구 싱글톤, BGM/UI/3D 재생 분리, 자체 소스 풀, Mixer·Settings 연결 설계 제안. 런타임 구현 전: [설계 기록](./2026-10-17/audio-manager-design.md)

@@ -7,7 +7,7 @@ namespace Core.Audio
     public enum EAudioChannel
     {
         Master,
-        Music,
+        Bgm,
         Sfx,
     }
 }
