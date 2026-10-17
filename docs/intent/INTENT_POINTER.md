@@ -5,6 +5,7 @@
 
 ## 열려있는 인텐트 (Open)
 - **[Audio / Core / UI]** 소리 재생 기반이 없음. `AudioManager` 싱글톤(BGM 1·UI 1·3D 16 소스), `SOBgmTable`(ESceneType 키 + 메인메뉴 곡 필드)로 씬별 BGM, 믹서 볼륨 저장·설정창 연결, `AudioListener.pause`로 일시정지. 코드·믹서·SO·프리팹·설정창 슬라이더 연결 완료, Play 로직 검증 완료. 씬 배치(사용자 보류)와 실제 청취 확인 남음 → [문서](./intent-038-audio-manager-phase1.md)
+- **[Map / Lobby / Rendering]** 로비 하늘 전광판 RT 카메라 4대가 매 프레임 SSAO까지 돌며 그려 약 18fps를 잡아먹음. SSAO 없는 전용 Renderer + 4대 번갈아 간격 렌더(기본 15Hz) → [문서](./intent-042-lobby-skysign-camera-cost.md)
 - **[UI / Scene]** 맵 씬 6개가 아직 옛 HUD `Canvas_Legacy`를 씀. `Canvas_InGame`으로 교체, 연결·외부 참조 조사 완료, Maze 브랜치 충돌·EventSystem 등 열린 질문 확인 대기 → [문서](./intent-037-map-scenes-canvas-ingame.md)
 - **[Spawner]** 몬스터 종류별 DB SO(SOMonsterData)로 초기값 적용 + 개체마다 MoveSpeed 비율 오차(±%) → [문서](../HANDOVER/SungJun/intent/intent-025-monster-attribute-variance.md)
 - **[Stage / Player State]** StageManager 체크포인트 컴포넌트 연결 및 도달 처리 → [문서](../HANDOVER/SungJun/intent/intent-016-stage-checkpoint-events.md)
