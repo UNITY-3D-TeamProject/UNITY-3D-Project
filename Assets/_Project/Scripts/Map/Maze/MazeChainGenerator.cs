@@ -29,11 +29,8 @@ namespace Map.Maze
         [SerializeField] private Transform[] _checkpointAnchors;
 
         [Header("Waypoints")]
-        [Tooltip("웨이포인트를 놓을 미로 번호 (0 부터). 기본은 두 번째 미로.")]
-        [SerializeField, Min(0)] private int _waypointMazeIndex = 1;
-
-        [Tooltip("씬에 미리 놓아 둔 웨이포인트 (선택). 생성할 때마다 위 미로의 칸 가운데로 무작위로 옮기며, 그 칸에는 배치물을 놓지 않는다.")]
-        [SerializeField] private Transform[] _waypointAnchors;
+        [Tooltip("미로별 웨이포인트 묶음 (선택). 생성할 때마다 각 미로의 칸 가운데로 무작위로 옮기며, 그 칸에는 배치물을 놓지 않는다.")]
+        [SerializeField] private SMazeWaypointGroup[] _waypointGroups;
         #endregion
 
         #region Protected Methods
@@ -78,23 +75,28 @@ namespace Map.Maze
                 }
 
                 var entranceCell = new Vector2Int(entranceColumn, 0);
-                MazeGenerator.SCell[,] grid = generator.GenerateMaze(_settings.Size, _settings.Size, entranceCell, random);
+                SMazeTheme theme = _settings.Themes[i];
+                MazeGenerator.SCell[,] grid = generator.GenerateGrowingTreeMaze(
+                    _settings.Size, _settings.Size, entranceCell, theme.NewestCellRatio, theme.BraidRatio, random);
                 Vector2Int exitCell = FindFarthestExitCell(generator.ComputeDistances(grid, entranceCell));
+
+                // 벽·기둥 프리팹 고르기는 따로 뽑은 난수를 써서, 프리팹 개수를 바꿔도 미로 모양과 배치가 그대로이게 한다
+                var decorRandom = new System.Random(random.Next());
 
                 bool isFirstMaze = i == 0;
                 bool isLastMaze = i == _settings.Themes.Count - 1;
-                BuildMaze(mazeRoot, grid, _settings.Themes[i], entranceCell, exitCell, isFirstMaze, isLastMaze);
+                BuildMaze(mazeRoot, grid, _settings.Themes[i], entranceCell, exitCell, isFirstMaze, isLastMaze, decorRandom);
                 BuildBridge(mazeRoot, exitCell.x);
 
                 // 웨이포인트 → 이 미로 전용 배치물 순서로 칸을 차지하고, 남은 칸은 맵 공통 배치에 넘긴다
-                var mazePoints = new List<Vector3>();
-                CollectPlacementPoints(mazeRoot, entranceCell, exitCell, mazePoints);
-                if (i == _waypointMazeIndex)
+                List<Vector2Int> freeCells = CollectFreeCells(entranceCell, exitCell);
+                MoveWaypointAnchors(i, mazeRoot, freeCells, random);
+                List<Vector2Int> solutionPath = generator.FindPathAStar(grid, entranceCell, exitCell);
+                PlaceMazeObjects(mazeRoot, grid, _settings.Themes[i].Placements, solutionPath, freeCells, random);
+                foreach (Vector2Int cell in freeCells)
                 {
-                    MoveWaypointAnchors(mazePoints, random);
+                    placementPoints.Add(GetCellCenter(mazeRoot, cell));
                 }
-                PlaceObjects(_settings.Themes[i].Placements, mazePoints, random);
-                placementPoints.AddRange(mazePoints);
 
                 if (isFirstMaze)
                 {
@@ -122,10 +124,24 @@ namespace Map.Maze
 
             foreach (SMazeTheme theme in _settings.Themes)
             {
-                if ((theme.WallPrefab == null) || (theme.GatePrefab == null)) return false;
+                if ((theme.WallPrefabs == null) || (theme.WallPrefabs.Length == 0) || (theme.GatePrefab == null)) return false;
+                if (HasEmptySlot(theme.WallPrefabs) || HasEmptySlot(theme.PillarPrefabs)) return false;
             }
 
             return true;
+        }
+
+        // 목록에 비어 있는(null) 칸이 있는지
+        private static bool HasEmptySlot(GameObject[] prefabs)
+        {
+            if (prefabs == null) return false;
+
+            foreach (GameObject prefab in prefabs)
+            {
+                if (prefab == null) return true;
+            }
+
+            return false;
         }
 
         // 출구 면(+Z 쪽 마지막 줄)의 칸 가운데 입구에서 가장 먼 칸을 고른다.
@@ -145,7 +161,8 @@ namespace Map.Maze
             return new Vector2Int(farthestColumn, exitRow);
         }
 
-        // 미로 하나의 바닥·벽·출구·입구 표시를 mazeRoot 아래에 놓는다. 칸 (x, y) 의 중앙은 (x * 칸 크기, 0, y * 칸 크기) 이다.
+        // 미로 하나의 바닥·벽·기둥·출구·입구 표시를 mazeRoot 아래에 놓는다. 칸 (x, y) 의 중앙은 (x * 칸 크기, 0, y * 칸 크기) 이다.
+        // 꼭짓점 (i, j) 는 칸 (i, j) 의 남서쪽 모서리, 즉 ((i - 0.5) * 칸 크기, 0, (j - 0.5) * 칸 크기) 이다.
         private void BuildMaze(
             Transform mazeRoot,
             MazeGenerator.SCell[,] grid,
@@ -153,13 +170,15 @@ namespace Map.Maze
             Vector2Int entranceCell,
             Vector2Int exitCell,
             bool isFirstMaze,
-            bool isLastMaze)
+            bool isLastMaze,
+            System.Random decorRandom)
         {
             BuildFloor(mazeRoot);
 
             float halfTile = _settings.TileSize * 0.5f;
             Quaternion alongX = Quaternion.identity;
             Quaternion alongZ = Quaternion.Euler(0.0f, 90.0f, 0.0f);
+            var wallCorners = new HashSet<Vector2Int>();
 
             for (int x = 0; x < _settings.Size; x++)
             {
@@ -181,35 +200,69 @@ namespace Map.Maze
                         }
                         else
                         {
-                            PlaceObject(theme.WallPrefab, mazeRoot, center + (Vector3.forward * halfTile), alongX, $"Wall_N_{x}_{y}");
+                            PlaceObject(PickPrefab(theme.WallPrefabs, decorRandom), mazeRoot, center + (Vector3.forward * halfTile), alongX, $"Wall_N_{x}_{y}");
                         }
+
+                        wallCorners.Add(new Vector2Int(x, y + 1));
+                        wallCorners.Add(new Vector2Int(x + 1, y + 1));
                     }
 
                     if (!cell.OpenEast)
                     {
-                        PlaceObject(theme.WallPrefab, mazeRoot, center + (Vector3.right * halfTile), alongZ, $"Wall_E_{x}_{y}");
+                        PlaceObject(PickPrefab(theme.WallPrefabs, decorRandom), mazeRoot, center + (Vector3.right * halfTile), alongZ, $"Wall_E_{x}_{y}");
+                        wallCorners.Add(new Vector2Int(x + 1, y));
+                        wallCorners.Add(new Vector2Int(x + 1, y + 1));
                     }
 
                     // 바깥 테두리의 서쪽·남쪽 벽
                     if (x == 0)
                     {
-                        PlaceObject(theme.WallPrefab, mazeRoot, center + (Vector3.left * halfTile), alongZ, $"Wall_W_{x}_{y}");
+                        PlaceObject(PickPrefab(theme.WallPrefabs, decorRandom), mazeRoot, center + (Vector3.left * halfTile), alongZ, $"Wall_W_{x}_{y}");
+                        wallCorners.Add(new Vector2Int(x, y));
+                        wallCorners.Add(new Vector2Int(x, y + 1));
                     }
 
                     // 첫 미로는 입구도 막혀 있고(안에서 시작), 나머지는 다리와 이어지도록 입구를 비운다.
                     bool isOpenEntrance = !isFirstMaze && (cellPosition == entranceCell);
                     if ((y == 0) && !isOpenEntrance)
                     {
-                        PlaceObject(theme.WallPrefab, mazeRoot, center + (Vector3.back * halfTile), alongX, $"Wall_S_{x}_{y}");
+                        PlaceObject(PickPrefab(theme.WallPrefabs, decorRandom), mazeRoot, center + (Vector3.back * halfTile), alongX, $"Wall_S_{x}_{y}");
+                        wallCorners.Add(new Vector2Int(x, y));
+                        wallCorners.Add(new Vector2Int(x + 1, y));
                     }
                 }
             }
+
+            BuildPillars(mazeRoot, theme.PillarPrefabs, wallCorners, decorRandom);
 
             if (_settings.StartMarkerPrefab != null)
             {
                 var markerPosition = new Vector3(entranceCell.x * _settings.TileSize, 0.0f, entranceCell.y * _settings.TileSize);
                 PlaceObject(_settings.StartMarkerPrefab, mazeRoot, markerPosition, Quaternion.identity, "StartMarker");
             }
+        }
+
+        // 벽이 하나라도 닿는 꼭짓점마다 기둥을 세운다. 기둥 목록이 비어 있으면 세우지 않는다.
+        private void BuildPillars(Transform mazeRoot, GameObject[] pillarPrefabs, HashSet<Vector2Int> wallCorners, System.Random decorRandom)
+        {
+            if ((pillarPrefabs == null) || (pillarPrefabs.Length == 0)) return;
+
+            // 같은 시드에서 같은 기둥이 나오도록 HashSet 순서가 아닌 격자 순서로 돈다
+            for (int i = 0; i <= _settings.Size; i++)
+            {
+                for (int j = 0; j <= _settings.Size; j++)
+                {
+                    if (!wallCorners.Contains(new Vector2Int(i, j))) continue;
+
+                    var position = new Vector3((i - 0.5f) * _settings.TileSize, 0.0f, (j - 0.5f) * _settings.TileSize);
+                    PlaceObject(PickPrefab(pillarPrefabs, decorRandom), mazeRoot, position, Quaternion.identity, $"Pillar_{i}_{j}");
+                }
+            }
+        }
+
+        private static GameObject PickPrefab(GameObject[] prefabs, System.Random random)
+        {
+            return prefabs[random.Next(prefabs.Length)];
         }
 
         // 미로 전체를 덮는 바닥 한 장
@@ -237,12 +290,10 @@ namespace Map.Maze
         }
 
         // 입구·출구 칸에는 장애물이나 아이템을 놓지 않는다
-        private void CollectPlacementPoints(
-            Transform mazeRoot,
-            Vector2Int entranceCell,
-            Vector2Int exitCell,
-            List<Vector3> placementPoints)
+        private List<Vector2Int> CollectFreeCells(Vector2Int entranceCell, Vector2Int exitCell)
         {
+            var freeCells = new List<Vector2Int>();
+
             for (int x = 0; x < _settings.Size; x++)
             {
                 for (int y = 0; y < _settings.Size; y++)
@@ -250,9 +301,175 @@ namespace Map.Maze
                     var cell = new Vector2Int(x, y);
                     if ((cell == entranceCell) || (cell == exitCell)) continue;
 
-                    placementPoints.Add(GetCellCenter(mazeRoot, cell));
+                    freeCells.Add(cell);
                 }
             }
+
+            return freeCells;
+        }
+
+        // 배치 목록의 순서대로, 규칙에 맞는 빈 칸에 +Z 를 통로 방향으로 돌려 놓는다. 차지한 칸은 freeCells 에서 빠진다.
+        private void PlaceMazeObjects(
+            Transform mazeRoot,
+            MazeGenerator.SCell[,] grid,
+            SMazePlacement[] placements,
+            List<Vector2Int> solutionPath,
+            List<Vector2Int> freeCells,
+            System.Random random)
+        {
+            if (placements == null) return;
+
+            foreach (SMazePlacement placement in placements)
+            {
+                if (placement.Prefab == null) continue;
+
+                for (int i = 0; i < placement.Count; i++)
+                {
+                    if (!TryTakeCell(grid, placement, solutionPath, freeCells, random, out Vector2Int cell, out Vector2Int forward)) break;
+
+                    Quaternion rotation = mazeRoot.rotation * Quaternion.LookRotation(new Vector3(forward.x, 0.0f, forward.y));
+                    Vector3 position = GetCellCenter(mazeRoot, cell) + placement.Offset;
+                    Instantiate(placement.Prefab, position, rotation, mazeRoot);
+                }
+            }
+        }
+
+        // 규칙에 맞는 칸을 무작위로 하나 고르고, 그 칸(과 함께 차지하는 칸)을 freeCells 에서 뺀다. forward 는 프리팹 +Z 가 향할 칸 방향이다.
+        private static bool TryTakeCell(
+            MazeGenerator.SCell[,] grid,
+            SMazePlacement placement,
+            List<Vector2Int> solutionPath,
+            List<Vector2Int> freeCells,
+            System.Random random,
+            out Vector2Int cell,
+            out Vector2Int forward)
+        {
+            cell = default;
+            forward = default;
+
+            if (placement.Rule == EMazeCellRule.SolutionPath)
+            {
+                if (solutionPath == null) return false;
+
+                var candidates = new List<int>();
+                for (int k = 0; k < solutionPath.Count; k++)
+                {
+                    if (IsPathRunAvailable(grid, solutionPath, k, placement.CellsBehind, placement.CellsAhead, freeCells))
+                    {
+                        candidates.Add(k);
+                    }
+                }
+
+                if (candidates.Count == 0) return false;
+
+                int picked = candidates[random.Next(candidates.Count)];
+                cell = solutionPath[picked];
+                forward = solutionPath[picked + 1] - solutionPath[picked];
+
+                for (int k = picked - placement.CellsBehind; k <= picked + placement.CellsAhead; k++)
+                {
+                    freeCells.Remove(solutionPath[k]);
+                }
+
+                return true;
+            }
+
+            var candidateCells = new List<Vector2Int>();
+            foreach (Vector2Int freeCell in freeCells)
+            {
+                MazeGenerator.SCell mazeCell = grid[freeCell.x, freeCell.y];
+                bool isMatched = (placement.Rule == EMazeCellRule.Straight)
+                    ? IsStraight(mazeCell)
+                    : (GetOpenDirections(mazeCell).Count >= 2);   // 막다른 칸 제외
+
+                if (isMatched)
+                {
+                    candidateCells.Add(freeCell);
+                }
+            }
+
+            if (candidateCells.Count == 0) return false;
+
+            cell = candidateCells[random.Next(candidateCells.Count)];
+            List<Vector2Int> openDirections = GetOpenDirections(grid[cell.x, cell.y]);
+            forward = openDirections[random.Next(openDirections.Count)];
+            freeCells.Remove(cell);
+            return true;
+        }
+
+        // 경로의 k 번째 칸이 앞뒤로 같은 직선 위에 있고, 차지할 칸(뒤 behind 칸 ~ 앞 ahead 칸)이 모두 비어 있는지 확인한다.
+        // 놓인 칸 자체는 양쪽만 뚫린 직선 칸이어야 문이 통로를 다 막는다.
+        private static bool IsPathRunAvailable(
+            MazeGenerator.SCell[,] grid,
+            List<Vector2Int> path,
+            int k,
+            int behind,
+            int ahead,
+            List<Vector2Int> freeCells)
+        {
+            int runStart = k - Mathf.Max(behind, 1);
+            int runEnd = k + Mathf.Max(ahead, 1);
+            if ((runStart < 0) || (runEnd >= path.Count)) return false;
+
+            Vector2Int direction = path[k + 1] - path[k];
+            for (int j = runStart; j < runEnd; j++)
+            {
+                if ((path[j + 1] - path[j]) != direction) return false;
+            }
+
+            if (!IsStraight(grid[path[k].x, path[k].y])) return false;
+
+            for (int j = k - behind; j <= k + ahead; j++)
+            {
+                if (!freeCells.Contains(path[j])) return false;
+            }
+
+            // 브레이드로 순환이 생긴 미로에서는 돌아갈 길이 없는 칸이어야 문을 꼭 지나간다
+            return !CanBypass(grid, path[0], path[path.Count - 1], path[k]);
+        }
+
+        // blockedCell 을 지나지 않고 start 에서 end 까지 갈 수 있는지
+        private static bool CanBypass(MazeGenerator.SCell[,] grid, Vector2Int start, Vector2Int end, Vector2Int blockedCell)
+        {
+            var visited = new HashSet<Vector2Int> { start, blockedCell };
+            var queue = new Queue<Vector2Int>();
+            queue.Enqueue(start);
+
+            while (queue.Count > 0)
+            {
+                Vector2Int cell = queue.Dequeue();
+                if (cell == end) return true;
+
+                foreach (Vector2Int direction in GetOpenDirections(grid[cell.x, cell.y]))
+                {
+                    Vector2Int next = cell + direction;
+                    if (visited.Add(next))
+                    {
+                        queue.Enqueue(next);
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        // 양쪽(남북 또는 동서)만 뚫린 직선 통로 칸인지
+        private static bool IsStraight(MazeGenerator.SCell cell)
+        {
+            bool isNorthSouth = cell.OpenNorth && cell.OpenSouth && !cell.OpenEast && !cell.OpenWest;
+            bool isEastWest = cell.OpenEast && cell.OpenWest && !cell.OpenNorth && !cell.OpenSouth;
+            return isNorthSouth || isEastWest;
+        }
+
+        // 칸에서 뚫린 방향들 (북쪽이 +y = 월드 +Z)
+        private static List<Vector2Int> GetOpenDirections(MazeGenerator.SCell cell)
+        {
+            var directions = new List<Vector2Int>(4);
+            if (cell.OpenNorth) directions.Add(Vector2Int.up);
+            if (cell.OpenEast) directions.Add(Vector2Int.right);
+            if (cell.OpenSouth) directions.Add(Vector2Int.down);
+            if (cell.OpenWest) directions.Add(Vector2Int.left);
+            return directions;
         }
 
         // 칸의 바닥 중앙 (월드 좌표)
@@ -270,19 +487,24 @@ namespace Map.Maze
             _checkpointAnchors[index].position = position;
         }
 
-        // 웨이포인트를 남은 자리 가운데 무작위로 골라 옮긴다. 옮긴 자리는 points 에서 빠진다.
-        private void MoveWaypointAnchors(List<Vector3> points, System.Random random)
+        // mazeIndex 번 미로의 웨이포인트를 남은 칸 가운데 무작위로 골라 그 칸 중앙으로 옮긴다. 옮긴 칸은 cells 에서 빠진다.
+        private void MoveWaypointAnchors(int mazeIndex, Transform mazeRoot, List<Vector2Int> cells, System.Random random)
         {
-            if (_waypointAnchors == null) return;
+            if (_waypointGroups == null) return;
 
-            foreach (Transform anchor in _waypointAnchors)
+            foreach (SMazeWaypointGroup group in _waypointGroups)
             {
-                if (anchor == null) continue;
-                if (points.Count == 0) return;
+                if ((group.MazeIndex != mazeIndex) || (group.Anchors == null)) continue;
 
-                int index = random.Next(points.Count);
-                anchor.position = points[index];
-                points.RemoveAt(index);
+                foreach (Transform anchor in group.Anchors)
+                {
+                    if (anchor == null) continue;
+                    if (cells.Count == 0) return;
+
+                    int index = random.Next(cells.Count);
+                    anchor.position = GetCellCenter(mazeRoot, cells[index]);
+                    cells.RemoveAt(index);
+                }
             }
         }
 

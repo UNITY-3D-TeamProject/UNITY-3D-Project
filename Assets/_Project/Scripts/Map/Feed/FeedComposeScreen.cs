@@ -9,7 +9,7 @@ namespace Map.Feed
     /// 가까이에서 상호작용(E)하면 피드 재료 아이템을 모두 모았는지 확인하는 화면.
     /// 다 모았으면 On Compose Ready, 모자라면 On Items Missing 을 실행한다.
     /// 실제 피드 작성 화면과 로직은 On Compose Ready 에 연결한다.
-    /// 같은 오브젝트에 PlayerInteractRelay 를 붙여 상호작용 입력을 받는다.
+    /// 입력은 플레이어의 Interact 스킬이 카메라 레이로 찾아 넘겨준다. 콜라이더가 있는 오브젝트를 Interact 레이어로 둔다.
     /// </summary>
     public class FeedComposeScreen : MonoBehaviour, IInteractable
     {

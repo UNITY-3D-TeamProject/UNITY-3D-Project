@@ -2,6 +2,8 @@ using UnityEngine;
 
 namespace Map.Common
 {
+    // CinemachineBrain(LateUpdate, 순서 0)이 카메라를 옮긴 뒤에 돌아야 떨리지 않는다.
+    [DefaultExecutionOrder(100)]
     public class Billboard : MonoBehaviour
     {
         #region Serialized Fields

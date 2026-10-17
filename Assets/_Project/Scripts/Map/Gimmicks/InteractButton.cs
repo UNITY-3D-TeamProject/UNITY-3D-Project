@@ -7,9 +7,8 @@ namespace Map.Gimmicks
     /// <summary>
     /// 플레이어가 가까이에서 상호작용(E)하면 연결된 동작을 실행하는 버튼. DamageButton 의 "가까이서 누르는" 버전이다.
     /// 예: On Interacted 에 GimmickSwitch.Toggle 을 연결
-    /// 입력은 같은 오브젝트의 PlayerInteractRelay 가 받아 넘겨준다(상호작용 거리는 그쪽의 Range).
+    /// 입력은 플레이어의 Interact 스킬이 카메라 레이로 찾아 넘겨준다. 콜라이더가 있는 오브젝트를 Interact 레이어로 둔다.
     /// </summary>
-    [RequireComponent(typeof(PlayerInteractRelay))]
     public class InteractButton : MonoBehaviour, IInteractable
     {
         #region Serialized Fields

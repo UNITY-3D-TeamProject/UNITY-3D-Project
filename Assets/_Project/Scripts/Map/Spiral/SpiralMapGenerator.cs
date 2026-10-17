@@ -76,6 +76,9 @@ namespace Map.Spiral
         // 사격 표적을 발판 윗면에서 띄우는 높이
         private const float SHOOT_TARGET_HEIGHT = 2.5f;
 
+        // 주위 피드와 라운드 발판 사이에 두는 여유. 피드가 위아래로 떠다니는 높이(FeedPost 의 Bob Height)보다 커야 한다.
+        private const float ROUND_FEED_CLEARANCE = 0.5f;
+
         [Header("Settings")]
         [Tooltip("나선의 크기, 태그 구성, 구간 패턴, 프리팹을 담은 설정 에셋")]
         [SerializeField] private SOSpiralMapSettings _settings;
@@ -93,7 +96,11 @@ namespace Map.Spiral
         private float _previousHalfLength;
 
         // 프리팹 크기를 매번 다시 재지 않도록 Build 동안 보관한다
-        private readonly Dictionary<GameObject, Vector3> _prefabSizes = new Dictionary<GameObject, Vector3>();
+        private readonly Dictionary<GameObject, Bounds> _prefabBounds = new Dictionary<GameObject, Bounds>();
+
+        // 주위 피드는 라운드 발판과 겹치지 않는 자리를 정한 뒤에 만들도록, Build 동안 놓을 자리만 모아 둔다
+        private readonly List<(GameObject Prefab, Vector3 Position, Transform Parent)> _ambientFeeds =
+            new List<(GameObject Prefab, Vector3 Position, Transform Parent)>();
 
         // 고를 패턴이 하나도 없을 때 쓰는 기본 패턴(고정 발판). 처음 필요할 때 만든다.
         private SOSpiralSectionPattern _fallbackPattern;
@@ -132,7 +139,8 @@ namespace Map.Spiral
                 Debug.LogWarning($"[{name}] Platform Gap({_settings.PlatformGap})이 Max Jump Distance({_settings.MaxJumpDistance})보다 큽니다.", this);
             }
 
-            _prefabSizes.Clear();
+            _prefabBounds.Clear();
+            _ambientFeeds.Clear();
             _currentAngle = 0f;
             _currentHeight = 0f;
 
@@ -256,11 +264,14 @@ namespace Map.Spiral
             Vector3 center = GetCenter();
             Vector3 top = new Vector3(center.x, goalSurface.y - ROUND_PLATFORM_DROP, center.z);
 
+            GameObject roundPlatform = null;
             if (_settings.RoundPlatformPrefab != null)
             {
-                GameObject roundPlatform = Instantiate(_settings.RoundPlatformPrefab, top, Quaternion.identity, root);
+                roundPlatform = Instantiate(_settings.RoundPlatformPrefab, top, Quaternion.identity, root);
                 roundPlatform.name = "RoundPlatform";
             }
+
+            SpawnAmbientFeeds(roundPlatform);
 
             // 라운드 체크포인트: 도착 발판에서 건너오는 쪽 가장자리의 안쪽, 중심을 바라보게 둔다
             Vector3 toGoal = goalSurface - top;
@@ -322,7 +333,44 @@ namespace Map.Spiral
                     transform.position.y + height,
                     center.z + (Mathf.Sin(rad) * radius));
 
-                Instantiate(prefab, position, Quaternion.identity, tagRoot);
+                _ambientFeeds.Add((prefab, position, tagRoot));
+            }
+        }
+
+        // 미뤄 둔 주위 피드를 만든다. 마지막 태그의 안쪽 피드는 라운드 발판 아래에 놓이므로, 발판과 겹치는 피드는 발판 아랫면 밑으로 내려서 만든다.
+        // 피드(FeedPost)는 만들어질 때의 자리를 기준으로 떠다니므로, 만든 뒤에 옮기면 안 되고 처음부터 맞는 자리에 만들어야 한다.
+        private void SpawnAmbientFeeds(GameObject roundPlatform)
+        {
+            Renderer platformRenderer = (roundPlatform != null) ? roundPlatform.GetComponentInChildren<Renderer>() : null;
+            Vector3 center = GetCenter();
+
+            foreach ((GameObject prefab, Vector3 position, Transform parent) in _ambientFeeds)
+            {
+                Vector3 spawnPosition = position;
+
+                if (platformRenderer != null)
+                {
+                    Bounds platformBounds = platformRenderer.bounds;
+                    Bounds feedBounds = GetPrefabBounds(prefab);
+
+                    // 피드는 카메라를 향해 돌므로 수평으로는 가장 넓은 폭의 절반까지 차지한다고 본다
+                    float feedHalfWidth = Mathf.Max(feedBounds.extents.x, feedBounds.extents.z);
+                    float distance = new Vector2(position.x - center.x, position.z - center.z).magnitude;
+                    // 피드는 제자리에서 위아래로 떠다니므로 그만큼 여유를 두고 잰다
+                    float feedTop = position.y + feedBounds.max.y + ROUND_FEED_CLEARANCE;
+                    float feedBottom = position.y + feedBounds.min.y - ROUND_FEED_CLEARANCE;
+
+                    bool isOverlapping = (distance < (_settings.RoundPlatformRadius + feedHalfWidth)) &&
+                        (feedTop > platformBounds.min.y) &&
+                        (feedBottom < platformBounds.max.y);
+
+                    if (isOverlapping)
+                    {
+                        spawnPosition.y -= feedTop - platformBounds.min.y;
+                    }
+                }
+
+                Instantiate(prefab, spawnPosition, Quaternion.identity, parent);
             }
         }
 
@@ -973,7 +1021,13 @@ namespace Map.Spiral
         // 프리팹을 놓았을 때의 크기 (x: 반지름 방향 폭, y: 두께, z: 진행 방향 길이). 메시가 없으면 0 이다.
         private Vector3 GetPrefabSize(GameObject prefab)
         {
-            if (_prefabSizes.TryGetValue(prefab, out Vector3 size)) return size;
+            return GetPrefabBounds(prefab).size;
+        }
+
+        // 프리팹을 놓았을 때 루트(피벗) 기준으로 메시가 차지하는 범위. 루트의 회전은 없다고 본다. 메시가 없으면 크기 0 이다.
+        private Bounds GetPrefabBounds(GameObject prefab)
+        {
+            if (_prefabBounds.TryGetValue(prefab, out Bounds cached)) return cached;
 
             Matrix4x4 worldToRoot = prefab.transform.worldToLocalMatrix;
             Bounds bounds = default;
@@ -1007,10 +1061,14 @@ namespace Map.Spiral
                 }
             }
 
-            // 루트 기준 크기에 루트의 스케일을 곱해야 놓았을 때의 크기가 된다
-            size = hasBounds ? Vector3.Scale(bounds.size, prefab.transform.localScale) : Vector3.zero;
-            _prefabSizes[prefab] = size;
-            return size;
+            // 루트 기준 범위에 루트의 스케일을 곱해야 놓았을 때의 범위가 된다
+            Vector3 scale = prefab.transform.localScale;
+            Bounds placed = hasBounds
+                ? new Bounds(Vector3.Scale(bounds.center, scale), Vector3.Scale(bounds.size, scale))
+                : new Bounds(Vector3.zero, Vector3.zero);
+
+            _prefabBounds[prefab] = placed;
+            return placed;
         }
 
         // 발판 윗면의 중앙. 플레이어 시작 위치나 오브젝트 배치의 기준으로 쓴다.
