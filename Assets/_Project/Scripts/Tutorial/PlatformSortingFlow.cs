@@ -8,25 +8,23 @@ namespace Tutorial
 {
     /// <summary>
     /// 그라인더 뒤쪽의 발판 흐름: 파이프(Source) → 들어오는 줄 → 분기점 → 분류장(위·가운데·아래 3개의 원) → 합류점 → 나가는 줄 → 그라인더(Sink).
-    /// 이 오브젝트의 위치가 가운데 분류장의 중심이고, forward 가 흐름 방향이다. (입구 칸 = -forward, 출구 칸 = +forward)
-    /// 들어오는 줄 맨 앞 발판은 분기점에서 자리가 난 분류장으로 올라가거나 내려가 들어간다.
-    /// 분류장은 한 번에 한 칸씩 돌고(스텝 회전), 가득 찬 분류장에서 가장 먼저 들어온 발판이 출구 칸에 오면 합류점으로 나간다.
-    /// 들어오는 줄은 발판이 분류장에 들어갈 때, 나가는 줄은 분류장에서 발판이 나올 때 한 칸씩 전진한다.
+    /// 이 오브젝트의 위치가 가운데 분류장의 중심이고, forward 가 흐름 방향이다. (분류장 입구 = -forward, 출구 = +forward)
+    /// 모든 발판은 멈추지 않고 일정한 속도로 같은 경로를 따라 움직인다. 파이프에서 일정 간격으로 나온 발판은
+    /// 위·가운데·아래 분류장에 차례대로 나눠 들어가 정해진 바퀴 수만큼 돈 뒤 합류점으로 나가 그라인더로 들어간다.
+    /// 분류장마다 들어가는 갈래·나오는 갈래의 시간이 같아서 합류점에서도 발판 간격이 일정하다.
     /// PauseFlow() / ResumeFlow() 로 흐름 전체를 멈추고 다시 움직일 수 있다.
     /// </summary>
     [DefaultExecutionOrder(-100)]   // 탑승자(PlatformRider)보다 먼저 움직여야 이번 프레임 이동량이 전달된다
     public class PlatformSortingFlow : MonoBehaviour
     {
         #region Constants
-        private const int RING_COUNT      = 3;
-        private const int RING_SLOT_COUNT = 8;
-        private const int ENTRY_SLOT      = 0;
-        private const int EXIT_SLOT       = RING_SLOT_COUNT / 2;
+        private const int RING_COUNT = 3;
 
         // TransformMotor.MoveTo 가 이번 프레임 목표 위치에 항상 닿도록 하는 충분히 큰 속도
         private const float SNAP_SPEED = 1000.0f;
 
         private const float GIZMO_SLOT_SIZE = 0.6f;
+        private const int   GIZMO_RING_SEGMENTS = 48;
         #endregion
 
         #region Serialized Fields
@@ -34,40 +32,40 @@ namespace Tutorial
         [Tooltip("흐름에 쓰는 발판 프리팹 (RideablePlatform 필요)")]
         [SerializeField] private RideablePlatform _platformPrefab;
 
-        [Tooltip("발판이 생성되는 지점 (파이프 입구)")]
+        [Tooltip("발판이 생성되는 지점 (파이프 안쪽 깊은 곳)")]
         [SerializeField] private Transform _sourcePoint;
 
         [Tooltip("발판이 사라지는 지점 (그라인더 입구)")]
         [SerializeField] private Transform _sinkPoint;
 
-        [Header("Lines")]
-        [Tooltip("파이프와 분기점 사이에서 대기하는 발판 수. 발판 사이 간격이 점프로 닿는 거리인지 Gizmo로 확인한다.")]
-        [SerializeField, Min(1)] private int _inboundCount = 4;
+        [Tooltip("나가는 줄이 그라인더로 빨려 들어가기 직전에 지나는 지점 (선택). 비우면 합류점에서 Sink 로 곧장 간다.")]
+        [SerializeField] private Transform _sinkApproachPoint;
 
-        [Tooltip("합류점과 그라인더 사이에서 대기하는 발판 수")]
-        [SerializeField, Min(1)] private int _outboundCount = 4;
+        [Header("Flow")]
+        [Tooltip("줄 위에서 발판이 움직이는 속도(m/s). 분류장 둘레를 도는 속도도 같다.")]
+        [SerializeField, Min(0.1f)] private float _speed = 2.0f;
+
+        [Tooltip("줄 위 발판 사이의 거리(중심 기준, m). 같은 분류장 안에서는 이 값의 3배 간격이 된다.")]
+        [SerializeField, Min(0.5f)] private float _spacing = 6.7f;
 
         [Header("Sorting Rings")]
         [Tooltip("분류장 원의 반지름")]
-        [SerializeField, Min(0.1f)] private float _ringRadius = 6.0f;
+        [SerializeField, Min(0.1f)] private float _ringRadius = 8.0f;
 
         [Tooltip("위·가운데·아래 분류장 사이의 높이 차")]
-        [SerializeField, Min(0.0f)] private float _ringSpacing = 4.0f;
+        [SerializeField, Min(0.0f)] private float _ringSpacing = 6.0f;
 
-        [Tooltip("분기점(합류점)과 분류장 입구(출구) 칸 사이의 거리")]
+        [Tooltip("분기점(합류점)과 분류장 입구(출구) 사이의 거리")]
         [SerializeField, Min(0.1f)] private float _branchLength = 5.0f;
 
-        [Header("Timing")]
-        [Tooltip("한 칸 이동한 뒤 멈춰 있는 시간(초)")]
-        [SerializeField, Min(0.0f)] private float _waitDuration = 1.5f;
-
-        [Tooltip("한 칸 이동하는 데 걸리는 시간(초)")]
-        [SerializeField, Min(0.05f)] private float _moveDuration = 1.0f;
+        [Tooltip("분류장 안에서 도는 바퀴 수. 입구 반대편이 출구라서 0.5, 1.5, 2.5 처럼 n + 0.5 로 둔다.\n" +
+                 "같은 분류장 발판끼리 겹치지 않는지 Gizmo로 확인한다. (둘레 ÷ (간격 × 3) 이 n + 0.5 에 가까우면 고르게 퍼진다)")]
+        [SerializeField, Min(0.5f)] private float _ringLaps = 1.5f;
 
         [Header("Options")]
         [SerializeField] private bool _autoStart = true;
 
-        [Tooltip("켜면 시작할 때 분류장과 나가는 줄이 이미 차 있는 상태로 만든다.")]
+        [Tooltip("켜면 시작할 때 경로 전체가 이미 발판으로 차 있는 상태로 만든다.")]
         [SerializeField] private bool _shouldPrewarm = true;
 
         [Tooltip("켜면 멈춘 상태로 시작한다. ResumeFlow() 를 호출해야 움직인다. (예: 원거리 스위치로 작동)")]
@@ -76,26 +74,20 @@ namespace Tutorial
 
         #region Private Fields
         private readonly List<FlowPlatform> _platforms = new List<FlowPlatform>();
+        private readonly List<FlowPlatform> _consumed  = new List<FlowPlatform>();
 
-        // 분류장별 [칸 위치] = 그 자리에 있는 발판
-        private readonly FlowPlatform[][] _rings = new FlowPlatform[RING_COUNT][];
-        private readonly FlowPlatform[][] _ringBuffers = new FlowPlatform[RING_COUNT][];
+        // 구간별 걸리는 시간(초). 한 발판의 나이(생성 후 지난 시간)로 위치를 구한다.
+        private float _inboundDuration;
+        private float _branchDuration;
+        private float _ringDuration;
+        private float _outboundDuration;
+        private float _approachDuration;
+        private float _totalDuration;
+        private float _spawnInterval;
 
-        // 분류장별 들어온 순서. 맨 앞이 가장 먼저 들어온 발판이다.
-        private readonly Queue<FlowPlatform>[] _ringOrders = new Queue<FlowPlatform>[RING_COUNT];
-
-        private FlowPlatform[] _inbound;
-        private FlowPlatform[] _outbound;
-        private FlowPlatform   _leaving;
-
-        // 여러 분류장이 동시에 조건을 만족할 때 차례대로 고르기 위한 시작 번호
-        private int _nextEntryRing;
-        private int _nextExitRing;
-
-        private float _timer;
+        private float _clock;
+        private int   _nextSpawnIndex;
         private bool  _isRunning;
-        private bool  _isStepping;
-        private bool  _isPrewarming;
         #endregion
 
         #region Properties
@@ -119,18 +111,8 @@ namespace Tutorial
         private void Awake()
         {
             Debug.Assert(_platformPrefab != null, $"[{name}] 발판 프리팹이 연결되지 않았습니다.");
-            Debug.Assert(_sourcePoint != null, $"[{name}] Source Point(파이프 입구)가 연결되지 않았습니다.");
+            Debug.Assert(_sourcePoint != null, $"[{name}] Source Point(파이프 안쪽)가 연결되지 않았습니다.");
             Debug.Assert(_sinkPoint != null, $"[{name}] Sink Point(그라인더 입구)가 연결되지 않았습니다.");
-
-            for (int i = 0; i < RING_COUNT; i++)
-            {
-                _rings[i]       = new FlowPlatform[RING_SLOT_COUNT];
-                _ringBuffers[i] = new FlowPlatform[RING_SLOT_COUNT];
-                _ringOrders[i]  = new Queue<FlowPlatform>();
-            }
-
-            _inbound  = new FlowPlatform[_inboundCount];
-            _outbound = new FlowPlatform[_outboundCount];
 
             IsPaused = _isPausedAtStart;
         }
@@ -153,123 +135,70 @@ namespace Tutorial
                 return;
             }
 
-            _timer += Time.deltaTime;
-
-            if (_isStepping)
-            {
-                float progress = Mathf.Clamp01(_timer / _moveDuration);
-                MovePlatforms(Mathf.SmoothStep(0.0f, 1.0f, progress));
-
-                if (progress >= 1.0f)
-                {
-                    FinishStep();
-                    _isStepping = false;
-                    _timer = 0.0f;
-                }
-
-                return;
-            }
-
-            HoldPlatforms();
-
-            if (_timer >= _waitDuration)
-            {
-                AdvanceStep();
-                _isStepping = true;
-                _timer = 0.0f;
-            }
+            _clock += Time.deltaTime;
+            SpawnDuePlatforms(true);
+            MovePlatforms();
         }
 
         private void OnDrawGizmosSelected()
         {
-            Vector3 splitPoint = GetSplitPosition();
-            Vector3 mergePoint = GetMergePosition();
+            if ((_sourcePoint == null) || (_sinkPoint == null)) return;
 
-            // 분류장 칸 (입구 = 초록, 출구 = 빨강)과 분기점·합류점으로 이어지는 길
+            CalculateDurations();
+
+            // 분류장별 경로 (입구 = 초록, 출구 = 빨강)
             for (int ring = 0; ring < RING_COUNT; ring++)
             {
-                for (int slot = 0; slot < RING_SLOT_COUNT; slot++)
+                Gizmos.color = Color.cyan;
+                for (int i = 0; i < GIZMO_RING_SEGMENTS; i++)
                 {
-                    Gizmos.color = Color.cyan;
-                    Gizmos.DrawLine(GetRingPosition(ring, slot), GetRingPosition(ring, slot + 1));
-
-                    if (slot == ENTRY_SLOT)
-                    {
-                        Gizmos.color = Color.green;
-                    }
-                    else if (slot == EXIT_SLOT)
-                    {
-                        Gizmos.color = Color.red;
-                    }
-
-                    Gizmos.DrawWireCube(GetRingPosition(ring, slot), Vector3.one * GIZMO_SLOT_SIZE);
+                    Gizmos.DrawLine(
+                        GetRingPosition(ring, i / (float)GIZMO_RING_SEGMENTS),
+                        GetRingPosition(ring, (i + 1) / (float)GIZMO_RING_SEGMENTS));
                 }
+
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireCube(GetRingPosition(ring, 0.0f), Vector3.one * GIZMO_SLOT_SIZE);
+                Gizmos.color = Color.red;
+                Gizmos.DrawWireCube(GetRingPosition(ring, 0.5f), Vector3.one * GIZMO_SLOT_SIZE);
 
                 Gizmos.color = Color.yellow;
-                Gizmos.DrawLine(splitPoint, GetRingPosition(ring, ENTRY_SLOT));
-                Gizmos.DrawLine(GetRingPosition(ring, EXIT_SLOT), mergePoint);
+                Gizmos.DrawLine(GetSplitPosition(), GetRingPosition(ring, 0.0f));
+                Gizmos.DrawLine(GetRingPosition(ring, 0.5f), GetMergePosition());
             }
 
-            // 들어오는 줄 / 나가는 줄의 대기 자리
+            // 줄 위 발판 자리 (멈춰 있을 때 보이는 간격)
             Gizmos.color = Color.yellow;
-            if (_sourcePoint != null)
-            {
-                Gizmos.DrawLine(_sourcePoint.position, splitPoint);
-                for (int i = 0; i < _inboundCount; i++)
-                {
-                    Gizmos.DrawWireCube(GetInboundPosition(i), Vector3.one * GIZMO_SLOT_SIZE);
-                }
-            }
+            Gizmos.DrawLine(_sourcePoint.position, GetSplitPosition());
+            Gizmos.DrawLine(GetMergePosition(), GetApproachPosition());
+            Gizmos.DrawLine(GetApproachPosition(), _sinkPoint.position);
 
-            if (_sinkPoint != null)
+            for (float age = 0.0f; age < _totalDuration; age += _spawnInterval)
             {
-                Gizmos.DrawLine(mergePoint, _sinkPoint.position);
-                for (int i = 0; i < _outboundCount; i++)
-                {
-                    Gizmos.DrawWireCube(GetOutboundPosition(i), Vector3.one * GIZMO_SLOT_SIZE);
-                }
+                Gizmos.DrawWireCube(GetPathPosition(0, age), Vector3.one * GIZMO_SLOT_SIZE);
             }
         }
         #endregion
 
         #region Public Methods
         /// <summary>
-        /// 흐름을 시작한다. 들어오는 줄을 채우고, 설정에 따라 분류장과 나가는 줄도 미리 채운다.
+        /// 흐름을 시작한다. 설정에 따라 경로 전체를 미리 발판으로 채운다.
         /// </summary>
         public void StartFlow()
         {
             if (_isRunning) return;
             if ((_platformPrefab == null) || (_sourcePoint == null) || (_sinkPoint == null)) return;
 
-            _isPrewarming = true;
+            CalculateDurations();
 
-            for (int i = 0; i < _inboundCount; i++)
-            {
-                _inbound[i] = SpawnPlatform(GetInboundPosition(i));
-            }
+            // 미리 채울 때는 시계를 경로 전체 시간만큼 앞당겨, 그동안 나왔을 발판을 제자리에 바로 만든다.
+            _clock = _shouldPrewarm ? _totalDuration : 0.0f;
+            _nextSpawnIndex = 0;
 
-            if (_shouldPrewarm)
-            {
-                // 분류장 3개가 가득 차고 나가는 줄이 다 찰 만큼 미리 진행시킨다.
-                int fillSteps = RING_COUNT * RING_SLOT_COUNT * 2;
-                int prewarmSteps = fillSteps + ((RING_SLOT_COUNT + 1) * _outboundCount);
+            SpawnDuePlatforms(false);
+            MovePlatforms();
 
-                for (int i = 0; i < prewarmSteps; i++)
-                {
-                    AdvanceStep();
-                    FinishStep();
-                }
-
-                foreach (FlowPlatform platform in _platforms)
-                {
-                    platform.Motor.transform.position = platform.To;
-                }
-            }
-
-            _isPrewarming = false;
             _isRunning = true;
-            _isStepping = false;
-            _timer = 0.0f;
         }
 
         /// <summary>
@@ -290,188 +219,81 @@ namespace Tutorial
         #endregion
 
         #region Private Methods
-        // 모든 발판의 다음 자리를 정한다. 실제 이동은 Update 에서 From → To 로 보간한다.
-        private void AdvanceStep()
+        private void CalculateDurations()
         {
-            foreach (FlowPlatform platform in _platforms)
-            {
-                platform.From = platform.To;
-                platform.ArcStartSlot = -1;
-            }
+            float ringLength = _ringLaps * 2.0f * Mathf.PI * _ringRadius;
 
-            // 합류점은 하나라서 한 스텝에 한 분류장에서만 나가고, 분기점도 하나라서 한 분류장으로만 들어간다.
-            FlowPlatform exiting = FindExitingPlatform();
-            int entryRing = FindEntryRing();
+            _inboundDuration  = Vector3.Distance(_sourcePoint.position, GetSplitPosition()) / _speed;
+            _branchDuration   = _branchLength / _speed;
+            _ringDuration     = ringLength / _speed;
+            _outboundDuration = Vector3.Distance(GetMergePosition(), GetApproachPosition()) / _speed;
+            _approachDuration = Vector3.Distance(GetApproachPosition(), _sinkPoint.position) / _speed;
 
-            for (int ring = 0; ring < RING_COUNT; ring++)
-            {
-                RotateRing(ring, exiting);
-            }
-
-            if (exiting != null)
-            {
-                ShiftOutbound(exiting);
-            }
-
-            if (entryRing >= 0)
-            {
-                ShiftInbound(entryRing);
-            }
+            _totalDuration = _inboundDuration + (_branchDuration * 2.0f) + _ringDuration + _outboundDuration + _approachDuration;
+            _spawnInterval = _spacing / _speed;
         }
 
-        // 가득 찬 분류장에서 가장 먼저 들어온 발판이 출구 칸에 있으면 그 발판이 나간다.
-        private FlowPlatform FindExitingPlatform()
+        // 생성 시각이 지금까지 된 발판을 모두 만든다. 경로 끝을 이미 지난 발판은 만들지 않는다.
+        private void SpawnDuePlatforms(bool shouldNotify)
         {
-            for (int i = 0; i < RING_COUNT; i++)
+            while ((_nextSpawnIndex * _spawnInterval) <= _clock)
             {
-                int ring = (_nextExitRing + i) % RING_COUNT;
-                FlowPlatform atExit = _rings[ring][EXIT_SLOT];
-                bool isRingFull = _ringOrders[ring].Count == RING_SLOT_COUNT;
-
-                if (isRingFull && (atExit != null) && (atExit == _ringOrders[ring].Peek()))
+                float spawnTime = _nextSpawnIndex * _spawnInterval;
+                if ((_clock - spawnTime) < _totalDuration)
                 {
-                    _ringOrders[ring].Dequeue();
-                    _nextExitRing = (ring + 1) % RING_COUNT;
-                    return atExit;
+                    SpawnPlatform(_nextSpawnIndex, spawnTime, shouldNotify);
                 }
-            }
 
-            return null;
+                _nextSpawnIndex++;
+            }
         }
 
-        // 이번 회전으로 입구 칸이 비게 되는 분류장을 고른다. 없으면 -1.
-        private int FindEntryRing()
+        private void SpawnPlatform(int index, float spawnTime, bool shouldNotify)
         {
-            if (_inbound[_inboundCount - 1] == null) return -1;
+            int ring = index % RING_COUNT;
+            Vector3 position = GetPathPosition(ring, _clock - spawnTime);
 
-            for (int i = 0; i < RING_COUNT; i++)
-            {
-                int ring = (_nextEntryRing + i) % RING_COUNT;
-                if (_rings[ring][RING_SLOT_COUNT - 1] == null)
-                {
-                    _nextEntryRing = (ring + 1) % RING_COUNT;
-                    return ring;
-                }
-            }
-
-            return -1;
-        }
-
-        private void RotateRing(int ring, FlowPlatform exiting)
-        {
-            FlowPlatform[] current = _rings[ring];
-            FlowPlatform[] rotated = _ringBuffers[ring];
-            Array.Clear(rotated, 0, RING_SLOT_COUNT);
-
-            for (int slot = 0; slot < RING_SLOT_COUNT; slot++)
-            {
-                FlowPlatform platform = current[slot];
-                if ((platform == null) || (platform == exiting)) continue;
-
-                int nextSlot = (slot + 1) % RING_SLOT_COUNT;
-                rotated[nextSlot] = platform;
-                platform.ArcRing = ring;
-                platform.ArcStartSlot = slot;
-                platform.To = GetRingPosition(ring, nextSlot);
-            }
-
-            _rings[ring] = rotated;
-            _ringBuffers[ring] = current;
-        }
-
-        // 분류장에서 나온 발판을 합류점(나가는 줄 맨 앞)에 넣고, 맨 끝 발판을 그라인더로 보낸다.
-        private void ShiftOutbound(FlowPlatform exiting)
-        {
-            int lastOutbound = _outboundCount - 1;
-
-            _leaving = _outbound[lastOutbound];
-            if (_leaving != null)
-            {
-                _leaving.To = _sinkPoint.position;
-            }
-
-            for (int i = lastOutbound; i > 0; i--)
-            {
-                _outbound[i] = _outbound[i - 1];
-                if (_outbound[i] != null)
-                {
-                    _outbound[i].To = GetOutboundPosition(i);
-                }
-            }
-
-            _outbound[0] = exiting;
-            exiting.To = GetOutboundPosition(0);
-        }
-
-        // 분기점에 있던 맨 앞 발판을 고른 분류장의 입구 칸에 넣고, 파이프에서 새 발판을 만든다.
-        private void ShiftInbound(int ring)
-        {
-            int lastInbound = _inboundCount - 1;
-
-            FlowPlatform entering = _inbound[lastInbound];
-            entering.To = GetRingPosition(ring, ENTRY_SLOT);
-            _rings[ring][ENTRY_SLOT] = entering;
-            _ringOrders[ring].Enqueue(entering);
-
-            for (int i = lastInbound; i > 0; i--)
-            {
-                _inbound[i] = _inbound[i - 1];
-                _inbound[i].To = GetInboundPosition(i);
-            }
-
-            _inbound[0] = SpawnPlatform(_sourcePoint.position);
-            _inbound[0].To = GetInboundPosition(0);
-        }
-
-        // 그라인더에 도착한 발판을 없앤다.
-        private void FinishStep()
-        {
-            if (_leaving == null) return;
-
-            if (!_isPrewarming)
-            {
-                OnPlatformConsumed?.Invoke(_leaving.Motor.transform.position);
-            }
-
-            // TODO: 오브젝트 풀 도입 시 풀에 반환하는 코드로 교체
-            _platforms.Remove(_leaving);
-            Destroy(_leaving.Motor.gameObject);
-            _leaving = null;
-        }
-
-        private FlowPlatform SpawnPlatform(Vector3 position)
-        {
             // TODO: 오브젝트 풀 도입 시 풀에서 꺼내는 코드로 교체
             RideablePlatform instance = Instantiate(_platformPrefab, position, _platformPrefab.transform.rotation);
 
-            var platform = new FlowPlatform
+            _platforms.Add(new FlowPlatform
             {
                 Motor = instance.GetComponent<TransformMotor>(),
-                From = position,
-                To = position,
-                ArcStartSlot = -1,
-            };
-            _platforms.Add(platform);
+                Ring = ring,
+                SpawnTime = spawnTime,
+            });
 
-            if (!_isPrewarming)
+            if (shouldNotify)
             {
                 OnPlatformSpawned?.Invoke(position);
             }
-
-            return platform;
         }
 
-        private void MovePlatforms(float progress)
+        private void MovePlatforms()
         {
             foreach (FlowPlatform platform in _platforms)
             {
-                // 분류장 안에서는 직선이 아니라 원호를 따라 움직인다.
-                Vector3 target = (platform.ArcStartSlot >= 0)
-                    ? GetRingPosition(platform.ArcRing, platform.ArcStartSlot + progress)
-                    : Vector3.Lerp(platform.From, platform.To, progress);
+                float age = _clock - platform.SpawnTime;
+                if (age >= _totalDuration)
+                {
+                    _consumed.Add(platform);
+                    continue;
+                }
 
-                platform.Motor.MoveTo(target, SNAP_SPEED);
+                platform.Motor.MoveTo(GetPathPosition(platform.Ring, age), SNAP_SPEED);
             }
+
+            // 그라인더에 도착한 발판을 없앤다.
+            foreach (FlowPlatform platform in _consumed)
+            {
+                OnPlatformConsumed?.Invoke(platform.Motor.transform.position);
+
+                // TODO: 오브젝트 풀 도입 시 풀에 반환하는 코드로 교체
+                _platforms.Remove(platform);
+                Destroy(platform.Motor.gameObject);
+            }
+
+            _consumed.Clear();
         }
 
         private void HoldPlatforms()
@@ -484,16 +306,52 @@ namespace Tutorial
             }
         }
 
-        // ring: 0 = 위, 1 = 가운데, 2 = 아래. slot 은 소수도 받는다. (칸과 칸 사이를 이동 중인 위치)
-        private Vector3 GetRingPosition(int ring, float slot)
+        // 발판이 생성된 뒤 age 초가 지났을 때의 위치
+        private Vector3 GetPathPosition(int ring, float age)
         {
-            float angle = Mathf.Repeat(slot, RING_SLOT_COUNT) * ((Mathf.PI * 2.0f) / RING_SLOT_COUNT);
+            if (age < _inboundDuration)
+            {
+                return Vector3.Lerp(_sourcePoint.position, GetSplitPosition(), age / _inboundDuration);
+            }
+            age -= _inboundDuration;
+
+            if (age < _branchDuration)
+            {
+                return Vector3.Lerp(GetSplitPosition(), GetRingPosition(ring, 0.0f), age / _branchDuration);
+            }
+            age -= _branchDuration;
+
+            if (age < _ringDuration)
+            {
+                return GetRingPosition(ring, _ringLaps * (age / _ringDuration));
+            }
+            age -= _ringDuration;
+
+            if (age < _branchDuration)
+            {
+                return Vector3.Lerp(GetRingPosition(ring, _ringLaps), GetMergePosition(), age / _branchDuration);
+            }
+            age -= _branchDuration;
+
+            if (age < _outboundDuration)
+            {
+                return Vector3.Lerp(GetMergePosition(), GetApproachPosition(), age / _outboundDuration);
+            }
+            age -= _outboundDuration;
+
+            return Vector3.Lerp(GetApproachPosition(), _sinkPoint.position, Mathf.Clamp01(age / _approachDuration));
+        }
+
+        // ring: 0 = 위, 1 = 가운데, 2 = 아래. turns 는 입구에서부터 돈 바퀴 수 (0.5 = 출구)
+        private Vector3 GetRingPosition(int ring, float turns)
+        {
+            float angle = turns * Mathf.PI * 2.0f;
 
             // 이웃한 분류장끼리는 서로 반대 방향으로 돈다.
             float side = ((ring % 2) == 0) ? 1.0f : -1.0f;
             float height = (1 - ring) * _ringSpacing;
 
-            // 0번 칸(입구)이 -forward, 4번 칸(출구)이 +forward
+            // 입구가 -forward, 출구(반 바퀴)가 +forward
             var localPosition = new Vector3(Mathf.Sin(angle) * _ringRadius * side, height, -Mathf.Cos(angle) * _ringRadius);
             return ToWorldPosition(localPosition);
         }
@@ -510,18 +368,9 @@ namespace Tutorial
             return ToWorldPosition(new Vector3(0.0f, 0.0f, _ringRadius + _branchLength));
         }
 
-        // 0번이 파이프 쪽, 마지막 번호가 분기점
-        private Vector3 GetInboundPosition(int index)
+        private Vector3 GetApproachPosition()
         {
-            float ratio = (index + 1) / (float)_inboundCount;
-            return Vector3.Lerp(_sourcePoint.position, GetSplitPosition(), ratio);
-        }
-
-        // 0번이 합류점, 마지막 번호가 그라인더 쪽
-        private Vector3 GetOutboundPosition(int index)
-        {
-            float ratio = index / (float)(_outboundCount + 1);
-            return Vector3.Lerp(GetMergePosition(), _sinkPoint.position, ratio);
+            return (_sinkApproachPoint != null) ? _sinkApproachPoint.position : GetMergePosition();
         }
 
         private Vector3 ToWorldPosition(Vector3 localPosition)
@@ -534,12 +383,8 @@ namespace Tutorial
         private sealed class FlowPlatform
         {
             public TransformMotor Motor;
-            public Vector3 From;
-            public Vector3 To;
-
-            // 이번 스텝에 분류장 원호를 따라 움직이면 그 분류장 번호와 출발 칸 번호. 아니면 ArcStartSlot 이 -1
-            public int ArcRing;
-            public int ArcStartSlot;
+            public int   Ring;
+            public float SpawnTime;
         }
         #endregion
     }
