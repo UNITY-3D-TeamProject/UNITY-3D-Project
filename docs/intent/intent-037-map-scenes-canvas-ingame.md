@@ -35,7 +35,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 
 ## 열린 질문 (Open questions)
 1. `feature/Map/Maze`가 수정 중인 `Map_0_Tutorial`·`Map_1_Lobby`·`Map_3_File`도 지금 바꿀지, 그 브랜치가 develop에 병합된 뒤 바꿀지.
-2. 맵 씬에 EventSystem이 없어 설정창 닫기 버튼을 마우스로 누를 수 없다. 이번 작업에 EventSystem 추가를 포함할지, 별도 작업으로 둘지.
+2. 맵 씬에 EventSystem이 없어 설정창 닫기 버튼을 마우스로 누를 수 없다. 이번 작업에 EventSystem 추가를 포함할지, 별도 작업으로 둘지. (2026-10-17: intent-038 AudioManager의 게임 안 볼륨 슬라이더도 같은 이유로 움직일 수 없어서, EventSystem 추가는 이 intent에서 처리하기로 함)
 3. 교체 방식: Unity의 Prefab Replace(인스턴스 원본만 교체, 위치·이름 유지)로 할지, 지우고 새로 배치할지.
 4. 교체 후 `Canvas_Legacy.prefab`을 삭제할지 남길지.
 
