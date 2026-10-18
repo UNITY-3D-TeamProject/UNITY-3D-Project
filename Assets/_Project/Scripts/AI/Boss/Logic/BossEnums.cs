@@ -46,4 +46,29 @@ namespace AI.Boss.Logic
         A5Cross,
         A6,
     }
+
+    /// <summary>
+    /// A 가 받는 피격 범위. 중계(BossHitRelay)마다 허용 여부를 정한다.
+    /// </summary>
+    public enum EBossDamageMode
+    {
+        /// <summary>전부 차단 (1페이즈)</summary>
+        Blocked,
+
+        /// <summary>손만 허용 (그로기). HP 하한이 걸린다</summary>
+        HandsOnly,
+
+        /// <summary>손·몸·머리 전부 허용 (최종)</summary>
+        All,
+    }
+
+    /// <summary>
+    /// A 의 피격 중계가 붙은 부위.
+    /// </summary>
+    public enum EBossHitPart
+    {
+        Hand,
+        Body,
+        Head,
+    }
 }
