@@ -7,6 +7,8 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-18** — 보스 세션 C: `Logic/`에 `BossAPatternSelector`(상황 규칙 1~5·붕괴 제한·몰기·기본 순서)와 `EBossAPattern`·`SBossSituation`·`SBossAPatternChoice`를 만들었다. EditMode 88/88 통과, 컴파일 에러 0. **커밋 전, 다음은 세션 D(UNITY-1~3)**: [보스 세션 C](./2026-10-18/boss-session-c.md)
+- **2026-10-18** — 로컬 Codex 로그의 실제 token_count 기록과 공식 관측 기능 확인. 루프·대화별 입력/캐시/출력과 도구 호출을 연결하는 방법 안내, 대시보드 미구현: [루프별 토큰 관측](./2026-10-18/token-loop-observability.md)
 - **2026-10-18** — 보스 세션 B: `Logic/`에 `PlayerArenaTracker`(칸·점프·착지 예측·줄 머묾)와 `BossBAttackRule`·`EBossBAttack`을 만들었다. EditMode 44/44 통과, 컴파일 에러 0. **커밋 전, `intent-044` 파일 없음(확인 필요), 다음은 세션 C(LOGIC-5)**: [보스 세션 B](./2026-10-18/boss-session-b.md)
 - **2026-10-18** — 사용자가 대화 왕복별 토큰 그래프를 원한다고 명확히 했다. Agent Session Viewer 기능 확인, 실행 전: [대화별 토큰 시각화](./2026-10-18/token-turn-visualization.md)
 - **2026-10-18** — 보스전 Phase 2.5 결정 P1~P6을 스펙에 반영했다(P1 = 중계가 하한으로 자르고 맞은 지점을 뺌). 세션 A: `AI/Boss/Logic/`에 `ArenaGrid`·`BossFightModel` + 로컬 asmdef(`Logic/.gitignore`로 제외)를 만들었고, EditMode 테스트 22/22 통과, 컴파일 에러 0. **커밋 전, 다음은 세션 B(LOGIC-3·4)**: [보스 세션 A](./2026-10-18/boss-session-a.md)
