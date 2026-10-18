@@ -129,7 +129,7 @@ namespace UI
         }
 
         // 차지 진행도(0~1)를 칸마다 나눠 채우는 함수
-        // ex) 10칸, 진행도 0.35 => 앞 3칸 찬 색, 4번째 칸 절반쯤 밝아짐, 나머지 빈 색
+        // ex) 10칸, 진행도 0.35 => 뒤 3칸 찬 색, 뒤에서 4번째 칸 절반쯤 밝아짐, 나머지 빈 색
         public void SetChargeRatio(float chargeRatio)
         {
             if (_chargeCellImages == null)
@@ -141,14 +141,16 @@ namespace UI
 
             for (int i = 0; i < _chargeCellImages.Length; i++)
             {
-                if (_chargeCellImages[i] == null)
+                // 배열 마지막 칸부터 채운다
+                Image cellImage = _chargeCellImages[_chargeCellImages.Length - 1 - i];
+                if (cellImage == null)
                 {
                     continue;
                 }
 
                 // 앞 칸들이 담은 몫을 뺀 나머지가 이 칸에 담기는 비율
                 float cellValue = Mathf.Clamp01((ratio * _chargeCellImages.Length) - i);
-                _chargeCellImages[i].color = Color.Lerp(_chargeCellEmptyColor, _chargeCellFilledColor, cellValue);
+                cellImage.color = Color.Lerp(_chargeCellEmptyColor, _chargeCellFilledColor, cellValue);
             }
         }
 
