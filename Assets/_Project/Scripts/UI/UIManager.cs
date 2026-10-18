@@ -10,6 +10,7 @@ namespace UI
         [Header("References")]
         [SerializeField] private PlayerHudPresenter _playerHudPresenter;
         [SerializeField] private SettingsPresenter _settingsPresenter;
+        [SerializeField] private PetGuidePresenter _petGuidePresenter;
 
         private SettingsPresenter _activeSettingsPresenter;
         // 현재 플레이어의 PlayerFacade. 설정창 입력 이벤트와 입력 맵 전환에 사용한다.
@@ -17,6 +18,25 @@ namespace UI
 
         // 이벤트 구독용
         private GameManager _gameManager;
+
+        // 지금 씬의 UIManager. 배치하지 않은 씬이거나 Awake 전이면 null이다.
+        // DontDestroyOnLoad를 쓰지 않으므로 공용 Singleton<T>을 상속하지 않는다.
+        public static UIManager Instance { get; private set; }
+
+        private void Awake()
+        {
+            // 같은 씬에 둘이면 배치 실수다. (이전 씬의 UIManager가 아직 남아 있는 경우는 씬으로 구분한다)
+            if ((Instance != null) && (Instance.gameObject.scene == gameObject.scene))
+                Debug.LogError("[UIManager] 한 씬에 UIManager가 두 개 있습니다. 나중에 Awake된 쪽이 Instance가 됩니다.", this);
+
+            Instance = this;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+                Instance = null;
+        }
 
         private void OnEnable()
         {
@@ -75,6 +95,10 @@ namespace UI
 
         public void ShowPlayerHud() => _playerHudPresenter.Show();
         public void HidePlayerHud() => _playerHudPresenter.Hide();
+
+        // 번호에 맞는 펫 안내 문구를 띄운다. 번호와 문구는 SOPetGuideTable에서 정한다.
+        public void ShowPetGuide(int id) => _petGuidePresenter?.Show(id);
+        public void HidePetGuide() => _petGuidePresenter?.Hide();
 
         private void BindPlayerInput(PlayerFacade playerFacade)
         {
