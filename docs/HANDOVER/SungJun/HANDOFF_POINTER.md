@@ -5,6 +5,11 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-19** — 대화 중 펫이 플레이어 앞에 나와 플레이어를 봄(PetPivot 이동·복구, 펫 스크립트 미수정), 말하는 사람 카메라(SpeakerCam_Player·SpeakerCam_Pet, CameraIndex -1 = 자동) 추가. TestScene·튜토리얼 적용, Play 화면 확인: [작업 기록](./2026-10-19/testscene-intro-dialogue.md)
+- **2026-10-19** — `SOPetGuideTable` 항목에 Portrait 칸 추가(비우면 펫 기본 얼굴), `TryGetMessage`가 초상화도 반환. Play 확인, 기존 안내 에셋 변경 없음: [작업 기록](./2026-10-19/testscene-intro-dialogue.md)
+- **2026-10-19** — 대화 초상화 비우면 말하는 사람 기본 얼굴(`DialoguePresenter._defaultPortraits`: PET·PLAYER) 사용, `StageIntroDialogue._shouldAlwaysPlay`(테스트용) 추가 후 TestScene에서 켬. Play로 매번 재생·기본 얼굴 확인: [작업 기록](./2026-10-19/testscene-intro-dialogue.md)
+- **2026-10-19** — 개인 TestScene에 첫 스폰 펫 대화 배치(`StageIntroDialogue` + 카메라 2대 + `Assets/Test/UnityAssets/Dialogue/SODialogue_TestScene.asset`, Id `TestScene.Intro`). 코드 변경 없음, Play로 4줄·카메라 전환·재시작 시 생략 확인: [작업 기록](./2026-10-19/testscene-intro-dialogue.md)
+- **2026-10-18** — 스테이지 첫 입장 대화 연출 1단계(intent-044): `Dialogue` 입력 맵(Space 넘기기·ESC 설정창, 닫으면 대화 복귀)으로 조작 차단, UIManager가 PlayerInput 직접 참조(PlayerFacade 미변경), `SODialogueSequence`·`DialoguePresenter`·`UIManager.PlayDialogue`, 대사별 CinemachineCamera 전환하는 `StageIntroDialogue`, PetGuidePanel 이름·초상화 연결, 튜토리얼 씬에 임시 대사 4줄·카메라 2대, 플레이어 초상화 `Player_00_Default` 추가. 컴파일 0에러·Play 검증 완료, 커밋 안 함: [작업 기록](./2026-10-18/stage-intro-dialogue.md)
 - **2026-10-18** — 사용자 요청으로 Codex commit 스킬의 AI 공동 작성자 자동 추가 규칙을 제거하고 작성 금지로 변경: [작업 기록](./2026-10-18/commit-ai-attribution-preference.md)
 - **2026-10-18** — EffectManager 1단계 구현(intent-043 해결): SO별 자동 풀·일회성/루프·자식 파티클·안전한 핸들·부모 수명 처리 및 프리팹. Unity 컴파일 오류 0, Play 검증 27항목 통과. 게임 씬 배치·기존 호출부 교체 제외: [작업 기록](./2026-10-18/effect-manager-phase1.md)
 - **2026-10-18** — EffectManager 설계 검토: 기본 구조 유지 권장. 테스트 VFX의 루트 파티클 부재, Stop 중복·일회성 정책, 핸들 세대 및 외부 부모 수명 정리 보완 제안. 구현·Play 검증 없음: [검토 기록](./2026-10-18/effect-manager-design-review.md)

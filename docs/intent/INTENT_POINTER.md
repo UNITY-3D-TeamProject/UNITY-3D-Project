@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[UI / Cutscene / Input]** 스테이지 첫 입장 시 플레이어·펫 대화 연출이 없음. `Dialogue` 입력 맵(Space 넘기기·ESC 설정창)으로 조작 차단, UIManager가 PlayerInput 직접 참조(PlayerFacade 미변경), 대사 SO마다 씬 CinemachineCamera 번호 지정, `PetGuidePanel` 재사용(이름·초상화), PlayerPrefs로 한 번만 재생. 구현·Play 검증 완료, 튜토리얼 대사·카메라 구도 확정 남음 → [문서](./intent-044-stage-intro-dialogue.md)
 - **[Audio / Core / UI]** 소리 재생 기반이 없음. `AudioManager` 싱글톤(BGM 1·UI 1·3D 16 소스), `SOBgmTable`(ESceneType 키 + 메인메뉴 곡 필드)로 씬별 BGM, 믹서 볼륨 저장·설정창 연결, `AudioListener.pause`로 일시정지. 코드·믹서·SO·프리팹·설정창 슬라이더 연결 완료, Play 로직 검증 완료, MainScene 배치 완료. 맵 씬 배치와 실제 청취 확인 남음 → [문서](./intent-038-audio-manager-phase1.md)
 - **[Map / Lobby / Rendering]** 로비 하늘 전광판 RT 카메라 4대가 매 프레임 SSAO까지 돌며 그려 약 18fps를 잡아먹음. SSAO 없는 전용 Renderer + 4대 번갈아 간격 렌더(기본 15Hz) → [문서](./intent-042-lobby-skysign-camera-cost.md)
 - **[UI / Scene]** 맵 씬 6개가 아직 옛 HUD `Canvas_Legacy`를 씀. `Canvas_InGame`으로 교체, 연결·외부 참조 조사 완료, Maze 브랜치 충돌·EventSystem 등 열린 질문 확인 대기 → [문서](./intent-037-map-scenes-canvas-ingame.md)
