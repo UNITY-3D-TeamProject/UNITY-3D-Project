@@ -934,7 +934,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5748564014832556120}
+  m_Father: {fileID: 7898512568210201370}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -4237,7 +4237,7 @@ MonoBehaviour:
   _root: {fileID: 0}
   _closeButton: {fileID: 0}
   _masterSlider: {fileID: 0}
-  _musicSlider: {fileID: 0}
+  _bgmSlider: {fileID: 0}
   _sfxSlider: {fileID: 0}
 --- !u!223 &276350479985785480
 Canvas:
@@ -5890,6 +5890,47 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "\uC774\uBC88 \uC2A4\uD14C\uC774\uC9C0 !"
+--- !u!1 &2571336398390109630
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7898512568210201370}
+  m_Layer: 0
+  m_Name: HeatArcs
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &7898512568210201370
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2571336398390109630}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: -1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5858524758163763539}
+  - {fileID: 5978727134918175698}
+  - {fileID: 5714612212040680810}
+  - {fileID: 48586702672160477}
+  - {fileID: 8887822843419791394}
+  - {fileID: 997198705407744764}
+  m_Father: {fileID: 5748564014832556120}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2596177028785027599
 GameObject:
   m_ObjectHideFlags: 0
@@ -8763,7 +8804,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5748564014832556120}
+  m_Father: {fileID: 7898512568210201370}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -8971,7 +9012,7 @@ MonoBehaviour:
   _root: {fileID: 2046728677839913899}
   _closeButton: {fileID: 1759148797878913482}
   _masterSlider: {fileID: 3703880433891292048}
-  _musicSlider: {fileID: 7822077026597115435}
+  _bgmSlider: {fileID: 7822077026597115435}
   _sfxSlider: {fileID: 4745529090051714999}
 --- !u!1 &4495441869045787161
 GameObject:
@@ -9681,7 +9722,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5748564014832556120}
+  m_Father: {fileID: 7898512568210201370}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -13913,7 +13954,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5748564014832556120}
+  m_Father: {fileID: 7898512568210201370}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -15734,7 +15775,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5748564014832556120}
+  m_Father: {fileID: 7898512568210201370}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -16916,12 +16957,7 @@ RectTransform:
   - {fileID: 134200865728193955}
   - {fileID: 6615735425763793835}
   - {fileID: 2119325402637770610}
-  - {fileID: 5858524758163763539}
-  - {fileID: 5978727134918175698}
-  - {fileID: 5714612212040680810}
-  - {fileID: 48586702672160477}
-  - {fileID: 8887822843419791394}
-  - {fileID: 997198705407744764}
+  - {fileID: 7898512568210201370}
   - {fileID: 7802420095085617640}
   - {fileID: 6348248261317471746}
   - {fileID: 7672388179793291935}
@@ -17813,7 +17849,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5748564014832556120}
+  m_Father: {fileID: 7898512568210201370}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
