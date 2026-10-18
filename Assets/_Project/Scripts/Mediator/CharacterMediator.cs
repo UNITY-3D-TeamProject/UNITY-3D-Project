@@ -187,6 +187,17 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 피격 후 무적 지속 시간을 바꾼다. 진행 중인 무적에는 적용하지 않고 다음 피격부터 적용한다.
+        /// </summary>
+        /// <param name="duration">무적 지속 시간(초). 음수는 0 으로 처리한다</param>
+        public void SetHitInvincibilityDuration(float duration)
+        {
+            if (!_combatMediator) return;
+
+            _combatMediator.SetHitInvincibilityDuration(duration);
+        }
+
+        /// <summary>
         /// 사망 처리로 바뀐 상태를 되돌린다. 오브젝트 풀에서 다시 꺼낸 캐릭터가 재사용될 때 호출한다.
         /// </summary>
         public void ResetForReuse()

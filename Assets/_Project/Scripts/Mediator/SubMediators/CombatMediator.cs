@@ -100,6 +100,17 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 피격 후 무적 지속 시간을 바꾼다. 진행 중인 무적에는 적용하지 않고 다음 피격부터 적용한다.
+        /// </summary>
+        /// <param name="duration">무적 지속 시간(초). 음수는 0 으로 처리한다</param>
+        public void SetHitInvincibilityDuration(float duration)
+        {
+            if (_hitInvincibility == null) return;
+
+            _hitInvincibility.SetDuration(duration);
+        }
+
+        /// <summary>
         /// 체력 감소량을 CharacterCombat 규칙으로 보정한다. 체력이 아닌 어트리뷰트는 그대로 둔다.
         /// </summary>
         /// <param name="key">감소하려는 어트리뷰트 이름</param>

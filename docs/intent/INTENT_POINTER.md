@@ -34,6 +34,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[Core / Effect / VFX]** EffectManager·SOEffectData·SEffectHandle 및 매니저 프리팹 구현. SO별 자동 풀·자식 파티클·중복 Stop·오래된 핸들·부모 수명 처리, Unity 컴파일 및 Play 27항목 통과. 게임 씬 배치·기존 호출부 교체 제외 → [문서](./clear/intent-043-effect-manager.md) (resolved: 2026-10-18)
 - **[UI / MainMenu]** 메인 메뉴 씬을 `_Project/Scenes/MainScene.unity`로 옮기고 캔버스 4개를 `Canvas_MainMenu` 프리팹 하나(Menu·Settings·AnyPress 패널)로 합침, `Canvas_Splash` 제외 → [문서](./clear/intent-036-main-scene-team-share.md) (resolved: 2026-10-17)
 - **[UI / Skill]** 차지샷 칸형 바를 `PlayerFacade.OnFireChargeChanged`·`FireChargeRatio`에 연결(차지 중에만 보이고 빨간 칸이 차오름, Fire 판정은 그대로) → [문서](./clear/intent-029-charge-shot-bar.md) (resolved: 2026-10-17)
 - **[UI / HUD]** 스킬 카드 3장(SCAN·ROLL·BLUETOOTH) 원형 쿨타임 바·남은 시간을 `PlayerFacade.OnSkillUsed`에 연결(쓰면 빈 채로 시작해 차오름, 쿨 중에만 N.Ns 표시) → [문서](./clear/intent-035-skill-card-cooldown.md) (resolved: 2026-10-17)
