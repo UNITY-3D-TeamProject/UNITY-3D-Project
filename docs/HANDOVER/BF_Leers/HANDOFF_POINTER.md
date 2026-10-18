@@ -7,6 +7,8 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-18** — 보스 세션 B: `Logic/`에 `PlayerArenaTracker`(칸·점프·착지 예측·줄 머묾)와 `BossBAttackRule`·`EBossBAttack`을 만들었다. EditMode 44/44 통과, 컴파일 에러 0. **커밋 전, `intent-044` 파일 없음(확인 필요), 다음은 세션 C(LOGIC-5)**: [보스 세션 B](./2026-10-18/boss-session-b.md)
+- **2026-10-18** — 사용자가 대화 왕복별 토큰 그래프를 원한다고 명확히 했다. Agent Session Viewer 기능 확인, 실행 전: [대화별 토큰 시각화](./2026-10-18/token-turn-visualization.md)
 - **2026-10-18** — 보스전 Phase 2.5 결정 P1~P6을 스펙에 반영했다(P1 = 중계가 하한으로 자르고 맞은 지점을 뺌). 세션 A: `AI/Boss/Logic/`에 `ArenaGrid`·`BossFightModel` + 로컬 asmdef(`Logic/.gitignore`로 제외)를 만들었고, EditMode 테스트 22/22 통과, 컴파일 에러 0. **커밋 전, 다음은 세션 B(LOGIC-3·4)**: [보스 세션 A](./2026-10-18/boss-session-a.md)
 - **2026-10-17** — 도둑끼리 웨이포인트에서 맴돌며 겹쳐 붙던 문제: 같은 웨이포인트로 온 도둑들이 NavMeshAgent 회피 때문에 도착 판정(0.25m) 안으로 못 들어가 0.26~0.36m에서 맴돌았고, 7마리 덩어리까지 생겼다(CC 충돌 아님). `Thief.prefab` Obstacle Avoidance → None, `_pushRadius` 0.9 → 1.4(스케일 2 반영). 코드 변경 없음. Play 250초 비교: 1.2m 안 동료 비율 13.1% → 5.0%, 최대 덩어리 4(7) → 3. **도망 중 Play 검증 미완, 다른 적 프리팹도 같은 조건(미수정)**: [도둑 회피 정체](./2026-10-17/thief-avoidance-stuck.md)
 - **2026-10-17** — 도둑이 벽 모서리에서 대각선의 플레이어를 보면 옴싹달싹하던 문제: 빠져나가는 길이 모두 플레이어 옆을 지나가는데(지금 거리의 약 0.7배), "지금 거리 0.9배보다 가까이 지나면 안 됨" 기준에 걸려 버려졌다. `FleePointFinder.GetPassThreshold`를 `min(AvoidRadius, max(d×0.65, 2m), d×0.9)`로 바꿨다(통로 가운데 선 플레이어 옆은 여전히 못 지나감). 컴파일 에러 0. 일시정지 후 `EditorApplication.Step`으로 실제 도둑을 관찰했고, 모서리 20곳 중 17곳이 빠져나갔다(나머지 3곳은 막다른 길). **사용자 Play 육안 확인 미완**: [벽 모서리 대각선 도망](./2026-10-17/thief-flee-wall-diagonal.md)
