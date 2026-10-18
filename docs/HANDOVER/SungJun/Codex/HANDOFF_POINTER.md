@@ -3,6 +3,8 @@
 이 파일은 Codex 명의로 진행한 작업 이력의 목차이다.
 
 ## 변경 이력 (최신순)
+- **2026-10-18** — Git 병합 중 로컬 씬 변경 충돌 안내: [작업 기록](./2026-10-18/git-merge-local-scene-change.md)
+- **2026-10-18** — Unity MCP 설정 및 Editor 연결 복구: [작업 기록](./2026-10-18/unity-mcp-connection-check.md)
 - **2026-10-16** — 로비 참고 HUD를 Test MainScene으로 옮기고 Canvas 9개를 개별 프리팹화: [작업 기록](./2026-10-16/main-scene-canvas-prefabs.md)
 - **2026-10-16** — 로비 참고 이미지 HUD 시안 Canvas 추가: [작업 기록](./2026-10-16/lobby-reference-hud.md)
 - **2026-10-14** — Unity MCP 연결, Editor ready 상태 및 현재 기본 씬 구성·화면 확인: [MCP 연결 확인](./2026-10-14/unity-mcp-connection-check.md)
