@@ -1731,6 +1731,7 @@ GameObject:
   - component: {fileID: 1057528691859001593}
   - component: {fileID: 7887929865638432593}
   - component: {fileID: 8348777327934478301}
+  - component: {fileID: 8731293427100546493}
   m_Layer: 5
   m_Name: PetGuidePanel
   m_TagString: Untagged
@@ -1814,6 +1815,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UI.PetGuideView
   _root: {fileID: 1050254020887225767}
   _messageText: {fileID: 1932983355711176241}
+  _nameText: {fileID: 214554979938756336}
+  _portraitImage: {fileID: 6509776085691356854}
 --- !u!114 &8348777327934478301
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1828,6 +1831,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UI.PetGuidePresenter
   _view: {fileID: 7887929865638432593}
   _table: {fileID: 11400000, guid: b17f4a93fa246db4ea97b06f36fcc3cb, type: 2}
+  _petName: PET
+  _petPortrait: {fileID: 21300000, guid: 7ba522b0699e7ca448c526a129b856f1, type: 3}
+--- !u!114 &8731293427100546493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1050254020887225767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77d0d9dbc261a7543964fe9d950b81d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI.DialoguePresenter
+  _view: {fileID: 7887929865638432593}
+  _defaultPortraits:
+  - SpeakerName: PET
+    DefaultPortrait: {fileID: 21300000, guid: 7ba522b0699e7ca448c526a129b856f1, type: 3}
+  - SpeakerName: PLAYER
+    DefaultPortrait: {fileID: 21300000, guid: 623d10fefd86d67459f01c6ebbc8267d, type: 3}
 --- !u!1 &1055932373874516276
 GameObject:
   m_ObjectHideFlags: 0
@@ -2579,6 +2602,7 @@ MonoBehaviour:
   _playerHudPresenter: {fileID: 5267068874630389090}
   _settingsPresenter: {fileID: 8503095452051354234}
   _petGuidePresenter: {fileID: 8348777327934478301}
+  _dialoguePresenter: {fileID: 8731293427100546493}
 --- !u!1 &1528345610701737432
 GameObject:
   m_ObjectHideFlags: 0
