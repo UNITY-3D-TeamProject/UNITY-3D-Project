@@ -221,10 +221,18 @@ namespace AI.Boss.BossA
             _runningSkill = null;
             if (skill) _requestStopSkill?.Invoke(skill.SkillName);
 
-            if (_leftCannon) _leftCannon.Cancel();
-            if (_rightCannon) _rightCannon.Cancel();
+            CancelCannons();
             if (_leftHand) _leftHand.CancelAndRecall();
             if (_rightHand) _rightHand.CancelAndRecall();
+        }
+
+        /// <summary>
+        /// 발사 중인 어깨 포격을 취소한다. 예고를 끄고 피해·콜백을 버린다.
+        /// </summary>
+        public void CancelCannons()
+        {
+            if (_leftCannon) _leftCannon.Cancel();
+            if (_rightCannon) _rightCannon.Cancel();
         }
 
         public BossHand GetHand(bool isLeft)

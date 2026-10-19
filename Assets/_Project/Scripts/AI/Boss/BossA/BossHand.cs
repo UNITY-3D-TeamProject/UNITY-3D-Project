@@ -47,6 +47,9 @@ namespace AI.Boss.BossA
         #region Properties
         public bool IsIdle => _state == EHandState.Idle;
 
+        /// <summary>떠 있는 자리에서 내려쳐 닿기까지 걸리는 시간(초).</summary>
+        public float SlamSeconds => _slamSeconds;
+
         /// <summary>내려칠 준비로 떠 있는 상태 (MoveToHover 도착 후).</summary>
         public bool IsHovering => _state == EHandState.Hovering;
 
