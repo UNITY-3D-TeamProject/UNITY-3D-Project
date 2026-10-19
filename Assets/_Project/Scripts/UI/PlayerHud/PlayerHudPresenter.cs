@@ -62,10 +62,17 @@ namespace UI.PlayerHud
         // 사격 차지 중인지. true인 동안 매 프레임 차지 진행도를 읽어 차지 바를 갱신한다.
         private bool _isFireCharging;
 
+        // 상호작용 대상을 조준하고 있는지. PlayerFacade.OnInteractableChanged로 받는다.
+        private bool _hasInteractTarget;
+        // 대화 중이라 상호작용 안내를 막았는지. UIManager가 대화 시작·종료 때 바꾼다.
+        private bool _isInteractPromptBlocked;
+
         private void OnEnable()
         {
             // 차지 상태는 다음 차지 시작 알림을 받을 때까지 알 수 없으므로 차지 바를 숨겨둔다.
             ResetFireChargeHud();
+            // 대상 유무도 바뀔 때만 알림이 오므로 다음 알림까지 안내를 숨겨둔다.
+            ResetInteractPrompt();
 
             if ((_playerFacade == null) || (_view == null))
             {
@@ -82,6 +89,7 @@ namespace UI.PlayerHud
         {
             UnsubscribePlayer();
             ResetFireChargeHud();
+            ResetInteractPrompt();
         }
 
         private void Update()
@@ -115,6 +123,7 @@ namespace UI.PlayerHud
             _bluetoothCooldown = default;
             _scanCooldown = default;
             ResetFireChargeHud();
+            ResetInteractPrompt();
 
             if (_view == null)
             {
@@ -140,6 +149,15 @@ namespace UI.PlayerHud
                 UpdateAllHudGauges();
                 UpdateSkillCooldownHuds();
             }
+        }
+
+        // 상호작용 안내를 막거나 푸는 함수
+        // UIManager에서 대화 시작 때 true, 대화 종료 때 false로 호출한다.
+        // 막혀 있는 동안에도 대상 유무는 계속 기억해서, 풀릴 때 여전히 조준 중이면 바로 다시 띄운다.
+        public void SetInteractPromptBlocked(bool isBlocked)
+        {
+            _isInteractPromptBlocked = isBlocked;
+            UpdateInteractPrompt();
         }
 
         // HUD의 모든 게이지를 한 번에 갱신하는 함수
@@ -174,6 +192,7 @@ namespace UI.PlayerHud
             _playerFacade.OnAttributeChanged += HandlePlayerAttributeChanged;
             _playerFacade.OnSkillUsed += HandleSkillUsed;
             _playerFacade.OnFireChargeChanged += HandleFireChargeChanged;
+            _playerFacade.OnInteractableChanged += HandleInteractableChanged;
         }
 
         private void UnsubscribePlayer()
@@ -186,6 +205,7 @@ namespace UI.PlayerHud
             _playerFacade.OnAttributeChanged -= HandlePlayerAttributeChanged;
             _playerFacade.OnSkillUsed -= HandleSkillUsed;
             _playerFacade.OnFireChargeChanged -= HandleFireChargeChanged;
+            _playerFacade.OnInteractableChanged -= HandleInteractableChanged;
         }
 
         // _playerFacade의 어트리뷰트가 변경되면 그에 맞춰 변경될 함수 => 얘가 직접적으로 불려지는게 아니라 이벤트에 의해 바뀌는것
@@ -284,6 +304,32 @@ namespace UI.PlayerHud
             {
                 _view.SetChargeBarVisible(false);
             }
+        }
+
+        // 상호작용 대상을 조준하기 시작하면 안내를 보이고, 대상이 없어지면 숨기는 함수
+        // PlayerFacade.OnInteractableChanged가 (대상이 있으면 true, 없으면 false)를 전달한다.
+        private void HandleInteractableChanged(bool hasTarget)
+        {
+            _hasInteractTarget = hasTarget;
+            UpdateInteractPrompt();
+        }
+
+        // 대상이 있고 막혀 있지 않을 때만 안내를 보인다.
+        private void UpdateInteractPrompt()
+        {
+            if (_view == null)
+            {
+                return;
+            }
+
+            _view.SetInteractPromptVisible(_hasInteractTarget && !_isInteractPromptBlocked);
+        }
+
+        // 대상 유무를 비우고 안내를 숨기는 함수 (대화로 막힌 상태는 유지한다)
+        private void ResetInteractPrompt()
+        {
+            _hasInteractTarget = false;
+            UpdateInteractPrompt();
         }
 
         private void UpdateHpHud()

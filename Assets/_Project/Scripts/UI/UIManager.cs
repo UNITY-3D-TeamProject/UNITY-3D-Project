@@ -142,6 +142,10 @@ namespace UI
             _dialoguePresenter.OnDialogueLineChanged += HandleDialogueLineChanged;
             _dialoguePresenter.OnDialogueEnded += HandleDialogueEnded;
 
+            // 대화 중에는 상호작용 안내를 숨긴다.
+            if (_playerHudPresenter != null)
+                _playerHudPresenter.SetInteractPromptBlocked(true);
+
             SwitchToDialogueInput();
 
             if (!_dialoguePresenter.StartDialogue(sequence))
@@ -169,6 +173,9 @@ namespace UI
         {
             _dialoguePresenter.OnDialogueLineChanged -= HandleDialogueLineChanged;
             _dialoguePresenter.OnDialogueEnded -= HandleDialogueEnded;
+
+            if (_playerHudPresenter != null)
+                _playerHudPresenter.SetInteractPromptBlocked(false);
 
             if (_playerFacade != null)
                 _playerFacade.SwitchToPlayerInput();
