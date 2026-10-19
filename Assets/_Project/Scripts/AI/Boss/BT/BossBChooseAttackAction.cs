@@ -16,7 +16,7 @@ namespace AI.Boss.BT
     [NodeDescription(
         name: "B 공격 고르기",
         description: "거리·쿨타임·구멍 유무로 콤보/돌진/도약 중 하나를 골라 블랙보드에 쓴다.",
-        story: "[Attack] 을 고른다 (콤보 거리 [ComboRange], 단계 [Stage])",
+        story: "[Attack] 을 고른다 (콤보 거리 [ComboRange], 단계 [Stage], 돌진 준비 [ChargeReadyTime], 도약 준비 [LeapReadyTime])",
         category: "Action/보스",
         id: "ab65b6c3419e433cb8692c0039f7da78")]
     public partial class BossBChooseAttackAction : AIActionBase
