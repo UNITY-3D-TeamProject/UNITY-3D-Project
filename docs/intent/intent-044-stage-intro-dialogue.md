@@ -24,7 +24,7 @@ resolved: null
 - 어떤 시스템/모듈이 건드려지는가:
   - `Assets/FID_InputSystem.inputactions`: `Dialogue` 맵(`Advance` Space, `OpenSettings` ESC)
   - `UI/`: `SODialogueSequence`(새), `DialoguePresenter`(새), `PetGuideView`(이름·초상화), `PetGuidePresenter`, `UIManager`(PlayerInput 직접 참조, Dialogue 맵 전환)
-  - `Cutscene/StageIntroDialogue.cs`(새): `StageManager.OnStageStarted`에서 재생, 카메라 전환, 본 기록 저장
+  - `Cutscene/`(새): `DialogueDirector`(연출), `DialogueCutscene`(컷씬 단위 재생·본 기록), `StageIntroDialogue`(스테이지 시작 트리거)
   - `Prefabs/UI/Canvas_InGame.prefab`, `Scenes/Map_0_Tutorial.unity`, 대사 SO 에셋
 
 ## 제약 (Constraints)
@@ -39,6 +39,7 @@ resolved: null
 - Brain 기본 블렌드 0.2s가 연출에 짧으면 `Main Camera.prefab`에 CustomBlends 추가 여부 (공용 프리팹이라 별도 확인).
 - (해결) 대화 중 펫이 플레이어 앞에 나와 플레이어를 보고, 말하는 사람을 비추는 카메라로 전환한다 (PetPivot 이동, CameraIndex -1 = 자동).
 - 대화 중 플레이어 HUD(크로스헤어 등)를 숨길지 미정.
+- (해결) 원하는 위치에서 컷씬 재생: `DialogueDirector`(씬 1개)·`DialogueCutscene`(컷씬마다 Play)·`StageIntroDialogue`(스테이지 시작 트리거)로 분리, 발판은 `TriggerPlate` → `DialogueCutscene.Play` 연결.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:

@@ -5,6 +5,9 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-19** — DialoguePresenter 멤버 이름을 읽기 쉽게 변경(StartDialogue·ShowNextLine·OnDialogueEnded 등, 프리팹 값 유지), 대화 중 패널 오른쪽 아래 넘기기 안내(`Space ▶ 다음`/마지막 줄 `닫기`) 추가. Play 확인, 커밋 안 함: [작업 기록](./2026-10-19/testscene-intro-dialogue.md)
+- **2026-10-19** — `Scripts/UI` 16개를 기능별 폴더(PlayerHud·Settings·MainMenu·PetGuide·Dialogue·InfoPanel·Monologue)로 옮기고 네임스페이스를 `UI.{폴더}`로 변경(GUID 유지, UIManager는 `UI`). 컴파일 0에러·프리팹/SO/TestScene 누락 0·Play 확인, 커밋 안 함: [작업 기록](./2026-10-19/ui-scripts-folder-reorg.md)
+- **2026-10-19** — 대화 연출을 `DialogueDirector`(씬 1개)·`DialogueCutscene`(컷씬마다, Play)·`StageIntroDialogue`(시작 트리거)로 분리, TriggerPlate에 연결해 원하는 위치에서 컷씬 재생. TestScene `CutsceneTest` 공간 추가, 튜토리얼 이전. Play 확인(발판은 트리거 직접 호출): [작업 기록](./2026-10-19/testscene-intro-dialogue.md)
 - **2026-10-19** — 대화 중 펫이 플레이어 앞에 나와 플레이어를 봄(PetPivot 이동·복구, 펫 스크립트 미수정), 말하는 사람 카메라(SpeakerCam_Player·SpeakerCam_Pet, CameraIndex -1 = 자동) 추가. TestScene·튜토리얼 적용, Play 화면 확인: [작업 기록](./2026-10-19/testscene-intro-dialogue.md)
 - **2026-10-19** — `SOPetGuideTable` 항목에 Portrait 칸 추가(비우면 펫 기본 얼굴), `TryGetMessage`가 초상화도 반환. Play 확인, 기존 안내 에셋 변경 없음: [작업 기록](./2026-10-19/testscene-intro-dialogue.md)
 - **2026-10-19** — 대화 초상화 비우면 말하는 사람 기본 얼굴(`DialoguePresenter._defaultPortraits`: PET·PLAYER) 사용, `StageIntroDialogue._shouldAlwaysPlay`(테스트용) 추가 후 TestScene에서 켬. Play로 매번 재생·기본 얼굴 확인: [작업 기록](./2026-10-19/testscene-intro-dialogue.md)

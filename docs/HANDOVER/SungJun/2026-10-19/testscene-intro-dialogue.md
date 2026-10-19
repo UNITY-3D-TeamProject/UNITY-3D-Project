@@ -57,3 +57,23 @@
 - 검증 (Play): 대화 시작 시 펫이 플레이어 앞 1.8 m에서 플레이어를 정면으로 봄(각도 0°). PET 줄 → SpeakerCam_Pet(플레이어 머리 너머로 펫 얼굴), PLAYER 줄 → SpeakerCam_Player(펫 등 너머로 플레이어 얼굴), 두 씬 모두 화면으로 확인. 대화 종료 후 pivot local (-0.56, 0.80, 1.20)/(90, 0, 0)으로 복구, 카메라 꺼짐, Player 맵. 컴파일·콘솔 에러 없음. 튜토리얼 본 기록은 지워 두었다.
 - 주의: 연출 카메라 배치는 대화 시작 순간의 위치 기준이다. 대화 중 플레이어는 못 움직이므로 문제없지만, 펫 앞쪽에 벽이 있으면 펫이 벽에 묻힐 수 있다 (펫 추종에는 벽 검사가 없음).
 - 플레이어 HUD(크로스헤어 등)는 대화 중에도 보인다. 숨길지는 미정.
+
+## 추가 작업 4: 원하는 위치(발판)에서 대화 컷씬 재생
+- **구조 분리:** `StageIntroDialogue` 안에 있던 연출을 나눴다.
+  - `Cutscene.DialogueDirector` (씬에 1개): 펫 앞세우기·복구, 말하는 사람 카메라 2대, `UIManager.PlayDialogue` 호출. `Play(대화, 고정 카메라, 종료 콜백)`. 대화는 Play를 부른 순간의 플레이어 위치·몸 방향 기준으로 연출한다.
+  - `Cutscene.DialogueCutscene` (컷씬마다): 대사 SO, 그 컷씬 전용 고정 카메라, 항상 재생 옵션, 본 기록(`DialogueSeen.{Id}`), `public void Play()`. 이미 대화 중이면 무시한다.
+  - `StageIntroDialogue`: 스테이지 시작 때 연결한 `DialogueCutscene.Play()`만 부른다.
+- **발판 연결:** 팀 공용 `TriggerPlate`의 `On Player Entered`에 `DialogueCutscene.Play`를 연결하면 된다 (코드 없이 인스펙터 연결).
+- **씬 정리:** 튜토리얼·TestScene 모두 기존 `StageIntroDialogue` 오브젝트를 `DialogueDirector`로 이름 바꾸고(말하는 사람 카메라 유지), `Cutscene_StageIntro`(DialogueCutscene + StageIntroDialogue + 고정 카메라 2대)를 새로 만들었다. 튜토리얼은 항상 재생 꺼짐, TestScene은 켜짐.
+- **TestScene 시험 공간 `CutsceneTest`:** 펫 안내 구역 북쪽 (-22, 0, 44), 바닥 24x26(펫 안내 바닥과 이어짐), 입구 팻말 "컷씬 시험", 발판 `Plate_Cutscene`(TriggerPlate, 한 번만 끔) → `Cutscene_Plate.Play`, 팻말 "대화 컷씬"은 연출 화면을 가리지 않게 발판 왼쪽 뒤(-25.5, 42.6)에 둠. 대사 `Assets/Test/UnityAssets/Dialogue/SODialogue_TestPlate.asset`(Id `TestScene.Plate`, 4줄, 항상 재생 켬).
+- **검증 (Play):** 시작 대화 정상 종료 후 플레이어를 발판 위에 두고 발판 `OnTriggerEnter`를 플레이어 콜라이더로 호출 → Dialogue 맵, 첫 줄 PET, 펫이 플레이어 앞 1.8 m에서 플레이어를 봄(0°), PET 줄 = SpeakerCam_Pet, PLAYER 줄 = SpeakerCam_Player 화면 확인, 끝나면 pivot 복구·Player 맵·본 기록 저장, 항상 재생이라 다시 밟으면 재생. 튜토리얼도 분리 후 시작 대화 정상 재생.
+  - 에디터가 백그라운드라 Play 프레임이 멈춰서, 실제로 걸어가 밟는 대신 발판 트리거 함수를 직접 불렀고 프레임은 일시정지 + Step으로 진행했다. 실제 걸어서 밟는 확인은 사용자 에디터에서 필요.
+  - 대화 중 화면이 말하는 사람 카메라로 바뀌어도 플레이어 몸은 돌지 않음(90프레임 동안 펫 pivot 위치 변화 없음).
+- 주의: 펫 위치는 몸(SK_ZMike) 기준 자식이라 몸이 돌면 따라 돈다. 루트 회전을 강제로 바꾸면 회전 시스템이 몸을 원래 방향으로 돌려 카메라 배치와 어긋날 수 있다 (일반 플레이에서는 해당 없음).
+
+## 추가 작업 5: DialoguePresenter 이름 정리와 넘기기 안내
+- **이름 정리:** `IsPlaying`→`IsDialoguePlaying`, `OnLineChanged`→`OnDialogueLineChanged`, `OnFinished`→`OnDialogueEnded`, `Play`→`StartDialogue`, `Next`→`ShowNextLine`, `Stop`→`StopDialogue`, `Finish`→`EndDialogue`, `_sequence`/`_lineIndex`→`_currentDialogue`/`_currentLineIndex`, `_view`→`_petGuideView`, `_defaultPortraits`→`_speakerDefaultPortraits`. 직렬화 필드 2개는 `[FormerlySerializedAs]`로 프리팹 값 유지 후 Canvas_InGame 재저장. UIManager 호출부와 `HandleDialogueFinished`→`HandleDialogueEnded` 함께 변경. `//` 주석 추가(summary 없음).
+- **넘기기 안내:** PetGuidePanel 오른쪽 아래 `AdvanceHint`(TMP, Pretendard-SemiBold 16, 이름 라벨 시안 85%, 평소 꺼짐). 대화 중 줄마다 `Space ▶ 다음`, 마지막 줄은 `Space ▶ 닫기`(문구는 DialoguePresenter `_nextLineHint`/`_lastLineHint`). 펫 안내(`ShowPetGuide`)에서는 숨김.
+  - `PetGuideView`: `_advanceHintText`, `ShowAdvanceHint(문구)`, `HideAdvanceHint()`.
+- 검증 (TestScene Play): 1~3줄 "다음", 4줄 "닫기", 종료 후 패널 숨김, `ShowPetGuide(1)` 안내 숨김. 게임 뷰 캡처로 위치 확인. 콘솔 에러 없음.
+- 문구의 "Space"는 표시용 글자다. Dialogue 맵의 Advance 키를 바꾸면 문구도 같이 바꿔야 한다.
