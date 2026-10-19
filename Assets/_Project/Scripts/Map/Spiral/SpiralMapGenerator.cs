@@ -702,7 +702,14 @@ namespace Map.Spiral
             int stepCount = pieces.Count + 1;
             float gap = baseGap + (Mathf.Max(remaining, 0f) / stepCount);
             // 묶음에 올라설 때는 조준이나 타이밍이 함께 필요하므로, 한 걸음의 높이를 뛸 수 있는 높이보다 낮게 잡는다
-            float heightStep = Mathf.Min(heightIncrease / stepCount, _settings.MaxJumpHeight * CHUNK_STEP_HEIGHT_RATIO);
+            float internalRise = 0f;
+            foreach (SpiralChunk piece in pieces)
+            {
+                if (piece != null) internalRise += piece.HeightRise;
+            }
+            float heightStep = Mathf.Min(
+                Mathf.Max(0f, heightIncrease - internalRise) / stepCount,
+                _settings.MaxJumpHeight * CHUNK_STEP_HEIGHT_RATIO);
 
             if (remaining < 0f)
             {
@@ -740,6 +747,7 @@ namespace Map.Spiral
                 GameObject instance = CreatePlatform(chunk.gameObject, parent, _currentAngle, _currentHeight, 0f, $"Chunk_{i:00}_{chunk.name}");
                 instance.transform.position -= instance.transform.forward * chunk.CenterZ;
                 instance.GetComponent<SpiralChunk>().ApplyPlatformMaterials(basicMaterial, movingMaterial, unstableMaterial);
+                _currentHeight += chunk.HeightRise;
             }
 
             GameObject lastPlatform = PlaceNextPlatform(
