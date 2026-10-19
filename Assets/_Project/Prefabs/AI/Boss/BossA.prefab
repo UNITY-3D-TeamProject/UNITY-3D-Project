@@ -31,6 +31,53 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1169222774807864184}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &674991731023919066
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4895259034962448721}
+  - component: {fileID: 1133024523956360839}
+  m_Layer: 0
+  m_Name: EnemyAnimationPrefab
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4895259034962448721
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 674991731023919066}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2090164281432657332}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1133024523956360839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 674991731023919066}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7eec9ddd0155414499f71ce19e3c38c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.EnemyAnimationMediator
+  _enemyAnimator: {fileID: 3641269044339755529}
+  _jumpAnimator: {fileID: 0}
+  _speedValueKey: MoveSpeed
 --- !u!1 &711530066001854863
 GameObject:
   m_ObjectHideFlags: 0
@@ -1119,6 +1166,7 @@ Transform:
   - {fileID: 1359131385102153559}
   - {fileID: 1169222774807864184}
   - {fileID: 8729644871707965915}
+  - {fileID: 4895259034962448721}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4199479298084343665
@@ -1168,7 +1216,7 @@ MonoBehaviour:
   _rotateMediator: {fileID: 0}
   _spawnMediator: {fileID: 0}
   _playerAnimationMediator: {fileID: 0}
-  _enemyAnimationMediator: {fileID: 0}
+  _enemyAnimationMediator: {fileID: 1133024523956360839}
   _petMediator: {fileID: 0}
 --- !u!114 &1531795067621774753
 MonoBehaviour:
@@ -1221,14 +1269,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0038c16c34866b4f9e25c9c0dc0f7e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Behavior::Unity.Behavior.BehaviorGraphAgent
-  m_Graph: {fileID: 0}
-  m_BlackboardVariableOverridesList: []
+  m_Graph: {fileID: 4277347744789721154, guid: 6cf1429010f249b498d422c39998a9dd, type: 2}
+  m_BlackboardVariableOverridesList:
+  - rid: 7357922348430000369
+  - rid: 7357922348430000370
   m_OriginalGraph: {fileID: 0}
   m_IsInitialised: 0
   m_IsStarted: 0
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 7357922348430000369
+      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 1
+          m_Value1: 0
+        Name: Self
+        m_Value: {fileID: 8734686264384130684}
+    - rid: 7357922348430000370
+      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 3002207246293767048
+          m_Value1: 12143558000521152243
+        Name: Player
+        m_Value: {fileID: 0}
 --- !u!114 &4228440411905258379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1494,6 +1560,10 @@ PrefabInstance:
       value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 22100000, guid: a6ad577d85b9c7d4d9f9e248e034d7bd, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
       objectReference: {fileID: 0}
@@ -1511,13 +1581,36 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4969001429755906828, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6871711762685359948}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3641269044339755529}
   m_SourcePrefab: {fileID: 100100000, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
 --- !u!4 &1703469487096671344 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
   m_PrefabInstance: {fileID: 1164542261768244123}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2082950929990907594 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
+  m_PrefabInstance: {fileID: 1164542261768244123}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3641269044339755529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2082950929990907594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a9aa3a253ccdfd42b9cac987621797e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimation.EnemyAnimator
+  _referenceMoveSpeed: 3
+  _skillAnimations: []
+  _deathPlayCount: 1
 --- !u!4 &6114825604901765271 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4969001429755906828, guid: 884f41ae38984354ab194b645fbfc387, type: 3}

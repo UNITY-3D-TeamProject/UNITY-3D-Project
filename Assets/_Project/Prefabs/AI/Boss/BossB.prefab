@@ -386,14 +386,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0038c16c34866b4f9e25c9c0dc0f7e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Behavior::Unity.Behavior.BehaviorGraphAgent
-  m_Graph: {fileID: 0}
-  m_BlackboardVariableOverridesList: []
+  m_Graph: {fileID: 4277347744789721154, guid: 9e0774190f2bc4a4b9329d9359456a44, type: 2}
+  m_BlackboardVariableOverridesList:
+  - rid: 7357922348430001079
   m_OriginalGraph: {fileID: 0}
   m_IsInitialised: 0
   m_IsStarted: 0
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 7357922348430001079
+      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 1
+          m_Value1: 0
+        Name: Self
+        m_Value: {fileID: 2851063550565306939}
 --- !u!114 &617126785755515221
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1168,6 +1177,10 @@ PrefabInstance:
       value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 1fac8f4b67d773c43b00f21b075f6fd9, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 22100000, guid: 99c6a49b480099244be335b264aa965f, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 1fac8f4b67d773c43b00f21b075f6fd9, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
       objectReference: {fileID: 0}
@@ -1217,7 +1230,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimation.EnemyAnimator
   _referenceMoveSpeed: 3
-  _skillAnimations: []
+  _skillAnimations:
+  - SkillName: Combo
+    Parameter: Attack
+    IsHold: 0
   _deathPlayCount: 1
 --- !u!4 &8851523957922962129 stripped
 Transform:
