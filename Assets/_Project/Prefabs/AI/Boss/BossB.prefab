@@ -50,6 +50,7 @@ MonoBehaviour:
   _telegraphSeconds: 1.2
   _flightSeconds: 1
   _recoverySeconds: 1.5
+  _flightMotionSkillName: LeapFlight
   _landingRadius: 4
   _shockwaveTiles: 1
   _knockbackDistance: 8
@@ -163,6 +164,8 @@ MonoBehaviour:
   _staggerSeconds: 2
   _knockbackDistance: 12
   _knockbackSeconds: 0.4
+  _runMotionSkillName: ChargeRun
+  _stopMotionSkillName: ChargeStop
 --- !u!1 &2124054780660964707
 GameObject:
   m_ObjectHideFlags: 0
@@ -342,8 +345,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Sensor
   _eye: {fileID: 6090531665329726020}
-  _sightRange: 5
-  _sightAngle: 90
+  _sightRange: 50
+  _sightAngle: 360
   _loseGraceTime: 3
   _targetLayers:
     serializedVersion: 2
@@ -483,6 +486,193 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6829823872737605967}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3309705584248136064
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6221600391606582286}
+  - component: {fileID: 7127333285855810208}
+  m_Layer: 0
+  m_Name: ChargeStop
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6221600391606582286
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3309705584248136064}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5938694377441983231}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7127333285855810208
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3309705584248136064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7159e810e91411b49ad1ccbd18a1ff47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossB.BossBMotionSkill
+  _skillName: ChargeStop
+--- !u!1 &4162235389346837937
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3975639052287568068}
+  - component: {fileID: 6520658037724831596}
+  m_Layer: 0
+  m_Name: ChargeRun
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3975639052287568068
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4162235389346837937}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5938694377441983231}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6520658037724831596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4162235389346837937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7159e810e91411b49ad1ccbd18a1ff47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossB.BossBMotionSkill
+  _skillName: ChargeRun
+--- !u!1 &4426202024068564072
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3097233963297102067}
+  - component: {fileID: 7898011914439118242}
+  m_Layer: 0
+  m_Name: LeapFlight
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3097233963297102067
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4426202024068564072}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5938694377441983231}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7898011914439118242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4426202024068564072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7159e810e91411b49ad1ccbd18a1ff47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossB.BossBMotionSkill
+  _skillName: LeapFlight
+--- !u!1 &4864074315719810538
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3249026672141467928}
+  - component: {fileID: 1462513948663304222}
+  m_Layer: 0
+  m_Name: Combo3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3249026672141467928
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4864074315719810538}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5938694377441983231}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1462513948663304222
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4864074315719810538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5474b9919b2411d4f8149ca279fdc85a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossB.BossBMeleeCombo
+  _skillName: Combo3
+  _hitEffect: {fileID: 11400000, guid: bbce9a5eda268f445b49a896d125fe7a, type: 2}
+  _hitDelay: 0.5
+  _recoverySeconds: 0.67
+  _isLastHit: 1
+  _range: 4
+  _lastKnockbackDistance: 2
+  _lastKnockbackSeconds: 0.2
 --- !u!1 &6337347925117078834
 GameObject:
   m_ObjectHideFlags: 0
@@ -533,12 +723,65 @@ MonoBehaviour:
   _telegraphSeconds: 1.2
   _flightSeconds: 1
   _recoverySeconds: 1.5
+  _flightMotionSkillName: LeapFlight
   _landingRadius: 4
   _shockwaveTiles: 1
   _knockbackDistance: 8
   _knockbackSeconds: 0.4
   _circlePrefab: {fileID: 2597783182611431928, guid: 7810f55bbaec4a940adece9aa7527870, type: 3}
   _circleHeight: 0.05
+--- !u!1 &7725075831591419310
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1961462147352786581}
+  - component: {fileID: 680673693230987987}
+  m_Layer: 0
+  m_Name: Combo2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1961462147352786581
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7725075831591419310}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5938694377441983231}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &680673693230987987
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7725075831591419310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5474b9919b2411d4f8149ca279fdc85a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossB.BossBMeleeCombo
+  _skillName: Combo2
+  _hitEffect: {fileID: 11400000, guid: bbce9a5eda268f445b49a896d125fe7a, type: 2}
+  _hitDelay: 0.4
+  _recoverySeconds: 0.43
+  _isLastHit: 0
+  _range: 4
+  _lastKnockbackDistance: 2
+  _lastKnockbackSeconds: 0.2
 --- !u!1 &8670930940532036775
 GameObject:
   m_ObjectHideFlags: 0
@@ -550,7 +793,7 @@ GameObject:
   - component: {fileID: 1589046850877528925}
   - component: {fileID: 4947288369516811921}
   m_Layer: 0
-  m_Name: Combo
+  m_Name: Combo1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -583,12 +826,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5474b9919b2411d4f8149ca279fdc85a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossB.BossBMeleeCombo
-  _skillName: Combo
+  _skillName: Combo1
   _hitEffect: {fileID: 11400000, guid: bbce9a5eda268f445b49a896d125fe7a, type: 2}
-  _hitCount: 3
-  _firstHitDelay: 0.4
-  _hitInterval: 0.6
-  _recoverySeconds: 0.5
+  _hitDelay: 0.4
+  _recoverySeconds: 0.43
+  _isLastHit: 0
   _range: 4
   _lastKnockbackDistance: 2
   _lastKnockbackSeconds: 0.2
@@ -659,6 +901,21 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8892466170422539652, guid: 5b0f6dc102d0d474d8bee4abf2b92809, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5756892617635847326}
+    - targetCorrespondingSourceObject: {fileID: 8892466170422539652, guid: 5b0f6dc102d0d474d8bee4abf2b92809, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1961462147352786581}
+    - targetCorrespondingSourceObject: {fileID: 8892466170422539652, guid: 5b0f6dc102d0d474d8bee4abf2b92809, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3249026672141467928}
+    - targetCorrespondingSourceObject: {fileID: 8892466170422539652, guid: 5b0f6dc102d0d474d8bee4abf2b92809, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3097233963297102067}
+    - targetCorrespondingSourceObject: {fileID: 8892466170422539652, guid: 5b0f6dc102d0d474d8bee4abf2b92809, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3975639052287568068}
+    - targetCorrespondingSourceObject: {fileID: 8892466170422539652, guid: 5b0f6dc102d0d474d8bee4abf2b92809, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6221600391606582286}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5b0f6dc102d0d474d8bee4abf2b92809, type: 3}
 --- !u!114 &2381989863797654008 stripped
@@ -1231,8 +1488,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimation.EnemyAnimator
   _referenceMoveSpeed: 3
   _skillAnimations:
-  - SkillName: Combo
-    Parameter: Attack
+  - SkillName: Combo1
+    Parameter: Combo1
+    IsHold: 0
+  - SkillName: Combo2
+    Parameter: Combo2
+    IsHold: 0
+  - SkillName: Combo3
+    Parameter: Combo3
+    IsHold: 0
+  - SkillName: Leap
+    Parameter: Leap
+    IsHold: 0
+  - SkillName: LeapFlight
+    Parameter: LeapFlight
+    IsHold: 0
+  - SkillName: Charge
+    Parameter: Charge
+    IsHold: 0
+  - SkillName: ChargeRun
+    Parameter: ChargeRun
+    IsHold: 0
+  - SkillName: ChargeStop
+    Parameter: ChargeStop
     IsHold: 0
   _deathPlayCount: 1
 --- !u!4 &8851523957922962129 stripped

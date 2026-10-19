@@ -11,6 +11,7 @@ namespace AI.Boss.BT
     /// <summary>
     /// B 의 다음 공격을 BossBAttackRule 로 고르고 결과를 블랙보드 열거형에 쓴 뒤 즉시 성공한다.
     /// 쿨타임 준비 시각과 보스전 단계는 블랙보드에서 읽는다. 대상이 안 보이거나 아레나가 없으면 None 으로 쓴다.
+    /// 대상을 처음 발견해 고르는 첫 공격만 규칙과 무관하게 도약이다(첫 조우).
     /// </summary>
     [Serializable, GeneratePropertyBag]
     [NodeDescription(
@@ -29,8 +30,15 @@ namespace AI.Boss.BT
         [SerializeReference] public BlackboardVariable<EBossBTStage> Stage;
         #endregion
 
+        #region Constants
+        private const int MAX_FIRST_LEAP_TRIES = 3;
+        #endregion
+
         #region Private Fields
         private BossBController _boss;
+        private BossBLeap _leap;
+        private bool _hasEncountered;
+        private int _firstLeapTries;
         #endregion
 
         #region Node Lifecycle
@@ -49,16 +57,54 @@ namespace AI.Boss.BT
             bool hasHole = _boss.Arena.HasHoleBetween(Controller.Position, target.position);
             bool isLeapOpen = (Stage.Value == EBossBTStage.Stage1_2) || (Stage.Value == EBossBTStage.Final);
 
-            EBossBAttack choice = BossBAttackRule.Choose(
-                Controller.DistanceToTarget,
-                ComboRange.Value,
-                Time.time >= ChargeReadyTime.Value,
-                Time.time >= LeapReadyTime.Value,
-                isLeapOpen,
-                hasHole);
+            ResolveFirstEncounter();
+
+            EBossBAttack choice;
+            if (_hasEncountered)
+            {
+                choice = BossBAttackRule.Choose(
+                    Controller.DistanceToTarget,
+                    ComboRange.Value,
+                    Time.time >= ChargeReadyTime.Value,
+                    Time.time >= LeapReadyTime.Value,
+                    isLeapOpen,
+                    hasHole);
+            }
+            else
+            {
+                // 첫 조우는 단계와 쿨타임에 상관없이 도약으로 시작한다
+                _firstLeapTries++;
+                choice = EBossBAttack.Leap;
+            }
 
             Attack.Value = (EBossBTAttack)(int)choice;
             return Status.Success;
+        }
+        #endregion
+
+        #region Private Methods
+        /// <summary>
+        /// 첫 조우 도약이 실제로 시작됐거나 시도 한도를 넘겼으면 첫 조우를 끝낸다.
+        /// 도약이 시작되지 못했으면(대상 놓침·착지 칸 없음 등) 다음 선택에서 다시 도약을 고른다.
+        /// </summary>
+        private void ResolveFirstEncounter()
+        {
+            if (_hasEncountered) return;
+
+            if (!_leap) _leap = FindFirstEncounterLeap();
+
+            bool hasLeapStarted = _leap && _leap.HasStarted;
+            if (hasLeapStarted || (_firstLeapTries >= MAX_FIRST_LEAP_TRIES)) _hasEncountered = true;
+        }
+
+        private BossBLeap FindFirstEncounterLeap()
+        {
+            foreach (BossBLeap leap in _boss.GetComponentsInChildren<BossBLeap>(true))
+            {
+                if (!leap.IsEvade) return leap;
+            }
+
+            return null;
         }
         #endregion
     }

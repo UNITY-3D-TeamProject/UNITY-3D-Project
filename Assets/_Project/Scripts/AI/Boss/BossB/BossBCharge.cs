@@ -37,6 +37,12 @@ namespace AI.Boss.BossB
         [Header("Knockback")]
         [SerializeField, Min(0.0f)] private float _knockbackDistance = 12.0f;
         [SerializeField, Min(0.05f)] private float _knockbackSeconds = 0.4f;
+
+        [Header("Motion")]
+        [Tooltip("돌진이 시작될 때 요청할 모션 알림 스킬 이름. 비우면 요청하지 않는다. 예고 모션(Ready)은 이 스킬 자신의 이름으로 재생된다")]
+        [SerializeField] private string _runMotionSkillName = "ChargeRun";
+        [Tooltip("돌진이 끝날 때(급정거·적중·최대 거리) 요청할 모션 알림 스킬 이름. 비우면 요청하지 않는다")]
+        [SerializeField] private string _stopMotionSkillName = "ChargeStop";
         #endregion
 
         #region Private Fields
@@ -93,7 +99,10 @@ namespace AI.Boss.BossB
         private void TickTelegraph(float deltaTime)
         {
             _timer -= deltaTime;
-            if (_timer <= 0.0f) _phase = EChargePhase.Charging;
+            if (_timer > 0.0f) return;
+
+            _phase = EChargePhase.Charging;
+            PlayMotion(_runMotionSkillName);
         }
 
         private void TickCharging(float deltaTime)
@@ -105,6 +114,7 @@ namespace AI.Boss.BossB
             {
                 _phase = EChargePhase.Stagger;
                 _timer = _staggerSeconds;
+                PlayMotion(_stopMotionSkillName);
                 return;
             }
 
@@ -114,17 +124,27 @@ namespace AI.Boss.BossB
             if (TryHitTarget(Controller.Position, _hitRadius))
             {
                 KnockbackTarget(_direction, _knockbackDistance, _knockbackSeconds);
+                PlayMotion(_stopMotionSkillName);
                 EndRun();
                 return;
             }
 
-            if (_traveled >= _maxDistance) EndRun();
+            if (_traveled < _maxDistance) return;
+
+            PlayMotion(_stopMotionSkillName);
+            EndRun();
         }
 
         private void TickStagger(float deltaTime)
         {
             _timer -= deltaTime;
             if (_timer <= 0.0f) EndRun();
+        }
+
+        // 구간 모션으로 바꾼다(중재자를 거치는 스킬 요청)
+        private void PlayMotion(string motionSkillName)
+        {
+            if (!string.IsNullOrEmpty(motionSkillName)) Controller.ExecuteSkill(motionSkillName);
         }
 
         private bool IsBlocked(Vector3 point)

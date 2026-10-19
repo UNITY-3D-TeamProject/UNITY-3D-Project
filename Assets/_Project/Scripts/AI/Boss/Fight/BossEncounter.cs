@@ -193,6 +193,9 @@ namespace AI.Boss.Fight
         /// <inheritdoc />
         public SBossSituation GetSnapshot()
         {
+            // 끝났거나(End) 아직 시작 전이면 A 가 쉬도록 Defeated 로 돌려준다
+            if ((_model == null) || (_tracker == null)) return new SBossSituation { Stage = EBossStage.Defeated };
+
             int playerTile = _tracker.TileIndex;
             int landingTile = _useLandingPrediction ? _tracker.PredictLandingTile() : playerTile;
 

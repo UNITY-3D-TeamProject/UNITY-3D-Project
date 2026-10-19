@@ -32,6 +32,7 @@ namespace AI.Boss.Fight
         private GameObject _bossA;
         private GameObject _bossB;
         private bool _hasSpawned;
+        private bool _isBeginFailed;
         #endregion
 
         #region Properties
@@ -48,6 +49,7 @@ namespace AI.Boss.Fight
         protected override void OnDisable()
         {
             if (_hasSpawned) Despawn();
+            _isBeginFailed = false;
 
             base.OnDisable();
         }
@@ -56,6 +58,8 @@ namespace AI.Boss.Fight
         #region Protected Methods
         protected override void Spawn()
         {
+            if (_isBeginFailed) return;
+
             PlayerFacade player = CurrentPlayerFacade;
             if (!_bossAPrefab || !_bossBPrefab || !_bossAPoint || !_bossBPoint ||
                 !_bossAData || !_bossBData || !_encounter)
@@ -70,6 +74,17 @@ namespace AI.Boss.Fight
                 return;
             }
 
+            // 만들기 전에 프리팹을 검사한다. 실패해도 매 프레임 재시도되므로 인스턴스를 만들었다 지우지 않는다
+            bool isPrefabValid = _bossAPrefab.GetComponent<BossController>() &&
+                                 _bossAPrefab.GetComponentInChildren<AttributeSet>(true) &&
+                                 _bossBPrefab.GetComponent<BossBController>() &&
+                                 _bossBPrefab.GetComponentInChildren<AttributeSet>(true);
+            if (!isPrefabValid)
+            {
+                LogSpawnFailureOnce("A 프리팹에 BossController / AttributeSet, B 프리팹에 BossBController / AttributeSet 이 없어 보스를 만들 수 없다.");
+                return;
+            }
+
             _bossA = Instantiate(_bossAPrefab, _bossAPoint.position, _bossAPoint.rotation);
             _bossB = Instantiate(_bossBPrefab, _bossBPoint.position, _bossBPoint.rotation);
 
@@ -78,19 +93,14 @@ namespace AI.Boss.Fight
             BossController controllerA = _bossA.GetComponent<BossController>();
             BossBController controllerB = _bossB.GetComponent<BossBController>();
 
-            if (!attributesA || !attributesB || !controllerA || !controllerB)
-            {
-                LogSpawnFailureOnce("A 프리팹에 BossController / AttributeSet, B 프리팹에 BossBController / AttributeSet 이 없어 보스를 만들 수 없다.");
-                DestroyBosses();
-                return;
-            }
-
             ApplyMonsterData(attributesA, _bossAData);
             ApplyMonsterData(attributesB, _bossBData);
 
             _encounter.Begin(controllerA, controllerB, player);
             if (!_encounter.IsBegun)
             {
+                LogSpawnFailureOnce("BossEncounter 가 보스전을 시작하지 못했다.");
+                _isBeginFailed = true;
                 DestroyBosses();
                 return;
             }

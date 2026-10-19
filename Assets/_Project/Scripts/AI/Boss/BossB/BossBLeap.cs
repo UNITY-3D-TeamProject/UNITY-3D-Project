@@ -41,6 +41,10 @@ namespace AI.Boss.BossB
         [Tooltip("착지 후 경직 시간(초). 회피에서는 쓰지 않는다")]
         [SerializeField, Min(0.0f)] private float _recoverySeconds = 1.5f;
 
+        [Header("Motion")]
+        [Tooltip("체공이 시작될 때 요청할 모션 알림 스킬 이름. 비우면 요청하지 않는다. 회피에서는 쓰지 않는다")]
+        [SerializeField] private string _flightMotionSkillName = "LeapFlight";
+
         [Header("Landing")]
         [Tooltip("착지점에서 대상까지 수평 거리가 이 안이면 피해를 받는다(m). 임시값")]
         [SerializeField, Min(0.0f)] private float _landingRadius = 4.0f;
@@ -65,6 +69,9 @@ namespace AI.Boss.BossB
 
         #region Properties
         public override bool IsEvade => _isEvade;
+
+        /// <summary>한 번이라도 실제로 도약을 시작했는지. 첫 조우 도약이 시작됐는지 BT 가 확인하는 데 쓴다.</summary>
+        public bool HasStarted { get; private set; }
         #endregion
 
         #region Protected Methods
@@ -81,6 +88,7 @@ namespace AI.Boss.BossB
             }
 
             base.Execute();
+            HasStarted = true;
 
             if (_isEvade)
             {
@@ -165,6 +173,9 @@ namespace AI.Boss.BossB
             _timer = 0.0f;
 
             RefreshHold(_flightSeconds + _recoverySeconds);
+
+            // 비행 모션으로 바꾼다(중재자를 거치는 스킬 요청)
+            if (!_isEvade && !string.IsNullOrEmpty(_flightMotionSkillName)) Controller.ExecuteSkill(_flightMotionSkillName);
 
             // 체공 시간 T 에 같은 높이로 돌아오는 초기 상승 속도
             SelfMotor.Jump(SelfMotor.Gravity * _flightSeconds * 0.5f);

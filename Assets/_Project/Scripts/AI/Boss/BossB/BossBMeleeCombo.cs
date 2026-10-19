@@ -1,22 +1,23 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace AI.Boss.BossB
 {
     /// <summary>
-    /// B 의 근접 콤보. 정해진 간격으로 2~3타를 치고, 마지막 타만 약하게 밀쳐 낸다.
-    /// 각 타는 그 순간 대상이 범위 안일 때만 맞는다. 마지막 타 뒤 짧게 굳은 다음 끝난다.
+    /// B 의 근접 콤보 1타. 콤보는 이 스킬 여러 개(Combo1·Combo2·Combo3 ...)를 BT 가 이어서 부르는 것으로 만들고,
+    /// 스킬마다 타 모션을 따로 재생한다. 마지막 타 스킬만 약하게 밀쳐 낸다.
+    /// 타는 그 순간 대상이 범위 안일 때만 맞는다. 타 뒤 짧게 굳은 다음 끝난다.
     /// </summary>
     public class BossBMeleeCombo : BossBSkillBase
     {
         #region Serialized Fields
         [Header("Combo")]
-        [SerializeField, Range(2, 3)] private int _hitCount = 3;
-        [Tooltip("발동 후 첫 타까지(초)")]
-        [SerializeField, Min(0.0f)] private float _firstHitDelay = 0.4f;
-        [Tooltip("타 사이 간격(초)")]
-        [SerializeField, Min(0.0f)] private float _hitInterval = 0.6f;
-        [Tooltip("마지막 타 뒤 굳어 있는 시간(초)")]
+        [Tooltip("발동 후 타까지(초)")]
+        [SerializeField, Min(0.0f), FormerlySerializedAs("_firstHitDelay")] private float _hitDelay = 0.4f;
+        [Tooltip("타 뒤 굳어 있는 시간(초)")]
         [SerializeField, Min(0.0f)] private float _recoverySeconds = 0.5f;
+        [Tooltip("콤보의 마지막 타인지. 마지막 타만 넉백한다")]
+        [SerializeField] private bool _isLastHit;
 
         [Header("Range")]
         [Tooltip("B 위치에서 대상까지 수평 거리가 이 안이면 맞는다(m). 임시값")]
@@ -30,7 +31,7 @@ namespace AI.Boss.BossB
 
         #region Private Fields
         private float _elapsed;
-        private int _hitIndex;
+        private bool _isStruck;
         #endregion
 
         #region Protected Methods
@@ -39,7 +40,7 @@ namespace AI.Boss.BossB
             if (!BeginRun(true, GetEndTime())) return;
 
             _elapsed = 0.0f;
-            _hitIndex = 0;
+            _isStruck = false;
 
             base.Execute();
         }
@@ -48,12 +49,12 @@ namespace AI.Boss.BossB
         {
             _elapsed += deltaTime;
 
-            if (_hitIndex < _hitCount)
+            if (!_isStruck)
             {
-                if (_elapsed < GetHitTime(_hitIndex)) return;
+                if (_elapsed < _hitDelay) return;
 
-                Strike(_hitIndex == (_hitCount - 1));
-                _hitIndex++;
+                Strike();
+                _isStruck = true;
                 return;
             }
 
@@ -62,25 +63,20 @@ namespace AI.Boss.BossB
         #endregion
 
         #region Private Methods
-        private void Strike(bool isLast)
+        private void Strike()
         {
-            // 타마다 대상 쪽으로 다시 돌아선다
+            // 타 순간 대상 쪽으로 다시 돌아선다
             RefreshHold(GetEndTime() - _elapsed);
 
             Vector3 origin = Controller.Position;
-            if (!TryHitTarget(origin, _range) || !isLast) return;
+            if (!TryHitTarget(origin, _range) || !_isLastHit) return;
 
             KnockbackTarget(GetDirectionToTarget(), _lastKnockbackDistance, _lastKnockbackSeconds);
         }
 
-        private float GetHitTime(int index)
-        {
-            return _firstHitDelay + (index * _hitInterval);
-        }
-
         private float GetEndTime()
         {
-            return GetHitTime(_hitCount - 1) + _recoverySeconds;
+            return _hitDelay + _recoverySeconds;
         }
         #endregion
     }
