@@ -41,7 +41,7 @@ namespace UI
         // DontDestroyOnLoad를 쓰지 않으므로 공용 Singleton<T>을 상속하지 않는다.
         public static UIManager Instance { get; private set; }
 
-        public bool IsDialoguePlaying => (_dialoguePresenter != null) && _dialoguePresenter.IsPlaying;
+        public bool IsDialoguePlaying => (_dialoguePresenter != null) && _dialoguePresenter.IsDialoguePlaying;
 
         private void Awake()
         {
@@ -132,21 +132,21 @@ namespace UI
         public bool PlayDialogue(SODialogueSequence sequence, Action<SDialogueLine> onLineChanged, Action onFinished)
         {
             if ((_dialoguePresenter == null) ||
-                (_dialoguePresenter.IsPlaying) ||
+                (_dialoguePresenter.IsDialoguePlaying) ||
                 (_activeSettingsPresenter != null) ||
                 (_playerFacade == null))
                 return false;
 
             _dialogueLineChanged = onLineChanged;
             _dialogueFinished = onFinished;
-            _dialoguePresenter.OnLineChanged += HandleDialogueLineChanged;
-            _dialoguePresenter.OnFinished += HandleDialogueFinished;
+            _dialoguePresenter.OnDialogueLineChanged += HandleDialogueLineChanged;
+            _dialoguePresenter.OnDialogueEnded += HandleDialogueEnded;
 
             SwitchToDialogueInput();
 
-            if (!_dialoguePresenter.Play(sequence))
+            if (!_dialoguePresenter.StartDialogue(sequence))
             {
-                HandleDialogueFinished();
+                HandleDialogueEnded();
                 return false;
             }
 
@@ -157,7 +157,7 @@ namespace UI
         public void StopDialogue()
         {
             if (IsDialoguePlaying)
-                _dialoguePresenter.Stop();
+                _dialoguePresenter.StopDialogue();
         }
 
         private void HandleDialogueLineChanged(SDialogueLine line)
@@ -165,10 +165,10 @@ namespace UI
             _dialogueLineChanged?.Invoke(line);
         }
 
-        private void HandleDialogueFinished()
+        private void HandleDialogueEnded()
         {
-            _dialoguePresenter.OnLineChanged -= HandleDialogueLineChanged;
-            _dialoguePresenter.OnFinished -= HandleDialogueFinished;
+            _dialoguePresenter.OnDialogueLineChanged -= HandleDialogueLineChanged;
+            _dialoguePresenter.OnDialogueEnded -= HandleDialogueEnded;
 
             if (_playerFacade != null)
                 _playerFacade.SwitchToPlayerInput();
@@ -181,7 +181,7 @@ namespace UI
 
         private void HandleAdvanceDialogue(InputAction.CallbackContext context)
         {
-            _dialoguePresenter?.Next();
+            _dialoguePresenter?.ShowNextLine();
         }
 
         private void HandleOpenSettingsInDialogue(InputAction.CallbackContext context)
