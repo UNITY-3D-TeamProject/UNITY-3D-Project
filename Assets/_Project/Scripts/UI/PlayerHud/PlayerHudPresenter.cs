@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Facade.Player;
 
-namespace UI
+namespace UI.PlayerHud
 {
     public class PlayerHudPresenter : MonoBehaviour
     {

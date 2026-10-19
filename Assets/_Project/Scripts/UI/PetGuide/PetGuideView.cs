@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UI
+namespace UI.PetGuide
 {
     public class PetGuideView : MonoBehaviour
     {

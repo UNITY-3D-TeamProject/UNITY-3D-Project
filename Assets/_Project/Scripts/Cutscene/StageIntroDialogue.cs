@@ -5,6 +5,7 @@ using Core.Stage;
 using Facade.Player;
 using Pet;
 using UI;
+using UI.Dialogue;
 
 namespace Cutscene
 {

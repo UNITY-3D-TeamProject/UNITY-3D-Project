@@ -1,7 +1,8 @@
 using System;
 using UnityEngine;
+using UI.PetGuide;
 
-namespace UI
+namespace UI.Dialogue
 {
     // 대화 묶음을 한 줄씩 펫 안내 패널에 띄운다. 입력은 모르고, Next 호출로만 넘어간다.
     public class DialoguePresenter : MonoBehaviour

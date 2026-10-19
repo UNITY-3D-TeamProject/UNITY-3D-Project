@@ -3,6 +3,10 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Core;
 using Facade.Player;
+using UI.Dialogue;
+using UI.PetGuide;
+using UI.PlayerHud;
+using UI.Settings;
 
 namespace UI
 {

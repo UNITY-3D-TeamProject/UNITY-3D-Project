@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UI
+namespace UI.InfoPanel
 {
     public class InfoPanelPresenter : MonoBehaviour
     {

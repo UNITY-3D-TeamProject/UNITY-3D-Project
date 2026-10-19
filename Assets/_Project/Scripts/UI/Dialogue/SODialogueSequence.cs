@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace UI
+namespace UI.Dialogue
 {
     // 대화 한 줄. 말하는 사람, 초상화, 이 줄에서 켤 카메라 번호, 대사를 담는다.
     [Serializable]
