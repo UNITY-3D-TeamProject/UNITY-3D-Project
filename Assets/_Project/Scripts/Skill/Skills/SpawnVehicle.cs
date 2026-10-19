@@ -43,6 +43,22 @@ namespace Skill.Skills
             new SBuffRatio(EBuffTarget.JumpPower, 1.25f),
             new SBuffRatio(EBuffTarget.Gravity, 0.7f),
         };
+
+        [Header("Speed Feedback")]
+        [Tooltip("탑승 중 기본 카메라 시야각에 더하는 값 (도)")]
+        [SerializeField] private float _fovOffset = 10.0f;
+        [Tooltip("탑승·하차 시 시야각과 가장자리 블러가 전환되는 시간(초). 0 이면 즉시 전환")]
+        [SerializeField, Min(0.0f)] private float _speedFeedbackTransitionTime = 0.2f;
+        [Tooltip("가장자리 블러가 번지는 정도")]
+        [SerializeField, Range(0.0f, 0.2f)] private float _edgeBlurStrength = 0.06f;
+        [Tooltip("블러가 없는 중앙 영역 반경 (세로 기준, 0.5 = 화면 가장자리)")]
+        [SerializeField, Range(0.0f, 1.0f)] private float _edgeBlurCenterRadius = 0.30f;
+        [Tooltip("중앙에서 블러가 최대가 될 때까지의 부드러운 경계 폭")]
+        [SerializeField, Range(0.01f, 1.0f)] private float _edgeBlurFeather = 0.25f;
+        [Tooltip("블러 샘플 수. 많을수록 부드럽지만 비용이 늘어난다")]
+        [SerializeField, Range(2, 16)] private int _edgeBlurSampleCount = 8;
+        [Tooltip("블러 중심 (화면 UV, 0.5/0.5 = 화면 중앙)")]
+        [SerializeField] private Vector2 _edgeBlurCenter = new Vector2(0.5f, 0.5f);
         #endregion
 
         #region Private Fields
@@ -73,6 +89,27 @@ namespace Skill.Skills
 
         /// <summary>요시 점프 중 상승 속도(m/s).</summary>
         public float HoverRiseSpeed => _hoverRiseSpeed;
+
+        /// <summary>탑승 중 기본 카메라 시야각에 더하는 값 (도).</summary>
+        public float FovOffset => _fovOffset;
+
+        /// <summary>탑승·하차 시 시야각과 가장자리 블러가 전환되는 시간(초).</summary>
+        public float SpeedFeedbackTransitionTime => _speedFeedbackTransitionTime;
+
+        /// <summary>가장자리 블러가 번지는 정도.</summary>
+        public float EdgeBlurStrength => _edgeBlurStrength;
+
+        /// <summary>블러가 없는 중앙 영역 반경.</summary>
+        public float EdgeBlurCenterRadius => _edgeBlurCenterRadius;
+
+        /// <summary>중앙에서 블러가 최대가 될 때까지의 부드러운 경계 폭.</summary>
+        public float EdgeBlurFeather => _edgeBlurFeather;
+
+        /// <summary>블러 샘플 수.</summary>
+        public int EdgeBlurSampleCount => _edgeBlurSampleCount;
+
+        /// <summary>블러 중심 (화면 UV).</summary>
+        public Vector2 EdgeBlurCenter => _edgeBlurCenter;
 
         /// <summary>요시 점프 중인지 여부.</summary>
         public bool IsHovering { get; private set; }
