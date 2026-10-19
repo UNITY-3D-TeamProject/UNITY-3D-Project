@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-19** — 상호작용 대상을 조준하면 크로스헤어 아래 `[E] 상호작용` 표시(intent-045 해결): PlayerHud가 이미 있던 `PlayerFacade.OnInteractableChanged` 구독, 대화 중 숨김, `Canvas_InGame/Crosshair/InteractPrompt` 추가. Facade·스킬 수정 없음, 컴파일 0에러·TestScene Play 확인, 커밋 안 함: [작업 기록](./2026-10-19/interact-prompt.md)
 - **2026-10-19** — DialoguePresenter 멤버 이름을 읽기 쉽게 변경(StartDialogue·ShowNextLine·OnDialogueEnded 등, 프리팹 값 유지), 대화 중 패널 오른쪽 아래 넘기기 안내(`Space ▶ 다음`/마지막 줄 `닫기`) 추가. Play 확인, 커밋 안 함: [작업 기록](./2026-10-19/testscene-intro-dialogue.md)
 - **2026-10-19** — `Scripts/UI` 16개를 기능별 폴더(PlayerHud·Settings·MainMenu·PetGuide·Dialogue·InfoPanel·Monologue)로 옮기고 네임스페이스를 `UI.{폴더}`로 변경(GUID 유지, UIManager는 `UI`). 컴파일 0에러·프리팹/SO/TestScene 누락 0·Play 확인, 커밋 안 함: [작업 기록](./2026-10-19/ui-scripts-folder-reorg.md)
 - **2026-10-19** — 대화 연출을 `DialogueDirector`(씬 1개)·`DialogueCutscene`(컷씬마다, Play)·`StageIntroDialogue`(시작 트리거)로 분리, TriggerPlate에 연결해 원하는 위치에서 컷씬 재생. TestScene `CutsceneTest` 공간 추가, 튜토리얼 이전. Play 확인(발판은 트리거 직접 호출): [작업 기록](./2026-10-19/testscene-intro-dialogue.md)
