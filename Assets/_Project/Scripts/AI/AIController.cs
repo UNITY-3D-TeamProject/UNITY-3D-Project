@@ -67,6 +67,8 @@ namespace AI
         [Header("Hit Reaction")]
         [Tooltip("피격 시 이동을 멈추고 맞은 쪽을 바라보는 시간(초). 0 이면 반응하지 않는다. CharacterRotator 회전 속도로 180° 돌 수 있는 시간 이상이어야 뒤에서 맞아도 완전히 돌아선다.")]
         [SerializeField, Min(0.0f)] private float _hitLookDuration = 1.0f;
+        [Tooltip("대상이 보이는 전투 중에도 피격 시 대상을 바라본다. 360도 센서를 쓰는 보스 등에 사용한다. Hold 중인 스킬 방향은 유지한다.")]
+        [SerializeField] private bool _shouldFaceVisibleTargetOnHit;
         [Tooltip("피격 시 이동과 스킬 요청을 멈추는 경직 시간(초). 0 이면 경직하지 않는다. 대상이 보이는 중에도 걸린다.")]
         [SerializeField, Min(0.0f)] private float _hitStunDuration = 0.4f;
         [Tooltip("경직이 끝난 뒤 다시 경직되지 않는 시간(초). 연사로 계속 묶이지 않게 한다. 피격 애니메이션은 이 동안에도 재생된다.")]
@@ -246,6 +248,10 @@ namespace AI
             if (IsStunned)
             {
                 RequestMove(Vector2.zero);
+                if (_shouldFaceVisibleTargetOnHit && HasVisibleTarget)
+                {
+                    FaceDirection(VisibleTarget.position - _body.position);
+                }
                 return;
             }
 
@@ -638,7 +644,7 @@ namespace AI
         /// <summary>
         /// 피격되면 짧게 경직시키고, 대상이 안 보이면 잠시 멈춰 맞은 쪽을 바라보게 한다.
         /// 경직은 스킬 사용 중(Hold·슈퍼아머)이거나 직전 경직의 면역 시간 안이면 걸리지 않는다.
-        /// 대상이 보이는 중(전투 중)에는 공격이 이미 대상을 바라보므로 돌아보기는 하지 않는다.
+        /// 전투 중 돌아보기 설정이 켜져 있으면 보이는 대상을 바라본다. Hold·슈퍼아머 중 스킬 방향은 유지한다.
         /// </summary>
         /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치)</param>
         private void OnHitFromCallback(Vector3 hitSource)
@@ -652,7 +658,14 @@ namespace AI
                 _hitStunImmuneTimer = _hitStunDuration + _hitStunImmuneDuration;
             }
 
-            if (HasVisibleTarget) return;
+            if (HasVisibleTarget)
+            {
+                if (_shouldFaceVisibleTargetOnHit && !IsHolding && !IsSuperArmor)
+                {
+                    FaceDirection(VisibleTarget.position - _body.position);
+                }
+                return;
+            }
 
             Vector3 toSource = Vector3.ProjectOnPlane(hitSource - _body.position, Vector3.up);
             if (toSource.sqrMagnitude <= Mathf.Epsilon) return;

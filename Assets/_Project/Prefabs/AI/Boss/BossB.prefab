@@ -308,6 +308,7 @@ MonoBehaviour:
   _mediator: {fileID: 7711118245858961342}
   _speedAttributeKey: MoveSpeed
   _hitLookDuration: 1
+  _shouldFaceVisibleTargetOnHit: 1
   _hitStunDuration: 0.4
   _hitStunImmuneDuration: 1.5
 --- !u!114 &7711118245858961342
@@ -1511,6 +1512,9 @@ MonoBehaviour:
     IsHold: 0
   - SkillName: ChargeStop
     Parameter: ChargeStop
+    IsHold: 0
+  - SkillName: Evade
+    Parameter: Evade
     IsHold: 0
   _deathPlayCount: 1
 --- !u!4 &8851523957922962129 stripped

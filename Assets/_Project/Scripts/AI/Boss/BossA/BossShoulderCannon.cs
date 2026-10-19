@@ -61,13 +61,18 @@ namespace AI.Boss.BossA
 
         #region Public Methods
         /// <summary>
-        /// 원형 예고를 띄우고 시간이 지나면 터진다. 터진 직후 onDone 을 부른다. 이미 발사 중이면 무시한다.
+        /// 원형 예고를 띄우고 시간이 지나면 터진다. 터진 직후 onDone 을 부른다.
+        /// 이미 발사 중이거나 꺼져 있어 쏠 수 없으면 바로 onDone 을 부른다.
         /// </summary>
         /// <param name="point">터질 월드 위치</param>
         /// <param name="onDone">터진 직후 부를 콜백</param>
         public void Fire(Vector3 point, Action onDone)
         {
-            if (_isFiring) return;
+            if (_isFiring || !isActiveAndEnabled)
+            {
+                onDone?.Invoke();
+                return;
+            }
 
             _isFiring = true;
             _point = point;

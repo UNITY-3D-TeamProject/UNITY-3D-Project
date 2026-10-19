@@ -33,7 +33,7 @@ MonoBehaviour:
   - rid: 7357922348430000273
   - rid: 7357922348430000308
   - rid: 7357922348430000342
-  m_VersionTimestamp: 639280148863868346
+  m_VersionTimestamp: 639280223675871260
   m_SerializedVersion: 3
   m_DebugInfo: {fileID: -4560014445238309078}
   m_RuntimeGraph: {fileID: 4277347744789721154}
@@ -296,7 +296,7 @@ MonoBehaviour:
         LocalValue:
           rid: 7357922348430000294
         LinkedVariable:
-          rid: 7357922348430000291
+          rid: -2
     - rid: 7357922348430000293
       type: {class: 'BlackboardVariable`1[[System.Boolean, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
       data:
@@ -312,7 +312,7 @@ MonoBehaviour:
           m_Value0: 0
           m_Value1: 0
         Name: 
-        m_Value: 0
+        m_Value: 1
     - rid: 7357922348430000308
       type: {class: ActionNodeModel, ns: Unity.Behavior, asm: Unity.Behavior.Authoring}
       data:
@@ -419,15 +419,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c02bb70996b49eba31d0c206e28da24, type: 3}
   m_Name: BigBoss Blackboard
   m_EditorClassIdentifier: Unity.Behavior::Unity.Behavior.RuntimeBlackboardAsset
-  VersionTimestamp: 639280148299890078
+  VersionTimestamp: 639280223673506796
   AssetID:
-    m_Value0: 0
-    m_Value1: 0
+    m_Value0: 12991180753080611180
+    m_Value1: 15972465339617432728
   m_Blackboard:
     m_Variables:
     - rid: 7357922348430000230
     - rid: 7357922348430000252
     - rid: 7357922348430000325
+    - rid: 7357922348430001104
   m_SharedBlackboardVariableGuids: []
   references:
     version: 2
@@ -456,6 +457,14 @@ MonoBehaviour:
           m_Value1: 12143558000521152243
         Name: Player
         m_Value: {fileID: 0}
+    - rid: 7357922348430001104
+      type: {class: 'BlackboardVariable`1[[AI.Boss.BT.EBossBTStage, Assembly-CSharp]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 6480368294859503503
+          m_Value1: 15034412970283361028
+        Name: Stage
+        m_Value: 0
 --- !u!114 &4277347744789721154
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -488,8 +497,8 @@ MonoBehaviour:
           rid: 7357922348430000232
         BlackboardGroupReferences: []
         Root:
-          rid: 7357922348430000363
-        m_VersionTimestamp: 639280148863868346
+          rid: 7357922348430001125
+        m_VersionTimestamp: 639280223675871260
     - rid: 7357922348430000232
       type: {class: BlackboardReference, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
@@ -500,18 +509,11 @@ MonoBehaviour:
       type: {class: Blackboard, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         m_Variables:
-        - rid: 7357922348430000336
-        - rid: 7357922348430000337
-        - rid: 7357922348430000338
-    - rid: 7357922348430000307
-      type: {class: 'BlackboardVariable`1[[Unity.Behavior.ConditionOperator, Unity.Behavior]]', ns: Unity.Behavior, asm: Unity.Behavior}
-      data:
-        GUID:
-          m_Value0: 0
-          m_Value1: 0
-        Name: 
-        m_Value: 0
-    - rid: 7357922348430000318
+        - rid: 7357922348430001127
+        - rid: 7357922348430001128
+        - rid: 7357922348430001129
+        - rid: 7357922348430001130
+    - rid: 7357922348430001091
       type: {class: 'BlackboardVariable`1[[System.String, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         GUID:
@@ -519,31 +521,23 @@ MonoBehaviour:
           m_Value1: 0
         Name: 
         m_Value: GroggyPalm
-    - rid: 7357922348430000336
-      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+    - rid: 7357922348430001092
+      type: {class: 'BlackboardVariable`1[[Unity.Behavior.ConditionOperator, Unity.Behavior]]', ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         GUID:
-          m_Value0: 1
+          m_Value0: 0
           m_Value1: 0
-        Name: Self
-        m_Value: {fileID: 0}
-    - rid: 7357922348430000337
+        Name: 
+        m_Value: 0
+    - rid: 7357922348430001093
       type: {class: 'BlackboardVariable`1[[System.Boolean, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         GUID:
-          m_Value0: 10905674001979937626
-          m_Value1: 8415202580887051938
-        Name: IsGroggy
-        m_Value: 0
-    - rid: 7357922348430000338
-      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
-      data:
-        GUID:
-          m_Value0: 3002207246293767048
-          m_Value1: 12143558000521152243
-        Name: Player
-        m_Value: {fileID: 0}
-    - rid: 7357922348430000363
+          m_Value0: 0
+          m_Value1: 0
+        Name: 
+        m_Value: 1
+    - rid: 7357922348430001125
       type: {class: Start, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         ID:
@@ -554,10 +548,10 @@ MonoBehaviour:
         m_Parent:
           rid: -2
         m_Child:
-          rid: 7357922348430000364
+          rid: 7357922348430001126
         Repeat: 1
         AllowMultipleRepeatsPerTick: 0
-    - rid: 7357922348430000364
+    - rid: 7357922348430001126
       type: {class: SelectorComposite, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         ID:
@@ -566,14 +560,46 @@ MonoBehaviour:
         Graph:
           rid: 7357922348430000231
         m_Parent:
-          rid: 7357922348430000363
+          rid: 7357922348430001125
         m_Children:
-        - rid: 7357922348430000365
-        - rid: 7357922348430000366
+        - rid: 7357922348430001131
+        - rid: 7357922348430001132
         m_RegisteredObservers:
         - Observer:
-            rid: 7357922348430000365
-    - rid: 7357922348430000365
+            rid: 7357922348430001131
+    - rid: 7357922348430001127
+      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 1
+          m_Value1: 0
+        Name: Self
+        m_Value: {fileID: 0}
+    - rid: 7357922348430001128
+      type: {class: 'BlackboardVariable`1[[System.Boolean, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 10905674001979937626
+          m_Value1: 8415202580887051938
+        Name: IsGroggy
+        m_Value: 0
+    - rid: 7357922348430001129
+      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 3002207246293767048
+          m_Value1: 12143558000521152243
+        Name: Player
+        m_Value: {fileID: 0}
+    - rid: 7357922348430001130
+      type: {class: 'BlackboardVariable`1[[AI.Boss.BT.EBossBTStage, Assembly-CSharp]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 6480368294859503503
+          m_Value1: 15034412970283361028
+        Name: Stage
+        m_Value: 0
+    - rid: 7357922348430001131
       type: {class: ConditionalGuardModifier, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         ID:
@@ -582,14 +608,14 @@ MonoBehaviour:
         Graph:
           rid: 7357922348430000231
         m_Parent:
-          rid: 7357922348430000364
+          rid: 7357922348430001126
         m_Child:
-          rid: 7357922348430000367
+          rid: 7357922348430001133
         m_Conditions:
-        - rid: 7357922348430000368
+        - rid: 7357922348430001134
         m_RequiresAllConditions: 0
         m_ObserverType: 2
-    - rid: 7357922348430000366
+    - rid: 7357922348430001132
       type: {class: BossRunNextPatternAction, ns: AI.Boss.BT, asm: Assembly-CSharp}
       data:
         ID:
@@ -598,8 +624,8 @@ MonoBehaviour:
         Graph:
           rid: 7357922348430000231
         m_Parent:
-          rid: 7357922348430000364
-    - rid: 7357922348430000367
+          rid: 7357922348430001126
+    - rid: 7357922348430001133
       type: {class: BossUsePatternAndWaitAction, ns: AI.Boss.BT, asm: Assembly-CSharp}
       data:
         ID:
@@ -608,20 +634,20 @@ MonoBehaviour:
         Graph:
           rid: 7357922348430000231
         m_Parent:
-          rid: 7357922348430000365
+          rid: 7357922348430001131
         SkillName:
-          rid: 7357922348430000318
-    - rid: 7357922348430000368
+          rid: 7357922348430001091
+    - rid: 7357922348430001134
       type: {class: VariableComparisonCondition, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         Graph:
           rid: 7357922348430000231
         Variable:
-          rid: 7357922348430000337
+          rid: 7357922348430001128
         Operator:
-          rid: 7357922348430000307
+          rid: 7357922348430001092
         ComparisonValue:
-          rid: 7357922348430000337
+          rid: 7357922348430001093
 --- !u!114 &4921613660565954978
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -635,13 +661,14 @@ MonoBehaviour:
   m_Name: BigBoss Blackboard
   m_EditorClassIdentifier: Unity.Behavior.Authoring::Unity.Behavior.BehaviorBlackboardAuthoringAsset
   AssetID:
-    m_Value0: 0
-    m_Value1: 0
+    m_Value0: 12991180753080611180
+    m_Value1: 15972465339617432728
   m_Variables:
   - rid: 7357922348430000236
   - rid: 7357922348430000251
   - rid: 7357922348430000324
-  m_VersionTimestamp: 639280148299890078
+  - rid: 7357922348430001103
+  m_VersionTimestamp: 639280223673506796
   m_CommandBuffer:
     m_Commands: []
   m_RuntimeBlackboardAsset: {fileID: 2091629840695938507}
@@ -678,3 +705,13 @@ MonoBehaviour:
         IsExposed: 1
         m_IsShared: 0
         m_Value: {fileID: 0}
+    - rid: 7357922348430001103
+      type: {class: 'TypedVariableModel`1[[AI.Boss.BT.EBossBTStage, Assembly-CSharp]]', ns: Unity.Behavior.GraphFramework, asm: Unity.Behavior.GraphFramework}
+      data:
+        ID:
+          m_Value0: 6480368294859503503
+          m_Value1: 15034412970283361028
+        Name: Stage
+        IsExposed: 1
+        m_IsShared: 0
+        m_Value: 0
