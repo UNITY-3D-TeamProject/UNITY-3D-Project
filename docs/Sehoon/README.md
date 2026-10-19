@@ -65,6 +65,8 @@
 | 31 | 카메라가 가까워지면 캐릭터 숨김 처리 | [31-camera-near-hide-character.md](done/31-camera-near-hide-character.md) | 완료 |
 | 32 | 차지샷 누르고 있으면 자동 재차지 | [32-charge-shot-auto-recharge.md](done/32-charge-shot-auto-recharge.md) | 완료 |
 | 33 | 블루투스 배터리 소모 시작 시점 수정 (실제 탑승 후부터 소모) | [33-bluetooth-drain-start-timing.md](done/33-bluetooth-drain-start-timing.md) | 완료 |
+| 34 | 총알 타격감 (차지샷 카메라 쉐이크, 추가 사항은 작업 시 추가) | [34-bullet-hit-feel.md](34-bullet-hit-feel.md) | 대기 |
+| 35 | 이동 시 속도감 (블루투스 탑승 FOV·모션 블러, 대쉬 댐핑·FOV) | [35-move-speed-feel.md](35-move-speed-feel.md) | 대기 |
 
 ## 같은 우선순위 안에서 순서를 정한 근거
 - **최우선** (사용자 지정, 고정)
