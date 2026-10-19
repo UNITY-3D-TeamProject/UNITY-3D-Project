@@ -1678,7 +1678,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1112001528}
+  m_Father: {fileID: 1488570277}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &712723090 stripped
 Transform:
@@ -2955,40 +2955,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1112001528}
-  - component: {fileID: 1112001527}
+  - component: {fileID: 1112001529}
   m_Layer: 0
-  m_Name: StageIntroDialogue
+  m_Name: DialogueDirector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1112001527
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1112001526}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 35db7c6d5c90b9a45a4c376e77866271, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Cutscene.StageIntroDialogue
-  _stageManager: {fileID: 1563168300}
-  _sequence: {fileID: 11400000, guid: 09b84df52d65420429de10dc38e865a7, type: 2}
-  _shouldAlwaysPlay: 0
-  _playerSpeakerName: PLAYER
-  _petSpeakerName: PET
-  _petStandOffset: {x: 0, y: 1.2, z: 1.8}
-  _playerShotCamera: {fileID: 1397299965}
-  _petShotCamera: {fileID: 1717578149}
-  _playerShotOffset: {x: 0.5, y: 0.1, z: 0.9}
-  _petShotOffset: {x: 0.7, y: 1.6, z: -1}
-  _playerLookHeight: 1.2
-  _cameras:
-  - {fileID: 1582155961}
-  - {fileID: 708689401}
 --- !u!4 &1112001528
 Transform:
   m_ObjectHideFlags: 0
@@ -3002,12 +2976,30 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1582155962}
-  - {fileID: 708689402}
   - {fileID: 1397299966}
   - {fileID: 1717578150}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1112001529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1112001526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36f4da30e39398d4d842c3032aa6f08e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Cutscene.DialogueDirector
+  _playerSpeakerName: PLAYER
+  _petSpeakerName: PET
+  _petStandOffset: {x: 0, y: 1.2, z: 1.8}
+  _playerShotCamera: {fileID: 1397299965}
+  _petShotCamera: {fileID: 1717578149}
+  _playerShotOffset: {x: 0.5, y: 0.1, z: 0.9}
+  _petShotOffset: {x: 0.7, y: 1.6, z: -1}
+  _playerLookHeight: 1.2
 --- !u!4 &1130236890 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4431867822504610, guid: 5d3ab7f71117ab949b769b6541f0b339, type: 3}
@@ -3571,6 +3563,73 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4431867822504610, guid: 5d3ab7f71117ab949b769b6541f0b339, type: 3}
   m_PrefabInstance: {fileID: 1271681465}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1488570274
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1488570277}
+  - component: {fileID: 1488570276}
+  - component: {fileID: 1488570275}
+  m_Layer: 0
+  m_Name: Cutscene_StageIntro
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1488570275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1488570274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35db7c6d5c90b9a45a4c376e77866271, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Cutscene.StageIntroDialogue
+  _stageManager: {fileID: 1563168300}
+  _cutscene: {fileID: 1488570276}
+--- !u!114 &1488570276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1488570274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9dc753ffa539104cbcb03c341d9ebac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Cutscene.DialogueCutscene
+  _director: {fileID: 1112001529}
+  _sequence: {fileID: 11400000, guid: 09b84df52d65420429de10dc38e865a7, type: 2}
+  _shouldAlwaysPlay: 0
+  _fixedCameras:
+  - {fileID: 1582155961}
+  - {fileID: 708689401}
+--- !u!4 &1488570277
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1488570274}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1582155962}
+  - {fileID: 708689402}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1529355861
 GameObject:
   m_ObjectHideFlags: 0
@@ -3838,7 +3897,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1112001528}
+  m_Father: {fileID: 1488570277}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1588193180
 PrefabInstance:
@@ -5910,3 +5969,4 @@ SceneRoots:
   - {fileID: 1562207941}
   - {fileID: 1588193180}
   - {fileID: 1112001528}
+  - {fileID: 1488570277}
