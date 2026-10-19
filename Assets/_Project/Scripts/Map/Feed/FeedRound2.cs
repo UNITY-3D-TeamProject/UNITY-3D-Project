@@ -120,6 +120,9 @@ namespace Map.Feed
         [Tooltip("시작하면 씬의 낙하 구역(FallZoneTrigger)을 옮길 높이 (이 오브젝트 기준)")]
         [SerializeField] private float _fallZoneHeight = -10.0f;
 
+        [Tooltip("2라운드를 시작하려면 1라운드에서 모두 모아야 하는 피드 재료 아이템. 비워 두면 조건 없이 시작한다.")]
+        [SerializeField] private EFeedItemType[] _requiredItems;
+
         [Header("Event")]
         [Tooltip("2라운드가 시작될 때 실행할 동작")]
         [SerializeField] private UnityEvent _onStarted = new UnityEvent();
@@ -143,11 +146,22 @@ namespace Map.Feed
         /// <summary>아직 올려 보내지 않은 피드 수.</summary>
         public int RemainingCount => _slots.Count;
 
+        /// <summary>해시태그 벽 설정 목록. 순서가 피드의 Tag Index 와 짝을 이룬다.</summary>
+        public IReadOnlyList<SFeedWallConfig> Walls => _walls;
+
+        /// <summary>2라운드를 시작하려면 모두 모아야 하는 피드 재료 아이템.</summary>
+        public IReadOnlyList<EFeedItemType> RequiredItems => _requiredItems;
+
         /// <summary>2라운드가 시작될 때 실행되는 이벤트.</summary>
         public UnityEvent OnStarted => _onStarted;
 
         /// <summary>피드를 모두 올려 보냈을 때 실행되는 이벤트.</summary>
         public UnityEvent OnCleared => _onCleared;
+        #endregion
+
+        #region Events
+        /// <summary>재료 아이템이 모자라 시작하지 못했을 때 호출된다.</summary>
+        public event Action OnStartRefused;
         #endregion
 
         #region Unity Lifecycle
@@ -165,11 +179,17 @@ namespace Map.Feed
 
         #region Public Methods
         /// <summary>
-        /// 2라운드를 시작한다. 두 번째 호출부터는 무시한다.
+        /// 2라운드를 시작한다. 재료 아이템이 모자라면 시작하지 않고 OnStartRefused 를 알린다. 시작한 뒤의 호출은 무시한다.
         /// </summary>
         public void Begin()
         {
             if (IsStarted) return;
+
+            if (!HasRequiredItems())
+            {
+                OnStartRefused?.Invoke();
+                return;
+            }
 
             if ((_walls == null) || (_walls.Length < 3))
             {
@@ -193,6 +213,39 @@ namespace Map.Feed
                 Debug.LogWarning($"[{name}] 씬에 주위 피드(FeedPost)가 하나도 없어 바로 클리어 처리합니다.", this);
                 Clear();
             }
+        }
+
+        /// <summary>
+        /// 아직 올려 보내지 않은 피드 중 tagIndex 태그의 피드 수.
+        /// </summary>
+        public int GetRemainingCount(int tagIndex)
+        {
+            int count = 0;
+            foreach (FeedPost post in _slots.Keys)
+            {
+                if (post.TagIndex == tagIndex)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// 시작에 필요한 재료 아이템을 모두 모았는지 여부. 씬에 FeedApp 이 없으면 모으지 않은 것으로 본다.
+        /// </summary>
+        public bool HasRequiredItems()
+        {
+            if ((_requiredItems == null) || (_requiredItems.Length == 0)) return true;
+
+            FeedApp feedApp = FindAnyObjectByType<FeedApp>();
+            if (feedApp == null) return false;
+
+            foreach (EFeedItemType itemType in _requiredItems)
+            {
+                if (!feedApp.HasItem(itemType)) return false;
+            }
+            return true;
         }
         #endregion
 
