@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-19** — 보스 세션 H: `BossAChessSlam`·`BossAClap` 추가, `BossASlam._isDouble`, `BossAPatternBase`에 다회 내려침·어깨 포격 훅 추가. 컴파일 실패 없음, Play·Codex 리뷰 미수행, **커밋 전, 다음은 세션 I(UNITY-10·11)**: [보스 세션 H](./2026-10-19/boss-session-h.md)
 - **2026-10-18** — 보스 세션 G: `BossA/`에 `BossAPatternBase`·`BossASlam`·`BossALineSlam`·`BossAGrab`·`BossAGroggyPalm` 구현. 컴파일 에러 0, Play·Codex 리뷰 미수행, **커밋 전, 다음은 세션 H(UNITY-9)**: [보스 세션 G](./2026-10-18/boss-session-g.md)
 - **2026-10-18** — 보스 세션 F: `BossA/`에 `BossController`·`BossHand`·`BossShoulderCannon`·`BossHitRelay`·`IBossSituation`·열거형 2개, `BT/`에 A BT 노드 3개 구현. 컴파일 에러 0, Play·Codex 리뷰 미수행, **커밋 전, 다음은 세션 G(UNITY-8)**: [보스 세션 F](./2026-10-18/boss-session-f.md)
 - **2026-10-18** — 보스 세션 E: 낙사 Effect `SOAttributeEffect_BossFall`, 원판 프리팹·예고 머티리얼, 테스트 씬 `Map_4_Security_Boss_T`(아레나·타일 9·NavMesh 베이크·낙사 트리거·`Checkpoint_Round3_Start`) 구성. Play eval로 붕괴·6초 복구·낙사(HP 50→20, 인접 칸 복귀) 확인. **원판·예고 쿼드 육안 확인 미완, 커밋 전, 다음은 세션 F**: [보스 세션 E](./2026-10-18/boss-session-e.md)
