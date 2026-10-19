@@ -7,6 +7,12 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-19** — 사용자 지시에 따라 보스 테스트 씬 NavMesh 데이터를 Test/Boss/Map_4_Security_Boss_T로 이동하고 기존 _Project 저장 위치를 정정(GUID·씬 참조 유지): [수정 기록](./2026-10-19/boss-b-melee-hit-facing.md)
+- **2026-10-19** — 보스 B 근접공격·피격 회전 복구: None→추격 연결, 실행 그래프 쿨타임 재생성, 보스 B 전투 중 돌아보기, 충돌체 기준 NavMesh 재베이크. 테스트 11/11·경로 81/81·Play 추격/3타/180도 회전 확인. 커밋 전: [수정 기록](./2026-10-19/boss-b-melee-hit-facing.md)
+- **2026-10-19** — 보스 B Leap 구간별 모션: 예고(`Cast Spell`)·비행(`Jump Slam`)을 `LeapFlight` 모션 알림 스킬로 분리(C# Claude, 에셋·검증 Codex). Play 검증 통과, 보스 애니메이션 진단 포함(Charge·Evade 클립 없음, A 몸 애니메이션 없음). 게이트 루프 미통과, **커밋 전**: [보스 B Leap 구간별 모션](./2026-10-19/boss-b-leap-phase-motion.md)
+- **2026-10-19** — 보스 B 스킬별 애니메이션: 콤보를 스킬 3개로 분리, 보스 B 전용 컨트롤러·Leap 클립 연결(공용 코드 불변). **BT Combo 가지 교체(사용자) 전엔 콤보 미동작**, 게이트·Play 미검증, 커밋 전: [보스 B 스킬 애니메이션](./2026-10-19/boss-b-skill-animations.md)
+- **2026-10-19** — 보스 B 첫 조우 도약: `BossBChooseAttackAction` 첫 공격만 도약, `BossB.prefab` 센서 50m·360도. 컴파일 통과, 게이트 루프·Play 미검증, **커밋 전**: [보스 B 첫 조우 도약](./2026-10-19/boss-b-first-encounter-leap.md)
+- **2026-10-19** — 보스 세션 M: Codex가 테스트 씬 `05_Boss/BossFight`에 `BossFightSpawner`·`BossEncounter`·생성점 배치(CODEX-5), Claude 참조 대조 통과. 게이트 루프 3회 모두 `blocked`(테스트 통과, 임시 `InitTestScene*`·VFXManager 입력 변경 감지). Play 미검증, **커밋 전, 다음은 USER-4**: [보스 세션 M](./2026-10-19/boss-session-m.md)
 - **2026-10-19** — 양손 내려치기 후 박수 모션의 기성 FBX 검색·전용 키프레임 제작 방법 안내. 실제 리그 미확인, 게임 파일 변경 없음: [보스 모션 확보 안내](./2026-10-19/boss-slam-clap-animation-options.md)
 - **2026-10-19** — 보스 세션 L: `BossA/B_Override` 애니메이터 컨트롤러 생성 및 두 프리팹에 `EnemyAnimator`·미디에이터 연결(USER-3). BT 그래프 2개(USER-2)는 사용자가 수동 작성해 `BigBoss`(A)·`SmallBoss`(B)로 프리팹에 연결 완료. Play 미검증, **커밋 전, 다음은 세션 M(CODEX-5 → USER-4)**: [보스 세션 L](./2026-10-19/boss-session-l.md)
 - **2026-10-19** — 보스 세션 K: Codex가 `BossA.prefab`·`BossB.prefab`을 MCP로 생성(스킬 Effect·원판·릴레이·어깨 포 연결, B는 Melee 복제 후 Tanker 교체). Claude 참조 대조 통과, 신규 콘솔 오류 0. **게이트 루프 미실행(검증 입력 선언 파일 생성 권한 거부), Play 미검증, 커밋 전, 다음은 세션 L(USER-2·3)**: [보스 세션 K](./2026-10-19/boss-session-k.md)

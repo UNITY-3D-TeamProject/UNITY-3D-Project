@@ -4,6 +4,8 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[AI / Boss / Animation]** 보스 B 는 기본 5종 모션만 장착돼 스킬마다 다른 모션이 없음(Combo 만 Attack 트리거). 보스 B 전용 컨트롤러 + 스킬별 매핑, Charge·Evade 는 사용자 제작 클립, Combo·Leap 은 기존 Tanker Robot 클립. 열린 질문 3건 → [문서](./intent-045-bossb-skill-animations.md)
+- **[AI / Boss]** 보스 B 가 스폰 직후 플레이어를 못 봐 공격을 고르지 못함(수색 노드 없음, 센서 5m·90도). 센서 50m·360도 + 대상을 처음 발견해 고르는 첫 공격만 도약(1-1 에서도 1회). 코드·프리팹 수정 완료, 게이트 루프·Play 육안 확인 남음 → [문서](./intent-044-bossb-first-encounter-leap.md)
 - **[Audio / Core / UI]** 소리 재생 기반이 없음. `AudioManager` 싱글톤(BGM 1·UI 1·3D 16 소스), `SOBgmTable`(ESceneType 키 + 메인메뉴 곡 필드)로 씬별 BGM, 믹서 볼륨 저장·설정창 연결, `AudioListener.pause`로 일시정지. 코드·믹서·SO·프리팹·설정창 슬라이더 연결 완료, Play 로직 검증 완료, MainScene 배치 완료. 맵 씬 배치와 실제 청취 확인 남음 → [문서](./intent-038-audio-manager-phase1.md)
 - **[Map / Lobby / Rendering]** 로비 하늘 전광판 RT 카메라 4대가 매 프레임 SSAO까지 돌며 그려 약 18fps를 잡아먹음. SSAO 없는 전용 Renderer + 4대 번갈아 간격 렌더(기본 15Hz) → [문서](./intent-042-lobby-skysign-camera-cost.md)
 - **[UI / Scene]** 맵 씬 6개가 아직 옛 HUD `Canvas_Legacy`를 씀. `Canvas_InGame`으로 교체, 연결·외부 참조 조사 완료, Maze 브랜치 충돌·EventSystem 등 열린 질문 확인 대기 → [문서](./intent-037-map-scenes-canvas-ingame.md)
@@ -34,6 +36,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[AI / Boss]** 보스 B None→추격·쿨타임 실행 그래프·피격 회전 및 타일 간 NavMesh 복구. 테스트 11/11, 경로 81/81, Play 추격·3타·180도 회전 확인 → [문서](./clear/intent-046-bossb-melee-hit-facing.md) (resolved: 2026-10-19)
 - **[Core / Effect / VFX]** EffectManager·SOEffectData·SEffectHandle 및 매니저 프리팹 구현. SO별 자동 풀·자식 파티클·중복 Stop·오래된 핸들·부모 수명 처리, Unity 컴파일 및 Play 27항목 통과. 게임 씬 배치·기존 호출부 교체 제외 → [문서](./clear/intent-043-effect-manager.md) (resolved: 2026-10-18)
 - **[UI / MainMenu]** 메인 메뉴 씬을 `_Project/Scenes/MainScene.unity`로 옮기고 캔버스 4개를 `Canvas_MainMenu` 프리팹 하나(Menu·Settings·AnyPress 패널)로 합침, `Canvas_Splash` 제외 → [문서](./clear/intent-036-main-scene-team-share.md) (resolved: 2026-10-17)
 - **[UI / Skill]** 차지샷 칸형 바를 `PlayerFacade.OnFireChargeChanged`·`FireChargeRatio`에 연결(차지 중에만 보이고 빨간 칸이 차오름, Fire 판정은 그대로) → [문서](./clear/intent-029-charge-shot-bar.md) (resolved: 2026-10-17)
