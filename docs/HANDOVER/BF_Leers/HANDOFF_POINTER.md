@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-19** — 보스 세션 J: `Fight/`에 `BossEncounter`(진행·A/B 블랙보드·그로기/부활/퇴장)·`BossFightSpawner` 구현. 컴파일 에러 0, Play·Codex 리뷰 미수행, **커밋 전, 다음은 세션 K(CODEX-3·4)**: [보스 세션 J](./2026-10-19/boss-session-j.md)
 - **2026-10-19** — 보스 세션 I: `BossB/`에 `BossBController`·`BossBSkillBase`·콤보·돌진·도약, `BT/`에 B 노드 3개와 블랙보드 열거형 구현. 컴파일 실패 없음, Play·Codex 리뷰 미수행, **커밋 전, 다음은 세션 J(UNITY-12·13)**: [보스 세션 I](./2026-10-19/boss-session-i.md)
 - **2026-10-19** — 보스 세션 H: `BossAChessSlam`·`BossAClap` 추가, `BossASlam._isDouble`, `BossAPatternBase`에 다회 내려침·어깨 포격 훅 추가. 컴파일 실패 없음, Play·Codex 리뷰 미수행, **커밋 전, 다음은 세션 I(UNITY-10·11)**: [보스 세션 H](./2026-10-19/boss-session-h.md)
 - **2026-10-18** — 보스 세션 G: `BossA/`에 `BossAPatternBase`·`BossASlam`·`BossALineSlam`·`BossAGrab`·`BossAGroggyPalm` 구현. 컴파일 에러 0, Play·Codex 리뷰 미수행, **커밋 전, 다음은 세션 H(UNITY-9)**: [보스 세션 G](./2026-10-18/boss-session-g.md)
