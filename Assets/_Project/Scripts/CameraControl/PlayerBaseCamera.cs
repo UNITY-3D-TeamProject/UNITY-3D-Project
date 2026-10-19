@@ -409,12 +409,14 @@ namespace CameraControl
 
             _baseCamera.Lens.FieldOfView = _originalFov + (_ridingSettings.FovOffset * _ridingWeight);
 
-            // TODO: 공통 FullScreenFX 표시 함수가 생기면 (_isRolling || _isRiding) 동안 유지하고, 둘 다 끝났을 때만 끈다.
             if (!_outputCamera)
             {
                 CinemachineBrain brain = CinemachineCore.FindPotentialTargetBrain(_baseCamera);
                 if (brain) _outputCamera = brain.OutputCamera;
             }
+
+            // 속도선은 구르기·탑승 중 하나라도 있으면 켜고, 둘 다 끝나면 Damping 복귀·FOV 전환 중이어도 바로 끈다
+            if (_outputCamera) SpeedEdgeBlurRendererFeature.SetSpeedLineVisible(_outputCamera, _isRolling || _isRiding);
 
             // 블러 설정이 없으면 머티리얼 기본값으로 번지지 않도록 대상을 지정하지 않는다
             if (_outputCamera && _hasRidingSettings)

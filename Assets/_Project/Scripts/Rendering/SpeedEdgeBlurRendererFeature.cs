@@ -40,16 +40,20 @@ namespace Rendering
         private static float s_Weight;
         private static bool s_HasSettings;
         private static SSpeedEdgeBlurSettings s_Settings;
+        private static bool s_IsSpeedLineVisible;
         #endregion
 
         #region Serialized Fields
         [Tooltip("가장자리 블러 머티리얼 (Hidden/Project/SpeedEdgeBlur)")]
         [SerializeField] private Material _material;
+        [Tooltip("속도선 머티리얼 (FullScreenFX Speed). 비어 있으면 속도선만 그리지 않는다.")]
+        [SerializeField] private Material _speedLineMaterial;
         [SerializeField] private RenderPassEvent _renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
         #endregion
 
         #region Private Fields
         private SpeedEdgeBlurPass _pass;
+        private SpeedLinePass _speedLinePass;
         #endregion
 
         #region Public Methods
@@ -94,6 +98,29 @@ namespace Rendering
             s_TargetCamera = null;
             s_Weight = 0.0f;
             s_HasSettings = false;
+            s_IsSpeedLineVisible = false;
+        }
+
+        /// <summary>
+        /// 속도선 표시 여부를 지정한다. 켜면 해당 카메라가 대상이 되고, 끄면 같은 카메라일 때만 속도선만 끈다.
+        /// 블러 강도는 바꾸지 않는다.
+        /// </summary>
+        /// <param name="camera">속도선을 그릴 게임 카메라</param>
+        /// <param name="isVisible">표시하면 true</param>
+        public static void SetSpeedLineVisible(Camera camera, bool isVisible)
+        {
+            if (isVisible)
+            {
+                if (!camera) return;
+
+                s_TargetCamera = camera;
+                s_IsSpeedLineVisible = true;
+                return;
+            }
+
+            if (s_TargetCamera != camera) return;
+
+            s_IsSpeedLineVisible = false;
         }
         #endregion
 
@@ -104,26 +131,41 @@ namespace Rendering
             {
                 renderPassEvent = _renderPassEvent,
             };
+            _speedLinePass = new SpeedLinePass(_speedLineMaterial)
+            {
+                renderPassEvent = _renderPassEvent,
+            };
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
-            if (_pass == null || !_material) return;
-
             CameraData cameraData = renderingData.cameraData;
-            bool isTarget = s_TargetCamera && (s_Weight > 0.0f) &&
+            bool isTarget = s_TargetCamera &&
                             (cameraData.camera == s_TargetCamera) &&
                             (cameraData.cameraType == CameraType.Game);
             if (!isTarget) return;
 
-            _pass.Setup(s_Weight, s_HasSettings, s_Settings);
-            _pass.requiresIntermediateTexture = true;
-            renderer.EnqueuePass(_pass);
+            bool shouldBlur = _pass != null && _material && (s_Weight > 0.0f);
+            if (shouldBlur)
+            {
+                _pass.Setup(s_Weight, s_HasSettings, s_Settings);
+                _pass.requiresIntermediateTexture = true;
+                renderer.EnqueuePass(_pass);
+            }
+
+            bool shouldDrawSpeedLine = _speedLinePass != null && _speedLineMaterial && s_IsSpeedLineVisible &&
+                                       _speedLinePass.HasPass;
+            if (shouldDrawSpeedLine)
+            {
+                _speedLinePass.requiresIntermediateTexture = true;
+                renderer.EnqueuePass(_speedLinePass);
+            }
         }
 
         protected override void Dispose(bool isDisposing)
         {
             _pass = null;
+            _speedLinePass = null;
         }
         #endregion
 
@@ -134,6 +176,7 @@ namespace Rendering
             s_TargetCamera = null;
             s_Weight = 0.0f;
             s_HasSettings = false;
+            s_IsSpeedLineVisible = false;
         }
         #endregion
 
@@ -192,6 +235,53 @@ namespace Rendering
                     _material,
                     0,
                     _propertyBlock);
+                renderGraph.AddBlitPass(blitParameters, PASS_NAME);
+            }
+        }
+
+        /// <summary>
+        /// FullScreenFX 속도선 머티리얼을 화면 위에 덧그리는 패스. 화면 복사 없이 active color 에 그대로 더한다.
+        /// 원본 머티리얼의 _enabled 는 0 이므로 MaterialPropertyBlock 으로 1 을 넘겨 켠다.
+        /// </summary>
+        private class SpeedLinePass : ScriptableRenderPass
+        {
+            private const string PASS_NAME = "SpeedLine";
+            private const string DRAW_PASS_NAME = "DrawProcedural";
+
+            private static readonly int EnabledId = Shader.PropertyToID("_enabled");
+
+            private readonly Material _material;
+            private readonly int _passIndex = -1;
+            private readonly MaterialPropertyBlock _propertyBlock = new MaterialPropertyBlock();
+
+            public bool HasPass => _passIndex >= 0;
+
+            public SpeedLinePass(Material material)
+            {
+                _material = material;
+                if (material) _passIndex = material.FindPass(DRAW_PASS_NAME);
+
+                _propertyBlock.SetFloat(EnabledId, 1.0f);
+            }
+
+            public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
+            {
+                if (!_material || _passIndex < 0) return;
+
+                UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
+                if (resourceData.isActiveTargetBackBuffer) return;
+
+                TextureHandle activeColor = resourceData.activeColorTexture;
+                if (!activeColor.IsValid()) return;
+
+                RenderGraphUtils.BlitMaterialParameters blitParameters = new RenderGraphUtils.BlitMaterialParameters(
+                    TextureHandle.nullHandle,
+                    activeColor,
+                    _material,
+                    _passIndex,
+                    _propertyBlock,
+                    0,
+                    0);
                 renderGraph.AddBlitPass(blitParameters, PASS_NAME);
             }
         }
