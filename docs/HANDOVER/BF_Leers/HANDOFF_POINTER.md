@@ -7,6 +7,8 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-19** — 양손 내려치기 후 박수 모션의 기성 FBX 검색·전용 키프레임 제작 방법 안내. 실제 리그 미확인, 게임 파일 변경 없음: [보스 모션 확보 안내](./2026-10-19/boss-slam-clap-animation-options.md)
+- **2026-10-19** — 보스 세션 L: `BossA/B_Override` 애니메이터 컨트롤러 생성 및 두 프리팹에 `EnemyAnimator`·미디에이터 연결(USER-3). BT 그래프 2개(USER-2)는 사용자가 수동 작성해 `BigBoss`(A)·`SmallBoss`(B)로 프리팹에 연결 완료. Play 미검증, **커밋 전, 다음은 세션 M(CODEX-5 → USER-4)**: [보스 세션 L](./2026-10-19/boss-session-l.md)
 - **2026-10-19** — 보스 세션 K: Codex가 `BossA.prefab`·`BossB.prefab`을 MCP로 생성(스킬 Effect·원판·릴레이·어깨 포 연결, B는 Melee 복제 후 Tanker 교체). Claude 참조 대조 통과, 신규 콘솔 오류 0. **게이트 루프 미실행(검증 입력 선언 파일 생성 권한 거부), Play 미검증, 커밋 전, 다음은 세션 L(USER-2·3)**: [보스 세션 K](./2026-10-19/boss-session-k.md)
 - **2026-10-19** — 보스 세션 J: `Fight/`에 `BossEncounter`(진행·A/B 블랙보드·그로기/부활/퇴장)·`BossFightSpawner` 구현. 컴파일 에러 0, Play·Codex 리뷰 미수행, **커밋 전, 다음은 세션 K(CODEX-3·4)**: [보스 세션 J](./2026-10-19/boss-session-j.md)
 - **2026-10-19** — 보스 세션 I: `BossB/`에 `BossBController`·`BossBSkillBase`·콤보·돌진·도약, `BT/`에 B 노드 3개와 블랙보드 열거형 구현. 컴파일 실패 없음, Play·Codex 리뷰 미수행, **커밋 전, 다음은 세션 J(UNITY-12·13)**: [보스 세션 I](./2026-10-19/boss-session-i.md)
