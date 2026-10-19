@@ -24,6 +24,9 @@ namespace UI.PetGuide
                 return;
             }
 
+            // 안내는 넘기는 입력이 없으므로 대화용 넘기기 안내를 숨긴다.
+            _view.HideAdvanceHint();
+
             // 항목에 표정이 지정돼 있으면 그 얼굴, 아니면 펫 기본 얼굴.
             _view.ShowLine(_petName, (portrait != null) ? portrait : _petPortrait, message);
         }
