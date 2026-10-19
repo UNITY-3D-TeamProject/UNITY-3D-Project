@@ -163,6 +163,15 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 구르는 중인지 반환한다. 이 중재자가 꺼져 있으면 RollMover 이벤트를 받지 못하므로 구르는 중이 아닌 것으로 본다.
+        /// </summary>
+        /// <returns>구르는 중이면 true. RollMover 가 없거나 이 중재자가 비활성이면 false</returns>
+        public bool IsRolling()
+        {
+            return isActiveAndEnabled && _rollMover && _rollMover.IsRolling;
+        }
+
+        /// <summary>
         /// 이동 입력 방향으로 구르기를 RollMover 에 요청한다. 입력이 없으면 카메라가 보는 수평 방향으로 구른다.
         /// 구르는 동안에는 이동/점프 입력이 모터에 전달되지 않는다.
         /// </summary>
