@@ -21,6 +21,7 @@ namespace AI.Boss.BossA
             Landed,
             Staying,
             Recalling,
+            Flying,
         }
         #endregion
 
@@ -52,9 +53,11 @@ namespace AI.Boss.BossA
         private Vector3 _toPosition;
         private float _elapsed;
         private float _stayRemaining;
+        private float _flySeconds;
         private float _fingerTilt;
         private float _fingerSink;
         private Action _onImpact;
+        private Action _onFlyDone;
         private Action _onStayDone;
         private Action _onRecallDone;
         #endregion
@@ -109,6 +112,10 @@ namespace AI.Boss.BossA
                     if (_restPoint) _toPosition = GetRestPosition();
                     if (Advance(_moveSeconds, deltaTime)) FinishRecall();
                     break;
+
+                case EHandState.Flying:
+                    if (Advance(_flySeconds, deltaTime, true)) FinishFly();
+                    break;
             }
         }
 
@@ -126,8 +133,9 @@ namespace AI.Boss.BossA
                 return;
             }
 
-            // 회수 중에만 펴지고, 떠오르는 순간부터 머무는 동안은 손가락이 아래를 향한다
-            float tiltTarget = (_state == EHandState.Recalling) ? 0.0f : 1.0f;
+            // 회수 중과 날아가는 중에만 펴지고, 떠오르는 순간부터 머무는 동안은 손가락이 아래를 향한다
+            bool isOpen = (_state == EHandState.Recalling) || (_state == EHandState.Flying);
+            float tiltTarget = isOpen ? 0.0f : 1.0f;
             float tiltStep = (_moveSeconds > 0.0f) ? (Time.deltaTime / _moveSeconds) : 1.0f;
             _fingerTilt = Mathf.MoveTowards(_fingerTilt, tiltTarget, tiltStep);
             float tilt = Mathf.SmoothStep(0.0f, 1.0f, _fingerTilt);
@@ -170,6 +178,19 @@ namespace AI.Boss.BossA
 
             _onImpact = onImpact;
             BeginMove(ImpactPoint, EHandState.Slamming);
+        }
+
+        /// <summary>
+        /// 지금 자리에서 월드 한 점까지 일정한 속도로 곧장 날아간다. 도착하면 onArrived 를 부른다.
+        /// 날아가는 도중 Recall 하면 그 자리에서 평소 위치로 돌아오며 onArrived 는 부르지 않는다.
+        /// </summary>
+        /// <param name="position">날아갈 월드 위치(높이 포함)</param>
+        /// <param name="seconds">걸리는 시간(초)</param>
+        public void Fly(Vector3 position, float seconds, Action onArrived)
+        {
+            _flySeconds = seconds;
+            _onFlyDone = onArrived;
+            BeginMove(position, EHandState.Flying);
         }
 
         /// <summary>
@@ -222,12 +243,14 @@ namespace AI.Boss.BossA
             _state = nextState;
         }
 
+        /// <param name="isLinear">true 면 일정한 속도로, false 면 처음과 끝이 느리게 움직인다</param>
         /// <returns>도착했으면 true</returns>
-        private bool Advance(float duration, float deltaTime)
+        private bool Advance(float duration, float deltaTime, bool isLinear = false)
         {
             _elapsed += deltaTime;
             float ratio = (duration > 0.0f) ? Mathf.Clamp01(_elapsed / duration) : 1.0f;
-            transform.position = Vector3.Lerp(_fromPosition, _toPosition, Mathf.SmoothStep(0.0f, 1.0f, ratio));
+            float eased = isLinear ? ratio : Mathf.SmoothStep(0.0f, 1.0f, ratio);
+            transform.position = Vector3.Lerp(_fromPosition, _toPosition, eased);
             return ratio >= 1.0f;
         }
 
@@ -272,6 +295,14 @@ namespace AI.Boss.BossA
             onImpact?.Invoke();
         }
 
+        private void FinishFly()
+        {
+            _state = EHandState.Landed;
+            Action onArrived = _onFlyDone;
+            _onFlyDone = null;
+            onArrived?.Invoke();
+        }
+
         private void FinishStay()
         {
             if (_stayObstacle) _stayObstacle.enabled = false;
@@ -293,6 +324,7 @@ namespace AI.Boss.BossA
         private void ClearCallbacks()
         {
             _onImpact = null;
+            _onFlyDone = null;
             _onStayDone = null;
             _onRecallDone = null;
         }

@@ -28,6 +28,14 @@ namespace AI.Boss.Arena
         /// <param name="handle">ShowCircle 이 돌려준 핸들. 유효하지 않으면 무시한다</param>
         void HideCircle(int handle);
 
+        /// <summary>월드 좌표 두 점을 잇는 직선 예고를 켠다. 높이 차는 무시하고 from 의 높이에 놓는다.</summary>
+        /// <param name="width">직선의 폭(m)</param>
+        /// <returns>끌 때 쓸 핸들. 빈 직선 판이 없으면 -1</returns>
+        int ShowLine(Vector3 from, Vector3 to, float width);
+
+        /// <param name="handle">ShowLine 이 돌려준 핸들. 유효하지 않으면 무시한다</param>
+        void HideLine(int handle);
+
         /// <summary>모든 칸·원판을 처음 상태로 되돌린다.</summary>
         void ResetAll();
     }

@@ -65,8 +65,8 @@ namespace AI.Boss.Logic
 
             if (situation.Grid.CollapsedCount >= _collapseLimit)
             {
+                // A4 는 칸을 하나 무너뜨리므로 폴백으로 쓰지 않는다
                 if (stage == EBossStage.Final) return CreateClap(ArenaGrid.GetRow(targetTile));
-                if (CanUse(EBossAPattern.A4, stage)) return CreateGrab(targetTile);
 
                 return CreateRest();
             }
@@ -120,12 +120,7 @@ namespace AI.Boss.Logic
                 return true;
             }
 
-            // 규칙 3: 모서리 칸이면 A4
-            if (IsCorner(situation.PlayerTile) && CanUse(EBossAPattern.A4, stage))
-            {
-                choice = CreateGrab(situation.PlayerTile);
-                return true;
-            }
+            // 규칙 3 (모서리 칸이면 A4) 은 A4 가 직선 경로 그랩이 되면서 없앴다. 번호는 문서와 맞추려고 건너뛴다
 
             // 규칙 4: 가운데 칸이면 A5 +자 (최종)
             if (situation.PlayerTile == CENTER && stage == EBossStage.Final)
@@ -381,15 +376,6 @@ namespace AI.Boss.Logic
             if (_candidates.Count == 1) return _candidates[0];
 
             return _candidates[_random.Next(_candidates.Count)];
-        }
-
-        private static bool IsCorner(int tile)
-        {
-            int last = ArenaGrid.SIZE - 1;
-            return tile == ArenaGrid.GetIndex(0, 0) ||
-                   tile == ArenaGrid.GetIndex(0, last) ||
-                   tile == ArenaGrid.GetIndex(last, 0) ||
-                   tile == ArenaGrid.GetIndex(last, last);
         }
 
         private static int[] BuildPlusTiles()

@@ -23,11 +23,18 @@ namespace AI.Boss.Arena
         [Tooltip("지름 1 m 짜리 원판 프리팹. 크기 조절로 반경을 맞춘다.")]
         [SerializeField] private GameObject _circlePrefab;
         [SerializeField, Min(0)] private int _circlePoolSize = 4;
+
+        [Header("Line Telegraph")]
+        [Tooltip("가로·세로 1 m 짜리 납작한 판 프리팹. 로컬 X 가 폭, Z 가 길이가 되도록 크기 조절로 맞춘다.")]
+        [SerializeField] private GameObject _linePrefab;
+        [SerializeField, Min(0)] private int _linePoolSize = 2;
         #endregion
 
         #region Private Fields
         private GameObject[] _circles;
         private Vector3 _circleBaseScale;
+        private GameObject[] _lines;
+        private Vector3 _lineBaseScale;
         private float _telegraphFillSeconds;
         private Color? _telegraphColor;
         #endregion
@@ -61,6 +68,7 @@ namespace AI.Boss.Arena
             }
 
             CreateCirclePool();
+            CreateLinePool();
         }
 
         private void Update()
@@ -151,15 +159,54 @@ namespace AI.Boss.Arena
             _circles[handle].SetActive(false);
         }
 
+        public int ShowLine(Vector3 from, Vector3 to, float width)
+        {
+            if (_lines == null) return -1;
+
+            Vector3 delta = to - from;
+            delta.y = 0.0f;
+            float length = delta.magnitude;
+            if (length < 0.001f) return -1;
+
+            for (int i = 0; i < _lines.Length; i++)
+            {
+                if (_lines[i].activeSelf) continue;
+
+                Vector3 center = from + (delta * 0.5f);
+                _lines[i].transform.SetPositionAndRotation(center, Quaternion.LookRotation(delta / length, Vector3.up));
+                _lines[i].transform.localScale = new Vector3(width, _lineBaseScale.y, length);
+                _lines[i].SetActive(true);
+                return i;
+            }
+
+            Debug.LogWarning($"[{name}] 빈 직선 예고 판이 없습니다. _linePoolSize 를 늘려 주세요.", this);
+            return -1;
+        }
+
+        public void HideLine(int handle)
+        {
+            if (_lines == null || handle < 0 || handle >= _lines.Length) return;
+
+            _lines[handle].SetActive(false);
+        }
+
         public void ResetAll()
         {
             Grid.ResetAll();
 
-            if (_circles == null) return;
-
-            foreach (GameObject circle in _circles)
+            if (_circles != null)
             {
-                circle.SetActive(false);
+                foreach (GameObject circle in _circles)
+                {
+                    circle.SetActive(false);
+                }
+            }
+
+            if (_lines == null) return;
+
+            foreach (GameObject line in _lines)
+            {
+                line.SetActive(false);
             }
         }
         #endregion
@@ -191,6 +238,19 @@ namespace AI.Boss.Arena
             {
                 _circles[i] = Instantiate(_circlePrefab, transform);
                 _circles[i].SetActive(false);
+            }
+        }
+
+        private void CreateLinePool()
+        {
+            if (!_linePrefab || _linePoolSize <= 0) return;
+
+            _lineBaseScale = _linePrefab.transform.localScale;
+            _lines = new GameObject[_linePoolSize];
+            for (int i = 0; i < _linePoolSize; i++)
+            {
+                _lines[i] = Instantiate(_linePrefab, transform);
+                _lines[i].SetActive(false);
             }
         }
 
