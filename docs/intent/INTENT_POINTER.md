@@ -36,6 +36,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI]** View 4개(InfoPanel·PlayerHud·PetGuide·Settings)가 루트 켜기·끄기 코드를 각자 복사해 들고 있었음. `BaseView`(abstract, `_root`·`IsVisible`·`Show`·`Hide`·private `SetVisible`)로 합침, MainMenu 제외 → [문서](./clear/intent-052-ui-base-view.md) (resolved: 2026-10-20)
 - **[UI / PetGuide / Core]** 펫 가이드가 떠도 게임이 그대로 진행되고 닫는 입력이 없었음. 모든 펫 가이드에서 timeScale 0(BGM만 들림), Dialogue 맵 Space로 닫기·ESC 설정창, 대화와 겹치면 무시, `PauseGameForDialogue` → `PauseGameTime`으로 공용화 → [문서](./clear/intent-051-pet-guide-pause.md) (resolved: 2026-10-20)
 - **[UI / Dialogue / Core]** 대화 중에도 적·투사체·3D 효과음이 그대로 진행됨. `GameManager.PauseGameForDialogue`·`ResumeGameForDialogue`로 timeScale 0(BGM만 들림), 대화 동안 플레이어·펫 Animator UnscaledTime·CinemachineBrain IgnoreTimeScale, 펫은 설 자리로 바로 이동, 다른 사람 파일 미수정 → [문서](./clear/intent-050-dialogue-pause-game.md) (resolved: 2026-10-20)
 - **[UI / Dialogue]** UIManager ↔ DialogueManager가 서로 부르던 대화 흐름을 UIManager → `DialogueDirector`(이름 변경, 연출만: BeginStaging·ShowLine·EndStaging) 한 방향으로 정리. 콜백 필드·Instance 제거, Canvas_InGame에서 SerializeField 연결, 바깥 API 그대로 → [문서](./clear/intent-049-dialogue-one-way-flow.md) (resolved: 2026-10-20)
