@@ -18,6 +18,16 @@ namespace Map.Platforms
         private bool isSolid = true;
         private bool isVisible = true;
 
+        public bool IsSolid => isSolid;
+        public float VisibleRatio
+        {
+            get
+            {
+                float t = Mathf.Repeat(Time.time + timeOffset, Mathf.Max(activeDuration + inactiveDuration, 0.001f));
+                return (t < activeDuration) ? 1f - (t / Mathf.Max(activeDuration, 0.001f)) : 0f;
+            }
+        }
+
         void Start()
         {
             // 발판 위에 놓인 오브젝트까지 함께 사라지도록, 자식이 모두 붙은 뒤인 Start 에서 모은다

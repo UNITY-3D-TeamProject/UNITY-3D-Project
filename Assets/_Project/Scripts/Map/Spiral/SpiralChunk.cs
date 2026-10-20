@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Map.Spiral
 {
     /// <summary>
-    /// 나선 구간에 끼워 넣는 기믹 묶음. 곧고 평평한 기믹 한 덩어리의 프리팹 루트에 붙인다.
+    /// 나선 구간에 끼워 넣는 기믹 묶음. 내부에서 올라가는 구간은 Height Rise를 지정한다.
     /// 원점의 높이는 발판 중심 높이, +Z 가 진행 방향, +X 가 나선의 바깥쪽이다.
     /// SpiralMapGenerator 가 Entry Z ~ Exit Z 구간을 길 위에 맞춰 놓고, 앞뒤에 고정 발판을 둔다.
     /// 나선이 휘어 있으므로 길이는 14 이하로 만든다.
@@ -17,6 +17,9 @@ namespace Map.Spiral
 
         [Tooltip("플레이어가 내리는 쪽 끝의 Z 위치 (자신 기준)")]
         [SerializeField] private float _exitZ = 4.0f;
+
+        [Tooltip("입구 발판 중심에서 출구 발판 중심까지 올라가는 높이. 생성기가 다음 발판 높이에 반영한다.")]
+        [SerializeField, Min(0f)] private float _heightRise;
 
         [Header("Appearance")]
         [Tooltip("생성할 때 그 태그의 기본 발판 머티리얼로 바꿀 렌더러들 (움직이지 않는 발판)")]
@@ -35,6 +38,8 @@ namespace Map.Spiral
 
         /// <summary>올라서는 끝과 내리는 끝의 가운데 Z 위치 (자신 기준).</summary>
         public float CenterZ => (_entryZ + _exitZ) * 0.5f;
+
+        public float HeightRise => _heightRise;
         #endregion
 
         #region Unity Lifecycle

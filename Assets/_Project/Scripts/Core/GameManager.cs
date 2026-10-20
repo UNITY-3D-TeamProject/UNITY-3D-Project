@@ -119,6 +119,24 @@ namespace Core
             SetCursorLocked(true);
         }
 
+        // 대화·펫 가이드 동안 게임 시간과 3D 효과음을 멈춘다. BGM·UI 소리는 계속 들린다.
+        // 상태는 Playing 그대로라 그동안에도 설정창을 열 수 있고, 커서는 잠근 채로 둔다.
+        public void PauseGameTime()
+        {
+            Time.timeScale = 0f;
+            AudioListener.pause = true;
+        }
+
+        // 대화·펫 가이드가 끝나면 게임 시간과 3D 효과음을 돌린다.
+        // 설정창으로 멈춘 중(Pause)이면 설정창을 닫을 때 ResumeGame이 돌리므로 여기서는 두지 않는다.
+        public void ResumeGameTime()
+        {
+            if (CurrentState == GameState.Pause) return;
+
+            Time.timeScale = 1f;
+            AudioListener.pause = false;
+        }
+
 
         private void SetCursorLocked(bool isLocked)
         {

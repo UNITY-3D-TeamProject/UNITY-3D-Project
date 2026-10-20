@@ -3,6 +3,7 @@ using Facade.Player;
 using JetBrains.Annotations;
 using Map.Gimmicks;
 using System;
+using UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -163,6 +164,7 @@ namespace Core.Stage
 
             _currentStageBaseInstance.StartStage();
             OnStageStarted?.Invoke();
+            PlayIntroDialogue();
         }
 
         // 현재 라운드에 지정된 체크포인트를 스폰 위치로 사용한다.
@@ -266,6 +268,22 @@ namespace Core.Stage
         private void HandlePlayerSpawned(PlayerFacade playerFacade)
         {
             BindPlayer();
+        }
+
+        // 스테이지 종류에 맞는 시작 대화를 재생한다. 번호는 SODialogueTable의 Id이고, 0이면 시작 대화가 없다.
+        // [호출] StartStage에서 스테이지 시작 직후 호출된다.
+        private void PlayIntroDialogue()
+        {
+            // 지금은 모든 스테이지에서 시작 대화를 끈다. 켤 스테이지는 여기에 추가한다. (예: EStageType.Tutorial => 1,)
+            int dialogueId = CurrentStage switch
+            {
+                _ => 0,
+            };
+
+            if ((dialogueId > 0) && (UIManager.Instance != null))
+            {
+                UIManager.Instance.PlayDialogue(dialogueId);
+            }
         }
 
         // 현재 플레이어의 PlayerFacade를 StageManager에 연결하는 함수

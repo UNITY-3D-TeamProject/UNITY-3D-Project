@@ -33,6 +33,12 @@ namespace AI
 
         /// <summary>주변 동료를 찾을 때 한 번에 감지하는 최대 수.</summary>
         private const int MAX_SEPARATION_NEIGHBORS = 8;
+
+        /// <summary>NavMesh 밖으로 떨어진 Agent 를 되붙일 때 몸 주위에서 NavMesh 를 찾는 최대 거리(m).</summary>
+        private const float RESYNC_SAMPLE_DISTANCE = 4.0f;
+
+        /// <summary>Agent 되붙이기를 다시 시도하기까지의 간격(초).</summary>
+        private const float RESYNC_RETRY_INTERVAL = 0.25f;
         #endregion
 
         #region Serialized Fields
@@ -67,6 +73,8 @@ namespace AI
         [Header("Hit Reaction")]
         [Tooltip("피격 시 이동을 멈추고 맞은 쪽을 바라보는 시간(초). 0 이면 반응하지 않는다. CharacterRotator 회전 속도로 180° 돌 수 있는 시간 이상이어야 뒤에서 맞아도 완전히 돌아선다.")]
         [SerializeField, Min(0.0f)] private float _hitLookDuration = 1.0f;
+        [Tooltip("대상이 보이는 전투 중에도 피격 시 대상을 바라본다. 360도 센서를 쓰는 보스 등에 사용한다. Hold 중인 스킬 방향은 유지한다.")]
+        [SerializeField] private bool _shouldFaceVisibleTargetOnHit;
         [Tooltip("피격 시 이동과 스킬 요청을 멈추는 경직 시간(초). 0 이면 경직하지 않는다. 대상이 보이는 중에도 걸린다.")]
         [SerializeField, Min(0.0f)] private float _hitStunDuration = 0.4f;
         [Tooltip("경직이 끝난 뒤 다시 경직되지 않는 시간(초). 연사로 계속 묶이지 않게 한다. 피격 애니메이션은 이 동안에도 재생된다.")]
@@ -77,7 +85,12 @@ namespace AI
         private readonly Collider[] _separationHits = new Collider[MAX_SEPARATION_NEIGHBORS];
         private Vector3 _spawnPosition;
         private bool _hasDestination;
+        private Vector3 _destination;
         private float _lastTargetSeenTime;
+
+        private int _agentSyncSuspendCount;
+        private float _resyncRetryTimer;
+        private bool _isAgentOffNavMesh;
 
         private Vector3 _stuckCheckPosition;
         private float _stuckCheckTimer;
@@ -162,6 +175,11 @@ namespace AI
         /// <summary>Hold 로 붙잡혀 제자리에 멈춰 있는지 여부.</summary>
         public bool IsHolding => _holdTimer > 0.0f;
 
+        /// <summary>
+        /// Agent 위치 동기화가 멈춰 있는지 여부. 스킬이 몸을 직접 옮기는 동안(도약·돌진) true 다.
+        /// </summary>
+        public bool IsAgentSyncSuspended => _agentSyncSuspendCount > 0;
+
         /// <summary>피격 경직 중인지 여부. 경직 중에는 이동하지 않고 스킬 요청(ExecuteSkill)도 무시한다.</summary>
         public bool IsStunned => _hitStunTimer > 0.0f;
 
@@ -217,12 +235,17 @@ namespace AI
 
             if (!_agent || !_agent.isOnNavMesh)
             {
+                // nextPosition 대입으로는 한 번 떨어진 Agent 가 돌아오지 않으므로 주기적으로 되붙인다
+                TickAgentResync();
                 RequestMove(Vector2.zero);
                 return;
             }
 
-            // CharacterMotor 가 옮긴 실제 위치를 Agent 에 되돌려야 다음 경로가 어긋나지 않는다
-            _agent.nextPosition = _body.position;
+            _isAgentOffNavMesh = false;
+
+            // CharacterMotor 가 옮긴 실제 위치를 Agent 에 되돌려야 다음 경로가 어긋나지 않는다.
+            // 스킬이 몸을 직접 옮기는 동안에는 공중·구멍 위 좌표가 들어가 Agent 가 떨어지므로 멈춘다
+            if (!IsAgentSyncSuspended) _agent.nextPosition = _body.position;
 
             // 붙잡힌 동안에는 목적지를 유지한 채 멈춰서 고정 방향을 바라본다. 풀리면 하던 이동을 이어간다
             if (IsHolding)
@@ -246,6 +269,10 @@ namespace AI
             if (IsStunned)
             {
                 RequestMove(Vector2.zero);
+                if (_shouldFaceVisibleTargetOnHit && HasVisibleTarget)
+                {
+                    FaceDirection(VisibleTarget.position - _body.position);
+                }
                 return;
             }
 
@@ -282,6 +309,9 @@ namespace AI
             _hitStunTimer = 0.0f;
             _hitStunImmuneTimer = 0.0f;
             IsSuperArmor = false;
+            // 스킬이 끝내지 못한 채 꺼졌을 때 동기화가 영구히 멈춘 상태로 남지 않게 한다
+            _agentSyncSuspendCount = 0;
+            _isAgentOffNavMesh = false;
 
             // 비활성화 시 마지막 이동 명령이 남아 계속 미끄러지지 않도록 정지시킨다
             RequestMove(Vector2.zero);
@@ -396,6 +426,7 @@ namespace AI
             if (!_agent.SetDestination(hit.position)) return false;
 
             _hasDestination = true;
+            _destination = hit.position;
             ResetStuckState();
             return true;
         }
@@ -470,6 +501,7 @@ namespace AI
         public void StopMove()
         {
             _hasDestination = false;
+            _destination = _body.position;
             ResetStuckState();
 
             if (_agent && _agent.isOnNavMesh)
@@ -516,6 +548,30 @@ namespace AI
         public void ReleaseHold()
         {
             _holdTimer = 0.0f;
+        }
+
+        /// <summary>
+        /// 몸을 직접 옮기는 동안(도약·돌진 등) Agent 위치 동기화를 멈춘다.
+        /// 공중이나 구멍 위를 지나는 몸 위치를 Agent 에 밀어 넣으면 Agent 가 NavMesh 밖으로 떨어지기 때문이다.
+        /// 중첩 호출을 허용하므로 ResumeAgentSync 와 짝을 맞춰 부른다.
+        /// </summary>
+        public void SuspendAgentSync()
+        {
+            _agentSyncSuspendCount++;
+        }
+
+        /// <summary>
+        /// SuspendAgentSync 를 푼다. 마지막 짝이 풀리는 순간 Agent 를 몸 위치로 되붙인다.
+        /// 짝이 맞지 않게 더 불러도 아무것도 하지 않는다.
+        /// </summary>
+        public void ResumeAgentSync()
+        {
+            if (_agentSyncSuspendCount <= 0) return;
+
+            _agentSyncSuspendCount--;
+            if (_agentSyncSuspendCount > 0) return;
+
+            TryResyncAgent();
         }
 
         /// <summary>
@@ -638,7 +694,7 @@ namespace AI
         /// <summary>
         /// 피격되면 짧게 경직시키고, 대상이 안 보이면 잠시 멈춰 맞은 쪽을 바라보게 한다.
         /// 경직은 스킬 사용 중(Hold·슈퍼아머)이거나 직전 경직의 면역 시간 안이면 걸리지 않는다.
-        /// 대상이 보이는 중(전투 중)에는 공격이 이미 대상을 바라보므로 돌아보기는 하지 않는다.
+        /// 전투 중 돌아보기 설정이 켜져 있으면 보이는 대상을 바라본다. Hold·슈퍼아머 중 스킬 방향은 유지한다.
         /// </summary>
         /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치)</param>
         private void OnHitFromCallback(Vector3 hitSource)
@@ -652,7 +708,14 @@ namespace AI
                 _hitStunImmuneTimer = _hitStunDuration + _hitStunImmuneDuration;
             }
 
-            if (HasVisibleTarget) return;
+            if (HasVisibleTarget)
+            {
+                if (_shouldFaceVisibleTargetOnHit && !IsHolding && !IsSuperArmor)
+                {
+                    FaceDirection(VisibleTarget.position - _body.position);
+                }
+                return;
+            }
 
             Vector3 toSource = Vector3.ProjectOnPlane(hitSource - _body.position, Vector3.up);
             if (toSource.sqrMagnitude <= Mathf.Epsilon) return;
@@ -710,6 +773,57 @@ namespace AI
             _destinationTimer = 0.0f;
             _stuckCheckTimer = 0.0f;
             _stuckCheckPosition = _body.position;
+        }
+
+        /// <summary>
+        /// Agent 가 NavMesh 밖으로 떨어졌을 때 일정 간격으로 되붙이기를 시도한다.
+        /// 붕괴한 칸이 복구되어 NavMesh 가 돌아와도 Agent 는 스스로 다시 붙지 않으므로 이 검사가 필요하다.
+        /// </summary>
+        private void TickAgentResync()
+        {
+            if (!_agent || !_agent.enabled || IsAgentSyncSuspended) return;
+
+            if (!_isAgentOffNavMesh)
+            {
+                _isAgentOffNavMesh = true;
+                _resyncRetryTimer = 0.0f;
+                Debug.LogWarning($"[{name}] Agent 가 NavMesh 밖으로 떨어져 이동을 멈췄다. 되붙이기를 시도한다. 위치={_body.position}", this);
+            }
+
+            _resyncRetryTimer -= Time.deltaTime;
+            if (_resyncRetryTimer > 0.0f) return;
+
+            _resyncRetryTimer = RESYNC_RETRY_INTERVAL;
+            TryResyncAgent();
+        }
+
+        /// <summary>
+        /// Agent 를 몸 위치의 NavMesh 위로 되붙인다. 몸 주위에서 NavMesh 를 찾지 못하면 실패한다.
+        /// nextPosition 대입으로는 한 번 떨어진 Agent 가 돌아오지 않으므로 Warp 를 쓴다.
+        /// updatePosition 이 꺼져 있어 Warp 는 몸(Transform)을 움직이지 않는다.
+        /// Warp 는 경로를 비우므로 가지고 있던 목적지를 다시 건다.
+        /// </summary>
+        /// <returns>되붙였으면 true</returns>
+        private bool TryResyncAgent()
+        {
+            if (!_agent || !_agent.enabled) return false;
+
+            bool isFound = NavMesh.SamplePosition(
+                _body.position,
+                out NavMeshHit hit,
+                RESYNC_SAMPLE_DISTANCE,
+                _agent.areaMask);
+            if (!isFound) return false;
+
+            if (!_agent.Warp(hit.position)) return false;
+
+            _isAgentOffNavMesh = false;
+
+            // Warp 가 비운 경로를 되살린다. 다시 걸지 못하면 BT 가 새 목적지를 정하도록 목적지를 비운다
+            if (_hasDestination && !_agent.SetDestination(_destination)) _hasDestination = false;
+
+            ResetStuckState();
+            return true;
         }
         #endregion
     }

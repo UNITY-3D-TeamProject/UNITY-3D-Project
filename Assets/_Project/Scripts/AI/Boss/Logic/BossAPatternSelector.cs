@@ -1,0 +1,506 @@
+using System;
+using System.Collections.Generic;
+
+namespace AI.Boss.Logic
+{
+    /// <summary>
+    /// 상황 스냅샷을 보고 A 의 다음 패턴과 표적 칸을 고른다. Unity 를 참조하지 않는다.
+    /// 순서: 단계별 열린 패턴 → 붕괴 제한 → 상황 규칙 1~5 → 기본 순서. A4 는 직전에 끝난 패턴이 A4 면 고르지 않는다.
+    /// 고른 뒤 B 의 착지 예약 칸(ArenaGrid.ReservedTile)을 표적에서 뺀다.
+    /// </summary>
+    public class BossAPatternSelector
+    {
+        #region Constants
+        private const int CENTER = ArenaGrid.CENTER;
+        #endregion
+
+        #region Private Fields
+        // 기본 순서의 자리. A1 자리는 최종에서 A1Double, A5Plus 자리는 +자·X자 무작위가 된다.
+        private static readonly EBossAPattern[] DefaultOrder =
+        {
+            EBossAPattern.A1,
+            EBossAPattern.A2,
+            EBossAPattern.A4,
+            EBossAPattern.A5Plus,
+            EBossAPattern.A6,
+        };
+
+        // +자 = 가운데 가로줄 + 가운데 세로줄, X자 = 두 대각선
+        private static readonly int[] PlusTiles = BuildPlusTiles();
+        private static readonly int[] CrossTiles = BuildCrossTiles();
+
+        // 상하좌우 방향. ArenaGrid.GetNeighbors4 와 같은 순서(row − 1, row + 1, col − 1, col + 1).
+        private static readonly int[] RowSteps = { -1, 1, 0, 0 };
+        private static readonly int[] ColSteps = { 0, 0, -1, 1 };
+
+        private readonly Random _random;
+        private readonly int _collapseLimit;
+        private readonly float _lineStaySeconds;
+        private readonly List<int> _candidates = new List<int>();
+
+        private int _defaultIndex;
+        private bool _isLastFinishedGrab;
+        private bool _hasLastSingleHand;
+        private bool _isLastSingleHandLeft;
+        #endregion
+
+        #region Constructors
+        /// <param name="random">무작위 선택에 쓸 난수</param>
+        /// <param name="collapseLimit">무너진 칸이 이 수 이상이면 칸을 무너뜨리는 패턴을 고르지 않는다. 기본은 한 줄(A2)이 무너진 직후에는 걸리지 않는 값</param>
+        /// <param name="lineStaySeconds">플레이어가 한 줄에 이 시간(초) 이상 머물면 그 줄에 A2</param>
+        public BossAPatternSelector(Random random, int collapseLimit = ArenaGrid.SIZE * 2 - 1, float lineStaySeconds = 3)
+        {
+            _random = random;
+            _collapseLimit = collapseLimit;
+            _lineStaySeconds = lineStaySeconds;
+        }
+        #endregion
+
+        #region Public Methods
+        public SBossAPatternChoice Choose(in SBossSituation situation)
+        {
+            EBossStage stage = situation.Stage;
+            if (stage == EBossStage.Defeated) return CreateRest();
+
+            int targetTile = situation.PlayerTile >= 0 ? situation.PlayerTile : CENTER;
+
+            if (situation.Grid.CollapsedCount >= _collapseLimit)
+            {
+                // A4 는 칸을 하나 무너뜨리므로 폴백으로 쓰지 않는다
+                if (stage == EBossStage.Final) return CreateClap(ArenaGrid.GetRow(targetTile));
+
+                return CreateRest();
+            }
+
+            if (TryChooseBySituation(in situation, targetTile, out SBossAPatternChoice choice))
+            {
+                return ExcludeReserved(situation.Grid, choice);
+            }
+
+            return ExcludeReserved(situation.Grid, ChooseByDefaultOrder(in situation, targetTile));
+        }
+
+        /// <summary>
+        /// 단계가 바뀔 때 기본 순서를 처음부터 다시 세고, A4 연속 금지·직전 손 기록을 지운다.
+        /// </summary>
+        public void ResetForStage()
+        {
+            _defaultIndex = 0;
+            _isLastFinishedGrab = false;
+            _hasLastSingleHand = false;
+        }
+
+        /// <summary>
+        /// 패턴이 끝까지 끝났을 때 부른다(A4 연속 금지 기록). 취소된 패턴은 부르지 않는다.
+        /// </summary>
+        public void NotifyPatternFinished(EBossAPattern pattern)
+        {
+            _isLastFinishedGrab = pattern == EBossAPattern.A4;
+        }
+        #endregion
+
+        #region Private Methods
+        private bool TryChooseBySituation(in SBossSituation situation, int targetTile, out SBossAPatternChoice choice)
+        {
+            EBossStage stage = situation.Stage;
+            ArenaGrid grid = situation.Grid;
+
+            // 규칙 1: B 가 돌진을 준비 중이면 돌진 경로 바로 옆 칸 (1페이즈)
+            if (situation.IsBChargePreparing && stage != EBossStage.Final)
+            {
+                int sideTile = PickChargeSideTile(grid, targetTile, situation.ChargeDirectionIsRow);
+                if (sideTile >= 0)
+                {
+                    choice = CreateSlam(stage, grid, sideTile);
+                    return true;
+                }
+            }
+
+            // 규칙 2: 플레이어가 점프 중이면 착지할 칸
+            if (situation.IsPlayerJumping)
+            {
+                int landingTile = situation.PlayerTile >= 0 ? situation.LandingTile : CENTER;
+                choice = CreateSlam(stage, grid, landingTile);
+                return true;
+            }
+
+            // 규칙 3 (모서리 칸이면 A4) 은 A4 가 직선 경로 그랩이 되면서 없앴다. 번호는 문서와 맞추려고 건너뛴다
+
+            // 규칙 4: 가운데 칸이면 A5 +자 (최종)
+            if (situation.PlayerTile == CENTER && stage == EBossStage.Final)
+            {
+                choice = CreateChess(true);
+                return true;
+            }
+
+            // 규칙 5: 한 줄에 오래 머물면 그 줄에 A2 (몰기보다 이 줄이 먼저)
+            if (CanUse(EBossAPattern.A2, stage) && TryGetStayLine(in situation, out bool isRowLine, out int line))
+            {
+                choice = CreateLineSlam(isRowLine, line);
+                return true;
+            }
+
+            choice = default;
+            return false;
+        }
+
+        private SBossAPatternChoice ChooseByDefaultOrder(in SBossSituation situation, int targetTile)
+        {
+            EBossStage stage = situation.Stage;
+
+            for (int i = 0; i < DefaultOrder.Length; i++)
+            {
+                int slot = (_defaultIndex + i) % DefaultOrder.Length;
+                EBossAPattern pattern = DefaultOrder[slot];
+                if ((pattern == EBossAPattern.A1) && (stage == EBossStage.Final)) pattern = EBossAPattern.A1Double;
+                if (!CanUse(pattern, stage)) continue;
+
+                _defaultIndex = (slot + 1) % DefaultOrder.Length;
+
+                switch (pattern)
+                {
+                    case EBossAPattern.A1:
+                    case EBossAPattern.A1Double:
+                        return CreateSlam(stage, situation.Grid, targetTile);
+                    case EBossAPattern.A2:
+                        return CreateDefaultLineSlam(situation.Grid, targetTile);
+                    case EBossAPattern.A4:
+                        return CreateGrab(targetTile);
+                    case EBossAPattern.A5Plus:
+                        return CreateChess(_random.Next(2) == 0);
+                    default:
+                        return CreateClap(ArenaGrid.GetRow(targetTile));
+                }
+            }
+
+            return CreateRest();
+        }
+
+        private bool CanUse(EBossAPattern pattern, EBossStage stage)
+        {
+            switch (pattern)
+            {
+                case EBossAPattern.A1:
+                    return stage == EBossStage.Stage1_1 || stage == EBossStage.Stage1_2;
+                case EBossAPattern.A2:
+                    return stage == EBossStage.Stage1_2 || stage == EBossStage.Final;
+                case EBossAPattern.A4:
+                    return (stage == EBossStage.Stage1_2 || stage == EBossStage.Final) && !_isLastFinishedGrab;
+                default:
+                    return stage == EBossStage.Final;
+            }
+        }
+
+        /// <summary>
+        /// 표적 칸에서 돌진 방향에 수직인 두 이웃 중 멀쩡한 칸. 둘 다면 무작위, 없으면 -1.
+        /// </summary>
+        private int PickChargeSideTile(ArenaGrid grid, int tile, bool isChargeAlongRow)
+        {
+            int row = ArenaGrid.GetRow(tile);
+            int col = ArenaGrid.GetCol(tile);
+
+            _candidates.Clear();
+            if (isChargeAlongRow)
+            {
+                AddIfSafe(grid, ArenaGrid.GetIndex(row, col - 1));
+                AddIfSafe(grid, ArenaGrid.GetIndex(row, col + 1));
+            }
+            else
+            {
+                AddIfSafe(grid, ArenaGrid.GetIndex(row - 1, col));
+                AddIfSafe(grid, ArenaGrid.GetIndex(row + 1, col));
+            }
+
+            return PickCandidate();
+        }
+
+        /// <summary>
+        /// 1페이즈는 한 손 A1. 최종은 A1Double 로 표적 칸 + 구멍 반대쪽 이웃(몰기) 또는 멀쩡한 이웃 중 무작위 하나.
+        /// 멀쩡한 이웃이 없으면 한 손으로 친다.
+        /// </summary>
+        private SBossAPatternChoice CreateSlam(EBossStage stage, ArenaGrid grid, int tile)
+        {
+            if (stage != EBossStage.Final) return CreateSingleHand(EBossAPattern.A1, tile);
+
+            if (!TryGetHerdTiles(grid, tile, out _, out int secondTile))
+            {
+                int row = ArenaGrid.GetRow(tile);
+                int col = ArenaGrid.GetCol(tile);
+
+                _candidates.Clear();
+                for (int d = 0; d < RowSteps.Length; d++)
+                {
+                    AddIfSafe(grid, ArenaGrid.GetIndex(row + RowSteps[d], col + ColSteps[d]));
+                }
+
+                secondTile = PickCandidate();
+            }
+
+            if (secondTile < 0) return CreateSingleHand(EBossAPattern.A1Double, tile);
+
+            AssignHands(tile, secondTile, out int left, out int right);
+            return new SBossAPatternChoice(EBossAPattern.A1Double, new[] { tile, secondTile }, left, right);
+        }
+
+        /// <summary>
+        /// 몰기가 걸리면 구멍과 나란한 줄, 아니면 표적 칸을 지나는 가로/세로줄 중 무작위.
+        /// </summary>
+        private SBossAPatternChoice CreateDefaultLineSlam(ArenaGrid grid, int tile)
+        {
+            int row = ArenaGrid.GetRow(tile);
+            int col = ArenaGrid.GetCol(tile);
+
+            bool isRowLine;
+            if (TryGetHerdTiles(grid, tile, out int holeTile, out _)) isRowLine = ArenaGrid.GetRow(holeTile) == row;
+            else isRowLine = _random.Next(2) == 0;
+
+            return CreateLineSlam(isRowLine, isRowLine ? row : col);
+        }
+
+        private SBossAPatternChoice CreateLineSlam(bool isRowLine, int line)
+        {
+            int[] tiles = GetLineTiles(isRowLine, line);
+            return new SBossAPatternChoice(EBossAPattern.A2, tiles, tiles[0], tiles[ArenaGrid.SIZE - 1], isRowLine, line);
+        }
+
+        private SBossAPatternChoice CreateGrab(int tile)
+        {
+            return CreateSingleHand(EBossAPattern.A4, tile);
+        }
+
+        private static SBossAPatternChoice CreateChess(bool isPlus)
+        {
+            int middle = ArenaGrid.SIZE / 2;
+            if (isPlus)
+            {
+                return new SBossAPatternChoice(
+                    EBossAPattern.A5Plus,
+                    (int[])PlusTiles.Clone(),
+                    ArenaGrid.GetIndex(middle, 0),
+                    ArenaGrid.GetIndex(middle, ArenaGrid.SIZE - 1));
+            }
+
+            return new SBossAPatternChoice(
+                EBossAPattern.A5Cross,
+                (int[])CrossTiles.Clone(),
+                ArenaGrid.GetIndex(0, 0),
+                ArenaGrid.GetIndex(0, ArenaGrid.SIZE - 1));
+        }
+
+        private static SBossAPatternChoice CreateClap(int row)
+        {
+            int[] tiles = GetLineTiles(true, row);
+            return new SBossAPatternChoice(EBossAPattern.A6, tiles, tiles[0], tiles[ArenaGrid.SIZE - 1], true, row);
+        }
+
+        private static SBossAPatternChoice CreateRest()
+        {
+            return new SBossAPatternChoice(EBossAPattern.Rest, Array.Empty<int>(), -1, -1);
+        }
+
+        /// <summary>
+        /// 한 손 패턴. col 0 → 왼손, col 2 → 오른손, col 1 → 직전에 한 손으로 쓰지 않은 손(기록이 없으면 왼손).
+        /// </summary>
+        private SBossAPatternChoice CreateSingleHand(EBossAPattern pattern, int tile)
+        {
+            int col = ArenaGrid.GetCol(tile);
+
+            bool isLeft;
+            if (col == 0) isLeft = true;
+            else if (col == ArenaGrid.SIZE - 1) isLeft = false;
+            else isLeft = !_hasLastSingleHand || !_isLastSingleHandLeft;
+
+            _hasLastSingleHand = true;
+            _isLastSingleHandLeft = isLeft;
+
+            return new SBossAPatternChoice(pattern, new[] { tile }, isLeft ? tile : -1, isLeft ? -1 : tile);
+        }
+
+        /// <summary>
+        /// 구멍 쪽 몰기. 표적 칸 상하좌우의 붕괴 칸(두 방향 이상이면 무작위 하나)의 반대쪽 이웃이 멀쩡하면 true.
+        /// </summary>
+        private bool TryGetHerdTiles(ArenaGrid grid, int tile, out int holeTile, out int oppositeTile)
+        {
+            int row = ArenaGrid.GetRow(tile);
+            int col = ArenaGrid.GetCol(tile);
+
+            _candidates.Clear();
+            for (int d = 0; d < RowSteps.Length; d++)
+            {
+                int neighbor = ArenaGrid.GetIndex(row + RowSteps[d], col + ColSteps[d]);
+                if (neighbor >= 0 && grid.GetState(neighbor) == ETileState.Collapsed) _candidates.Add(d);
+            }
+
+            holeTile = -1;
+            oppositeTile = -1;
+
+            int direction = PickCandidate();
+            if (direction < 0) return false;
+
+            int opposite = ArenaGrid.GetIndex(row - RowSteps[direction], col - ColSteps[direction]);
+            if (opposite < 0 || !grid.IsSafe(opposite)) return false;
+
+            holeTile = ArenaGrid.GetIndex(row + RowSteps[direction], col + ColSteps[direction]);
+            oppositeTile = opposite;
+            return true;
+        }
+
+        /// <summary>
+        /// 가로줄·세로줄 중 lineStaySeconds 이상 머문 줄. 둘 다면 더 오래 머문 줄, 같으면 무작위.
+        /// </summary>
+        private bool TryGetStayLine(in SBossSituation situation, out bool isRowLine, out int line)
+        {
+            bool isRowStay = situation.StayRow >= 0 && situation.RowStaySeconds >= _lineStaySeconds;
+            bool isColStay = situation.StayCol >= 0 && situation.ColStaySeconds >= _lineStaySeconds;
+
+            if (isRowStay && isColStay)
+            {
+                if (situation.RowStaySeconds > situation.ColStaySeconds) isRowLine = true;
+                else if (situation.RowStaySeconds < situation.ColStaySeconds) isRowLine = false;
+                else isRowLine = _random.Next(2) == 0;
+            }
+            else
+            {
+                isRowLine = isRowStay;
+            }
+
+            line = isRowLine ? situation.StayRow : situation.StayCol;
+            return isRowStay || isColStay;
+        }
+
+        /// <summary>
+        /// B 의 착지 예약 칸을 표적에서 뺀다. A1·A1Double 은 예약 칸 대신 가장 가까운 멀쩡한 칸을 치고,
+        /// 대신할 칸이 없거나 이미 표적이면 그 칸만 뺀다. 줄·모양 패턴은 예약 칸만 비운다.
+        /// 빠진 칸을 치던 손은 남은 칸 중 가장 가까운 칸(다른 손이 치지 않는 칸)으로 옮기고, 그런 칸이 없으면 쓰지 않는다.
+        /// A4 는 칸을 손 고르기에만 쓰고(끌려올 칸은 BossAGrab 이 예약 칸을 건너뛰어 고른다),
+        /// A6 은 칸 순서로 손 자리를 정하며 최종(B 없음) 전용이라 그대로 둔다.
+        /// </summary>
+        private static SBossAPatternChoice ExcludeReserved(ArenaGrid grid, SBossAPatternChoice choice)
+        {
+            int reserved = grid.ReservedTile;
+            bool isUntouched = (choice.Pattern == EBossAPattern.A4) || (choice.Pattern == EBossAPattern.A6);
+            if ((reserved < 0) || isUntouched || (choice.TileCount == 0)) return choice;
+
+            int reservedIndex = Array.IndexOf(choice.Tiles, reserved);
+            if (reservedIndex < 0) return choice;
+
+            List<int> tiles = new List<int>(choice.Tiles);
+            bool isSingleTileSlam = (choice.Pattern == EBossAPattern.A1) || (choice.Pattern == EBossAPattern.A1Double);
+            int replacement = -1;
+            if (isSingleTileSlam)
+            {
+                grid.GetTileCenter(reserved, out float x, out float z);
+                replacement = grid.FindNearestSafe(x, z);
+                if (tiles.Contains(replacement)) replacement = -1;
+            }
+
+            if (replacement >= 0) tiles[reservedIndex] = replacement;
+            else tiles.RemoveAt(reservedIndex);
+
+            if (tiles.Count == 0) return CreateRest();
+
+            int left = choice.HandTileLeft;
+            int right = choice.HandTileRight;
+            if (left == reserved) left = (replacement >= 0) ? replacement : FindClosestTile(tiles, reserved, right);
+            if (right == reserved) right = (replacement >= 0) ? replacement : FindClosestTile(tiles, reserved, left);
+
+            return new SBossAPatternChoice(
+                choice.Pattern,
+                tiles.ToArray(),
+                left,
+                right,
+                choice.IsRowLine,
+                choice.LineIndex);
+        }
+
+        /// <returns>후보 칸 중 기준 칸에 가장 가까운 칸(제외 칸 빼고). 없으면 -1</returns>
+        private static int FindClosestTile(List<int> tiles, int origin, int excluded)
+        {
+            int closest = -1;
+            int closestSqrDistance = int.MaxValue;
+            foreach (int tile in tiles)
+            {
+                if (tile == excluded) continue;
+
+                int dRow = ArenaGrid.GetRow(tile) - ArenaGrid.GetRow(origin);
+                int dCol = ArenaGrid.GetCol(tile) - ArenaGrid.GetCol(origin);
+                int sqrDistance = dRow * dRow + dCol * dCol;
+                if (sqrDistance >= closestSqrDistance) continue;
+
+                closest = tile;
+                closestSqrDistance = sqrDistance;
+            }
+
+            return closest;
+        }
+
+        private void AddIfSafe(ArenaGrid grid, int tile)
+        {
+            if (tile >= 0 && grid.IsSafe(tile)) _candidates.Add(tile);
+        }
+
+        /// <returns>후보 중 하나. 둘 이상이면 무작위, 없으면 -1</returns>
+        private int PickCandidate()
+        {
+            if (_candidates.Count == 0) return -1;
+            if (_candidates.Count == 1) return _candidates[0];
+
+            return _candidates[_random.Next(_candidates.Count)];
+        }
+
+        private static int[] BuildPlusTiles()
+        {
+            int middle = ArenaGrid.SIZE / 2;
+            List<int> tiles = new List<int>();
+            for (int i = 0; i < ArenaGrid.SIZE; i++)
+            {
+                tiles.Add(ArenaGrid.GetIndex(middle, i));
+                if (i != middle) tiles.Add(ArenaGrid.GetIndex(i, middle));
+            }
+
+            tiles.Sort();
+            return tiles.ToArray();
+        }
+
+        private static int[] BuildCrossTiles()
+        {
+            List<int> tiles = new List<int>();
+            for (int i = 0; i < ArenaGrid.SIZE; i++)
+            {
+                tiles.Add(ArenaGrid.GetIndex(i, i));
+                if (i != ArenaGrid.SIZE - 1 - i) tiles.Add(ArenaGrid.GetIndex(i, ArenaGrid.SIZE - 1 - i));
+            }
+
+            tiles.Sort();
+            return tiles.ToArray();
+        }
+
+        /// <summary>
+        /// 줄의 모든 칸. 가로줄은 col 0 → 끝, 세로줄은 row 0 → 끝 순이다(첫 칸 = 왼손, 끝 칸 = 오른손).
+        /// </summary>
+        private static int[] GetLineTiles(bool isRowLine, int line)
+        {
+            int[] tiles = new int[ArenaGrid.SIZE];
+            for (int i = 0; i < ArenaGrid.SIZE; i++)
+            {
+                tiles[i] = isRowLine ? ArenaGrid.GetIndex(line, i) : ArenaGrid.GetIndex(i, line);
+            }
+
+            return tiles;
+        }
+
+        /// <summary>
+        /// 두 칸의 손 배정. col 이 작은 칸 = 왼손, 같은 col 이면 row 가 작은 칸 = 왼손.
+        /// </summary>
+        private static void AssignHands(int a, int b, out int left, out int right)
+        {
+            int colA = ArenaGrid.GetCol(a);
+            int colB = ArenaGrid.GetCol(b);
+            bool isALeft = colA < colB || (colA == colB && ArenaGrid.GetRow(a) < ArenaGrid.GetRow(b));
+
+            left = isALeft ? a : b;
+            right = isALeft ? b : a;
+        }
+        #endregion
+    }
+}

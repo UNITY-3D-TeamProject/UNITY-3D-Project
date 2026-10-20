@@ -36,6 +36,9 @@ namespace Map.Gimmicks
         #endregion
 
         #region Properties
+        public bool IsOn => _isOn;
+        public float Remaining => Mathf.Max(0f, _remaining);
+
         /// <summary>켜지는 순간 실행되는 이벤트.</summary>
         public UnityEvent OnPhaseOn => _onPhaseOn;
 

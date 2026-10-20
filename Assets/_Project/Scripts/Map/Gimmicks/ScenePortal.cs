@@ -15,6 +15,9 @@ namespace Map.Gimmicks
         [Tooltip("이동할 씬")]
         [SerializeField] private ESceneType _destination;
 
+        [Tooltip("켜면 Unlock 호출 전까지 씬 전환을 막습니다.")]
+        [SerializeField] private bool _isLocked;
+
         [Header("Return")]
         [Tooltip("켜면 목적지 씬에서 이 씬으로 돌아왔을 때 플레이어가 이 포탈 앞에서 시작한다. (로비의 앱 입구용. 스테이지의 출구 포탈은 꺼 둔다)")]
         [SerializeField] private bool _isReturnPoint;
@@ -27,6 +30,8 @@ namespace Map.Gimmicks
         /// <summary>이 포탈이 보내는 씬.</summary>
         public ESceneType Destination => _destination;
 
+        public bool IsLocked => _isLocked;
+
         /// <summary>목적지 씬에서 돌아온 플레이어가 이 포탈 앞에서 시작하는지 여부.</summary>
         public bool IsReturnPoint => _isReturnPoint;
 
@@ -37,9 +42,17 @@ namespace Map.Gimmicks
         #region Unity Lifecycle
         private void OnTriggerEnter(Collider other)
         {
-            if (!GimmickUtility.TryGetPlayer(other, out _)) return;
+            if (_isLocked || !GimmickUtility.TryGetPlayer(other, out _)) return;
 
             SceneLoader.TryLoad(_destination);
+        }
+        #endregion
+
+        #region Public Methods
+        /// <summary>선행 과제가 끝났을 때 포탈을 엽니다.</summary>
+        public void Unlock()
+        {
+            _isLocked = false;
         }
         #endregion
     }

@@ -138,6 +138,7 @@ namespace Mediator.SubMediators
             _isAimLocked = true;
             if (_targetCamera == null) return;
 
+            _targetCamera.SetRollFollow(true);
             ApplyAim(false);
         }
 
@@ -149,7 +150,77 @@ namespace Mediator.SubMediators
             _isAimLocked = false;
             if (_targetCamera == null) return;
 
+            _targetCamera.SetRollFollow(false);
             ApplyAim(_isAimInputHeld);
+        }
+
+        /// <summary>
+        /// 탑승 상태 변경을 알린다. 탑승 중에는 시야각을 넓히고 화면 가장자리를 흐리게 한다.
+        /// </summary>
+        /// <param name="isRiding">탑승 중이면 true</param>
+        public void NotifyRidingChanged(bool isRiding)
+        {
+            if (_targetCamera == null) return;
+
+            _targetCamera.SetRiding(isRiding);
+        }
+
+        /// <summary>
+        /// 구르기·탑승의 실제 상태를 전환 없이 즉시 카메라에 반영한다. 비활성화·사망·재사용 시 이벤트를 놓쳐도 잔류하지 않게 한다.
+        /// </summary>
+        /// <param name="isRolling">구르는 중이면 true</param>
+        /// <param name="isRiding">탑승 중이면 true</param>
+        public void SyncSpeedFeedback(bool isRolling, bool isRiding)
+        {
+            if (_targetCamera == null) return;
+
+            _targetCamera.SyncSpeedFeedback(isRolling, isRiding);
+        }
+
+        /// <summary>구르기 카메라 설정을 읽어 올 함수를 카메라에 등록한다.</summary>
+        /// <param name="getter">구르기 카메라 설정 제공 함수</param>
+        public void SetGetRollFollowSettings(Func<SRollFollowSettings> getter)
+        {
+            if (_targetCamera == null) return;
+
+            _targetCamera.SetGetRollFollowSettings(getter);
+        }
+
+        /// <summary>카메라에 등록된 구르기 설정 제공 함수를 해제한다.</summary>
+        public void ClearGetRollFollowSettings()
+        {
+            if (_targetCamera == null) return;
+
+            _targetCamera.ClearGetRollFollowSettings();
+        }
+
+        /// <summary>탑승 시야·블러 설정을 읽어 올 함수를 카메라에 등록한다.</summary>
+        /// <param name="getter">탑승 시야·블러 설정 제공 함수</param>
+        public void SetGetRidingViewSettings(Func<SRidingViewSettings> getter)
+        {
+            if (_targetCamera == null) return;
+
+            _targetCamera.SetGetRidingViewSettings(getter);
+        }
+
+        /// <summary>카메라에 등록된 탑승 설정 제공 함수를 해제한다.</summary>
+        public void ClearGetRidingViewSettings()
+        {
+            if (_targetCamera == null) return;
+
+            _targetCamera.ClearGetRidingViewSettings();
+        }
+
+        /// <summary>
+        /// 사격을 알린다. 카메라 쉐이크와 반동을 재생한다.
+        /// </summary>
+        /// <param name="position">총알 생성 위치 (사용하지 않음)</param>
+        /// <param name="isCharged">차지샷이면 true</param>
+        public void NotifyFire(Vector3 position, bool isCharged)
+        {
+            if (_targetCamera == null) return;
+
+            _targetCamera.PlayFireFeedback(isCharged);
         }
         #endregion
 
