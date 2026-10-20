@@ -34,7 +34,7 @@ namespace UI
         // 대화 진행 (대화 SO를 한 줄씩 펫 안내 패널에 표시)
         [SerializeField] private DialoguePresenter _dialoguePresenter;
         [Tooltip("PlayCutscene(번호)로 재생할 컷씬 목록")]
-        [SerializeField] private SOCutsceneTable _cutsceneTable;
+        [SerializeField] private SODialogueTable _cutsceneTable;
         #endregion
 
         #region Private Fields
@@ -143,13 +143,13 @@ namespace UI
         public void HidePetGuide() => _petGuidePresenter?.Hide();
 
         /// <summary>
-        /// 번호에 맞는 컷씬을 지금 플레이어 자리에서 재생한다. 번호와 대화는 SOCutsceneTable에서 정한다.
+        /// 번호에 맞는 컷씬을 지금 플레이어 자리에서 재생한다. 번호와 대화는 SODialogueTable에서 정한다.
         /// 연출(펫 세우기·카메라)은 씬의 DialogueManager가 맡는다. 본 기록은 남기지 않으므로 부를 때마다 재생된다.
         /// 이미 대화 중이면 무시한다. 발판(TriggerPlate) 같은 UnityEvent에서도 연결할 수 있도록 반환값이 없다.
         /// </summary>
         public void PlayCutscene(int id)
         {
-            if ((_cutsceneTable == null) || !_cutsceneTable.TryGetSequence(id, out SODialogueSequence sequence))
+            if ((_cutsceneTable == null) || !_cutsceneTable.TryGetSequence(id, out SODialogue sequence))
             {
                 Debug.LogWarning($"[UIManager] {id}번 컷씬이 테이블에 없습니다.", this);
                 return;
@@ -172,7 +172,7 @@ namespace UI
         /// <param name="onLineChanged">줄이 바뀔 때 그 줄(말하는 사람, 카메라 번호 등)을 받는다</param>
         /// <param name="onFinished">대화가 끝나 조작이 돌아온 뒤 호출된다</param>
         /// <returns>시작했으면 true. 이미 대화 중이거나 설정창이 열려 있거나 플레이어가 없으면 false</returns>
-        public bool PlayDialogue(SODialogueSequence sequence, Action<SDialogueLine> onLineChanged, Action onFinished)
+        public bool PlayDialogue(SODialogue sequence, Action<SDialogueLine> onLineChanged, Action onFinished)
         {
             if ((_dialoguePresenter == null) ||
                 (_dialoguePresenter.IsDialoguePlaying) ||

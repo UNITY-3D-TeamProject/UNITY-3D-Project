@@ -5,14 +5,14 @@ namespace UI.Cutscene
 {
     /// <summary>
     /// 스테이지가 시작되면 지정한 번호의 컷씬을 한 번 재생한다.
-    /// 번호와 대화는 SOCutsceneTable, 연출은 DialogueManager가 맡는다.
+    /// 번호와 대화는 SODialogueTable, 연출은 DialogueManager가 맡는다.
     /// </summary>
     public class StageIntroDialogue : MonoBehaviour
     {
         #region Serialized Fields
         [Header("References")]
         [SerializeField] private StageManager _stageManager;
-        [Tooltip("스테이지 시작 때 재생할 컷씬 번호 (SOCutsceneTable의 Id)")]
+        [Tooltip("스테이지 시작 때 재생할 컷씬 번호 (SODialogueTable의 Id)")]
         [SerializeField] private int _cutsceneId = 1;
         #endregion
 

@@ -84,7 +84,7 @@ namespace UI.Cutscene
         /// <param name="sequence">재생할 대화</param>
         /// <param name="onFinished">대화가 끝나 연출을 정리한 뒤 호출된다. 없으면 null</param>
         /// <returns>시작했으면 true. UIManager가 없거나 이미 대화 중이면 false</returns>
-        public bool Play(SODialogueSequence sequence, Action onFinished)
+        public bool Play(SODialogue sequence, Action onFinished)
         {
             UIManager uiManager = UIManager.Instance;
 

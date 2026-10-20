@@ -33,7 +33,7 @@ namespace UI.Dialogue
         [SerializeField] private string _lastLineHint = "Space ▶ 닫기";
 
         // 지금 재생 중인 대화. 대화 중이 아니면 null이다.
-        private SODialogueSequence _currentDialogue;
+        private SODialogue _currentDialogue;
         // 지금 보여 주고 있는 줄 번호 (0부터)
         private int _currentLineIndex;
 
@@ -46,7 +46,7 @@ namespace UI.Dialogue
         public event Action OnDialogueEnded;
 
         // 대화를 처음 줄부터 띄운다. 패널이 없거나, 빈 대화거나, 이미 대화 중이면 시작하지 않고 false를 돌려준다.
-        public bool StartDialogue(SODialogueSequence dialogue)
+        public bool StartDialogue(SODialogue dialogue)
         {
             if ((_petGuideView == null) ||
                 (dialogue == null) ||
