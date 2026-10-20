@@ -276,6 +276,7 @@ namespace AI.Boss.Fight
                     break;
                 case EBossStage.Final:
                     _bossA.SetStage(stage);
+                    _arena.SetStage(stage);
                     _bossA.SetDamageMode(EBossDamageMode.All);
                     break;
             }
