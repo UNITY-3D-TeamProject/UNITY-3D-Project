@@ -7,6 +7,8 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-20** — 보스 B 예고를 보스 A(빨강)와 구분: 전용 `M_BossBTelegraph`(파랑)·`BossBCircleTelegraph`/`BossBLineTelegraph` 프리팹, 돌진에 직선 예고 추가, 도약 원·돌진 직선 페이드 인(새 `BossBTelegraph`, intent-049). 리컴파일 통과, Play 에서 배치·알파 수치 확인. **BT 정상 발동 경로·육안 확인·게이트 루프 미실행, 커밋 전**: [B 예고 색](./2026-10-20/boss-b-telegraph-color.md)
+- **2026-10-20** — 보스 A A4 를 블리츠크랭크 Q 식 그랩으로 재설계(intent-048): 한 손이 직선 예고 후 날아가 플레이어를 잡아 끌어당기고 반대 손이 1칸 내려침. `BossAGrab` 재작성·`BossHand.Fly`·`IBossArena.ShowLine`·선택기 규칙 3 제거. 리컴파일 통과, Play 에서 포획→붕괴 흐름 확인. **육안 확인·빗나감 경로·게이트 루프 미실행, 커밋 전, 테스트 씬 `_linePrefab` 연결은 저장 안 함**: [A4 그랩](./2026-10-20/boss-a-a4-hook-grab.md)
 - **2026-10-20** — 보스 B 도약이 구멍·예고 칸 위를 지나다 공중에서 멈추는 문제 수정: BT 조건 `BossBIsOnTelegraphedTileCondition`이 체공 중 지나는 칸을 발밑으로 보고 공격 가지를 끊어 도약을 `Stop` 시키던 것을, 체공 중(`BossBController.IsBodyInFlight`)에는 거짓으로 수정. 리컴파일 통과, 가운데 칸 구멍 위를 건너 목표 칸 중심에 착지 확인. **BT 안에서의 육안 확인·게이트 루프 미실행, 커밋 전**: [도약 BT 중단](./2026-10-20/boss-b-leap-bt-abort.md)
 - **2026-10-20** — 보스 B 도약 예고 원 위치 수정: 보스 A가 무너뜨린 칸에 원이 놓였다가 점프 직전에 12 m 옆으로 옮겨 가던 문제를, 시작 때·예고 중 매 프레임 안전 칸으로 정하도록 `BossBLeap` 수정. 리컴파일 통과, Play에서 착지 오차 0.00 m 확인. **육안 확인·게이트 루프 미실행, 커밋 전**: [도약 원 위치](./2026-10-20/boss-b-leap-circle-retarget.md)
 - **2026-10-20** — 보스 A 칸 예고가 중앙에서 스케일·알파로 채워지도록 변경(채움 시간 = 패턴 예고 시간, `IBossArena.SetTelegraph`에 `fillSeconds` 추가). 리컴파일 통과, **Play 육안 확인·게이트 루프 미실행, 커밋 전**: [예고 중앙 채움](./2026-10-20/boss-a-telegraph-fill-in.md)

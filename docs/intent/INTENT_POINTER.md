@@ -4,6 +4,8 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[AI / Boss / BossB]** 보스 B 예고가 보스 A 와 같은 빨강 머터리얼이라 헷갈리고, 돌진은 바닥 예고가 없으며 도약 원은 켜지자마자 가득 참. B 전용 머터리얼(파랑) + 돌진 직선 예고 + 페이드 인 → [문서](./intent-049-bossb-telegraph-color.md)
+- **[AI / Boss / BossA]** 보스 A 의 A4 가 칸 위 내려찍기 + 판 밖으로 던지기라 의도(블리츠크랭크 Q 식 그랩)와 반대. 한 손이 직선으로 날아가 잡아 보스 쪽으로 끌어당기고 반대 손이 1칸 내려치는 방식으로 재설계. 결정 완료·코드 구현·컴파일 통과·Play 흐름 확인, 육안 확인과 게이트 루프 남음 → [문서](./intent-048-bossa-a4-hook-grab.md)
 - **[AI / Boss / Arena]** 보스 A 칸 예고가 켜지자마자 가득 차 있어 발동 시점을 읽을 수 없음. 중앙에서 스케일·알파가 0→1로 채워지게(채움 시간 = 패턴 예고 시간), 가득 차면 손이 내려쳐 붕괴. 스크립트만 수정, 정사각형 방식 → [문서](./intent-047-bossa-telegraph-fill-in.md)
 - **[AI / Boss / Arena]** 보스 아레나를 3×3(칸 20 m)에서 5×5(전체 60 m 유지, 칸 12 m)로 확장. `ArenaGrid.SIZE` 5 + 테스트 씬 타일 25개 배치. 보스 A 패턴의 3×3 전제(가운데 칸·모서리·세 칸 줄)는 열린 질문 → [문서](./intent-046-boss-arena-4x4.md)
 - **[AI / Boss / Animation]** 보스 B 는 기본 5종 모션만 장착돼 스킬마다 다른 모션이 없음(Combo 만 Attack 트리거). 보스 B 전용 컨트롤러 + 스킬별 매핑, Charge·Evade 는 사용자 제작 클립, Combo·Leap 은 기존 Tanker Robot 클립. 열린 질문 3건 → [문서](./intent-045-bossb-skill-animations.md)
