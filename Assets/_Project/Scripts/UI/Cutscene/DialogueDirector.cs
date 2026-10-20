@@ -4,10 +4,9 @@ using Unity.Cinemachine;
 using Core;
 using Facade.Player;
 using Pet;
-using UI;
 using UI.Dialogue;
 
-namespace Cutscene
+namespace UI.Cutscene
 {
     /// <summary>
     /// 대화 연출을 맡는 씬 단위 컴포넌트. 씬에 하나 두고 DialogueCutscene들이 같이 쓴다.

@@ -1,7 +1,7 @@
 using UnityEngine;
 using Core.Stage;
 
-namespace Cutscene
+namespace UI.Cutscene
 {
     /// <summary>
     /// 스테이지가 시작되면 연결한 대화 컷씬을 재생한다.
