@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Core;
 using Facade.Player;
+using UI.Cutscene;
 using UI.Dialogue;
 using UI.PetGuide;
 using UI.PlayerHud;
@@ -22,11 +23,12 @@ namespace UI
         [SerializeField] private SettingsPresenter _settingsPresenter;
         [SerializeField] private PetGuidePresenter _petGuidePresenter;
         [SerializeField] private DialoguePresenter _dialoguePresenter;
+        [Tooltip("PlayCutscene(번호)로 재생할 컷씬 목록")]
+        [SerializeField] private SOCutsceneTable _cutsceneTable;
 
-        private SettingsPresenter _activeSettingsPresenter;
-        // 대화를 시작한 쪽에 돌려줄 콜백. 대화 중일 때만 값이 있다.
-        private Action<SDialogueLine> _dialogueLineChanged;
-        private Action _dialogueFinished;
+        // 이벤트 구독용
+        private GameManager _gameManager;
+
         // 현재 플레이어의 PlayerFacade. 설정창 입력 이벤트와 입력 맵 전환에 사용한다.
         private PlayerFacade _playerFacade;
         // 현재 플레이어의 PlayerInput. 대화 입력 맵(Dialogue)은 PlayerFacade를 거치지 않고 여기서 직접 전환·구독한다.
@@ -34,8 +36,11 @@ namespace UI
         private InputAction _advanceDialogueAction;
         private InputAction _openSettingsInDialogueAction;
 
-        // 이벤트 구독용
-        private GameManager _gameManager;
+        private SettingsPresenter _activeSettingsPresenter;
+
+        // 대화를 시작한 쪽에 돌려줄 콜백. 대화 중일 때만 값이 있다.
+        private Action<SDialogueLine> _dialogueLineChanged;
+        private Action _dialogueFinished;
 
         // 지금 씬의 UIManager. 배치하지 않은 씬이거나 Awake 전이면 null이다.
         // DontDestroyOnLoad를 쓰지 않으므로 공용 Singleton<T>을 상속하지 않는다.
@@ -50,12 +55,6 @@ namespace UI
                 Debug.LogError("[UIManager] 한 씬에 UIManager가 두 개 있습니다. 나중에 Awake된 쪽이 Instance가 됩니다.", this);
 
             Instance = this;
-        }
-
-        private void OnDestroy()
-        {
-            if (Instance == this)
-                Instance = null;
         }
 
         private void OnEnable()
@@ -86,6 +85,7 @@ namespace UI
             //    아직 플레이어가 없다면 null이 전달된다.
             HandlePlayerSpawned(_gameManager.CurrentPlayerFacade);
         }
+
         private void OnDisable()
         {
             CloseSettings();
@@ -107,11 +107,10 @@ namespace UI
             }
         }
 
-        private void HandlePlayerSpawned(PlayerFacade playerFacade)
+        private void OnDestroy()
         {
-            // 전달받은 플레이어를 HUD에 연결한다.
-            _playerHudPresenter.SetPlayer(playerFacade);
-            BindPlayerInput(playerFacade);
+            if (Instance == this)
+                Instance = null;
         }
 
         public void ShowPlayerHud() => _playerHudPresenter.Show();
@@ -120,6 +119,28 @@ namespace UI
         // 번호에 맞는 펫 안내 문구를 띄운다. 번호와 문구는 SOPetGuideTable에서 정한다.
         public void ShowPetGuide(int id) => _petGuidePresenter?.Show(id);
         public void HidePetGuide() => _petGuidePresenter?.Hide();
+
+        /// <summary>
+        /// 번호에 맞는 컷씬을 지금 플레이어 자리에서 재생한다. 번호와 대화는 SOCutsceneTable에서 정한다.
+        /// 연출(펫 세우기·카메라)은 씬의 DialogueDirector가 맡는다. 본 기록은 남기지 않으므로 부를 때마다 재생된다.
+        /// 이미 대화 중이면 무시한다. 발판(TriggerPlate) 같은 UnityEvent에서도 연결할 수 있도록 반환값이 없다.
+        /// </summary>
+        public void PlayCutscene(int id)
+        {
+            if ((_cutsceneTable == null) || !_cutsceneTable.TryGetSequence(id, out SODialogueSequence sequence))
+            {
+                Debug.LogWarning($"[UIManager] {id}번 컷씬이 테이블에 없습니다.", this);
+                return;
+            }
+
+            if (DialogueDirector.Instance == null)
+            {
+                Debug.LogWarning("[UIManager] 씬에 DialogueDirector가 없어 컷씬을 재생하지 못했습니다.", this);
+                return;
+            }
+
+            DialogueDirector.Instance.Play(sequence, null);
+        }
 
         /// <summary>
         /// 대화를 시작한다. 끝날 때까지 Dialogue 입력 맵으로 바꿔 플레이어 조작을 막는다.
@@ -162,6 +183,59 @@ namespace UI
         {
             if (IsDialoguePlaying)
                 _dialoguePresenter.StopDialogue();
+        }
+
+        public void OpenSettings()
+        {
+            if (_activeSettingsPresenter != null ||
+                _settingsPresenter == null ||
+                _playerFacade == null ||
+                _gameManager == null)
+                return;
+
+            if (_gameManager.CurrentState != GameManager.GameState.Playing)
+                return;
+
+            // 현재 UI 지정 및 닫기 요청 연결.
+            _activeSettingsPresenter = _settingsPresenter;
+            _activeSettingsPresenter.CloseRequested += CloseSettings;
+
+            // 게임 상태와 입력 전환.
+            _gameManager.PauseGame();
+            _playerFacade.SwitchToUIInput();
+
+            _activeSettingsPresenter.Open();
+        }
+
+        public void CloseSettings()
+        {
+            if (_activeSettingsPresenter == null) return;
+
+            SettingsPresenter presenter = _activeSettingsPresenter;
+            _activeSettingsPresenter = null;
+
+            // 닫기 요청 해제 후 설정창 닫기.
+            presenter.CloseRequested -= CloseSettings;
+            presenter.Close();
+
+            // 대화 중에 연 설정창이면 대화 입력으로 돌아간다.
+            if (IsDialoguePlaying)
+                SwitchToDialogueInput();
+            else if (_playerFacade != null)
+                _playerFacade.SwitchToPlayerInput();
+
+            if (_gameManager != null &&
+                _gameManager.CurrentState == GameManager.GameState.Pause)
+            {
+                _gameManager.ResumeGame();
+            }
+        }
+
+        private void HandlePlayerSpawned(PlayerFacade playerFacade)
+        {
+            // 전달받은 플레이어를 HUD에 연결한다.
+            _playerHudPresenter.SetPlayer(playerFacade);
+            BindPlayerInput(playerFacade);
         }
 
         private void HandleDialogueLineChanged(SDialogueLine line)
@@ -248,53 +322,6 @@ namespace UI
             _playerInput = null;
             _advanceDialogueAction = null;
             _openSettingsInDialogueAction = null;
-        }
-
-        public void OpenSettings()
-        {
-            if (_activeSettingsPresenter != null ||
-                _settingsPresenter == null ||
-                _playerFacade == null ||
-                _gameManager == null)
-                return;
-
-            if (_gameManager.CurrentState != GameManager.GameState.Playing)
-                return;
-
-            // 현재 UI 지정 및 닫기 요청 연결.
-            _activeSettingsPresenter = _settingsPresenter;
-            _activeSettingsPresenter.CloseRequested += CloseSettings;
-
-            // 게임 상태와 입력 전환.
-            _gameManager.PauseGame();
-            _playerFacade.SwitchToUIInput();
-
-            _activeSettingsPresenter.Open();
-        }
-
-        public void CloseSettings()
-        {
-            if (_activeSettingsPresenter == null) return;
-
-            SettingsPresenter presenter = _activeSettingsPresenter;
-            _activeSettingsPresenter = null;
-
-            // 닫기 요청 해제 후 설정창 닫기.
-            presenter.CloseRequested -= CloseSettings;
-            presenter.Close();
-
-            // 대화 중에 연 설정창이면 대화 입력으로 돌아간다.
-            if (IsDialoguePlaying)
-                SwitchToDialogueInput();
-            else if (_playerFacade != null)
-                _playerFacade.SwitchToPlayerInput();
-
-
-            if (_gameManager != null &&
-                _gameManager.CurrentState == GameManager.GameState.Pause)
-            {
-                _gameManager.ResumeGame();
-            }
         }
 
     }

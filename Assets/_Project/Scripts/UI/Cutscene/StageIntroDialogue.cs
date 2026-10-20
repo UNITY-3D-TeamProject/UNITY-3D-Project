@@ -4,16 +4,16 @@ using Core.Stage;
 namespace UI.Cutscene
 {
     /// <summary>
-    /// 스테이지가 시작되면 연결한 대화 컷씬을 재생한다.
-    /// 연출과 본 기록은 DialogueCutscene·DialogueDirector가 맡는다.
+    /// 스테이지가 시작되면 지정한 번호의 컷씬을 한 번 재생한다.
+    /// 번호와 대화는 SOCutsceneTable, 연출은 DialogueDirector가 맡는다.
     /// </summary>
     public class StageIntroDialogue : MonoBehaviour
     {
         #region Serialized Fields
         [Header("References")]
         [SerializeField] private StageManager _stageManager;
-        [Tooltip("스테이지 시작 때 재생할 대화 컷씬")]
-        [SerializeField] private DialogueCutscene _cutscene;
+        [Tooltip("스테이지 시작 때 재생할 컷씬 번호 (SOCutsceneTable의 Id)")]
+        [SerializeField] private int _cutsceneId = 1;
         #endregion
 
         #region Private Fields
@@ -24,7 +24,6 @@ namespace UI.Cutscene
         private void Awake()
         {
             Debug.Assert(_stageManager != null, $"[{name}] StageManager가 연결되지 않았습니다.");
-            Debug.Assert(_cutscene != null, $"[{name}] DialogueCutscene이 연결되지 않았습니다.");
         }
 
         private void OnEnable()
@@ -50,10 +49,10 @@ namespace UI.Cutscene
         #region Private Methods
         private void TryPlay()
         {
-            if (_hasPlayed || (_cutscene == null)) return;
+            if (_hasPlayed || (UIManager.Instance == null)) return;
 
             _hasPlayed = true;
-            _cutscene.Play();
+            UIManager.Instance.PlayCutscene(_cutsceneId);
         }
         #endregion
     }
