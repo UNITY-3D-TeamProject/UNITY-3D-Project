@@ -95,6 +95,11 @@
 - 확인: 컴파일 0에러. TestScene Play에서 설정창 열기 → UI 맵·Pause, 닫기 → Player·Playing, `PlayDialogue(2)` → Dialogue 맵, 대화 중 ESC → UI 맵, 닫기 → Dialogue 맵, 다음 줄 → 1·2·3 증가, 끝나면 Player 맵·상호작용 안내 차단 해제. 에디터가 백그라운드라 simulate_key가 전달되지 않아 PlayerFacade·UIInputHandler의 입력 콜백을 리플렉션으로 직접 호출해 확인했다(실제 키 입력은 미확인).
 - 커밋 안 함. intent-048은 resolved로 clear/에 이동.
 
+## 추가 반영: UI/Cutscene 폴더를 UI/Dialogue로 합침
+- 결정(사용자): 두 폴더 모두 대화 기능이고 `Cutscene`은 이름 정리 전(SOCutsceneTable·DialogueDirector·PlayCutscene)의 흔적이라 `UI/Dialogue` 하나로 합친다.
+- `DialogueManager.cs`·`SODialogueTable.cs`를 .meta와 함께 `UI/Dialogue/`로 이동(GUID 유지), 네임스페이스 `UI.Cutscene` → `UI.Dialogue`, 같은 네임스페이스가 되어 필요 없어진 `using UI.Dialogue` 삭제. `UIManager`의 `using UI.Cutscene` 삭제. 빈 `Cutscene` 폴더·.meta 삭제.
+- 확인: 컴파일 0에러, `UI.Cutscene` 타입 0개, Canvas_InGame의 DialogueManager·UIManager `_cutsceneTable` → `SODialogueTable.asset` 연결 유지, TestScene Play에서 `PlayDialogue(2)` 재생 → 끝까지 넘기면 Player 맵 복귀.
+
 ## 현재 상태 및 이슈
 - TestScene(Assets/Test, Git 미포함) 디스크 파일에 삭제된 `Cutscene.DialogueCutscene.Play`를 부르는 TriggerPlate가 남아 있다(Missing 호출). 에디터에서 저장 안 된 변경일 수 있음.
 
