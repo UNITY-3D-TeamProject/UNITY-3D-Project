@@ -108,7 +108,17 @@
 - `Canvas_InGame.prefab`: UIManager `_dialogueDirector` 연결, 오브젝트 이름 `DialogueManager` → `DialogueDirector`(diff 2줄). 주석의 DialogueManager 언급(DialoguePresenter, SODialogue)도 변경.
 - 확인: 컴파일 0에러. TestScene Play에서 재생·대화 중 설정창·줄마다 카메라 교대·끝나면 Player 맵/카메라 끔/펫 원래 자리, StopDialogue 정리, 없는 번호 경고, Director 미연결 시 경고만 하고 재생 안 함(콜백 직접 호출로 확인).
 
+## 추가 반영: 대화 중 게임 멈춤 (intent-050)
+- 문제: 대화 중에도 적·투사체·물리·3D 효과음이 그대로 진행됐다.
+- 결정(사용자): 대화 중에는 게임을 멈추되 플레이어·펫 대기 애니메이션은 계속, 소리는 BGM만. 펫 가이드는 범위에서 뺀다. 기존 `ResumeGame`을 고치지 않고 대화 전용 메서드를 따로 둔다.
+- `GameManager`: `PauseGameForDialogue()`(timeScale 0, `AudioListener.pause`, 상태 Playing·커서 그대로), `ResumeGameForDialogue()`(상태가 Pause면 아무것도 안 함 → 설정창을 닫을 때 ResumeGame이 돌림). 기존 Pause/ResumeGame 미수정.
+- `UIManager`: `StartDialogue`에서 BeginStaging 뒤 `PauseGameForDialogue`, `HandleDialogueEnded`에서 `ResumeGameForDialogue`, `CloseSettings`에서 ResumeGame 뒤 대화 중이면 다시 `PauseGameForDialogue`.
+- `DialogueDirector`: `BeginStaging`에서 CinemachineBrain `IgnoreTimeScale`과 플레이어·펫 Animator `updateMode`(→ UnscaledTime)를 원래 값을 기억하고 바꾼다. 시간이 멈추면 `PetFollower`가 따라가지 않으므로 펫을 설 자리로 바로 옮기고 `PetAnimator.SetMoveSpeed(0)`. `EndStaging`에서 모두 원래 값으로.
+- 다른 사람 파일(PlayerAnimator·PetFollower·PetAnimator·Main Camera 프리팹)은 수정하지 않음. 런타임에 값만 바꿨다가 되돌린다.
+- 확인: 컴파일 0에러. TestScene Play에서 `PlayDialogue(2)` → timeScale 0·3D 소리 정지·Playing·커서 잠금, 게임 시간 정지 중에도 플레이어·펫 Animator normalizedTime 증가, 펫이 설 자리(거리 0)·Speed 0, 줄마다 SpeakerCam Pet/Player 교대. 대화 중 설정창 열기 → Pause, 닫기 → Playing·timeScale 0 유지. 끝 → timeScale 1·소리·Animator Normal·Brain 원래 값·Player 맵. 설정창 연 채로 StopDialogue → 계속 Pause, 닫으면 timeScale 1. 에디터 포커스 문제로 Space는 simulate_key가 안 먹어 `HandleNextLine`을 리플렉션으로 호출(실제 키 입력은 미확인).
+
 ## 현재 상태 및 이슈
+- (기존 동작, 이번에 발견) 설정창이 열린 채로 대화가 끝나면(StopDialogue 등) `HandleDialogueEnded`가 입력을 Player 맵으로 바꾼다. 설정창을 닫으면 Player 맵이 되어 결과는 같지만, 열려 있는 동안 UI 맵이 아니다. 미수정.
 - TestScene(Assets/Test, Git 미포함) 디스크 파일에 삭제된 `Cutscene.DialogueCutscene.Play`를 부르는 TriggerPlate가 남아 있다(Missing 호출). 에디터에서 저장 안 된 변경일 수 있음.
 
 ## 다음 할 일 (Next Steps)

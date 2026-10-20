@@ -36,6 +36,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI / Dialogue / Core]** 대화 중에도 적·투사체·3D 효과음이 그대로 진행됨. `GameManager.PauseGameForDialogue`·`ResumeGameForDialogue`로 timeScale 0(BGM만 들림), 대화 동안 플레이어·펫 Animator UnscaledTime·CinemachineBrain IgnoreTimeScale, 펫은 설 자리로 바로 이동, 다른 사람 파일 미수정 → [문서](./clear/intent-050-dialogue-pause-game.md) (resolved: 2026-10-20)
 - **[UI / Dialogue]** UIManager ↔ DialogueManager가 서로 부르던 대화 흐름을 UIManager → `DialogueDirector`(이름 변경, 연출만: BeginStaging·ShowLine·EndStaging) 한 방향으로 정리. 콜백 필드·Instance 제거, Canvas_InGame에서 SerializeField 연결, 바깥 API 그대로 → [문서](./clear/intent-049-dialogue-one-way-flow.md) (resolved: 2026-10-20)
 - **[UI / Input]** UIManager가 Dialogue 입력 맵을 PlayerInput으로 직접 다뤄 입력 처리가 Facade와 둘로 갈라져 있었음. 일반 C# 클래스 `UIInputHandler`가 Facade 설정창 이벤트 중계·Dialogue 맵 액션·맵 전환 3종을 맡고 UIManager는 이벤트만 구독, PlayerFacade·프리팹 미수정 → [문서](./clear/intent-048-ui-input-handler.md) (resolved: 2026-10-20)
 - **[UI / Cutscene / Stage]** 스테이지 시작 대화를 씬 오브젝트 없이 재생. `StageManager.PlayIntroDialogue`(스테이지 종류로 번호 선택, 지금은 모두 꺼 둠), `DialogueManager`·말하는 사람 카메라를 `Canvas_InGame` 프리팹으로 이동, `StageIntroDialogue` 삭제, 맵 씬 미수정 → [문서](./clear/intent-047-stage-intro-without-scene-objects.md) (resolved: 2026-10-20)

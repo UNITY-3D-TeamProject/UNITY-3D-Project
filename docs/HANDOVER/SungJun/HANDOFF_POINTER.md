@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-20** — 대화 중 게임 멈춤(intent-050): `GameManager.PauseGameForDialogue`·`ResumeGameForDialogue`(timeScale 0·3D 소리만 정지, BGM 유지), Director가 대화 동안 플레이어·펫 Animator UnscaledTime·CinemachineBrain IgnoreTimeScale, 펫은 설 자리로 바로 이동. 다른 사람 파일 미수정. 컴파일 0에러·TestScene 확인(Space는 리플렉션), 커밋 안 함: [작업 기록](./2026-10-20/uimanager-design-review.md)
 - **2026-10-20** — 대화 흐름을 UIManager → `DialogueDirector` 한 방향으로(intent-049): DialogueManager 이름 변경(GUID 유지)·연출 함수만 남김, UIManager가 SerializeField로 연결해 직접 진행, 콜백 필드 제거. 컴파일 0에러·TestScene 대화 흐름 확인, 커밋 안 함: [작업 기록](./2026-10-20/uimanager-design-review.md)
 - **2026-10-20** — `UI/Cutscene` 폴더를 `UI/Dialogue`로 합침: `DialogueManager`·`SODialogueTable` 이동(GUID 유지), 네임스페이스 `UI.Dialogue`로 통일. 컴파일 0에러·프리팹/SO 연결 유지·TestScene 대화 재생 확인: [작업 기록](./2026-10-20/uimanager-design-review.md)
 - **2026-10-20** — UIManager 입력 처리를 `UIInputHandler`(일반 C# 클래스)로 분리(intent-048): Facade 설정창 이벤트 중계·Dialogue 맵 액션·맵 전환 3종, UIManager는 이벤트만 구독. PlayerFacade·프리팹 미수정. 컴파일 0에러·TestScene 입력 흐름 확인(콜백 직접 호출), 커밋 안 함: [작업 기록](./2026-10-20/uimanager-design-review.md)
