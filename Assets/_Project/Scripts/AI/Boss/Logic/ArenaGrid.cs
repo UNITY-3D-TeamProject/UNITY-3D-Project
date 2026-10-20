@@ -19,7 +19,7 @@ namespace AI.Boss.Logic
         #endregion
 
         #region Private Fields
-        private readonly float _restoreSeconds;
+        private float _restoreSeconds;
         private readonly ETileState[] _states = new ETileState[COUNT];
         private readonly float[] _restoreRemaining = new float[COUNT];
         #endregion
@@ -27,6 +27,9 @@ namespace AI.Boss.Logic
         #region Properties
         /// <summary>지금 무너져 있는 칸 수.</summary>
         public int CollapsedCount { get; private set; }
+
+        /// <summary>B 가 착지하려고 예약한 칸. A 는 이 칸을 노리지 않는다. 없으면 -1.</summary>
+        public int ReservedTile { get; private set; } = -1;
         #endregion
 
         #region Events
@@ -106,6 +109,14 @@ namespace AI.Boss.Logic
         }
 
         /// <summary>
+        /// 착지 예약 칸을 정한다. -1 이면 예약을 푼다. 칸 상태는 바꾸지 않는다.
+        /// </summary>
+        public void SetReservedTile(int index)
+        {
+            ReservedTile = index;
+        }
+
+        /// <summary>
         /// 칸을 무너뜨리고 복구 타이머를 처음부터 시작한다. 예고 중이었으면 예고를 끈다.
         /// 이미 무너진 칸이면 타이머만 다시 시작하고 이벤트를 보내지 않는다.
         /// </summary>
@@ -121,6 +132,19 @@ namespace AI.Boss.Logic
 
             if (state == ETileState.Telegraphed) OnTelegraphChanged?.Invoke(index, false);
             OnCollapsed?.Invoke(index);
+        }
+
+        /// <summary>
+        /// 복구 시간을 바꾼다. 이미 무너진 칸의 남은 시간이 새 값보다 길면 새 값으로 줄인다.
+        /// </summary>
+        public void SetRestoreSeconds(float restoreSeconds)
+        {
+            _restoreSeconds = restoreSeconds;
+
+            for (int i = 0; i < COUNT; i++)
+            {
+                if (_restoreRemaining[i] > restoreSeconds) _restoreRemaining[i] = restoreSeconds;
+            }
         }
 
         /// <summary>
@@ -172,6 +196,7 @@ namespace AI.Boss.Logic
 
         /// <summary>
         /// 멀쩡한 칸 중 칸 중심이 가장 가까운 칸을 찾는다. 거리가 같으면 인덱스가 작은 칸.
+        /// 착지 예약 칸은 B 가 내려앉을 칸이므로 고르지 않는다.
         /// </summary>
         /// <returns>칸 인덱스. 멀쩡한 칸이 없으면 -1</returns>
         public int FindNearestSafe(float x, float z)
@@ -181,7 +206,7 @@ namespace AI.Boss.Logic
 
             for (int i = 0; i < COUNT; i++)
             {
-                if (!IsSafe(i)) continue;
+                if (!IsSafe(i) || (i == ReservedTile)) continue;
 
                 GetTileCenter(i, out float centerX, out float centerZ);
                 float dx = centerX - x;

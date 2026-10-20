@@ -5,6 +5,7 @@ namespace AI.Boss.BossB
     /// <summary>
     /// B 의 도약 내려찍기(1-2 부터). 일반은 플레이어가 선 칸에 원형 예고를 예고 시간 동안 페이드 인으로 띄운 뒤 뛰어올라 내려찍고,
     /// 착지 순간 피해와 칸 주변 충격파 넉백을 주고 경직한다. 착지 칸이 구멍·예고면(시작 때, 예고·체공 중) 가장 가까운 멀쩡한 칸으로 바꾼다.
+    /// 도약을 시작해 착지할 때까지 착지 칸을 아레나에 예약해, A 가 그 칸을 노리지 않게 한다.
     /// 회피(<c>_isEvade</c>)는 예고 없이 가장 가까운 멀쩡한 칸으로 뛰어 건너가며, 피해·충격파·경직이 없다.
     /// 포물선은 CharacterMotor 의 점프(중력)와 수평 변위로 만든다. <c>_leapHeight</c> 가 0 보다 크면 체공 동안만
     /// 중력을 8h/T² 로 바꿔 체공 시간 T 와 정점 높이 h 를 따로 정하고, 0 이면 중력을 그대로 두고 초기 속도 = 중력 × T ÷ 2 로 띄운다.
@@ -96,6 +97,8 @@ namespace AI.Boss.BossB
                 return;
             }
 
+            Arena.SetReservedTile(_landingTile);
+
             base.Execute();
             HasStarted = true;
             _isForcedLanding = false;
@@ -133,6 +136,7 @@ namespace AI.Boss.BossB
             RestoreGravity();
             _isForcedLanding = false;
             DestroyCircle();
+            Arena?.SetReservedTile(-1);
         }
         #endregion
 
@@ -153,7 +157,7 @@ namespace AI.Boss.BossB
 
         private void TickTelegraph(float deltaTime)
         {
-            // 예고하는 사이 칸이 구멍·예고로 바뀌었으면 가장 가까운 멀쩡한 칸으로 바로 바꿔 원이 점프 직전에 튀지 않게 한다
+            // A 는 예약 칸을 노리지 않지만, 그래도 칸이 구멍·예고로 바뀌었으면 가장 가까운 멀쩡한 칸으로 바로 바꿔 원이 점프 직전에 튀지 않게 한다
             if (!RetargetIfUnsafe())
             {
                 EndRun();
@@ -181,6 +185,7 @@ namespace AI.Boss.BossB
             _landingTile = Arena.FindNearestSafe(reference);
             if (_landingTile < 0) return false;
 
+            Arena.SetReservedTile(_landingTile);
             MoveCircle();
             return true;
         }
@@ -277,6 +282,8 @@ namespace AI.Boss.BossB
                 return;
             }
 
+            // 내려앉았으므로 경직 동안에는 A 가 이 칸을 노려도 된다
+            Arena.SetReservedTile(-1);
             DestroyCircle();
 
             TryHitTarget(landing, _landingRadius);

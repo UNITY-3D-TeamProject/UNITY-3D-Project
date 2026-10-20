@@ -18,6 +18,8 @@ namespace AI.Boss.Arena
         [SerializeField, Min(0.1f)] private float _tileSize = 20.0f;
         [Tooltip("무너진 칸이 복구되기까지의 시간(초)")]
         [SerializeField, Min(0.0f)] private float _restoreSeconds = 6.0f;
+        [Tooltip("최종 단계(A 단독)에서 무너진 칸이 복구되기까지의 시간(초)")]
+        [SerializeField, Min(0.0f)] private float _restoreSecondsFinal = 3.0f;
 
         [Header("Circle Telegraph")]
         [Tooltip("지름 1 m 짜리 원판 프리팹. 크기 조절로 반경을 맞춘다.")]
@@ -118,6 +120,11 @@ namespace AI.Boss.Arena
             return Grid.HasHoleBetween(ax, az, bx, bz);
         }
 
+        public void SetReservedTile(int index)
+        {
+            Grid.SetReservedTile(index);
+        }
+
         public void SetTelegraph(int index, bool isOn, float fillSeconds, Color? color = null)
         {
             // 칸 상태가 실제로 바뀔 때만 HandleTelegraphChanged 가 불려 채움이 시작된다
@@ -190,9 +197,16 @@ namespace AI.Boss.Arena
             _lines[handle].SetActive(false);
         }
 
+        /// <summary>단계에 맞는 칸 복구 시간을 쓴다. 최종 단계만 <c>_restoreSecondsFinal</c>.</summary>
+        public void SetStage(EBossStage stage)
+        {
+            Grid.SetRestoreSeconds(stage == EBossStage.Final ? _restoreSecondsFinal : _restoreSeconds);
+        }
+
         public void ResetAll()
         {
             Grid.ResetAll();
+            Grid.SetRestoreSeconds(_restoreSeconds);
 
             if (_circles != null)
             {
