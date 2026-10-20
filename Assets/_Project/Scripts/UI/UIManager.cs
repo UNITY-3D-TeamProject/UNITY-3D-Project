@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using Core;
 using Facade.Player;
@@ -22,6 +21,8 @@ namespace UI
         [SerializeField] private PetGuidePresenter _petGuidePresenter;
         // 대화 진행 (대화 SO를 한 줄씩 펫 안내 패널에 표시)
         [SerializeField] private DialoguePresenter _dialoguePresenter;
+        // 대화 연출 (펫 세우기, 말하는 사람 카메라). 없으면 대화를 재생하지 않는다.
+        [SerializeField] private DialogueDirector _dialogueDirector;
         [Tooltip("PlayDialogue(번호)로 재생할 대화 목록")]
         [SerializeField] private SODialogueTable _cutsceneTable;
         #endregion
@@ -35,11 +36,6 @@ namespace UI
 
         // 설정창이 열려 있으면 true. 열린 동안에는 대화를 시작하지 않는다.
         private bool _isSettingsOpen;
-
-        // 대화를 시작한 쪽에 돌려줄 콜백. 대화 중일 때만 값이 있다.
-        private Action<SDialogueLine> _dialogueLineChanged;
-        // 대화가 끝났을 때 호출함
-        private Action _dialogueFinished;
         #endregion
 
         #region Properties
@@ -136,7 +132,7 @@ namespace UI
 
         /// <summary>
         /// 번호에 맞는 컷씬을 지금 플레이어 자리에서 재생한다. 번호와 대화는 SODialogueTable에서 정한다.
-        /// 연출(펫 세우기·카메라)은 씬의 DialogueManager가 맡는다. 본 기록은 남기지 않으므로 부를 때마다 재생된다.
+        /// 연출(펫 세우기·카메라)은 DialogueDirector가 맡는다. 본 기록은 남기지 않으므로 부를 때마다 재생된다.
         /// 이미 대화 중이면 무시한다. 발판(TriggerPlate) 같은 UnityEvent에서도 연결할 수 있도록 반환값이 없다.
         /// </summary>
         public void PlayDialogue(int id)
@@ -147,52 +143,16 @@ namespace UI
                 return;
             }
 
-            if (DialogueManager.Instance == null)
+            if (_dialogueDirector == null)
             {
-                Debug.LogWarning("[UIManager] 씬에 DialogueManager가 없어 컷씬을 재생하지 못했습니다.", this);
+                Debug.LogWarning("[UIManager] DialogueDirector가 연결되지 않아 컷씬을 재생하지 못했습니다.", this);
                 return;
             }
 
-            DialogueManager.Instance.Play(sequence, null);
+            StartDialogue(sequence);
         }
 
-        /// <summary>
-        /// 대화를 시작한다. 끝날 때까지 Dialogue 입력 맵으로 바꿔 플레이어 조작을 막는다.
-        /// Dialogue 맵에서는 Space로 대사를 넘기고, ESC로 설정창을 연다.
-        /// </summary>
-        /// <param name="sequence">재생할 대화</param>
-        /// <param name="onLineChanged">줄이 바뀔 때 그 줄(말하는 사람, 카메라 번호 등)을 받는다</param>
-        /// <param name="onFinished">대화가 끝나 조작이 돌아온 뒤 호출된다</param>
-        /// <returns>시작했으면 true. 이미 대화 중이거나 설정창이 열려 있거나 플레이어가 없으면 false</returns>
-        public bool StartDialogue(SODialogue sequence, Action<SDialogueLine> onLineChanged, Action onFinished)
-        {
-            if ((_dialoguePresenter == null) ||
-                (_dialoguePresenter.IsDialoguePlaying) ||
-                _isSettingsOpen ||
-                (!_input.HasPlayer))
-                return false;
-
-            _dialogueLineChanged = onLineChanged;
-            _dialogueFinished = onFinished;
-            _dialoguePresenter.OnDialogueLineChanged += HandleDialogueLineChanged;
-            _dialoguePresenter.OnDialogueEnded += HandleDialogueEnded;
-
-            // 대화 중에는 상호작용 안내를 숨긴다.
-            if (_playerHudPresenter != null)
-                _playerHudPresenter.SetInteractLabelBlocked(true);
-
-            _input.SwitchToDialogueInput();
-
-            if (!_dialoguePresenter.StartDialogue(sequence))
-            {
-                HandleDialogueEnded();
-                return false;
-            }
-
-            return true;
-        }
-
-        // 대화를 끝까지 보지 않고 정리한다. 시작할 때 받은 onFinished도 호출된다.
+        // 대화를 끝까지 보지 않고 정리한다. 연출과 입력도 대화가 끝났을 때처럼 돌려놓는다.
         public void StopDialogue()
         {
             if (IsDialoguePlaying)
@@ -263,27 +223,56 @@ namespace UI
                 _input.SwitchToDialogueInput();
         }
 
-        // 대사 줄이 바뀌면 대화를 시작한 쪽(DialogueManager 등)에 그대로 전달한다.
-        private void HandleDialogueLineChanged(SDialogueLine line)
+        /// <summary>
+        /// 대화를 시작한다. 끝날 때까지 Dialogue 입력 맵으로 바꿔 플레이어 조작을 막는다.
+        /// Dialogue 맵에서는 Space로 대사를 넘기고, ESC로 설정창을 연다.
+        /// 이미 대화 중이거나 설정창이 열려 있거나 플레이어가 없으면 시작하지 않는다.
+        /// </summary>
+        /// <param name="sequence">재생할 대화</param>
+        private void StartDialogue(SODialogue sequence)
         {
-            _dialogueLineChanged?.Invoke(line);
+            if ((_dialoguePresenter == null) ||
+                (_dialoguePresenter.IsDialoguePlaying) ||
+                _isSettingsOpen ||
+                (!_input.HasPlayer))
+                return;
+
+            _dialoguePresenter.OnDialogueLineChanged += HandleDialogueLineChanged;
+            _dialoguePresenter.OnDialogueEnded += HandleDialogueEnded;
+
+            // 첫 줄의 카메라가 대화 시작과 동시에 정해지므로 펫과 카메라를 먼저 배치한다.
+            _dialogueDirector.BeginStaging();
+
+            // 대화 중에는 상호작용 안내를 숨긴다.
+            if (_playerHudPresenter != null)
+                _playerHudPresenter.SetInteractLabelBlocked(true);
+
+            _input.SwitchToDialogueInput();
+
+            if (!_dialoguePresenter.StartDialogue(sequence))
+                HandleDialogueEnded();
         }
 
-        // 대화가 끝나면 구독을 풀고, 상호작용 안내와 플레이어 조작을 돌려준 뒤 onFinished를 호출한다.
+        // 대사 줄이 바뀌면 그 줄의 말하는 사람·카메라 번호로 연출 카메라를 바꾼다.
+        private void HandleDialogueLineChanged(SDialogueLine line)
+        {
+            if (_dialogueDirector != null)
+                _dialogueDirector.ShowLine(line);
+        }
+
+        // 대화가 끝나면 구독을 풀고, 연출을 정리한 뒤 상호작용 안내와 플레이어 조작을 돌려준다.
         private void HandleDialogueEnded()
         {
             _dialoguePresenter.OnDialogueLineChanged -= HandleDialogueLineChanged;
             _dialoguePresenter.OnDialogueEnded -= HandleDialogueEnded;
 
+            if (_dialogueDirector != null)
+                _dialogueDirector.EndStaging();
+
             if (_playerHudPresenter != null)
                 _playerHudPresenter.SetInteractLabelBlocked(false);
 
             _input.SwitchToPlayerInput();
-
-            Action onFinished = _dialogueFinished;
-            _dialogueLineChanged = null;
-            _dialogueFinished = null;
-            onFinished?.Invoke();
         }
 
         // 대화 맵 Space: 다음 대사로 넘긴다.
