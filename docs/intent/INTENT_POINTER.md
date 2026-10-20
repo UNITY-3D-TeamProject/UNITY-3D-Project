@@ -4,6 +4,12 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[AI / Boss / BossB]** 보스 B 예고가 보스 A 와 같은 빨강 머터리얼이라 헷갈리고, 돌진은 바닥 예고가 없으며 도약 원은 켜지자마자 가득 참. B 전용 머터리얼(파랑) + 돌진 직선 예고 + 페이드 인 → [문서](./intent-049-bossb-telegraph-color.md)
+- **[AI / Boss / BossA]** 보스 A 의 A4 가 칸 위 내려찍기 + 판 밖으로 던지기라 의도(블리츠크랭크 Q 식 그랩)와 반대. 한 손이 직선으로 날아가 잡아 보스 쪽으로 끌어당기고 반대 손이 1칸 내려치는 방식으로 재설계. 결정 완료·코드 구현·컴파일 통과·Play 흐름 확인, 육안 확인과 게이트 루프 남음 → [문서](./intent-048-bossa-a4-hook-grab.md)
+- **[AI / Boss / Arena]** 보스 A 칸 예고가 켜지자마자 가득 차 있어 발동 시점을 읽을 수 없음. 중앙에서 스케일·알파가 0→1로 채워지게(채움 시간 = 패턴 예고 시간), 가득 차면 손이 내려쳐 붕괴. 스크립트만 수정, 정사각형 방식 → [문서](./intent-047-bossa-telegraph-fill-in.md)
+- **[AI / Boss / Arena]** 보스 아레나를 3×3(칸 20 m)에서 5×5(전체 60 m 유지, 칸 12 m)로 확장. `ArenaGrid.SIZE` 5 + 테스트 씬 타일 25개 배치. 보스 A 패턴의 3×3 전제(가운데 칸·모서리·세 칸 줄)는 열린 질문 → [문서](./intent-046-boss-arena-4x4.md)
+- **[AI / Boss / Animation]** 보스 B 는 기본 5종 모션만 장착돼 스킬마다 다른 모션이 없음(Combo 만 Attack 트리거). 보스 B 전용 컨트롤러 + 스킬별 매핑, Charge·Evade 는 사용자 제작 클립, Combo·Leap 은 기존 Tanker Robot 클립. 열린 질문 3건 → [문서](./intent-045-bossb-skill-animations.md)
+- **[AI / Boss]** 보스 B 가 스폰 직후 플레이어를 못 봐 공격을 고르지 못함(수색 노드 없음, 센서 5m·90도). 센서 50m·360도 + 대상을 처음 발견해 고르는 첫 공격만 도약(1-1 에서도 1회). 코드·프리팹 수정 완료, 게이트 루프·Play 육안 확인 남음 → [문서](./intent-044-bossb-first-encounter-leap.md)
 - **[UI / Cutscene]** 컷씬마다 씬 오브젝트·연결이 필요해 원하는 타이밍에 부를 수 없음. `UIManager.PlayCutscene(id)` + `SOCutsceneTable`(번호 → 대화 SO), 고정 카메라는 씬 `DialogueDirector` 목록, 본 기록 없음, `DialogueCutscene` 대체 → [문서](./intent-046-cutscene-table.md)
 - **[UI / Cutscene / Input]** 스테이지 첫 입장 시 플레이어·펫 대화 연출이 없음. `Dialogue` 입력 맵(Space 넘기기·ESC 설정창)으로 조작 차단, UIManager가 PlayerInput 직접 참조(PlayerFacade 미변경), 대사 SO마다 씬 CinemachineCamera 번호 지정, `PetGuidePanel` 재사용(이름·초상화), PlayerPrefs로 한 번만 재생, 발판 등 원하는 위치에서 `DialogueCutscene.Play`로 재생. 구현·Play 검증 완료, 튜토리얼 대사·카메라 구도 확정 남음 → [문서](./intent-044-stage-intro-dialogue.md)
 - **[Audio / Core / UI]** 소리 재생 기반이 없음. `AudioManager` 싱글톤(BGM 1·UI 1·3D 16 소스), `SOBgmTable`(ESceneType 키 + 메인메뉴 곡 필드)로 씬별 BGM, 믹서 볼륨 저장·설정창 연결, `AudioListener.pause`로 일시정지. 코드·믹서·SO·프리팹·설정창 슬라이더 연결 완료, Play 로직 검증 완료, MainScene 배치 완료. 맵 씬 배치와 실제 청취 확인 남음 → [문서](./intent-038-audio-manager-phase1.md)
@@ -36,6 +42,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[AI / Boss]** 보스 B None→추격·쿨타임 실행 그래프·피격 회전 및 타일 간 NavMesh 복구. 테스트 11/11, 경로 81/81, Play 추격·3타·180도 회전 확인 → [문서](./clear/intent-046-bossb-melee-hit-facing.md) (resolved: 2026-10-19)
 - **[UI]** View 4개(InfoPanel·PlayerHud·PetGuide·Settings)가 루트 켜기·끄기 코드를 각자 복사해 들고 있었음. `BaseView`(abstract, `_root`·`IsVisible`·`Show`·`Hide`·private `SetVisible`)로 합침, MainMenu 제외 → [문서](./clear/intent-052-ui-base-view.md) (resolved: 2026-10-20)
 - **[UI / PetGuide / Core]** 펫 가이드가 떠도 게임이 그대로 진행되고 닫는 입력이 없었음. 모든 펫 가이드에서 timeScale 0(BGM만 들림), Dialogue 맵 Space로 닫기·ESC 설정창, 대화와 겹치면 무시, `PauseGameForDialogue` → `PauseGameTime`으로 공용화 → [문서](./clear/intent-051-pet-guide-pause.md) (resolved: 2026-10-20)
 - **[UI / Dialogue / Core]** 대화 중에도 적·투사체·3D 효과음이 그대로 진행됨. `GameManager.PauseGameForDialogue`·`ResumeGameForDialogue`로 timeScale 0(BGM만 들림), 대화 동안 플레이어·펫 Animator UnscaledTime·CinemachineBrain IgnoreTimeScale, 펫은 설 자리로 바로 이동, 다른 사람 파일 미수정 → [문서](./clear/intent-050-dialogue-pause-game.md) (resolved: 2026-10-20)
