@@ -13,6 +13,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 
 ## 기대 결과 (Proposed outcome)
 - 펫 안내(`ShowPetGuide(id)`)처럼 `UIManager.Instance.PlayCutscene(id)`를 부르면 그 번호의 컷씬이 바로 재생된다.
+  - (2026-10-20) 이름을 `UIManager.Instance.PlayDialogue(id)`로 바꿨다. 기존 `PlayDialogue(SODialogue, …)`는 `StartDialogue`.
 - 번호 → 대화 SO는 `SOCutsceneTable`에서 정한다. 컷씬 추가 = 대화 SO 만들기 + 테이블에 번호 추가.
 - 펫 세우기·말하는 사람 카메라 연출은 지금 `DialogueDirector` 그대로 쓴다.
 

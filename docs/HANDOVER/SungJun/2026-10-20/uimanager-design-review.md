@@ -45,8 +45,26 @@
 - 확인: 컴파일 에러 0. 에셋 데이터(1번 → SODialogue_Tutorial)와 Canvas_InGame 연결이 유지됐다. TestScene Play에서 시작 컷씬이 재생됐다.
 - 남은 것: `SODialogue._id` Tooltip "본 기록 저장 키"는 본 기록을 없앤 뒤라 맞지 않는다(미수정).
 
+## 추가 반영: PlayCutscene → PlayDialogue(int)
+- 결정(사용자): 원하는 곳에서 대화를 부르는 함수 이름은 `UIManager.PlayDialogue(int id)`. 기존 `PlayDialogue(SODialogue, onLineChanged, onFinished)`는 `StartDialogue`로 바꿨다(DialogueManager만 쓰는 내부용, 안에서 `DialoguePresenter.StartDialogue`를 부름).
+- 고친 곳: `UIManager`(두 함수, `_cutsceneTable` Tooltip), `DialogueManager`(호출·주석), `SODialogueTable`·`StageIntroDialogue`(호출·주석), TestScene `Plate_Cutscene` UnityEvent의 `m_MethodName`(YAML 직접 수정, Git 미포함 파일).
+- Map_0_Tutorial은 건드리지 않았다(이 브랜치 방침). 튜토리얼에는 `PlayCutscene` UnityEvent 연결이 없어 영향 없음.
+- 확인: 컴파일 에러 0. TestScene Play에서 시작 대화(1번) 재생, `Plate_Cutscene` 발판 UnityEvent → `PlayDialogue(2)` 재생, 경고·에러 없음.
+
+## 추가 반영: 스테이지 시작 대화를 씬 오브젝트 없이 (intent-047)
+- 배경: 16:09 develop 머지(PR #97, `feature/Map/Tutorial`)로 튜토리얼 씬이 팀원 버전으로 덮어써져 `DialogueDirector`·`Cutscene_StageIntro`가 사라졌다. 튜토리얼 씬은 이 브랜치에서 수정하지 않는다.
+- 결정(사용자): 스테이지 시작 대화는 `StageManager`가 스테이지 종류(`EStageType`)로 번호를 골라 `UIManager.PlayDialogue(번호)`를 부른다(`PlayIntroDialogue`, switch). Core가 UI를 참조하게 되는 것은 사용자 승인.
+- 사용자 요청으로 지금은 모든 스테이지에서 시작 대화를 꺼 뒀다(switch에 `_ => 0`만). 켤 때는 `EStageType.Tutorial => 1,`처럼 한 줄 추가.
+- `DialogueManager` + `SpeakerCam_Player`·`SpeakerCam_Pet`을 `Canvas_InGame` 프리팹 안으로 옮겼다(TestScene의 Director를 복사, 고정 카메라 목록 비움, 카메라 컴포넌트는 꺼서 저장). Canvas_InGame이 있는 맵 씬(튜토리얼·로비·Feed·File·Security)은 씬 수정 없이 `PlayDialogue`가 연출까지 된다. Map_5_Live에는 Canvas_InGame이 없다.
+- 고정 카메라(CameraIndex 0 이상)는 없어졌다. 그런 줄은 말하는 사람 카메라로 나온다.
+- `StageIntroDialogue.cs` 삭제. TestScene에서 `DialogueDirector`, `Cutscene_StageIntro`(고정 카메라 2대 포함) 삭제 후 저장.
+- 확인: 컴파일 에러 0. TestScene Play(스테이지 FeedApp, IsRunning)에서 시작 대화 없음, `Plate_Cutscene` 발판 → `PlayDialogue(2)` 재생, DialogueManager 부모 = Canvas_InGame, 첫 줄 PET에서 SpeakerCam_Pet 켜짐. 튜토리얼은 Play로 확인하지 않았다(씬 미수정).
+- 커밋: 2824eb23(이름 변경), b99ca76c(시작 대화 구조). intent-047은 resolved로 clear/에 이동.
+
 ## 현재 상태 및 이슈
 - TestScene(Assets/Test, Git 미포함) 디스크 파일에 삭제된 `Cutscene.DialogueCutscene.Play`를 부르는 TriggerPlate가 남아 있다(Missing 호출). 에디터에서 저장 안 된 변경일 수 있음.
 
 ## 다음 할 일 (Next Steps)
 - 사용자가 고른 항목만 삭제·정리 후 컴파일 0에러와 TestScene Play(스테이지 시작 대화, 발판 대화, 대화 중 ESC) 확인.
+- 사용자 방침: 씬은 TestScene만 열고 수정한다. Map_0_Tutorial 등 다른 씬은 확인용으로도 열지 않는다.
+- Dialogue 입력 맵의 `Advance` 액션 이름 변경 검토 중(추천 `NextLine`, 후보 `Next`·`Continue`). 사용자 결정 대기. 바꾸면 `FID_InputSystem.inputactions`, UIManager 상수 `Dialogue/Advance`·`_advanceDialogueAction`·`HandleAdvanceDialogue` 수정.

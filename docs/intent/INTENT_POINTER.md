@@ -36,6 +36,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI / Cutscene / Stage]** 스테이지 시작 대화를 씬 오브젝트 없이 재생. `StageManager.PlayIntroDialogue`(스테이지 종류로 번호 선택, 지금은 모두 꺼 둠), `DialogueManager`·말하는 사람 카메라를 `Canvas_InGame` 프리팹으로 이동, `StageIntroDialogue` 삭제, 맵 씬 미수정 → [문서](./clear/intent-047-stage-intro-without-scene-objects.md) (resolved: 2026-10-20)
 - **[UI / Interaction]** 상호작용 대상을 조준하면 크로스헤어 아래 `[E] 상호작용` 표시. 이미 있던 `PlayerFacade.OnInteractableChanged`를 PlayerHud가 구독, 대화 중 숨김. Facade·스킬 수정 없음, TestScene Play 검증 → [문서](./clear/intent-045-interact-prompt.md) (resolved: 2026-10-19)
 - **[Core / Effect / VFX]** EffectManager·SOEffectData·SEffectHandle 및 매니저 프리팹 구현. SO별 자동 풀·자식 파티클·중복 Stop·오래된 핸들·부모 수명 처리, Unity 컴파일 및 Play 27항목 통과. 게임 씬 배치·기존 호출부 교체 제외 → [문서](./clear/intent-043-effect-manager.md) (resolved: 2026-10-18)
 - **[UI / MainMenu]** 메인 메뉴 씬을 `_Project/Scenes/MainScene.unity`로 옮기고 캔버스 4개를 `Canvas_MainMenu` 프리팹 하나(Menu·Settings·AnyPress 패널)로 합침, `Canvas_Splash` 제외 → [문서](./clear/intent-036-main-scene-team-share.md) (resolved: 2026-10-17)
