@@ -61,10 +61,16 @@
 - 확인: 컴파일 에러 0. TestScene Play(스테이지 FeedApp, IsRunning)에서 시작 대화 없음, `Plate_Cutscene` 발판 → `PlayDialogue(2)` 재생, DialogueManager 부모 = Canvas_InGame, 첫 줄 PET에서 SpeakerCam_Pet 켜짐. 튜토리얼은 Play로 확인하지 않았다(씬 미수정).
 - 커밋: 2824eb23(이름 변경), b99ca76c(시작 대화 구조). intent-047은 resolved로 clear/에 이동.
 
+## 추가 반영: Advance → NextLine
+- 결정(사용자): 대화 넘기기 입력 이름을 `NextLine`으로. `FID_InputSystem.inputactions` Dialogue 맵 액션 `Advance` → `NextLine`(Space 바인딩·id 유지, 래퍼 코드 생성 안 함).
+- UIManager: `ACTION_NEXT_LINE = "Dialogue/NextLine"`, `_nextLineAction`, `HandleNextLine`.
+- 안내 문구 쪽: `PetGuideView.ShowNextLineHint`·`HideNextLineHint`, 직렬화 필드 `_advanceHintText` → `_nextLineHintText`(Canvas_InGame 프리팹 YAML의 필드명도 같이 수정, 연결 유지 확인), `DialoguePresenter` Header "Next Line Hint". 프리팹 오브젝트 이름 `AdvanceHint`는 그대로 둠.
+- 확인: 컴파일 0에러, 프리팹 `_nextLineHintText` → AdvanceHint 연결 유지, TestScene Play에서 `Dialogue/NextLine` 액션 enabled·구독자 `HandleNextLine`, 호출 시 다음 줄로 넘어감. 에디터가 백그라운드라 Game 창 포커스 규칙(PointersAndKeyboardsRespectGameViewFocus) 때문에 simulate_key Space는 전달되지 않아 실제 키 입력은 확인 못 함.
+
 ## 현재 상태 및 이슈
 - TestScene(Assets/Test, Git 미포함) 디스크 파일에 삭제된 `Cutscene.DialogueCutscene.Play`를 부르는 TriggerPlate가 남아 있다(Missing 호출). 에디터에서 저장 안 된 변경일 수 있음.
 
 ## 다음 할 일 (Next Steps)
 - 사용자가 고른 항목만 삭제·정리 후 컴파일 0에러와 TestScene Play(스테이지 시작 대화, 발판 대화, 대화 중 ESC) 확인.
 - 사용자 방침: 씬은 TestScene만 열고 수정한다. Map_0_Tutorial 등 다른 씬은 확인용으로도 열지 않는다.
-- Dialogue 입력 맵의 `Advance` 액션 이름 변경 검토 중(추천 `NextLine`, 후보 `Next`·`Continue`). 사용자 결정 대기. 바꾸면 `FID_InputSystem.inputactions`, UIManager 상수 `Dialogue/Advance`·`_advanceDialogueAction`·`HandleAdvanceDialogue` 수정.
+- (완료) Dialogue 입력 맵 `Advance` → `NextLine` 이름 변경. 아래 "추가 반영" 참고. 커밋 안 함.
