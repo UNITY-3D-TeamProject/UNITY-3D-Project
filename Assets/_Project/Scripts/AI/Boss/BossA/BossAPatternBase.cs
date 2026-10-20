@@ -65,6 +65,9 @@ namespace AI.Boss.BossA
         /// <summary>내려친 자리에 머무는 시간(초). 기본은 현재 단계의 손 머묾 시간.</summary>
         protected virtual float StaySeconds => _controller.HandStayDuration;
 
+        /// <summary>예고 색. null 이면 예고 머티리얼의 기본 색이다. 알파는 항상 머티리얼 값을 따른다.</summary>
+        protected virtual Color? TelegraphColor => null;
+
         /// <summary>true 면 예고가 시작될 때 손이 미리 떠오른다. 기본은 예고가 끝난 뒤 움직인다.</summary>
         protected virtual bool IsHoverDuringTelegraph => false;
 
@@ -157,12 +160,13 @@ namespace AI.Boss.BossA
             BuildTargets();
 
             _tiles = GetTargetTiles();
-            ShowTelegraph();
+            float telegraphSeconds = TelegraphSeconds * _controller.TelegraphScale;
+            ShowTelegraph(telegraphSeconds);
 
             _isHoverStarted = false;
             _strikeIndex = 0;
             _isCannonPending = false;
-            _remaining = TelegraphSeconds * _controller.TelegraphScale;
+            _remaining = telegraphSeconds;
             _state = EPatternState.Telegraph;
 
             if (IsHoverDuringTelegraph) StartHover();
@@ -270,13 +274,13 @@ namespace AI.Boss.BossA
         #endregion
 
         #region Private Methods
-        private void ShowTelegraph()
+        private void ShowTelegraph(float fillSeconds)
         {
             if (_tiles == null) return;
 
             foreach (int tile in _tiles)
             {
-                Arena.SetTelegraph(tile, true);
+                Arena.SetTelegraph(tile, true, fillSeconds, TelegraphColor);
             }
             _isTelegraphOn = true;
         }
@@ -288,7 +292,7 @@ namespace AI.Boss.BossA
             _isTelegraphOn = false;
             foreach (int tile in _tiles)
             {
-                Arena.SetTelegraph(tile, false);
+                Arena.SetTelegraph(tile, false, 0.0f);
             }
         }
 

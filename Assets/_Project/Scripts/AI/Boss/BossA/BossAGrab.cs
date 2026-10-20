@@ -15,6 +15,8 @@ namespace AI.Boss.BossA
     {
         #region Serialized Fields
         [SerializeField, Min(0.0f)] private float _telegraphSeconds = 1.5f;
+        [Tooltip("예고 색. 칸을 무너뜨리는 다른 패턴(붉은색)과 구분한다. 알파는 예고 머티리얼 값을 따른다")]
+        [SerializeField] private Color _telegraphColor = new Color(0.2f, 0.5f, 1.0f, 1.0f);
         [Tooltip("임시값. 손이 내려친 지점 기준 잡는 반경(m)")]
         [SerializeField, Min(0.0f)] private float _grabRadius = 3.0f;
         [Tooltip("임시값. 아레나 가운데에서 바깥으로 밀어내는 수평 거리(m). 판 밖으로 나갈 만큼 커야 한다")]
@@ -30,6 +32,7 @@ namespace AI.Boss.BossA
 
         #region Properties
         protected override float TelegraphSeconds => _telegraphSeconds;
+        protected override Color? TelegraphColor => _telegraphColor;
         protected override float StaySeconds => 0.0f;
         protected override bool IsHoverDuringTelegraph => true;
         #endregion
@@ -61,7 +64,7 @@ namespace AI.Boss.BossA
             if (offset.sqrMagnitude > (_grabRadius * _grabRadius)) return;
 
             // 아레나 가운데에서 바깥으로 던진다. 가운데에 서 있으면 A 쪽(판 밖 앞쪽)으로 던진다
-            Vector3 direction = body.position - Arena.GetTileCenter(ArenaGrid.GetIndex(1, 1));
+            Vector3 direction = body.position - Arena.GetTileCenter(ArenaGrid.CENTER);
             direction.y = 0.0f;
             if (direction.sqrMagnitude < 0.0001f) direction = -Controller.transform.forward;
             direction.y = 0.0f;

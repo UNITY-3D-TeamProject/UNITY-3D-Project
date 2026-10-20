@@ -1,4 +1,5 @@
 using UnityEngine;
+using AI.Boss.Logic;
 
 namespace AI.Boss.BossA
 {
@@ -25,8 +26,8 @@ namespace AI.Boss.BossA
         #region Protected Methods
         protected override void RetargetHands()
         {
-            // 줄의 가운데 칸(Tiles[1])에 두 손을 모은다
-            int middle = Controller.CurrentChoice.Tiles[1];
+            // 줄의 가운데 칸에 두 손을 모은다
+            int middle = Controller.CurrentChoice.Tiles[ArenaGrid.SIZE / 2];
             AddHand(true, middle);
             AddHand(false, middle);
         }
@@ -36,8 +37,8 @@ namespace AI.Boss.BossA
             // 1타는 양 끝 칸, 2타는 가운데 칸. 칸은 무너뜨리지 않는다
             int[] tiles = Controller.CurrentChoice.Tiles;
             bool isHit = (StrikeIndex == 0)
-                ? (IsPlayerOnTile(tiles[0]) || IsPlayerOnTile(tiles[2]))
-                : IsPlayerOnTile(tiles[1]);
+                ? (IsPlayerOnTile(tiles[0]) || IsPlayerOnTile(tiles[ArenaGrid.SIZE - 1]))
+                : IsPlayerOnTile(tiles[ArenaGrid.SIZE / 2]);
 
             if (isHit) ApplyHitToPlayer();
         }

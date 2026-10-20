@@ -10,7 +10,7 @@ namespace AI.Boss.Logic
     public class BossAPatternSelector
     {
         #region Constants
-        private const int CENTER = 4;
+        private const int CENTER = ArenaGrid.CENTER;
         #endregion
 
         #region Private Fields
@@ -24,8 +24,9 @@ namespace AI.Boss.Logic
             EBossAPattern.A6,
         };
 
-        private static readonly int[] PlusTiles = { 1, 3, 4, 5, 7 };
-        private static readonly int[] CrossTiles = { 0, 2, 4, 6, 8 };
+        // +자 = 가운데 가로줄 + 가운데 세로줄, X자 = 두 대각선
+        private static readonly int[] PlusTiles = BuildPlusTiles();
+        private static readonly int[] CrossTiles = BuildCrossTiles();
 
         // 상하좌우 방향. ArenaGrid.GetNeighbors4 와 같은 순서(row − 1, row + 1, col − 1, col + 1).
         private static readonly int[] RowSteps = { -1, 1, 0, 0 };
@@ -44,9 +45,9 @@ namespace AI.Boss.Logic
 
         #region Constructors
         /// <param name="random">무작위 선택에 쓸 난수</param>
-        /// <param name="collapseLimit">무너진 칸이 이 수 이상이면 칸을 무너뜨리는 패턴을 고르지 않는다</param>
+        /// <param name="collapseLimit">무너진 칸이 이 수 이상이면 칸을 무너뜨리는 패턴을 고르지 않는다. 기본은 한 줄(A2)이 무너진 직후에는 걸리지 않는 값</param>
         /// <param name="lineStaySeconds">플레이어가 한 줄에 이 시간(초) 이상 머물면 그 줄에 A2</param>
-        public BossAPatternSelector(Random random, int collapseLimit = 4, float lineStaySeconds = 3)
+        public BossAPatternSelector(Random random, int collapseLimit = ArenaGrid.SIZE * 2 - 1, float lineStaySeconds = 3)
         {
             _random = random;
             _collapseLimit = collapseLimit;
@@ -260,7 +261,7 @@ namespace AI.Boss.Logic
         private SBossAPatternChoice CreateLineSlam(bool isRowLine, int line)
         {
             int[] tiles = GetLineTiles(isRowLine, line);
-            return new SBossAPatternChoice(EBossAPattern.A2, tiles, tiles[0], tiles[2], isRowLine, line);
+            return new SBossAPatternChoice(EBossAPattern.A2, tiles, tiles[0], tiles[ArenaGrid.SIZE - 1], isRowLine, line);
         }
 
         private SBossAPatternChoice CreateGrab(int tile)
@@ -270,15 +271,27 @@ namespace AI.Boss.Logic
 
         private static SBossAPatternChoice CreateChess(bool isPlus)
         {
-            if (isPlus) return new SBossAPatternChoice(EBossAPattern.A5Plus, (int[])PlusTiles.Clone(), 3, 5);
+            int middle = ArenaGrid.SIZE / 2;
+            if (isPlus)
+            {
+                return new SBossAPatternChoice(
+                    EBossAPattern.A5Plus,
+                    (int[])PlusTiles.Clone(),
+                    ArenaGrid.GetIndex(middle, 0),
+                    ArenaGrid.GetIndex(middle, ArenaGrid.SIZE - 1));
+            }
 
-            return new SBossAPatternChoice(EBossAPattern.A5Cross, (int[])CrossTiles.Clone(), 0, 2);
+            return new SBossAPatternChoice(
+                EBossAPattern.A5Cross,
+                (int[])CrossTiles.Clone(),
+                ArenaGrid.GetIndex(0, 0),
+                ArenaGrid.GetIndex(0, ArenaGrid.SIZE - 1));
         }
 
         private static SBossAPatternChoice CreateClap(int row)
         {
             int[] tiles = GetLineTiles(true, row);
-            return new SBossAPatternChoice(EBossAPattern.A6, tiles, tiles[0], tiles[2], true, row);
+            return new SBossAPatternChoice(EBossAPattern.A6, tiles, tiles[0], tiles[ArenaGrid.SIZE - 1], true, row);
         }
 
         private static SBossAPatternChoice CreateRest()
@@ -372,11 +385,42 @@ namespace AI.Boss.Logic
 
         private static bool IsCorner(int tile)
         {
-            return tile == 0 || tile == 2 || tile == 6 || tile == 8;
+            int last = ArenaGrid.SIZE - 1;
+            return tile == ArenaGrid.GetIndex(0, 0) ||
+                   tile == ArenaGrid.GetIndex(0, last) ||
+                   tile == ArenaGrid.GetIndex(last, 0) ||
+                   tile == ArenaGrid.GetIndex(last, last);
+        }
+
+        private static int[] BuildPlusTiles()
+        {
+            int middle = ArenaGrid.SIZE / 2;
+            List<int> tiles = new List<int>();
+            for (int i = 0; i < ArenaGrid.SIZE; i++)
+            {
+                tiles.Add(ArenaGrid.GetIndex(middle, i));
+                if (i != middle) tiles.Add(ArenaGrid.GetIndex(i, middle));
+            }
+
+            tiles.Sort();
+            return tiles.ToArray();
+        }
+
+        private static int[] BuildCrossTiles()
+        {
+            List<int> tiles = new List<int>();
+            for (int i = 0; i < ArenaGrid.SIZE; i++)
+            {
+                tiles.Add(ArenaGrid.GetIndex(i, i));
+                if (i != ArenaGrid.SIZE - 1 - i) tiles.Add(ArenaGrid.GetIndex(i, ArenaGrid.SIZE - 1 - i));
+            }
+
+            tiles.Sort();
+            return tiles.ToArray();
         }
 
         /// <summary>
-        /// 줄의 세 칸. 가로줄은 col 0 → 2, 세로줄은 row 0 → 2 순이다(첫 칸 = 왼손, 끝 칸 = 오른손).
+        /// 줄의 모든 칸. 가로줄은 col 0 → 끝, 세로줄은 row 0 → 끝 순이다(첫 칸 = 왼손, 끝 칸 = 오른손).
         /// </summary>
         private static int[] GetLineTiles(bool isRowLine, int line)
         {

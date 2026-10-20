@@ -2,6 +2,7 @@ using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
 using Facade.Player;
+using AI.Boss.Logic;
 
 namespace AI.Boss.Arena
 {
@@ -15,7 +16,7 @@ namespace AI.Boss.Arena
     {
         #region Constants
         private const string CURRENT_HP_KEY = "CurrentHp";
-        private const int CENTER_TILE = 4;
+        private const int CENTER_TILE = ArenaGrid.CENTER;
         #endregion
 
         #region Serialized Fields

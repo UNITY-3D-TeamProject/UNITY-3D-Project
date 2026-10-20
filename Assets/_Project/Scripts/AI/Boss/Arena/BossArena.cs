@@ -5,14 +5,14 @@ using AI.Boss.Logic;
 namespace AI.Boss.Arena
 {
     /// <summary>
-    /// 3×3 보스 아레나. 순수 로직(ArenaGrid)의 상태 변화를 칸(BossTile)의 겉모습에 옮기고, 월드 좌표 질의를 칸 단위 좌표로 바꿔 준다.
+    /// 5×5 보스 아레나. 순수 로직(ArenaGrid)의 상태 변화를 칸(BossTile)의 겉모습에 옮기고, 월드 좌표 질의를 칸 단위 좌표로 바꿔 준다.
     /// 오브젝트의 로컬 원점이 칸 (0,0) 의 바깥 모서리이고, 로컬 +X → col, 로컬 +Z → row 이다. 월드 스케일은 1 이어야 한다.
     /// </summary>
     public class BossArena : MonoBehaviour, IBossArena
     {
         #region Serialized Fields
         [Header("Tiles")]
-        [Tooltip("칸 9개. 인덱스 = row × 3 + col")]
+        [Tooltip("칸 25개. 인덱스 = row × 5 + col")]
         [SerializeField] private BossTile[] _tiles;
         [Tooltip("칸 한 변의 길이(m)")]
         [SerializeField, Min(0.1f)] private float _tileSize = 20.0f;
@@ -28,6 +28,8 @@ namespace AI.Boss.Arena
         #region Private Fields
         private GameObject[] _circles;
         private Vector3 _circleBaseScale;
+        private float _telegraphFillSeconds;
+        private Color? _telegraphColor;
         #endregion
 
         #region Properties
@@ -108,9 +110,14 @@ namespace AI.Boss.Arena
             return Grid.HasHoleBetween(ax, az, bx, bz);
         }
 
-        public void SetTelegraph(int index, bool isOn)
+        public void SetTelegraph(int index, bool isOn, float fillSeconds, Color? color = null)
         {
+            // 칸 상태가 실제로 바뀔 때만 HandleTelegraphChanged 가 불려 채움이 시작된다
+            _telegraphFillSeconds = fillSeconds;
+            _telegraphColor = color;
             Grid.SetTelegraphed(index, isOn);
+            _telegraphFillSeconds = 0.0f;
+            _telegraphColor = null;
         }
 
         public void Collapse(int index)
@@ -211,7 +218,7 @@ namespace AI.Boss.Arena
 
         private void HandleTelegraphChanged(int index, bool isOn)
         {
-            if (IsTileReady(index)) _tiles[index].SetTelegraph(isOn);
+            if (IsTileReady(index)) _tiles[index].SetTelegraph(isOn, _telegraphFillSeconds, _telegraphColor);
         }
 
         private bool IsTileReady(int index)

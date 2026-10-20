@@ -49,6 +49,7 @@ MonoBehaviour:
   _isEvade: 1
   _telegraphSeconds: 1.2
   _flightSeconds: 1
+  _leapHeight: 3
   _recoverySeconds: 1.5
   _flightMotionSkillName: LeapFlight
   _landingRadius: 4
@@ -364,7 +365,7 @@ NavMeshAgent:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2851063550565306939}
   m_Enabled: 1
-  m_AgentTypeID: 0
+  m_AgentTypeID: -1372625422
   m_Radius: 1.2
   m_Speed: 3.5
   m_Acceleration: 8
@@ -722,12 +723,13 @@ MonoBehaviour:
   _hitEffect: {fileID: 11400000, guid: 1b5b911bcd3c06e488eaa9ae13e52ca5, type: 2}
   _isEvade: 0
   _telegraphSeconds: 1.2
-  _flightSeconds: 1
+  _flightSeconds: 1.3
+  _leapHeight: 6
   _recoverySeconds: 1.5
   _flightMotionSkillName: LeapFlight
-  _landingRadius: 4
-  _shockwaveTiles: 1
-  _knockbackDistance: 8
+  _landingRadius: 10
+  _shockwaveTiles: 0.5
+  _knockbackDistance: 6
   _knockbackSeconds: 0.4
   _circlePrefab: {fileID: 2597783182611431928, guid: 7810f55bbaec4a940adece9aa7527870, type: 3}
   _circleHeight: 0.05

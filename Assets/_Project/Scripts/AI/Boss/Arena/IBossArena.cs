@@ -15,7 +15,9 @@ namespace AI.Boss.Arena
         /// <summary>무너진 칸이 복구됐을 때 칸 인덱스를 알린다.</summary>
         event Action<int> OnTileRestored;
 
-        void SetTelegraph(int index, bool isOn);
+        /// <param name="fillSeconds">예고가 켜질 때 칸 중앙에서 가득 차기까지의 시간(초). 0 이하면 처음부터 가득 찬다</param>
+        /// <param name="color">예고 색(알파는 머티리얼 값 유지). null 이면 머티리얼 색</param>
+        void SetTelegraph(int index, bool isOn, float fillSeconds, Color? color = null);
 
         void Collapse(int index);
 

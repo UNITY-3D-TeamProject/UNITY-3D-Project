@@ -4,6 +4,7 @@ using Action = System.Action;
 using UnityEngine;
 using CharacterAnimation;
 using Mediator;
+using Movement;
 using AI.Boss.Arena;
 
 namespace AI.Boss.BossB
@@ -37,6 +38,7 @@ namespace AI.Boss.BossB
 
         #region Private Fields
         private BossBSkillBase[] _skills;
+        private CharacterMotor _motor;
         private IArenaQuery _arena;
         private bool _isEvadePending;
         private float _evadeRetryRemaining;
@@ -47,6 +49,22 @@ namespace AI.Boss.BossB
 
         /// <summary>다운(사망 중)인지. Revive 가 풀어 준다.</summary>
         public bool IsDowned { get; private set; }
+
+        /// <summary>
+        /// 몸을 띄워 옮기는 스킬이 진행 중인지. 점프 직후 몇 프레임은 아직 접지로 남으므로 모터의 접지 여부만으로는 부족하다.
+        /// 이 동안 지나는 칸이 구멍·예고여도 도약을 끊으면 안 된다(BT 조건도 이 값을 본다).
+        /// </summary>
+        public bool IsBodyInFlight
+        {
+            get
+            {
+                foreach (BossBSkillBase skill in _skills)
+                {
+                    if (skill.IsBodyInFlight) return true;
+                }
+                return false;
+            }
+        }
         #endregion
 
         #region Events
@@ -66,6 +84,7 @@ namespace AI.Boss.BossB
             if (!_aiController) _aiController = GetComponent<AIController>();
             if (!_graphAgent) _graphAgent = GetComponent<BehaviorGraphAgent>();
             _skills = GetComponentsInChildren<BossBSkillBase>(true);
+            _motor = GetComponentInChildren<CharacterMotor>();
         }
 
         private void OnEnable()
@@ -165,12 +184,14 @@ namespace AI.Boss.BossB
 
         /// <summary>
         /// 발밑 칸이 무너지는 순간 진행 중인 스킬을 끊고 회피 도약을 강제한다. 프레임 순서와 무관하게 B 가 떨어지지 않게 하는 안전망이다.
+        /// 공중에 떠 있는 동안은 지나는 칸이 무너져도 끼어들지 않는다. 착지 칸은 도약이 스스로 안전한 칸으로 바꾸므로(BossBLeap)
+        /// 여기서 끊으면 도약이 목표 칸에 닿기 전에 취소되어 엉뚱한 자리에 떨어진다.
         /// </summary>
         private void OnTileCollapsedCallback(int index)
         {
             if (IsDowned || !_aiController || (_arena == null)) return;
             if (!_arena.TryGetTile(_aiController.Position, out int bodyTile) || (bodyTile != index)) return;
-            if (IsEvading()) return;
+            if (IsEvading() || IsAirborne() || IsBodyInFlight) return;
 
             foreach (BossBSkillBase skill in _skills)
             {
@@ -188,6 +209,14 @@ namespace AI.Boss.BossB
 
             // 시작했다면 스킬이 몸을 붙잡는다. 경직 중이면 무시되므로 Update 에서 다시 시도한다
             if (_aiController.IsHolding) _isEvadePending = false;
+        }
+
+        /// <summary>
+        /// 공중에 떠 있는지. 모터를 찾지 못했으면 지면에 있는 것으로 본다(안전망을 끄지 않는다).
+        /// </summary>
+        private bool IsAirborne()
+        {
+            return _motor && !_motor.IsGrounded;
         }
 
         private bool IsEvading()

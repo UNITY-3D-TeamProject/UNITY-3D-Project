@@ -10,6 +10,7 @@ namespace AI.Boss.BossB
     /// <summary>
     /// B 스킬의 공통 기반. 발동하면 몸을 붙잡고(AIController.Hold) 매 프레임 Tick 으로 진행하다가 끝나면 붙잡힘을 푼다.
     /// BT 는 AIUseSkillAndWaitAction 으로 IsHolding 이 풀릴 때까지 기다린다. 쿨타임은 스킬이 아니라 BT 블랙보드가 관리한다.
+    /// 발동 중에는 몸을 직접 옮기므로 AIController 의 Agent 위치 동기화를 멈춰 둔다(SuspendAgentSync).
     /// 플레이어를 밀어내는 호출 측이므로 이번 프레임 이동에 합쳐지도록 실행 순서를 앞당긴다.
     /// </summary>
     [DefaultExecutionOrder(-50)]
@@ -44,6 +45,11 @@ namespace AI.Boss.BossB
 
         /// <summary>회피 도약인지. 안전망이 진행 중 스킬을 끊을 때 회피 도약은 제외한다.</summary>
         public virtual bool IsEvade => false;
+
+        /// <summary>
+        /// 이 스킬이 몸을 띄워 목표 지점으로 옮기는 중인지. 안전망이 끼어들면 엉뚱한 자리에 떨어지는 구간이다.
+        /// </summary>
+        public virtual bool IsBodyInFlight => false;
 
         protected AIController Controller => _controller;
         protected BossBController Boss => _boss;
@@ -115,6 +121,8 @@ namespace AI.Boss.BossB
             if (isTargetRequired && (!_target || !_targetMotor)) return false;
 
             IsRunning = true;
+            // 발동 중에는 이 스킬이 몸을 직접 옮긴다. 공중·구멍 위 좌표를 Agent 에 밀어 넣으면 NavMesh 밖으로 떨어진다
+            _controller.SuspendAgentSync();
             _controller.Hold(GetDirectionToTarget(), holdSeconds + HOLD_MARGIN);
             return true;
         }
@@ -132,7 +140,12 @@ namespace AI.Boss.BossB
             _target = null;
             _targetMotor = null;
             _targetEffect = null;
-            if (_controller) _controller.ReleaseHold();
+            if (_controller)
+            {
+                // 몸을 옮겨 둔 자리의 NavMesh 로 Agent 를 되붙인 뒤 경로 추종을 넘긴다
+                _controller.ResumeAgentSync();
+                _controller.ReleaseHold();
+            }
         }
 
         /// <summary>

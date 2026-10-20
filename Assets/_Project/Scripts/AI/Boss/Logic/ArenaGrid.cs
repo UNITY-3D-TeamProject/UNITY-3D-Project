@@ -4,14 +4,16 @@ using System.Collections.Generic;
 namespace AI.Boss.Logic
 {
     /// <summary>
-    /// 보스 아레나 3×3 칸의 상태·복구 타이머·좌표 변환·질의를 담당한다. Unity 를 참조하지 않는다.
-    /// 인덱스 = row × 3 + col. 좌표는 칸 단위 실수이며 원점은 칸 (0,0) 의 바깥 모서리, x → col, z → row 이다.
+    /// 보스 아레나 5×5 칸의 상태·복구 타이머·좌표 변환·질의를 담당한다. Unity 를 참조하지 않는다.
+    /// 인덱스 = row × 5 + col. 좌표는 칸 단위 실수이며 원점은 칸 (0,0) 의 바깥 모서리, x → col, z → row 이다.
     /// </summary>
     public class ArenaGrid
     {
         #region Constants
-        public const int SIZE = 3;
+        public const int SIZE = 5;
         public const int COUNT = SIZE * SIZE;
+        /// <summary>정가운데 칸 인덱스. SIZE 가 홀수일 때만 가운데 칸이 하나로 정해진다.</summary>
+        public const int CENTER = (SIZE / 2) * SIZE + (SIZE / 2);
 
         private const float HOLE_SAMPLE_SPACING = 0.25f;
         #endregion

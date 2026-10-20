@@ -4,9 +4,10 @@ namespace AI.Boss.BossB
 {
     /// <summary>
     /// B 의 도약 내려찍기(1-2 부터). 일반은 플레이어가 선 칸에 원형 예고를 띄운 뒤 뛰어올라 내려찍고,
-    /// 착지 순간 피해와 칸 주변 충격파 넉백을 주고 경직한다. 착지 직전에 그 칸이 구멍·예고면 가장 가까운 멀쩡한 칸으로 바꾼다.
+    /// 착지 순간 피해와 칸 주변 충격파 넉백을 주고 경직한다. 착지 칸이 구멍·예고면(시작 때, 예고·체공 중) 가장 가까운 멀쩡한 칸으로 바꾼다.
     /// 회피(<c>_isEvade</c>)는 예고 없이 가장 가까운 멀쩡한 칸으로 뛰어 건너가며, 피해·충격파·경직이 없다.
-    /// 포물선은 CharacterMotor 의 점프(중력)와 수평 변위로 만든다: 체공 시간 T 에 맞춰 초기 속도 = 중력 × T ÷ 2.
+    /// 포물선은 CharacterMotor 의 점프(중력)와 수평 변위로 만든다. <c>_leapHeight</c> 가 0 보다 크면 체공 동안만
+    /// 중력을 8h/T² 로 바꿔 체공 시간 T 와 정점 높이 h 를 따로 정하고, 0 이면 중력을 그대로 두고 초기 속도 = 중력 × T ÷ 2 로 띄운다.
     /// </summary>
     public class BossBLeap : BossBSkillBase
     {
@@ -38,6 +39,8 @@ namespace AI.Boss.BossB
         [SerializeField, Min(0.0f)] private float _telegraphSeconds = 1.2f;
         [Tooltip("체공 시간(초). 임시값")]
         [SerializeField, Min(0.2f)] private float _flightSeconds = 1.0f;
+        [Tooltip("도약 정점 높이(m). 체공 시간과 따로 정한다. 0 이면 쓰지 않고 중력만으로 뜨는 높이(중력 × 체공² ÷ 8)가 된다")]
+        [SerializeField, Min(0.0f)] private float _leapHeight = 0.0f;
         [Tooltip("착지 후 경직 시간(초). 회피에서는 쓰지 않는다")]
         [SerializeField, Min(0.0f)] private float _recoverySeconds = 1.5f;
 
@@ -65,6 +68,9 @@ namespace AI.Boss.BossB
         private int _landingTile;
         private float _timer;
         private GameObject _circle;
+        private bool _isForcedLanding;
+        private bool _isGravityOverridden;
+        private float _savedGravity;
         #endregion
 
         #region Properties
@@ -72,6 +78,9 @@ namespace AI.Boss.BossB
 
         /// <summary>한 번이라도 실제로 도약을 시작했는지. 첫 조우 도약이 시작됐는지 BT 가 확인하는 데 쓴다.</summary>
         public bool HasStarted { get; private set; }
+
+        /// <inheritdoc />
+        public override bool IsBodyInFlight => IsRunning && (_phase == ELeapPhase.Flight);
         #endregion
 
         #region Protected Methods
@@ -89,6 +98,7 @@ namespace AI.Boss.BossB
 
             base.Execute();
             HasStarted = true;
+            _isForcedLanding = false;
 
             if (_isEvade)
             {
@@ -119,34 +129,39 @@ namespace AI.Boss.BossB
 
         protected override void OnRunEnded()
         {
+            // 체공 중에 끊겼어도 바꿔 둔 중력이 남지 않게 한다
+            RestoreGravity();
+            _isForcedLanding = false;
             DestroyCircle();
         }
         #endregion
 
         #region Private Methods
         /// <summary>
-        /// 회피는 B 에서 가장 가까운 멀쩡한 칸, 일반은 플레이어가 선 칸(판 밖이면 가장 가까운 멀쩡한 칸).
+        /// 회피는 B 에서 가장 가까운 멀쩡한 칸, 일반은 플레이어가 선 칸.
+        /// 플레이어 칸이 판 밖이거나 이미 구멍·예고면 가장 가까운 멀쩡한 칸이다. 예고 원이 처음부터 실제 착지 칸에 놓이게 한다.
         /// </summary>
         private int ChooseLandingTile()
         {
             if (_isEvade) return Arena.FindNearestSafe(Controller.Position);
 
-            if (Arena.TryGetTile(Target.position, out int tile)) return tile;
+            bool isTargetTileSafe = Arena.TryGetTile(Target.position, out int tile) && !Arena.IsHoleOrTelegraphed(tile);
+            if (isTargetTileSafe) return tile;
 
             return Arena.FindNearestSafe(Target.position);
         }
 
         private void TickTelegraph(float deltaTime)
         {
-            _timer -= deltaTime;
-            if (_timer > 0.0f) return;
-
-            // 예고하는 사이 칸이 구멍·예고로 바뀌었으면 가장 가까운 멀쩡한 칸으로 바꾼다
+            // 예고하는 사이 칸이 구멍·예고로 바뀌었으면 가장 가까운 멀쩡한 칸으로 바로 바꿔 원이 점프 직전에 튀지 않게 한다
             if (!RetargetIfUnsafe())
             {
                 EndRun();
                 return;
             }
+
+            _timer -= deltaTime;
+            if (_timer > 0.0f) return;
 
             StartFlight();
         }
@@ -177,12 +192,31 @@ namespace AI.Boss.BossB
             // 비행 모션으로 바꾼다(중재자를 거치는 스킬 요청)
             if (!_isEvade && !string.IsNullOrEmpty(_flightMotionSkillName)) Controller.ExecuteSkill(_flightMotionSkillName);
 
+            // 정점 높이를 정했으면 체공 동안만 중력을 바꿔 높이와 체공 시간을 따로 맞춘다.
+            // 정점 h, 체공 T 인 포물선은 중력 8h/T², 초기 상승 속도 4h/T 다
+            if (_leapHeight > 0.0f)
+            {
+                _savedGravity = SelfMotor.Gravity;
+                _isGravityOverridden = true;
+                SelfMotor.Gravity = (8.0f * _leapHeight) / (_flightSeconds * _flightSeconds);
+                SelfMotor.Jump((4.0f * _leapHeight) / _flightSeconds);
+                return;
+            }
+
             // 체공 시간 T 에 같은 높이로 돌아오는 초기 상승 속도
             SelfMotor.Jump(SelfMotor.Gravity * _flightSeconds * 0.5f);
         }
 
         private void TickFlight(float deltaTime)
         {
+            // 지난 프레임에 남은 거리를 한 번에 옮기라고 했으므로, 그 이동이 반영된 실제 자리에서 착지한다
+            if (_isForcedLanding)
+            {
+                _isForcedLanding = false;
+                Land(Controller.Position);
+                return;
+            }
+
             // 체공 중에도 착지 칸이 구멍·예고로 바뀔 수 있다
             if (!RetargetIfUnsafe())
             {
@@ -215,15 +249,25 @@ namespace AI.Boss.BossB
             }
             else if (isOvertime)
             {
-                // 시간 안에 도착하지 못했으면 이번 틱에 더한 몫을 뺀 남은 거리를 한 번에 옮기고,
-                // 피해는 안전한 착지 칸 중심 기준으로 준다
+                // 시간 안에 도착하지 못했으면 이번 틱에 더한 몫을 뺀 남은 거리를 한 번에 옮기라고 한다.
+                // 그 이동이 무엇에 막힐 수도 있으므로 피해는 착지 칸 중심이 아니라 다음 프레임의 실제 자리에서 준다
                 SelfMotor.AddExternalDisplacement(remaining * (1.0f - fraction));
-                Land(Arena.GetTileCenter(_landingTile));
+                _isForcedLanding = true;
+
+                float missDistance = remaining.magnitude;
+                if (missDistance > ARRIVAL_TOLERANCE)
+                {
+                    Debug.LogWarning(
+                        $"[{name}] 도약이 체공 시간 안에 착지 칸({_landingTile})에 닿지 못했다. 남은 거리={missDistance:F1}m",
+                        this);
+                }
             }
         }
 
         private void Land(Vector3 landing)
         {
+            RestoreGravity();
+
             if (_isEvade)
             {
                 EndRun();
@@ -256,6 +300,17 @@ namespace AI.Boss.BossB
         {
             _timer -= deltaTime;
             if (_timer <= 0.0f) EndRun();
+        }
+
+        /// <summary>
+        /// 체공을 위해 바꿔 둔 중력을 원래 값으로 되돌린다. 바꾸지 않았으면 아무것도 하지 않는다.
+        /// </summary>
+        private void RestoreGravity()
+        {
+            if (!_isGravityOverridden) return;
+
+            _isGravityOverridden = false;
+            SelfMotor.Gravity = _savedGravity;
         }
 
         private void ShowCircle()
