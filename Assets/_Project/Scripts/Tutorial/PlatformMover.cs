@@ -21,6 +21,11 @@ namespace Tutorial
         private TransformMotor _motor;
         #endregion
 
+        #region Properties
+        /// <summary>멈춰 있는지 여부. 멈춘 동안에는 이동 거리도 늘지 않는다.</summary>
+        public bool IsPaused { get; set; }
+        #endregion
+
         #region Unity Lifecycle
         private void Awake()
         {
@@ -34,6 +39,14 @@ namespace Tutorial
         private void Update()
         {
             if (!_isMoving) return;
+
+            if (IsPaused)
+            {
+                // TransformMotor.DeltaThisFrame은 MoveTo를 호출하지 않으면 직전 값이 남는다.
+                // 정지 중에 탑승자가 밀리지 않도록 제자리 이동으로 0을 만든다.
+                _motor.MoveTo(transform.position, 0.0f);
+                return;
+            }
 
             float step = _speed * Time.deltaTime;
             _motor.MoveTo(transform.position + (_direction * step), _speed);

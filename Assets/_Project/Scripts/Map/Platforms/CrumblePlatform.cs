@@ -27,7 +27,12 @@ namespace Map.Platforms
         #region Private Fields
         private PlatformBody _body;
         private bool _isCrumbling;
+        private float _warningRatio;
+        private bool _isSolid = true;
         #endregion
+
+        public bool IsSolid => _isSolid;
+        public float WarningRatio => _warningRatio;
 
         #region Unity Lifecycle
         private void Awake()
@@ -72,6 +77,7 @@ namespace Map.Platforms
             bool isVisible = true;
             while (elapsed < _crumbleDelay)
             {
+                _warningRatio = Mathf.Clamp01(elapsed / Mathf.Max(_crumbleDelay, 0.001f));
                 isVisible = !isVisible;
                 _body.SetVisible(isVisible);
 
@@ -80,11 +86,14 @@ namespace Map.Platforms
             }
 
             _body.SetVisible(true);
+            _isSolid = false;
             _body.SetSolid(false);
 
             yield return new WaitForSeconds(_respawnDelay);
 
             _body.SetSolid(true);
+            _isSolid = true;
+            _warningRatio = 0f;
             _isCrumbling = false;
         }
         #endregion

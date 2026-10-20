@@ -17,6 +17,19 @@ Shader "Project/CrashPanel"
         _MinOpacity ("Min Opacity", Range(0, 1)) = 0.6
         _CreaseStrength ("Mesh Crease Edges", Range(0, 2)) = 1
         _Seed ("Seed", Float) = 0
+        [Header(Simplify)]
+        _Clean ("Clean (more empty panels)", Range(0, 1)) = 0
+        _PatternStrength ("Pattern Strength", Range(0, 2)) = 1
+        _EdgeStrength ("Edge Strength", Range(0, 2)) = 1
+        _SeamStrength ("Box Seam Strength", Range(0, 1)) = 1
+        _SegmentScale ("Box Length Scale", Range(0.5, 6)) = 1
+        _PulseStrength ("Edge Pulse Strength", Range(0, 1)) = 1
+        [Toggle] _UseCustomColors ("Use Custom Colors", Float) = 0
+        [HDR] _CustomBody ("Custom Body", Color) = (0.1, 0.15, 0.3, 1)
+        _CustomAlpha ("Custom Opacity", Range(0, 1)) = 0.9
+        [HDR] _CustomEdge ("Custom Edge", Color) = (0.9, 0.95, 1.1, 1)
+        [HDR] _CustomTextA ("Custom Text A", Color) = (0.6, 0.7, 0.85, 1)
+        [HDR] _CustomTextB ("Custom Text B", Color) = (1.1, 0.95, 0.5, 1)
 
         [Header(Script Driven)]
         // GimmickSwitch 가 켜짐/꺼짐 색을 넣는다. 알파가 0 보다 크면 강조색으로 쓴다.
@@ -57,6 +70,18 @@ Shader "Project/CrashPanel"
                 float _MinOpacity;
                 float _CreaseStrength;
                 float _Seed;
+                float _Clean;
+                float _PatternStrength;
+                float _EdgeStrength;
+                float _SeamStrength;
+                float _SegmentScale;
+                float _PulseStrength;
+                float _UseCustomColors;
+                half4 _CustomBody;
+                float _CustomAlpha;
+                half4 _CustomEdge;
+                half4 _CustomTextA;
+                half4 _CustomTextB;
                 half4 _BaseColor;
                 half4 _EmissionColor;
             CBUFFER_END

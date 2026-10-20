@@ -14,7 +14,9 @@ namespace Tutorial
         [Header("References")]
         [Tooltip("소각 이벤트를 발생시키는 스포너 (씬 오브젝트라 프리팹에서는 직접 연결)")]
         [SerializeField] private PlatformSpawner _spawner;
+        [Tooltip("진행 바 (선택). 비우면 진행 바 없이 소각 이펙트만 낸다.")]
         [SerializeField] private Image _fillImage;
+        [Tooltip("퍼센트 글자 (선택)")]
         [SerializeField] private Text _percentText;
         [SerializeField] private ParticleSystem _bitsEffect;
         [SerializeField] private ParticleSystem _flashEffect;
@@ -42,12 +44,6 @@ namespace Tutorial
         #endregion
 
         #region Unity Lifecycle
-        private void Awake()
-        {
-            Debug.Assert(_fillImage != null, $"[{name}] 진행 바 Fill Image가 연결되지 않았습니다.");
-            Debug.Assert(_percentText != null, $"[{name}] 퍼센트 Text가 연결되지 않았습니다.");
-        }
-
         private void OnEnable()
         {
             if (_spawner != null)
@@ -68,7 +64,10 @@ namespace Tutorial
         {
             _displayedProgress = Mathf.MoveTowards(_displayedProgress, _targetProgress, _fillSpeed * Time.deltaTime);
 
-            _fillImage.fillAmount = _displayedProgress;
+            if (_fillImage != null)
+            {
+                _fillImage.fillAmount = _displayedProgress;
+            }
             RefreshPercentText();
         }
         #endregion
@@ -105,6 +104,8 @@ namespace Tutorial
 
         private void RefreshPercentText()
         {
+            if (_percentText == null) return;
+
             int percent = Mathf.RoundToInt(_displayedProgress * 100.0f);
             if (percent == _shownPercent) return;
 

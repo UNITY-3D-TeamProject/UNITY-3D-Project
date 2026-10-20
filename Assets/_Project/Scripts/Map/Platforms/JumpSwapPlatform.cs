@@ -24,6 +24,8 @@ namespace Map.Platforms
         private bool _isSolid = true;
         #endregion
 
+        public bool IsSolid => _isSolid;
+
         #region Unity Lifecycle
         private void Start()
         {

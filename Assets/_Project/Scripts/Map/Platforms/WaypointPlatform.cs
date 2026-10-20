@@ -41,6 +41,8 @@ namespace Map.Platforms
         private bool _isMoving;
         private bool _isForward = true;
         private bool _isWaiting;
+        private bool _isResting;
+        private Vector3 _restLocalPosition;
         private TransformMotor _motor;
         #endregion
 
@@ -81,12 +83,11 @@ namespace Map.Platforms
         {
             if (!_isMoving || _isWaiting || _waypoints.Count < 2)
             {
-                // TransformMotor.DeltaThisFrame은 MoveTo를 호출하지 않으면 직전 값이 남는다.
-                // 정지 중에 탑승자가 밀리지 않도록 제자리 이동으로 0을 만든다.
-                _motor.MoveTo(transform.position, 0.0f);
+                HoldRestPosition();
                 return;
             }
 
+            _isResting = false;
             MoveTowardsWaypoint();
         }
         #endregion
@@ -131,6 +132,23 @@ namespace Map.Platforms
         #endregion
 
         #region Private Methods
+        /// <summary>
+        /// 멈춘 순간의 로컬 위치를 기억해 두고, 멈춰 있는 동안 매 프레임 그 자리로 되돌린다.
+        /// TransformMotor.DeltaThisFrame은 MoveTo를 호출하지 않으면 직전 값이 남으므로 멈춰 있어도 호출해 0을 만든다.
+        /// 현재 위치를 그대로 다시 쓰면 회전·멀리 떨어진 부모 아래에서 변환 오차가 쌓여 발판이 밀리므로, 기억한 위치를 기준으로 쓴다.
+        /// </summary>
+        private void HoldRestPosition()
+        {
+            if (!_isResting)
+            {
+                _restLocalPosition = transform.localPosition;
+                _isResting = true;
+            }
+
+            Vector3 restPosition = (transform.parent != null) ? transform.parent.TransformPoint(_restLocalPosition) : _restLocalPosition;
+            _motor.MoveTo(restPosition, float.MaxValue);
+        }
+
         private void MoveTowardsWaypoint()
         {
             Transform targetWaypoint = _waypoints[_currentWaypointIndex];

@@ -31,7 +31,37 @@ struct BeamLook
     float textStrength;
     float isShaded;     // 1이면 면 방향에 따라 몸체 밝기가 달라진다 (솔리드)
     float3 thresholds;  // 패널 종류 경계: 빈 칸 < x <= 글자 줄 < y <= 창 격자 < z <= 서버 랙
+    float seamStrength;  // 박스 이음선 세기
+    float segmentScale;  // 박스 길이 배율 (클수록 이음선이 드물다)
+    float pulseStrength; // 모서리 데이터 펄스 세기
 };
+
+// 단순화·색 덮어쓰기. 이 파일을 include 하는 셰이더는 아래 머티리얼 값을 같은 이름으로 선언해야 한다.
+//   _Clean(빈 패널 비율 0~1), _PatternStrength, _EdgeStrength, _SeamStrength, _SegmentScale, _PulseStrength,
+//   _UseCustomColors, _CustomBody, _CustomAlpha, _CustomEdge, _CustomTextA, _CustomTextB
+void ApplySimplify(inout BeamLook look)
+{
+    if (_UseCustomColors > 0.5)
+    {
+        look.body = _CustomBody.rgb;
+        look.alpha = _CustomAlpha;
+        look.edge = _CustomEdge.rgb;
+        look.textA = _CustomTextA.rgb;
+        look.textB = _CustomTextB.rgb;
+        look.isShaded = 0.0;
+    }
+
+    // 빈 패널을 늘리고, 나머지 패널 종류는 같은 비율로 남은 구간에 다시 나눈다.
+    float emptyEnd = lerp(look.thresholds.x, 0.97, saturate(_Clean));
+    float rest = (1.0 - emptyEnd) / max(1.0 - look.thresholds.x, 0.001);
+    look.thresholds = float3(emptyEnd, emptyEnd + ((look.thresholds.y - look.thresholds.x) * rest), emptyEnd + ((look.thresholds.z - look.thresholds.x) * rest));
+
+    look.textStrength *= _PatternStrength;
+    look.edge *= _EdgeStrength;
+    look.seamStrength = _SeamStrength;
+    look.segmentScale = max(_SegmentScale, 0.1);
+    look.pulseStrength = _PulseStrength;
+}
 
 // 0 홀로그램 패널(흰·파랑) / 1 네온 원본(시안·마젠타) / 2 솔리드 블록 / 3 와이어프레임 / 4 다크 서버 랙
 BeamLook GetBeamLook(int style)
@@ -47,6 +77,9 @@ BeamLook GetBeamLook(int style)
     look.textStrength = 0.6;
     look.isShaded = 0.0;
     look.thresholds = float3(0.25, 0.68, 0.85);
+    look.seamStrength = 1.0;
+    look.segmentScale = 1.0;
+    look.pulseStrength = 1.0;
 
     if (style == 1)
     {
@@ -88,6 +121,8 @@ BeamLook GetBeamLook(int style)
         look.textStrength = 0.7;
         look.thresholds = float3(0.08, 0.28, 0.55);
     }
+
+    ApplySimplify(look);
     return look;
 }
 
@@ -95,7 +130,7 @@ BeamLook GetBeamLook(int style)
 // isBack 이면 안쪽 면이라 모서리만 흐리게 돌려준다. scale = 무늬·선 크기 배율(하늘 1, 프리팹은 작게).
 float3 BeamFace(float along, float across, float faceW, float fp, float beamSeed, float faceSeed, float t, bool isBack, BeamLook look, float scale)
 {
-    float segLength = lerp(6.0, 16.0, Hash11(beamSeed + 3.7)) * scale;
+    float segLength = lerp(6.0, 16.0, Hash11(beamSeed + 3.7)) * scale * look.segmentScale;
     float segIndex = floor(along / segLength);
     float py = frac(along / segLength) * segLength;
     float px = across;
@@ -106,7 +141,7 @@ float3 BeamFace(float along, float across, float faceW, float fp, float beamSeed
     float pulseDir = (Hash11(beamSeed + 9.1) > 0.5) ? 1.0 : -1.0;
     float pulsePhase = frac((along / (40.0 * scale)) - (t * 8.0 * pulseDir / 40.0) + Hash11(beamSeed + 4.4));
     float pulse = pow(saturate(pulsePhase), 12.0) * 3.0;
-    float edge = (LineAA(sideDist, BEAM_EDGE_WIDTH * scale, fp) * (1.0 + pulse)) + LineAA(seamDist, BEAM_EDGE_WIDTH * scale * 0.8, fp);
+    float edge = (LineAA(sideDist, BEAM_EDGE_WIDTH * scale, fp) * (1.0 + (pulse * look.pulseStrength))) + (LineAA(seamDist, BEAM_EDGE_WIDTH * scale * 0.8, fp) * look.seamStrength);
     float3 edgeColor = look.edge * edge;
     if (isBack)
     {

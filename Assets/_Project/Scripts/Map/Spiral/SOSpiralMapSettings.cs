@@ -49,7 +49,7 @@ namespace Map.Spiral
         [Tooltip("태그 하나를 이루는 구간(90도) 수. 4면 한 바퀴다.")]
         [SerializeField, Min(1)] private int _sectionsPerTag = 4;
 
-        [Tooltip("태그마다 빈 고정 발판 위에 무작위로 놓을 아이템. Count 는 태그 하나에 놓는 개수, Offset 은 발판 윗면 중앙에서 띄울 거리다.")]
+        [Tooltip("태그마다 빈 고정 발판 위에 무작위로 놓을 아이템. Count 는 태그 하나에 놓는 개수, Offset 은 발판 윗면 중앙에서 띄울 거리다. 태그에 Tag Items 가 따로 있으면 그 태그는 그것을 쓴다.")]
         [SerializeField] private SMapPlacement[] _tagItems;
 
         [Header("Tag End (태그 끝 발판의 들어오는 끝에서 잰 거리)")]
