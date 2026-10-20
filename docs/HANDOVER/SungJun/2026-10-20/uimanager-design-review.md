@@ -74,6 +74,13 @@
 - 직렬화 필드는 Canvas_InGame 프리팹 YAML의 필드명도 같이 바꿔 연결·문구 값 유지. 씬/다른 프리팹 참조 없음(텍스트 검색으로 확인).
 - 확인: 컴파일 0에러, 프리팹 `_nextLabelText` → NextLabel, `_interactLabelRoot` → InteractLabel 연결 유지, TestScene Play에서 대화 중 NextLabel "Space ▶ 다음" 표시·종료 후 숨김, 상호작용 안내 차단 true → 종료 후 false.
 
+## 추가 반영: PlayerHud legacy 게이지바 제거
+- 결정(사용자): 1번안만. 화면 영향 없는 legacy 슬라이더만 뺀다.
+- `PlayerHudView`: `_hpSlider`·`_batterySlider`·`_heatSlider`(Header "Gauges"), `_rollCooldownSlider`·`_bluetoothCooldownSlider`·`_scanCooldownSlider`(Header "Skill Cooldowns")와 Set* 함수 안의 `SetGaugeValue` 한 줄씩 삭제. `SetGaugeValue`는 HP 칸에서 쓰므로 유지.
+- `Canvas_InGame` 프리팹: 꺼져 있던 `PlayerHudRoot/PlayerHUD/HpSlider`·`BatterySlider`·`HeatSlider`, `PlayerHudRoot/Text (Legacy) HpSilder`·`BatterySlider`·`HeatSlider` 삭제(하위 포함 69개 오브젝트). 맵 씬에 이 오브젝트들을 덮어쓴 값 없음(텍스트 검색).
+- 일부러 남긴 것: HUD 숨기기(`_root`=PlayerHUD, Show·Hide·SetVisible·IsVisible, UIManager.ShowPlayerHud·HidePlayerHud). `_root` 아래에는 이제 View·Presenter 컴포넌트만 있어 Hide를 부르면 실제 HUD는 그대로 보이고 갱신만 멈춘다(호출하는 곳 없음). `Canvas_Legacy.prefab`(TestScene의 꺼진 Canvas만 사용)도 유지, 지운 필드 값은 무시된다.
+- 확인: 컴파일 0에러, TestScene Play에서 SetHp(35/100) → 35%·4번째 칸 0.5, 배터리 75%, Heat 20%, 구르기 쿨 바 0.5·"1.3s", 콘솔 에러 없음.
+
 ## 현재 상태 및 이슈
 - TestScene(Assets/Test, Git 미포함) 디스크 파일에 삭제된 `Cutscene.DialogueCutscene.Play`를 부르는 TriggerPlate가 남아 있다(Missing 호출). 에디터에서 저장 안 된 변경일 수 있음.
 
