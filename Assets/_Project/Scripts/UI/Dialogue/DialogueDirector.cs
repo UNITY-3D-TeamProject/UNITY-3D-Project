@@ -10,7 +10,7 @@ namespace UI.Dialogue
     /// 대화 연출(펫·카메라)만 맡는 컴포넌트. 대화 진행은 모르고, UIManager가 시작·줄 바뀜·끝에 맞춰 부른다.
     /// 대화가 시작된 자리에서 펫을 플레이어 앞에 세워 플레이어를 보게 하고, 말하는 사람을 비추는 카메라로 전환한다.
     /// 대화가 끝나면 펫을 원래 자리로 돌려보내고 연출 카메라를 끈다.
-    /// 대화 중에는 게임 시간이 멈추므로(GameManager.PauseGameForDialogue), 그동안 플레이어·펫 Animator와 CinemachineBrain만 게임 시간과 상관없이 돌게 한다.
+    /// 대화 중에는 게임 시간이 멈추므로(GameManager.PauseGameTime), 그동안 플레이어·펫 Animator와 CinemachineBrain만 게임 시간과 상관없이 돌게 한다.
     /// 고정 카메라는 씬 오브젝트라 대화 SO에 넣을 수 없으므로 이 컴포넌트에 목록으로 두고, 대사의 CameraIndex로 고른다.
     /// </summary>
     public class DialogueDirector : MonoBehaviour

@@ -36,6 +36,9 @@ namespace UI
 
         // 설정창이 열려 있으면 true. 열린 동안에는 대화를 시작하지 않는다.
         private bool _isSettingsOpen;
+
+        // 펫 안내가 떠 있으면 true. Space로 닫을 때까지 게임을 멈춘다.
+        private bool _isPetGuideOpen;
         #endregion
 
         #region Properties
@@ -94,6 +97,7 @@ namespace UI
         {
             CloseSettings();
             StopDialogue();
+            HidePetGuide();
             _input.UnbindPlayer();
             _input.OnOpenSettingsRequested -= OpenSettings;
             _input.OnCloseSettingsRequested -= CloseSettings;
@@ -127,8 +131,34 @@ namespace UI
         public void HidePlayerHud() => _playerHudPresenter?.Hide();
 
         // 번호에 맞는 펫 안내 문구를 띄운다. 번호와 문구는 SOPetGuideTable에서 정한다.
-        public void ShowPetGuide(int id) => _petGuidePresenter?.Show(id);
-        public void HidePetGuide() => _petGuidePresenter?.Hide();
+        // Space로 닫을 때까지 BGM만 남기고 게임을 멈추며, 입력은 Dialogue 맵(Space 닫기·ESC 설정창)으로 바꾼다.
+        // 대화 중이거나 설정창이 열려 있거나 이미 안내 중이거나 플레이어가 없으면 무시한다.
+        public void ShowPetGuide(int id)
+        {
+            if ((_petGuidePresenter == null) ||
+                IsDialoguePlaying ||
+                _isSettingsOpen ||
+                _isPetGuideOpen ||
+                (!_input.HasPlayer))
+                return;
+
+            if (!_petGuidePresenter.Show(id)) return;
+
+            _isPetGuideOpen = true;
+            _gameManager?.PauseGameTime();
+            _input.SwitchToDialogueInput();
+        }
+
+        // 펫 안내를 닫고 게임과 플레이어 조작을 돌려준다.
+        public void HidePetGuide()
+        {
+            if (!_isPetGuideOpen) return;
+
+            _isPetGuideOpen = false;
+            _petGuidePresenter.Hide();
+            _gameManager?.ResumeGameTime();
+            _input.SwitchToPlayerInput();
+        }
 
         // 번호에 맞는 컷씬을 지금 플레이어 자리에서 재생한다. 번호와 대화는 SODialogueTable에서 정한다.
         // 연출(펫 세우기·카메라)은 DialogueDirector가 맡는다. 본 기록은 남기지 않으므로 부를 때마다 재생된다.
@@ -192,8 +222,8 @@ namespace UI
             _settingsPresenter.CloseRequested -= CloseSettings;
             _settingsPresenter.Close();
 
-            // 대화 중에 연 설정창이면 대화 입력으로 돌아간다.
-            if (IsDialoguePlaying)
+            // 대화·펫 안내 중에 연 설정창이면 대화 입력으로 돌아간다.
+            if (IsDialoguePlaying || _isPetGuideOpen)
                 _input.SwitchToDialogueInput();
             else
                 _input.SwitchToPlayerInput();
@@ -203,9 +233,9 @@ namespace UI
             {
                 _gameManager.ResumeGame();
 
-                // 대화 중에 연 설정창이면 대화가 끝날 때까지 다시 멈춘다.
-                if (IsDialoguePlaying)
-                    _gameManager.PauseGameForDialogue();
+                // 대화·펫 안내 중에 연 설정창이면 그것이 끝날 때까지 다시 멈춘다.
+                if (IsDialoguePlaying || _isPetGuideOpen)
+                    _gameManager.PauseGameTime();
             }
         }
         #endregion
@@ -218,21 +248,22 @@ namespace UI
             _playerHudPresenter?.SetPlayer(playerFacade);
             _input.BindPlayer(playerFacade);
 
-            // 설정창이 열렸거나 대화 중인 상태에서 플레이어가 교체된 경우에도 그 입력 맵을 유지.
+            // 설정창이 열렸거나 대화·펫 안내 중인 상태에서 플레이어가 교체된 경우에도 그 입력 맵을 유지.
             if (_isSettingsOpen)
                 _input.SwitchToUIInput();
-            else if (IsDialoguePlaying)
+            else if (IsDialoguePlaying || _isPetGuideOpen)
                 _input.SwitchToDialogueInput();
         }
 
         // 대화를 시작한다. 끝날 때까지 Dialogue 입력 맵으로 바꿔 플레이어 조작을 막는다.
         // Dialogue 맵에서는 Space로 대사를 넘기고, ESC로 설정창을 연다.
-        // 이미 대화 중이거나 설정창이 열려 있거나 플레이어가 없으면 시작하지 않는다.
+        // 이미 대화 중이거나 설정창·펫 안내가 열려 있거나 플레이어가 없으면 시작하지 않는다.
         private void StartDialogue(SODialogue sequence)
         {
             if ((_dialoguePresenter == null) ||
                 (_dialoguePresenter.IsDialoguePlaying) ||
                 _isSettingsOpen ||
+                _isPetGuideOpen ||
                 (!_input.HasPlayer))
                 return;
 
@@ -243,7 +274,7 @@ namespace UI
             _dialogueDirector.BeginStaging();
 
             // 대화 동안 플레이어·펫 대기 애니메이션과 BGM만 남기고 게임을 멈춘다.
-            _gameManager?.PauseGameForDialogue();
+            _gameManager?.PauseGameTime();
 
             // 대화 중에는 상호작용 안내를 숨긴다.
             if (_playerHudPresenter != null)
@@ -268,7 +299,7 @@ namespace UI
             _dialoguePresenter.OnDialogueLineChanged -= HandleDialogueLineChanged;
             _dialoguePresenter.OnDialogueEnded -= HandleDialogueEnded;
 
-            _gameManager?.ResumeGameForDialogue();
+            _gameManager?.ResumeGameTime();
 
             if (_dialogueDirector != null)
                 _dialogueDirector.EndStaging();
@@ -279,9 +310,15 @@ namespace UI
             _input.SwitchToPlayerInput();
         }
 
-        // 대화 맵 Space: 다음 대사로 넘긴다.
+        // 대화 맵 Space: 펫 안내 중이면 안내를 닫고, 아니면 다음 대사로 넘긴다.
         private void HandleNextLine()
         {
+            if (_isPetGuideOpen)
+            {
+                HidePetGuide();
+                return;
+            }
+
             _dialoguePresenter?.ShowNextLine();
         }
         #endregion
