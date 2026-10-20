@@ -4,7 +4,7 @@ using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Core.Audio;
 
-namespace UI
+namespace UI.Settings
 {
     public class SettingsView : MonoBehaviour
     {

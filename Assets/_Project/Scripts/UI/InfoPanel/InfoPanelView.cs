@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UI
+namespace UI.InfoPanel
 {
     public class InfoPanelView : MonoBehaviour
     {

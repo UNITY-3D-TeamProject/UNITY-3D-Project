@@ -3,8 +3,9 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
 using SceneTransition;
+using UI.Settings;
 
-namespace UI
+namespace UI.MainMenu
 {
     public class MainMenuPresenter : MonoBehaviour
     {

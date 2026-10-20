@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-namespace UI
+namespace UI.PlayerHud
 {
     public class PlayerHudView : MonoBehaviour
     {
@@ -60,6 +60,10 @@ namespace UI
         [SerializeField] private Image[] _chargeCellImages;
         [SerializeField] private Color _chargeCellFilledColor = new Color(1.0f, 0.42f, 0.31f, 1.0f);
         [SerializeField] private Color _chargeCellEmptyColor = new Color(1.0f, 0.42f, 0.31f, 0.15f);
+
+        // 상호작용 대상을 조준하는 동안에만 보이는 안내 ("E 상호작용")
+        [Header("Interact Prompt")]
+        [SerializeField] private GameObject _interactPromptRoot;
 
         // 루트가 연결되어있는지, 활성화 상태인지 체크
         public bool IsVisible => _root != null && _root.activeSelf;
@@ -125,6 +129,14 @@ namespace UI
             if (_chargeBarRoot != null)
             {
                 _chargeBarRoot.SetActive(isVisible);
+            }
+        }
+
+        public void SetInteractPromptVisible(bool isVisible)
+        {
+            if (_interactPromptRoot != null)
+            {
+                _interactPromptRoot.SetActive(isVisible);
             }
         }
 
