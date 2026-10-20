@@ -5,7 +5,7 @@ using TMPro;
 
 namespace UI.PlayerHud
 {
-    public class PlayerHudView : MonoBehaviour
+    public class PlayerHudView : BaseView
     {
         // 크로스헤어 원호 한 칸(90°). 원호·심은 같은 fill로, 글로우는 양 끝을 늘린 만큼 더 채운다.
         [Serializable]
@@ -19,9 +19,6 @@ namespace UI.PlayerHud
         private const float ARC_CELL_MAX_FILL = 0.25f;
         // 글로우는 칸 양 끝을 6°씩 늘려 두었으므로 그만큼 더 채운다. (12° / 360°)
         private const float GLOW_EXTRA_FILL = 12.0f / 360.0f;
-
-        [Header("Root")]
-        [SerializeField] private GameObject _root;
 
         // HP 칸 게이지들. 최대 HP를 칸 개수로 나눈 값이 한 칸의 HP가 된다. (10칸, 최대 HP 100 => 한 칸 10)
         [Header("HP Cells")]
@@ -54,28 +51,6 @@ namespace UI.PlayerHud
         // 상호작용 대상을 조준하는 동안에만 보이는 안내 ("E 상호작용")
         [Header("Interact Label")]
         [SerializeField] private GameObject _interactLabelRoot;
-
-        // 루트가 연결되어있는지, 활성화 상태인지 체크
-        public bool IsVisible => _root != null && _root.activeSelf;
-
-        // HUD 보이게 하는 함수
-        public void Show()
-        {
-            SetVisible(true);
-        }
-        // HUD 숨기는 함수
-        public void Hide()
-        {
-            SetVisible(false);
-        }
-        // 실제로 HUD를 켜고 끄는 핵심 함수
-        public void SetVisible(bool isVisible)
-        {
-            if (_root != null)
-            {
-                _root.SetActive(isVisible);
-            }
-        }
 
         public void SetHp(float currentValue, float maxValue)
         {

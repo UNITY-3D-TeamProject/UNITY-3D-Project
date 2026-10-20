@@ -4,11 +4,8 @@ using UnityEngine.UI;
 
 namespace UI.PetGuide
 {
-    public class PetGuideView : MonoBehaviour
+    public class PetGuideView : BaseView
     {
-        [Header("Root")]
-        [SerializeField] private GameObject _root;
-
         [Header("Content")]
         [SerializeField] private TMP_Text _messageText;
         [SerializeField] private TMP_Text _nameText;
@@ -16,14 +13,12 @@ namespace UI.PetGuide
         [Tooltip("대화 중에만 보이는 넘기기 안내 (예: Space ▶ 다음)")]
         [SerializeField] private TMP_Text _nextLabelText;
 
-        public bool IsVisible => _root != null && _root.activeSelf;
-
         public void Show(string message)
         {
             if (_messageText != null)
                 _messageText.text = message;
 
-            SetVisible(true);
+            Show();
         }
 
         // 대화 한 줄을 띄운다. 초상화가 없으면 초상화 칸을 숨긴다.
@@ -54,17 +49,6 @@ namespace UI.PetGuide
         {
             if (_nextLabelText != null)
                 _nextLabelText.gameObject.SetActive(false);
-        }
-
-        public void Hide()
-        {
-            SetVisible(false);
-        }
-
-        private void SetVisible(bool isVisible)
-        {
-            if (_root != null)
-                _root.SetActive(isVisible);
         }
     }
 }

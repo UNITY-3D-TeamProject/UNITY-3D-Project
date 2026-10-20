@@ -6,10 +6,9 @@ using Core.Audio;
 
 namespace UI.Settings
 {
-    public class SettingsView : MonoBehaviour
+    public class SettingsView : BaseView
     {
         [Header("References")]
-        [SerializeField] private GameObject _root;
         [SerializeField] private Button _closeButton;
 
         [Header("Volume")]
@@ -43,16 +42,6 @@ namespace UI.Settings
                 _bgmSlider.onValueChanged.RemoveListener(HandleBgmChanged);
             if (_sfxSlider != null)
                 _sfxSlider.onValueChanged.RemoveListener(HandleSfxChanged);
-        }
-
-        public void Show()
-        {
-            if (_root != null) _root.SetActive(true);
-        }
-
-        public void Hide()
-        {
-            if (_root != null) _root.SetActive(false);
         }
 
         // 저장된 볼륨을 화면에만 표시한다. VolumeChanged는 발행하지 않는다.
