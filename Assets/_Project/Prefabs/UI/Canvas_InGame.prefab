@@ -2395,7 +2395,6 @@ GameObject:
   - component: {fileID: 6621128211243898775}
   - component: {fileID: 7974164993143246734}
   - component: {fileID: 4057315404170095724}
-  - component: {fileID: 3326250131703793771}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -2453,8 +2452,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Defeat all the <b>Enemies</b>
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: b04f3173f946b754db673ac13842f4c1, type: 2}
-  m_sharedMaterial: {fileID: 21728410361126204, guid: b04f3173f946b754db673ac13842f4c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 249ada295130dcb4c9b9b8ee5f05004f, type: 2}
+  m_sharedMaterial: {fileID: -6097892730938744561, guid: 249ada295130dcb4c9b9b8ee5f05004f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2523,24 +2522,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &3326250131703793771
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1543346752389967345}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e53da8c190fcc64693a9a03b09347e3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  UIManagerAsset: {fileID: 11400000, guid: ed935159a86a1be4cbc1c44848b24daf, type: 2}
-  textObject: {fileID: 4057315404170095724}
-  keepAlphaValue: 0
-  useCustomColor: 0
-  colorType: 0
-  fontType: 2
 --- !u!1 &1667268021286207077
 GameObject:
   m_ObjectHideFlags: 0
@@ -13038,7 +13019,6 @@ GameObject:
   - component: {fileID: 6324084626676165993}
   - component: {fileID: 807737186575479378}
   - component: {fileID: 5185581110618554105}
-  - component: {fileID: 1347342531087203842}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -13096,8 +13076,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Rescue the <b>Allies</b>
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: b04f3173f946b754db673ac13842f4c1, type: 2}
-  m_sharedMaterial: {fileID: 21728410361126204, guid: b04f3173f946b754db673ac13842f4c1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 249ada295130dcb4c9b9b8ee5f05004f, type: 2}
+  m_sharedMaterial: {fileID: -6097892730938744561, guid: 249ada295130dcb4c9b9b8ee5f05004f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -13166,24 +13146,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &1347342531087203842
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6885515209170064601}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e53da8c190fcc64693a9a03b09347e3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  UIManagerAsset: {fileID: 11400000, guid: ed935159a86a1be4cbc1c44848b24daf, type: 2}
-  textObject: {fileID: 5185581110618554105}
-  keepAlphaValue: 0
-  useCustomColor: 0
-  colorType: 0
-  fontType: 2
 --- !u!1 &6905311236663656062
 GameObject:
   m_ObjectHideFlags: 0
@@ -16695,6 +16657,8 @@ GameObject:
   - component: {fileID: 4232382235488591024}
   - component: {fileID: 1302250895045562964}
   - component: {fileID: 5678076136589270108}
+  - component: {fileID: 5219803870083097847}
+  - component: {fileID: 306525477883647268}
   m_Layer: 5
   m_Name: Active Mission
   m_TagString: Untagged
@@ -16773,6 +16737,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
   m_VerticalFit: 2
+--- !u!114 &5219803870083097847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8445803491931412424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 767d1f4b409849ad87b2b972ed090c2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI.InfoPanel.InfoPanelView
+  _root: {fileID: 8445803491931412424}
+  _titleText: {fileID: 5185581110618554105}
+  _bodyText: {fileID: 4057315404170095724}
+--- !u!114 &306525477883647268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8445803491931412424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a874fcbf07884f4da21611f5d15a9462, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI.InfoPanel.InfoPanelPresenter
+  _view: {fileID: 5219803870083097847}
 --- !u!1 &8513738195875461408
 GameObject:
   m_ObjectHideFlags: 0
