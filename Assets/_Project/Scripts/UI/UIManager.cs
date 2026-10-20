@@ -19,9 +19,13 @@ namespace UI
 
         // 플레이어 데이터를 UI에 보여줘야하는데 그 데이터를 조작하는 Presenter를 갖고있는다.
         [Header("References")]
+        // 플레이어 HUD (HP, 스킬 쿨타임 표시)
         [SerializeField] private PlayerHudPresenter _playerHudPresenter;
+        // 설정창 (볼륨 조절, 닫기)
         [SerializeField] private SettingsPresenter _settingsPresenter;
+        // 펫 안내 문구 (번호로 테이블에서 찾아 패널에 표시)
         [SerializeField] private PetGuidePresenter _petGuidePresenter;
+        // 대화 진행 (대화 SO를 한 줄씩 펫 안내 패널에 표시)
         [SerializeField] private DialoguePresenter _dialoguePresenter;
         [Tooltip("PlayCutscene(번호)로 재생할 컷씬 목록")]
         [SerializeField] private SOCutsceneTable _cutsceneTable;
@@ -36,7 +40,7 @@ namespace UI
         private InputAction _advanceDialogueAction;
         private InputAction _openSettingsInDialogueAction;
 
-        private SettingsPresenter _activeSettingsPresenter;
+        private bool _isSettingsOpen;
 
         // 대화를 시작한 쪽에 돌려줄 콜백. 대화 중일 때만 값이 있다.
         private Action<SDialogueLine> _dialogueLineChanged;
@@ -154,7 +158,7 @@ namespace UI
         {
             if ((_dialoguePresenter == null) ||
                 (_dialoguePresenter.IsDialoguePlaying) ||
-                (_activeSettingsPresenter != null) ||
+                _isSettingsOpen ||
                 (_playerFacade == null))
                 return false;
 
@@ -187,7 +191,7 @@ namespace UI
 
         public void OpenSettings()
         {
-            if (_activeSettingsPresenter != null ||
+            if (_isSettingsOpen ||
                 _settingsPresenter == null ||
                 _playerFacade == null ||
                 _gameManager == null)
@@ -197,26 +201,25 @@ namespace UI
                 return;
 
             // 현재 UI 지정 및 닫기 요청 연결.
-            _activeSettingsPresenter = _settingsPresenter;
-            _activeSettingsPresenter.CloseRequested += CloseSettings;
+            _isSettingsOpen = true;
+            _settingsPresenter.CloseRequested += CloseSettings;
 
             // 게임 상태와 입력 전환.
             _gameManager.PauseGame();
             _playerFacade.SwitchToUIInput();
 
-            _activeSettingsPresenter.Open();
+            _settingsPresenter.Open();
         }
 
         public void CloseSettings()
         {
-            if (_activeSettingsPresenter == null) return;
+            if (!_isSettingsOpen) return;
 
-            SettingsPresenter presenter = _activeSettingsPresenter;
-            _activeSettingsPresenter = null;
+            _isSettingsOpen = false;
 
             // 닫기 요청 해제 후 설정창 닫기.
-            presenter.CloseRequested -= CloseSettings;
-            presenter.Close();
+            _settingsPresenter.CloseRequested -= CloseSettings;
+            _settingsPresenter.Close();
 
             // 대화 중에 연 설정창이면 대화 입력으로 돌아간다.
             if (IsDialoguePlaying)
@@ -297,7 +300,7 @@ namespace UI
             }
 
             // 설정창이 열렸거나 대화 중인 상태에서 플레이어가 교체된 경우에도 그 입력 맵을 유지.
-            if (_activeSettingsPresenter != null)
+            if (_isSettingsOpen)
             {
                 _playerFacade.SwitchToUIInput();
             }
