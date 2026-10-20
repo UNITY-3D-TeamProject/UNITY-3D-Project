@@ -31,6 +31,12 @@
 - 확인: 컴파일 에러 0. TestScene Play에서 시작 대화와 HUD가 표시되고, 대화 중 ESC로 설정창 열기·닫기 후 대화로 돌아오며, Space로 끝까지 넘기면 조작이 돌아오고, 평소 ESC로 설정창이 열리는 것까지 확인했다. 새 콘솔 에러는 없었다.
 - 1~4번은 아직 반영하지 않았다.
 
+## 추가 반영: DialogueDirector → DialogueManager
+- 결정: `Instance`로 가져오는 클래스는 Manager 이름만 쓴다(사용자 방침). 그래서 씬당 하나인 `DialogueDirector`를 `DialogueManager`로 이름을 바꿨다. CutsceneManager도 후보였지만 사용자가 DialogueManager를 골랐다.
+- `.cs`와 `.meta`를 같이 `git mv` 해서 GUID(36f4da30…)를 유지했다. 그래서 Map_0_Tutorial과 TestScene의 컴포넌트 연결이 끊기지 않는다. 코드 참조와 주석은 UIManager·StageIntroDialogue·DialoguePresenter에서 고쳤다.
+- 확인: 컴파일 에러 0. TestScene Play에서 시작 컷씬(1번)이 재생되고 끝까지 넘어가며, "DialogueManager가 없어" 경고가 없었다. Map_0_Tutorial은 Play로 확인하지 않았다.
+- 씬 오브젝트 이름과 씬 YAML의 `m_EditorClassIdentifier`는 그대로 뒀다. 동작에는 영향이 없다.
+
 ## 현재 상태 및 이슈
 - TestScene(Assets/Test, Git 미포함) 디스크 파일에 삭제된 `Cutscene.DialogueCutscene.Play`를 부르는 TriggerPlate가 남아 있다(Missing 호출). 에디터에서 저장 안 된 변경일 수 있음.
 

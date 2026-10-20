@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-20** — `DialogueDirector` → `DialogueManager` 이름 변경(Instance는 Manager만 쓴다는 방침, meta·GUID 유지). 컴파일 0에러·TestScene 컷씬 재생 확인: [작업 기록](./2026-10-20/uimanager-design-review.md)
 - **2026-10-20** — UIManager 설계 검토: 사용처 0인 `ShowPlayerHud`·`HidePlayerHud`·`HidePetGuide`, 외부 호출 없는 `StopDialogue`, Director의 쓰이지 않는 `onFinished` 삭제 후보 정리. 그중 5·6번(HUD 없어도 동작, `#region`, 오타)만 반영, Play 확인: [검토 기록](./2026-10-20/uimanager-design-review.md)
 - **2026-10-19** — 상호작용 대상을 조준하면 크로스헤어 아래 `[E] 상호작용` 표시(intent-045 해결): PlayerHud가 이미 있던 `PlayerFacade.OnInteractableChanged` 구독, 대화 중 숨김, `Canvas_InGame/Crosshair/InteractPrompt` 추가. Facade·스킬 수정 없음, 컴파일 0에러·TestScene Play 확인, 커밋 안 함: [작업 기록](./2026-10-19/interact-prompt.md)
 - **2026-10-19** — DialoguePresenter 멤버 이름을 읽기 쉽게 변경(StartDialogue·ShowNextLine·OnDialogueEnded 등, 프리팹 값 유지), 대화 중 패널 오른쪽 아래 넘기기 안내(`Space ▶ 다음`/마지막 줄 `닫기`) 추가. Play 확인, 커밋 안 함: [작업 기록](./2026-10-19/testscene-intro-dialogue.md)
