@@ -26,14 +26,14 @@ namespace UI.Dialogue
         [FormerlySerializedAs("_defaultPortraits")]
         [SerializeField] private SSpeakerPortrait[] _speakerDefaultPortraits;
 
-        [Header("Advance Hint")]
+        [Header("Next Label")]
         [Tooltip("다음 줄이 남아 있을 때 패널 아래에 보이는 안내")]
-        [SerializeField] private string _nextLineHint = "Space ▶ 다음";
+        [SerializeField] private string _nextLineLabel = "Space ▶ 다음";
         [Tooltip("마지막 줄일 때 패널 아래에 보이는 안내")]
-        [SerializeField] private string _lastLineHint = "Space ▶ 닫기";
+        [SerializeField] private string _lastLineLabel = "Space ▶ 닫기";
 
         // 지금 재생 중인 대화. 대화 중이 아니면 null이다.
-        private SODialogueSequence _currentDialogue;
+        private SODialogue _currentDialogue;
         // 지금 보여 주고 있는 줄 번호 (0부터)
         private int _currentLineIndex;
 
@@ -46,7 +46,7 @@ namespace UI.Dialogue
         public event Action OnDialogueEnded;
 
         // 대화를 처음 줄부터 띄운다. 패널이 없거나, 빈 대화거나, 이미 대화 중이면 시작하지 않고 false를 돌려준다.
-        public bool StartDialogue(SODialogueSequence dialogue)
+        public bool StartDialogue(SODialogue dialogue)
         {
             if ((_petGuideView == null) ||
                 (dialogue == null) ||
@@ -98,7 +98,7 @@ namespace UI.Dialogue
 
             // 마지막 줄이면 Space로 대화가 닫힌다는 것을 알려 준다.
             bool isLastLine = (_currentLineIndex >= _currentDialogue.LineCount - 1);
-            _petGuideView.ShowAdvanceHint(isLastLine ? _lastLineHint : _nextLineHint);
+            _petGuideView.ShowNextLabel(isLastLine ? _lastLineLabel : _nextLineLabel);
 
             OnDialogueLineChanged?.Invoke(line);
         }
@@ -123,7 +123,7 @@ namespace UI.Dialogue
         {
             _currentDialogue = null;
             _currentLineIndex = 0;
-            _petGuideView.HideAdvanceHint();
+            _petGuideView.HideNextLabel();
             _petGuideView.Hide();
             OnDialogueEnded?.Invoke();
         }

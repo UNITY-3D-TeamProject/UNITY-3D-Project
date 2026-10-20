@@ -1,23 +1,18 @@
 using UnityEngine;
-using UnityEngine.UI;
 
-namespace UI.Monologue
+namespace UI
 {
-    public class MonologueView : MonoBehaviour
+    // 루트 하나를 켜고 끄는 View들의 공통 부모
+    public abstract class BaseView : MonoBehaviour
     {
         [Header("Root")]
         [SerializeField] private GameObject _root;
 
-        [Header("Content")]
-        [SerializeField] private Text _messageText;
-
+        // 루트가 연결되어있는지, 활성화 상태인지 체크
         public bool IsVisible => _root != null && _root.activeSelf;
 
-        public void Show(string message)
+        public void Show()
         {
-            if (_messageText != null)
-                _messageText.text = message;
-
             SetVisible(true);
         }
 
@@ -29,7 +24,9 @@ namespace UI.Monologue
         private void SetVisible(bool isVisible)
         {
             if (_root != null)
+            {
                 _root.SetActive(isVisible);
+            }
         }
     }
 }
