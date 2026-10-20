@@ -62,8 +62,8 @@ namespace UI.PlayerHud
         [SerializeField] private Color _chargeCellEmptyColor = new Color(1.0f, 0.42f, 0.31f, 0.15f);
 
         // 상호작용 대상을 조준하는 동안에만 보이는 안내 ("E 상호작용")
-        [Header("Interact Prompt")]
-        [SerializeField] private GameObject _interactPromptRoot;
+        [Header("Interact Label")]
+        [SerializeField] private GameObject _interactLabelRoot;
 
         // 루트가 연결되어있는지, 활성화 상태인지 체크
         public bool IsVisible => _root != null && _root.activeSelf;
@@ -132,11 +132,11 @@ namespace UI.PlayerHud
             }
         }
 
-        public void SetInteractPromptVisible(bool isVisible)
+        public void SetInteractLabelVisible(bool isVisible)
         {
-            if (_interactPromptRoot != null)
+            if (_interactLabelRoot != null)
             {
-                _interactPromptRoot.SetActive(isVisible);
+                _interactLabelRoot.SetActive(isVisible);
             }
         }
 
