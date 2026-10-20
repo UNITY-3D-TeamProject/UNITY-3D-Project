@@ -117,6 +117,13 @@
 - 다른 사람 파일(PlayerAnimator·PetFollower·PetAnimator·Main Camera 프리팹)은 수정하지 않음. 런타임에 값만 바꿨다가 되돌린다.
 - 확인: 컴파일 0에러. TestScene Play에서 `PlayDialogue(2)` → timeScale 0·3D 소리 정지·Playing·커서 잠금, 게임 시간 정지 중에도 플레이어·펫 Animator normalizedTime 증가, 펫이 설 자리(거리 0)·Speed 0, 줄마다 SpeakerCam Pet/Player 교대. 대화 중 설정창 열기 → Pause, 닫기 → Playing·timeScale 0 유지. 끝 → timeScale 1·소리·Animator Normal·Brain 원래 값·Player 맵. 설정창 연 채로 StopDialogue → 계속 Pause, 닫으면 timeScale 1. 에디터 포커스 문제로 Space는 simulate_key가 안 먹어 `HandleNextLine`을 리플렉션으로 호출(실제 키 입력은 미확인).
 
+## 추가 반영: 펫 가이드가 뜨면 게임 멈춤 + Space로 닫기 (intent-051)
+- 결정(사용자): 대상은 펫 가이드, 모든 안내에서 멈춤 + Space 닫기, BGM은 들림, 대화와 겹치면 무시(동시에 띄우지 않을 예정), 이름은 `PauseGameTime`.
+- `GameManager`: `PauseGameForDialogue`·`ResumeGameForDialogue` → `PauseGameTime`·`ResumeGameTime` 이름 변경(동작 같음, 대화·펫 가이드 공용).
+- `PetGuidePresenter`: `Show`가 성공 여부(bool)를 돌려주고, 넘기기 안내 숨김 대신 `_closeLabel`("Space ▶ 닫기")을 표시.
+- `UIManager`: `_isPetGuideOpen` 추가. `ShowPetGuide`는 대화·설정창·이미 안내 중·플레이어 없음이면 무시, 띄우면 `PauseGameTime` + Dialogue 맵. `HidePetGuide`는 열려 있을 때만 닫고 `ResumeGameTime` + Player 맵. `HandleNextLine`(Space)은 안내 중이면 닫기, 아니면 다음 대사. `CloseSettings`·`HandlePlayerSpawned`의 대화 조건에 펫 안내 추가, `StartDialogue`는 안내 중이면 무시, `OnDisable`에서 `HidePetGuide`(씬 이동 시 timeScale 복구). 펫 가이드에서는 Director를 쓰지 않으므로 플레이어·펫 애니메이션도 멈춘다.
+- 확인: 컴파일 0에러. TestScene Play에서 `ShowPetGuide(2)` → 패널·"Space ▶ 닫기"·timeScale 0·3D 소리 정지·Playing·커서 잠금·Dialogue 맵, 안내 중 `PlayDialogue` 무시, 설정창 열기 → Pause·UI 맵, 닫기 → timeScale 0 유지·Dialogue 맵, Space(UIInputHandler.HandleNextLine 리플렉션 호출) → 닫힘·timeScale 1·Player 맵, 대화 중 `ShowPetGuide` 무시, 대화 중 Space는 다음 줄, 없는 번호는 경고만, 안내 중 UIManager 비활성화 → timeScale 1 복구. simulate_key는 이번에도 전달되지 않아 실제 키 입력은 미확인.
+
 ## 현재 상태 및 이슈
 - (기존 동작, 이번에 발견) 설정창이 열린 채로 대화가 끝나면(StopDialogue 등) `HandleDialogueEnded`가 입력을 Player 맵으로 바꾼다. 설정창을 닫으면 Player 맵이 되어 결과는 같지만, 열려 있는 동안 UI 맵이 아니다. 미수정.
 - TestScene(Assets/Test, Git 미포함) 디스크 파일에 삭제된 `Cutscene.DialogueCutscene.Play`를 부르는 TriggerPlate가 남아 있다(Missing 호출). 에디터에서 저장 안 된 변경일 수 있음.
