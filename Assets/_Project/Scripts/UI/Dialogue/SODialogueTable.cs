@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UI.Dialogue;
 
-namespace UI.Cutscene
+namespace UI.Dialogue
 {
     // 번호별 대화 목록. UIManager.PlayDialogue(번호)가 번호로 대화를 찾는다.
     [CreateAssetMenu(fileName = "SODialogueTable", menuName = "UI/Dialogue Table")]

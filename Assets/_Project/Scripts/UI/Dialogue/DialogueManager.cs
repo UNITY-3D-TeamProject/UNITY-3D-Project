@@ -4,9 +4,8 @@ using Unity.Cinemachine;
 using Core;
 using Facade.Player;
 using Pet;
-using UI.Dialogue;
 
-namespace UI.Cutscene
+namespace UI.Dialogue
 {
     /// <summary>
     /// 대화 연출을 맡는 씬 단위 컴포넌트. 씬에 하나 두고 UIManager.PlayDialogue(번호)가 Instance로 찾아 쓴다.

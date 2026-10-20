@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using Core;
 using Facade.Player;
-using UI.Cutscene;
 using UI.Dialogue;
 using UI.PetGuide;
 using UI.PlayerHud;
