@@ -17,7 +17,7 @@ namespace UI
         // 대화 중에 쓰는 입력 맵 이름 (PlayerInput의 Action Asset 기준)
         private const string ACTION_MAP_DIALOGUE = "Dialogue";
         // 대화 맵에서 대사를 넘기는 액션 (Space)
-        private const string ACTION_ADVANCE_DIALOGUE = "Dialogue/Advance";
+        private const string ACTION_NEXT_LINE = "Dialogue/NextLine";
         // 대화 맵에서 설정창을 여는 액션 (ESC)
         private const string ACTION_OPEN_SETTINGS_IN_DIALOGUE = "Dialogue/OpenSettings";
         #endregion
@@ -46,7 +46,7 @@ namespace UI
         // 현재 플레이어의 PlayerInput. 대화 입력 맵(Dialogue)은 PlayerFacade를 거치지 않고 여기서 직접 전환·구독한다.
         private UnityEngine.InputSystem.PlayerInput _playerInput;
         // 구독을 풀 때 쓰려고 찾아 둔 대화 맵 액션
-        private InputAction _advanceDialogueAction;
+        private InputAction _nextLineAction;
         private InputAction _openSettingsInDialogueAction;
 
         // 설정창이 열려 있으면 true. 열린 동안에는 대화를 시작하지 않는다.
@@ -290,7 +290,7 @@ namespace UI
         }
 
         // 대화 맵 Space: 다음 대사로 넘긴다.
-        private void HandleAdvanceDialogue(InputAction.CallbackContext context)
+        private void HandleNextLine(InputAction.CallbackContext context)
         {
             _dialoguePresenter?.ShowNextLine();
         }
@@ -322,10 +322,10 @@ namespace UI
             // 대화 입력은 플레이어의 PlayerInput에서 직접 받는다.
             if (_playerFacade.TryGetComponent(out _playerInput) && (_playerInput.actions != null))
             {
-                _advanceDialogueAction = _playerInput.actions.FindAction(ACTION_ADVANCE_DIALOGUE);
+                _nextLineAction = _playerInput.actions.FindAction(ACTION_NEXT_LINE);
                 _openSettingsInDialogueAction = _playerInput.actions.FindAction(ACTION_OPEN_SETTINGS_IN_DIALOGUE);
 
-                if (_advanceDialogueAction != null) _advanceDialogueAction.performed += HandleAdvanceDialogue;
+                if (_nextLineAction != null) _nextLineAction.performed += HandleNextLine;
                 if (_openSettingsInDialogueAction != null) _openSettingsInDialogueAction.performed += HandleOpenSettingsInDialogue;
             }
 
@@ -349,12 +349,12 @@ namespace UI
                 _playerFacade.OnCloseSettingsRequested -= CloseSettings;
             }
 
-            if (_advanceDialogueAction != null) _advanceDialogueAction.performed -= HandleAdvanceDialogue;
+            if (_nextLineAction != null) _nextLineAction.performed -= HandleNextLine;
             if (_openSettingsInDialogueAction != null) _openSettingsInDialogueAction.performed -= HandleOpenSettingsInDialogue;
 
             _playerFacade = null;
             _playerInput = null;
-            _advanceDialogueAction = null;
+            _nextLineAction = null;
             _openSettingsInDialogueAction = null;
         }
         #endregion

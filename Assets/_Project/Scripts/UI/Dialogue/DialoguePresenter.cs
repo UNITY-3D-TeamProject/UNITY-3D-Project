@@ -26,7 +26,7 @@ namespace UI.Dialogue
         [FormerlySerializedAs("_defaultPortraits")]
         [SerializeField] private SSpeakerPortrait[] _speakerDefaultPortraits;
 
-        [Header("Advance Hint")]
+        [Header("Next Line Hint")]
         [Tooltip("다음 줄이 남아 있을 때 패널 아래에 보이는 안내")]
         [SerializeField] private string _nextLineHint = "Space ▶ 다음";
         [Tooltip("마지막 줄일 때 패널 아래에 보이는 안내")]
@@ -98,7 +98,7 @@ namespace UI.Dialogue
 
             // 마지막 줄이면 Space로 대화가 닫힌다는 것을 알려 준다.
             bool isLastLine = (_currentLineIndex >= _currentDialogue.LineCount - 1);
-            _petGuideView.ShowAdvanceHint(isLastLine ? _lastLineHint : _nextLineHint);
+            _petGuideView.ShowNextLineHint(isLastLine ? _lastLineHint : _nextLineHint);
 
             OnDialogueLineChanged?.Invoke(line);
         }
@@ -123,7 +123,7 @@ namespace UI.Dialogue
         {
             _currentDialogue = null;
             _currentLineIndex = 0;
-            _petGuideView.HideAdvanceHint();
+            _petGuideView.HideNextLineHint();
             _petGuideView.Hide();
             OnDialogueEnded?.Invoke();
         }

@@ -14,7 +14,7 @@ namespace UI.PetGuide
         [SerializeField] private TMP_Text _nameText;
         [SerializeField] private Image _portraitImage;
         [Tooltip("대화 중에만 보이는 넘기기 안내 (예: Space ▶ 다음)")]
-        [SerializeField] private TMP_Text _advanceHintText;
+        [SerializeField] private TMP_Text _nextLineHintText;
 
         public bool IsVisible => _root != null && _root.activeSelf;
 
@@ -42,18 +42,18 @@ namespace UI.PetGuide
         }
 
         // 패널 아래쪽에 넘기기 안내를 띄운다.
-        public void ShowAdvanceHint(string hint)
+        public void ShowNextLineHint(string hint)
         {
-            if (_advanceHintText == null) return;
+            if (_nextLineHintText == null) return;
 
-            _advanceHintText.text = hint;
-            _advanceHintText.gameObject.SetActive(true);
+            _nextLineHintText.text = hint;
+            _nextLineHintText.gameObject.SetActive(true);
         }
 
-        public void HideAdvanceHint()
+        public void HideNextLineHint()
         {
-            if (_advanceHintText != null)
-                _advanceHintText.gameObject.SetActive(false);
+            if (_nextLineHintText != null)
+                _nextLineHintText.gameObject.SetActive(false);
         }
 
         public void Hide()
