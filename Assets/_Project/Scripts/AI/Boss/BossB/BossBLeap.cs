@@ -3,7 +3,7 @@ using UnityEngine;
 namespace AI.Boss.BossB
 {
     /// <summary>
-    /// B 의 도약 내려찍기(1-2 부터). 일반은 플레이어가 선 칸에 원형 예고를 띄운 뒤 뛰어올라 내려찍고,
+    /// B 의 도약 내려찍기(1-2 부터). 일반은 플레이어가 선 칸에 원형 예고를 예고 시간 동안 페이드 인으로 띄운 뒤 뛰어올라 내려찍고,
     /// 착지 순간 피해와 칸 주변 충격파 넉백을 주고 경직한다. 착지 칸이 구멍·예고면(시작 때, 예고·체공 중) 가장 가까운 멀쩡한 칸으로 바꾼다.
     /// 회피(<c>_isEvade</c>)는 예고 없이 가장 가까운 멀쩡한 칸으로 뛰어 건너가며, 피해·충격파·경직이 없다.
     /// 포물선은 CharacterMotor 의 점프(중력)와 수평 변위로 만든다. <c>_leapHeight</c> 가 0 보다 크면 체공 동안만
@@ -67,7 +67,7 @@ namespace AI.Boss.BossB
         private ELeapPhase _phase;
         private int _landingTile;
         private float _timer;
-        private GameObject _circle;
+        private readonly BossBTelegraph _circle = new BossBTelegraph();
         private bool _isForcedLanding;
         private bool _isGravityOverridden;
         private float _savedGravity;
@@ -161,6 +161,9 @@ namespace AI.Boss.BossB
             }
 
             _timer -= deltaTime;
+            // 예고 시간 동안 원이 투명에서 머터리얼 알파까지 나타난다
+            float progress = (_telegraphSeconds > 0.0f) ? (1.0f - (_timer / _telegraphSeconds)) : 1.0f;
+            _circle.SetFade(progress);
             if (_timer > 0.0f) return;
 
             StartFlight();
@@ -317,26 +320,23 @@ namespace AI.Boss.BossB
         {
             if (!_circlePrefab) return;
 
-            _circle = Instantiate(_circlePrefab);
+            _circle.Show(_circlePrefab);
             MoveCircle();
         }
 
         private void MoveCircle()
         {
-            if (!_circle) return;
-
             float diameter = Arena.TileSize * _shockwaveTiles * 2.0f;
-            Vector3 scale = _circle.transform.localScale;
-            _circle.transform.localScale = new Vector3(diameter, scale.y, diameter);
-            _circle.transform.position = Arena.GetTileCenter(_landingTile) + (Vector3.up * _circleHeight);
+            _circle.Place(
+                Arena.GetTileCenter(_landingTile) + (Vector3.up * _circleHeight),
+                Quaternion.identity,
+                diameter,
+                diameter);
         }
 
         private void DestroyCircle()
         {
-            if (!_circle) return;
-
-            Destroy(_circle);
-            _circle = null;
+            _circle.Hide();
         }
         #endregion
     }
