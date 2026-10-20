@@ -31,6 +31,9 @@ namespace Map.Spiral
         [Tooltip("패턴 구간 하나마다 위 목록에서 무작위로 뽑는 횟수")]
         [Min(0)] public int obstaclesPerSection = 1;
 
+        [Tooltip("이 태그의 빈 고정 발판 위에 무작위로 놓을 아이템. Count 는 이 태그에 놓는 개수, Offset 은 발판 윗면 중앙에서 띄울 거리다. 비워 두면 설정 에셋의 Tag Items 를 쓴다.")]
+        public List<SMapPlacement> tagItems = new List<SMapPlacement>();
+
         [Tooltip("태그의 마지막에 놓는 넓은 고정 발판. 비워 두면 생성기의 기본 발판을 쓴다.")]
         public GameObject endPlatformPrefab;
 
@@ -237,7 +240,7 @@ namespace Map.Spiral
                     }
                 }
 
-                PlaceTagItems(itemSpots, tagRoot, random);
+                PlaceTagItems(tag, itemSpots, tagRoot, random);
                 PlaceTagEnd(tag, t, lastPlatform, endPrefab, tagRoot);
 
                 if (tag.ambientFeedPrefab != null)
@@ -702,7 +705,14 @@ namespace Map.Spiral
             int stepCount = pieces.Count + 1;
             float gap = baseGap + (Mathf.Max(remaining, 0f) / stepCount);
             // 묶음에 올라설 때는 조준이나 타이밍이 함께 필요하므로, 한 걸음의 높이를 뛸 수 있는 높이보다 낮게 잡는다
-            float heightStep = Mathf.Min(heightIncrease / stepCount, _settings.MaxJumpHeight * CHUNK_STEP_HEIGHT_RATIO);
+            float internalRise = 0f;
+            foreach (SpiralChunk piece in pieces)
+            {
+                if (piece != null) internalRise += piece.HeightRise;
+            }
+            float heightStep = Mathf.Min(
+                Mathf.Max(0f, heightIncrease - internalRise) / stepCount,
+                _settings.MaxJumpHeight * CHUNK_STEP_HEIGHT_RATIO);
 
             if (remaining < 0f)
             {
@@ -740,6 +750,7 @@ namespace Map.Spiral
                 GameObject instance = CreatePlatform(chunk.gameObject, parent, _currentAngle, _currentHeight, 0f, $"Chunk_{i:00}_{chunk.name}");
                 instance.transform.position -= instance.transform.forward * chunk.CenterZ;
                 instance.GetComponent<SpiralChunk>().ApplyPlatformMaterials(basicMaterial, movingMaterial, unstableMaterial);
+                _currentHeight += chunk.HeightRise;
             }
 
             GameObject lastPlatform = PlaceNextPlatform(
@@ -791,10 +802,13 @@ namespace Map.Spiral
             }
         }
 
-        // 설정 에셋의 태그 아이템을 이 태그의 빈 고정 발판 위에 무작위로 놓는다. 발판 하나에 하나만 놓는다.
-        private void PlaceTagItems(List<GameObject> itemSpots, Transform tagRoot, System.Random random)
+        // 태그의 아이템(없으면 설정 에셋의 태그 아이템)을 이 태그의 빈 고정 발판 위에 무작위로 놓는다. 발판 하나에 하나만 놓는다.
+        private void PlaceTagItems(SpiralTagConfig tag, List<GameObject> itemSpots, Transform tagRoot, System.Random random)
         {
-            foreach (SMapPlacement item in _settings.TagItems)
+            bool hasOwnItems = (tag.tagItems != null) && (tag.tagItems.Count > 0);
+            IReadOnlyList<SMapPlacement> items = hasOwnItems ? tag.tagItems : _settings.TagItems;
+
+            foreach (SMapPlacement item in items)
             {
                 if (item.Prefab == null) continue;
 

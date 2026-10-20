@@ -65,6 +65,10 @@ namespace Map.Gimmicks
         /// <summary>시작할 때의 상태. 자동으로 돌아갈 때도 이 상태로 돌아간다.</summary>
         public bool IsOnAtStart => _isOnAtStart;
 
+        /// <summary>시각 표시가 실제 복귀 타이머와 같은 시간을 사용한다.</summary>
+        public float RevertRemaining => Mathf.Max(0f, _revertRemaining);
+        public float RevertRatio => (_autoRevertTime > 0f) ? Mathf.Clamp01(_revertRemaining / _autoRevertTime) : 0f;
+
         /// <summary>켜질 때 실행되는 이벤트.</summary>
         public UnityEvent OnTurnedOn => _onTurnedOn;
 

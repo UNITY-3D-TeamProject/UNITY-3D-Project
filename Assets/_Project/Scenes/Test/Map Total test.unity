@@ -9246,6 +9246,8 @@ MonoBehaviour:
     MaxLateralShift: 2
   _autoStart: 1
   _shouldPrewarm: 1
+  _isPausedAtStart: 0
+  _bakedPlatforms: []
 --- !u!1 &102645957
 GameObject:
   m_ObjectHideFlags: 0
@@ -9294,6 +9296,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 2004220994}
   _movingRenderers: []
@@ -11750,6 +11753,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 1583278628}
   _movingRenderers: []
@@ -18450,6 +18454,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -4
   _exitZ: 4
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers: []
   _unstableRenderers:
@@ -18629,6 +18634,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 417830789}
   _movingRenderers: []
@@ -18832,6 +18838,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 2140113217}
   _movingRenderers: []
@@ -19064,6 +19071,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -5.5
   _exitZ: 5.5
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers:
   - {fileID: 1556530052}
@@ -29352,6 +29360,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 260362958}
   _movingRenderers: []
@@ -50998,6 +51007,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers:
   - {fileID: 1700675778}
@@ -52252,6 +52262,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -4
   _exitZ: 4
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers: []
   _unstableRenderers:
@@ -55123,6 +55134,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -5.5
   _exitZ: 5.5
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers: []
   _unstableRenderers:
@@ -62151,6 +62163,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers:
   - {fileID: 87704866}
@@ -72864,6 +72877,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -6.75
   _exitZ: 6.75
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers: []
   _unstableRenderers:
@@ -80652,6 +80666,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 896289533}
   _movingRenderers: []
@@ -81270,6 +81285,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 12
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 762052521}
   _movingRenderers: []
@@ -90395,6 +90411,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 1169393375}
   _movingRenderers: []
@@ -98905,6 +98922,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 1467272469}
   _movingRenderers: []
@@ -101678,6 +101696,63 @@ Transform:
   - {fileID: 1334585824}
   m_Father: {fileID: 1530570756}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1210725007
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5273175402197871868, guid: d12cd2fe38318564f9e8510c247ea859, type: 3}
+      propertyPath: m_Name
+      value: Example_WallItem
+      objectReference: {fileID: 0}
+    - target: {fileID: 6323560052733066260, guid: d12cd2fe38318564f9e8510c247ea859, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -13.4892235
+      objectReference: {fileID: 0}
+    - target: {fileID: 6323560052733066260, guid: d12cd2fe38318564f9e8510c247ea859, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.0000004807407
+      objectReference: {fileID: 0}
+    - target: {fileID: 6323560052733066260, guid: d12cd2fe38318564f9e8510c247ea859, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -9.864816
+      objectReference: {fileID: 0}
+    - target: {fileID: 6323560052733066260, guid: d12cd2fe38318564f9e8510c247ea859, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6323560052733066260, guid: d12cd2fe38318564f9e8510c247ea859, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6323560052733066260, guid: d12cd2fe38318564f9e8510c247ea859, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6323560052733066260, guid: d12cd2fe38318564f9e8510c247ea859, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6323560052733066260, guid: d12cd2fe38318564f9e8510c247ea859, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6323560052733066260, guid: d12cd2fe38318564f9e8510c247ea859, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6323560052733066260, guid: d12cd2fe38318564f9e8510c247ea859, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d12cd2fe38318564f9e8510c247ea859, type: 3}
 --- !u!1 &1214754636
 GameObject:
   m_ObjectHideFlags: 0
@@ -105942,6 +106017,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 2018177579}
   _movingRenderers: []
@@ -109856,6 +109932,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -7
   _exitZ: 7
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers: []
   _unstableRenderers:
@@ -110454,6 +110531,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers:
   - {fileID: 627443750}
@@ -117159,6 +117237,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -4
   _exitZ: 4
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers:
   - {fileID: 430902632}
@@ -118566,6 +118645,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 719980566}
   _movingRenderers: []
@@ -129722,6 +129802,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 281804239}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1613909158
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 721741799323226359, guid: 10588097951f5e346a69f90b02daad43, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -12.418278
+      objectReference: {fileID: 0}
+    - target: {fileID: 721741799323226359, guid: 10588097951f5e346a69f90b02daad43, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.00000069325824
+      objectReference: {fileID: 0}
+    - target: {fileID: 721741799323226359, guid: 10588097951f5e346a69f90b02daad43, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -3.379661
+      objectReference: {fileID: 0}
+    - target: {fileID: 721741799323226359, guid: 10588097951f5e346a69f90b02daad43, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 721741799323226359, guid: 10588097951f5e346a69f90b02daad43, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 721741799323226359, guid: 10588097951f5e346a69f90b02daad43, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 721741799323226359, guid: 10588097951f5e346a69f90b02daad43, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 721741799323226359, guid: 10588097951f5e346a69f90b02daad43, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 721741799323226359, guid: 10588097951f5e346a69f90b02daad43, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 721741799323226359, guid: 10588097951f5e346a69f90b02daad43, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5560596145098781097, guid: 10588097951f5e346a69f90b02daad43, type: 3}
+      propertyPath: m_Name
+      value: Example_Interact
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 10588097951f5e346a69f90b02daad43, type: 3}
 --- !u!1001 &1614212752
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -130571,6 +130708,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 960497521}
   _movingRenderers: []
@@ -131558,6 +131696,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 10
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers:
   - {fileID: 1661222419}
@@ -134111,6 +134250,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 234265209}
   _movingRenderers: []
@@ -134963,6 +135103,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 1218883921}
   _movingRenderers: []
@@ -140611,6 +140752,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -4
   _exitZ: 4
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers: []
   _unstableRenderers:
@@ -147416,6 +147558,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -4
   _exitZ: 4
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers: []
   _unstableRenderers:
@@ -147624,6 +147767,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 137192608}
   _movingRenderers: []
@@ -148141,6 +148285,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 241814085}
   _movingRenderers: []
@@ -148282,6 +148427,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers: []
   _movingRenderers:
   - {fileID: 1566502804}
@@ -153101,6 +153247,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Spiral.SpiralChunk
   _entryZ: -2
   _exitZ: 2
+  _heightRise: 0
   _platformRenderers:
   - {fileID: 4911215}
   _movingRenderers: []
@@ -167961,3 +168108,5 @@ SceneRoots:
   - {fileID: 1928534745}
   - {fileID: 1124492093}
   - {fileID: 1519257485}
+  - {fileID: 1613909158}
+  - {fileID: 1210725007}
