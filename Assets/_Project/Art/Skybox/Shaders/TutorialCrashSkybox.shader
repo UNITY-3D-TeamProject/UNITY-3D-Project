@@ -27,7 +27,22 @@ Shader "Project/TutorialCrashSkybox"
         _WarnDensity ("Warning Density", Range(0, 1)) = 0.45
         _GlitchStrength ("Glitch", Range(0, 2)) = 1
         _ScanlineStrength ("Scanlines", Range(0, 1)) = 1
+        _SkyBrightness ("Sky Brightness", Range(0.1, 1)) = 1
+        _SkySaturation ("Sky Saturation", Range(0, 1)) = 1
         _TimeScale ("Time Scale", Float) = 1
+        [Header(Simplify)]
+        _Clean ("Clean (more empty panels)", Range(0, 1)) = 0
+        _PatternStrength ("Pattern Strength", Range(0, 2)) = 1
+        _EdgeStrength ("Edge Strength", Range(0, 2)) = 1
+        _SeamStrength ("Box Seam Strength", Range(0, 1)) = 1
+        _SegmentScale ("Box Length Scale", Range(0.5, 6)) = 1
+        _PulseStrength ("Edge Pulse Strength", Range(0, 1)) = 1
+        [Toggle] _UseCustomColors ("Use Custom Colors", Float) = 0
+        [HDR] _CustomBody ("Custom Body", Color) = (0.1, 0.15, 0.3, 1)
+        _CustomAlpha ("Custom Opacity", Range(0, 1)) = 0.9
+        [HDR] _CustomEdge ("Custom Edge", Color) = (0.9, 0.95, 1.1, 1)
+        [HDR] _CustomTextA ("Custom Text A", Color) = (0.6, 0.7, 0.85, 1)
+        [HDR] _CustomTextB ("Custom Text B", Color) = (1.1, 0.95, 0.5, 1)
         _Exposure ("Exposure", Float) = 1
     }
 
@@ -71,7 +86,21 @@ Shader "Project/TutorialCrashSkybox"
                 float _WarnDensity;
                 float _GlitchStrength;
                 float _ScanlineStrength;
+                float _SkyBrightness;
+                float _SkySaturation;
                 float _TimeScale;
+                float _Clean;
+                float _PatternStrength;
+                float _EdgeStrength;
+                float _SeamStrength;
+                float _SegmentScale;
+                float _PulseStrength;
+                float _UseCustomColors;
+                half4 _CustomBody;
+                float _CustomAlpha;
+                half4 _CustomEdge;
+                half4 _CustomTextA;
+                half4 _CustomTextB;
                 float _Exposure;
             CBUFFER_END
 
@@ -246,7 +275,11 @@ Shader "Project/TutorialCrashSkybox"
 
                 // 소실점 쪽이 살짝 밝다.
                 float focus = saturate(dot(dir, float3(0.0, 0.0, 1.0)));
-                return color + (MID * pow(focus, 6.0) * 0.35);
+                color += MID * pow(focus, 6.0) * 0.35;
+
+                // 하늘 채도·밝기 조절 (눈부심을 줄이는 시안용)
+                float luma = dot(color, float3(0.3, 0.59, 0.11));
+                return lerp(luma.xxx, color, _SkySaturation) * _SkyBrightness;
             }
 
             // 뒤에서 흐르는 흐린 로그 글자 (방위각·고도 격자)

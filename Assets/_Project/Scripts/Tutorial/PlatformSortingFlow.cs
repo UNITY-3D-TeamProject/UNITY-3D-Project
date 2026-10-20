@@ -70,6 +70,10 @@ namespace Tutorial
 
         [Tooltip("켜면 멈춘 상태로 시작한다. ResumeFlow() 를 호출해야 움직인다. (예: 원거리 스위치로 작동)")]
         [SerializeField] private bool _isPausedAtStart;
+
+        [Tooltip("에디터에서 미리 깔아 둔 발판. 컴포넌트 메뉴(⋮)의 Bake Platforms 로 만들고 Clear Baked Platforms 로 지운다.\n" +
+                 "시작하면 새로 만들지 않고 이 발판들을 차례로 쓴다. 경로·간격 설정을 바꾸면 다시 굽는다.")]
+        [SerializeField] private List<RideablePlatform> _bakedPlatforms = new List<RideablePlatform>();
         #endregion
 
         #region Private Fields
@@ -197,6 +201,7 @@ namespace Tutorial
 
             SpawnDuePlatforms(false);
             MovePlatforms();
+            DestroyUnusedBakedPlatforms();
 
             _isRunning = true;
         }
@@ -215,6 +220,28 @@ namespace Tutorial
         public void ResumeFlow()
         {
             IsPaused = false;
+        }
+
+        /// <summary>
+        /// 지금 흐름 위에 있는 발판 중 position 에 가장 가까운 발판을 돌려준다. (예: 음악 파일을 얹을 발판 고르기)
+        /// </summary>
+        /// <returns>가장 가까운 발판의 Transform. 발판이 없으면 null</returns>
+        public Transform FindNearestPlatform(Vector3 position)
+        {
+            Transform nearest = null;
+            float nearestDistance = float.MaxValue;
+
+            foreach (FlowPlatform platform in _platforms)
+            {
+                float distance = Vector3.Distance(platform.Motor.transform.position, position);
+                if (distance < nearestDistance)
+                {
+                    nearest = platform.Motor.transform;
+                    nearestDistance = distance;
+                }
+            }
+
+            return nearest;
         }
         #endregion
 
@@ -253,8 +280,12 @@ namespace Tutorial
             int ring = index % RING_COUNT;
             Vector3 position = GetPathPosition(ring, _clock - spawnTime);
 
-            // TODO: 오브젝트 풀 도입 시 풀에서 꺼내는 코드로 교체
-            RideablePlatform instance = Instantiate(_platformPrefab, position, _platformPrefab.transform.rotation);
+            RideablePlatform instance = TakeBakedPlatform(position);
+            if (instance == null)
+            {
+                // TODO: 오브젝트 풀 도입 시 풀에서 꺼내는 코드로 교체
+                instance = Instantiate(_platformPrefab, position, _platformPrefab.transform.rotation);
+            }
 
             _platforms.Add(new FlowPlatform
             {
@@ -267,6 +298,36 @@ namespace Tutorial
             {
                 OnPlatformSpawned?.Invoke(position);
             }
+        }
+
+        // 에디터에서 구운 발판이 남아 있으면 앞에서부터 하나 꺼내 position 에 놓는다. 없으면 null.
+        private RideablePlatform TakeBakedPlatform(Vector3 position)
+        {
+            while (_bakedPlatforms.Count > 0)
+            {
+                RideablePlatform platform = _bakedPlatforms[0];
+                _bakedPlatforms.RemoveAt(0);
+                if (platform == null) continue;
+
+                platform.transform.position = position;
+                return platform;
+            }
+
+            return null;
+        }
+
+        // 설정이 바뀌어 구운 발판이 남으면 정리한다.
+        private void DestroyUnusedBakedPlatforms()
+        {
+            foreach (RideablePlatform platform in _bakedPlatforms)
+            {
+                if (platform != null)
+                {
+                    Destroy(platform.gameObject);
+                }
+            }
+
+            _bakedPlatforms.Clear();
         }
 
         private void MovePlatforms()
@@ -378,6 +439,53 @@ namespace Tutorial
             return transform.position + (transform.rotation * localPosition);
         }
         #endregion
+
+#if UNITY_EDITOR
+        #region Editor
+        // 미리 채운 시작 상태(Prewarm)와 같은 자리에 발판을 씬 오브젝트로 만들어 둔다. (Play 중에는 쓰지 않는다)
+        [ContextMenu("Bake Platforms")]
+        private void BakePlatforms()
+        {
+            if (Application.isPlaying || (_platformPrefab == null) || (_sourcePoint == null) || (_sinkPoint == null)) return;
+
+            ClearBakedPlatforms();
+            CalculateDurations();
+
+            for (int index = 0; (index * _spawnInterval) <= _totalDuration; index++)
+            {
+                float age = _totalDuration - (index * _spawnInterval);
+                if (age >= _totalDuration) continue;
+
+                var instance = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(_platformPrefab.gameObject, transform);
+                instance.transform.SetPositionAndRotation(
+                    GetPathPosition(index % RING_COUNT, age),
+                    _platformPrefab.transform.rotation);
+                instance.name = $"{_platformPrefab.name}_Baked_{index:00}";
+                UnityEditor.Undo.RegisterCreatedObjectUndo(instance, "Bake Platforms");
+
+                _bakedPlatforms.Add(instance.GetComponent<RideablePlatform>());
+            }
+        }
+
+        [ContextMenu("Clear Baked Platforms")]
+        private void ClearBakedPlatforms()
+        {
+            if (Application.isPlaying) return;
+
+            UnityEditor.Undo.RecordObject(this, "Clear Baked Platforms");
+
+            foreach (RideablePlatform platform in _bakedPlatforms)
+            {
+                if (platform != null)
+                {
+                    UnityEditor.Undo.DestroyObjectImmediate(platform.gameObject);
+                }
+            }
+
+            _bakedPlatforms.Clear();
+        }
+        #endregion
+#endif
 
         #region Nested Types
         private sealed class FlowPlatform

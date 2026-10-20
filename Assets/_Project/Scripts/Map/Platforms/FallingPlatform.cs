@@ -48,6 +48,10 @@ namespace Map.Platforms
         private float _fallSpeed;
         #endregion
 
+        public bool IsSolid => _state != EState.Hidden;
+        public bool IsFalling => _state == EState.Falling;
+        public float WarningRatio => (_state == EState.Waiting) ? Mathf.Clamp01(_stateTime / Mathf.Max(_fallDelay, 0.001f)) : 0f;
+
         #region Unity Lifecycle
         private void Awake()
         {
