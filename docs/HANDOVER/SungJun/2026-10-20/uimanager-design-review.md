@@ -81,6 +81,11 @@
 - 일부러 남긴 것: HUD 숨기기(`_root`=PlayerHUD, Show·Hide·SetVisible·IsVisible, UIManager.ShowPlayerHud·HidePlayerHud). `_root` 아래에는 이제 View·Presenter 컴포넌트만 있어 Hide를 부르면 실제 HUD는 그대로 보이고 갱신만 멈춘다(호출하는 곳 없음). `Canvas_Legacy.prefab`(TestScene의 꺼진 Canvas만 사용)도 유지, 지운 필드 값은 무시된다.
 - 확인: 컴파일 0에러, TestScene Play에서 SetHp(35/100) → 35%·4번째 칸 0.5, 배터리 75%, Heat 20%, 구르기 쿨 바 0.5·"1.3s", 콘솔 에러 없음.
 
+## 추가 반영: 첫 소환 체력·배터리 100
+- 원인: `PlayerSpawner.prefab`의 `_playerEffects` 중 `Player_Effect.asset`(CurrentHp, Set)이 50, `Player_Effect 2.asset`(CurrentBattery, Set)이 80이었다. MaxHp·MaxBattery는 `SOAttributeData_Player`에서 100.
+- 수정: 두 SO의 `_amount`만 100으로 변경. 플레이어 프리팹·PlayerSpawner 프리팹·코드는 건드리지 않음.
+- 확인: TestScene Play(SpawnReason NewGame)에서 CurrentHp 100/100, CurrentBattery 100/100.
+
 ## 현재 상태 및 이슈
 - TestScene(Assets/Test, Git 미포함) 디스크 파일에 삭제된 `Cutscene.DialogueCutscene.Play`를 부르는 TriggerPlate가 남아 있다(Missing 호출). 에디터에서 저장 안 된 변경일 수 있음.
 
