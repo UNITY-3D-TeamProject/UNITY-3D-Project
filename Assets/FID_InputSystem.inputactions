@@ -795,10 +795,19 @@
             "id": "9c0200a6-4335-4014-8021-eb3d44c7fd98",
             "actions": [
                 {
-                    "name": "Advance",
+                    "name": "NextLine",
                     "type": "Button",
                     "id": "b9749b59-66f8-4545-a5e0-db3422cbe3b1",
                     "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "OpenSettings",
+                    "type": "Button",
+                    "id": "1e8db2f5-d7ac-46db-abf5-bbfb8b4b9c67",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -812,7 +821,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Advance",
+                    "action": "NextLine",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1c1bee66-7c05-4d36-9d26-b6942a24c907",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "OpenSettings",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

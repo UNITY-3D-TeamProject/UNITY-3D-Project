@@ -5,7 +5,7 @@ using TMPro;
 
 namespace UI.PlayerHud
 {
-    public class PlayerHudView : MonoBehaviour
+    public class PlayerHudView : BaseView
     {
         // 크로스헤어 원호 한 칸(90°). 원호·심은 같은 fill로, 글로우는 양 끝을 늘린 만큼 더 채운다.
         [Serializable]
@@ -20,14 +20,6 @@ namespace UI.PlayerHud
         // 글로우는 칸 양 끝을 6°씩 늘려 두었으므로 그만큼 더 채운다. (12° / 360°)
         private const float GLOW_EXTRA_FILL = 12.0f / 360.0f;
 
-        [Header("Root")]
-        [SerializeField] private GameObject _root;
-
-        [Header("Gauges")]
-        [SerializeField] private Slider _hpSlider;
-        [SerializeField] private Slider _batterySlider;
-        [SerializeField] private Slider _heatSlider;
-
         // HP 칸 게이지들. 최대 HP를 칸 개수로 나눈 값이 한 칸의 HP가 된다. (10칸, 최대 HP 100 => 한 칸 10)
         [Header("HP Cells")]
         [SerializeField] private Slider[] _hpCellSliders;
@@ -39,11 +31,6 @@ namespace UI.PlayerHud
         [SerializeField] private TMP_Text _heatPercentText;
         [SerializeField] private SArcCell[] _batteryArcCells;
         [SerializeField] private TMP_Text _batteryPercentText;
-
-        [Header("Skill Cooldowns")]
-        [SerializeField] private Slider _rollCooldownSlider;
-        [SerializeField] private Slider _bluetoothCooldownSlider;
-        [SerializeField] private Slider _scanCooldownSlider;
 
         // 스킬 카드의 원형 쿨타임 바(Filled 이미지)와 남은 시간 글자
         [Header("Skill Cards")]
@@ -62,65 +49,37 @@ namespace UI.PlayerHud
         [SerializeField] private Color _chargeCellEmptyColor = new Color(1.0f, 0.42f, 0.31f, 0.15f);
 
         // 상호작용 대상을 조준하는 동안에만 보이는 안내 ("E 상호작용")
-        [Header("Interact Prompt")]
-        [SerializeField] private GameObject _interactPromptRoot;
-
-        // 루트가 연결되어있는지, 활성화 상태인지 체크
-        public bool IsVisible => _root != null && _root.activeSelf;
-
-        // HUD 보이게 하는 함수
-        public void Show()
-        {
-            SetVisible(true);
-        }
-        // HUD 숨기는 함수
-        public void Hide()
-        {
-            SetVisible(false);
-        }
-        // 실제로 HUD를 켜고 끄는 핵심 함수
-        public void SetVisible(bool isVisible)
-        {
-            if (_root != null)
-            {
-                _root.SetActive(isVisible);
-            }
-        }
+        [Header("Interact Label")]
+        [SerializeField] private GameObject _interactLabelRoot;
 
         public void SetHp(float currentValue, float maxValue)
         {
-            SetGaugeValue(_hpSlider, currentValue, maxValue);
             SetHpCells(currentValue, maxValue);
         }
 
         public void SetBattery(float currentValue, float maxValue)
         {
-            SetGaugeValue(_batterySlider, currentValue, maxValue);
             SetArcCells(_batteryArcCells, _batteryPercentText, currentValue, maxValue);
         }
 
         public void SetHeat(float currentValue, float maxValue)
         {
-            SetGaugeValue(_heatSlider, currentValue, maxValue);
             SetArcCells(_heatArcCells, _heatPercentText, currentValue, maxValue);
         }
 
         // 남은 쿨타임 비율(0~1)과 남은 시간(초)을 표시한다. 비율 1 = 방금 사용, 0 = 사용 가능
         public void SetRollCooldown(float remainingRatio, float remainingTime)
         {
-            SetGaugeValue(_rollCooldownSlider, remainingRatio, 1.0f);
             SetCooldownGauge(_rollCooldownBar, _rollCooldownText, remainingRatio, remainingTime);
         }
 
         public void SetBluetoothCooldown(float remainingRatio, float remainingTime)
         {
-            SetGaugeValue(_bluetoothCooldownSlider, remainingRatio, 1.0f);
             SetCooldownGauge(_bluetoothCooldownBar, _bluetoothCooldownText, remainingRatio, remainingTime);
         }
 
         public void SetScanCooldown(float remainingRatio, float remainingTime)
         {
-            SetGaugeValue(_scanCooldownSlider, remainingRatio, 1.0f);
             SetCooldownGauge(_scanCooldownBar, _scanCooldownText, remainingRatio, remainingTime);
         }
 
@@ -132,11 +91,11 @@ namespace UI.PlayerHud
             }
         }
 
-        public void SetInteractPromptVisible(bool isVisible)
+        public void SetInteractLabelVisible(bool isVisible)
         {
-            if (_interactPromptRoot != null)
+            if (_interactLabelRoot != null)
             {
-                _interactPromptRoot.SetActive(isVisible);
+                _interactLabelRoot.SetActive(isVisible);
             }
         }
 

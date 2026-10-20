@@ -12,23 +12,28 @@ namespace UI.PetGuide
         [SerializeField] private string _petName = "PET";
         [SerializeField] private Sprite _petPortrait;
 
-        // 번호에 맞는 문구를 테이블에서 찾아 패널에 띄운다.
-        public void Show(int id)
+        [Header("Close Label")]
+        [Tooltip("안내 패널 아래에 보이는 닫기 안내")]
+        [SerializeField] private string _closeLabel = "Space ▶ 닫기";
+
+        // 번호에 맞는 문구를 테이블에서 찾아 패널에 띄운다. 패널이나 문구가 없으면 띄우지 않고 false를 돌려준다.
+        public bool Show(int id)
         {
             if ((_view == null) || (_table == null))
-                return;
+                return false;
 
             if (!_table.TryGetMessage(id, out string message, out Sprite portrait))
             {
                 Debug.LogWarning($"[PetGuidePresenter] {id}번 문구가 테이블에 없습니다.", this);
-                return;
+                return false;
             }
 
-            // 안내는 넘기는 입력이 없으므로 대화용 넘기기 안내를 숨긴다.
-            _view.HideAdvanceHint();
+            // Space로 닫는다는 것을 알려 준다.
+            _view.ShowNextLabel(_closeLabel);
 
             // 항목에 표정이 지정돼 있으면 그 얼굴, 아니면 펫 기본 얼굴.
             _view.ShowLine(_petName, (portrait != null) ? portrait : _petPortrait, message);
+            return true;
         }
 
         public void Hide() => _view?.Hide();

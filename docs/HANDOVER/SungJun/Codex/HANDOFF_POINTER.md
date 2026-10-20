@@ -3,6 +3,8 @@
 이 파일은 Codex 명의로 진행한 작업 이력의 목차이다.
 
 ## 변경 이력 (최신순)
+- **2026-10-20** — AudioManager Play 로직 검증: 기본 재생·곡 넘기기·셔플·볼륨·일시정지 통과, 실패한 SFX의 제한 기록·UI 제한·짧은 BGM 페이드 무음 재현. 게임 코드 미수정: [검증 기록](./2026-10-20/audio-manager-logic-review.md)
+- **2026-10-20** — UIManager 선언 순서 및 컷씬 중 ESC 설정창 입력 연결: [작업 기록](./2026-10-20/uimanager-layout.md)
 - **2026-10-18** — Git 병합 중 로컬 씬 변경 충돌 안내: [작업 기록](./2026-10-18/git-merge-local-scene-change.md)
 - **2026-10-18** — Unity MCP 설정 및 Editor 연결 복구: [작업 기록](./2026-10-18/unity-mcp-connection-check.md)
 - **2026-10-16** — 로비 참고 HUD를 Test MainScene으로 옮기고 Canvas 9개를 개별 프리팹화: [작업 기록](./2026-10-16/main-scene-canvas-prefabs.md)

@@ -65,14 +65,14 @@ namespace UI.PlayerHud
         // 상호작용 대상을 조준하고 있는지. PlayerFacade.OnInteractableChanged로 받는다.
         private bool _hasInteractTarget;
         // 대화 중이라 상호작용 안내를 막았는지. UIManager가 대화 시작·종료 때 바꾼다.
-        private bool _isInteractPromptBlocked;
+        private bool _isInteractLabelBlocked;
 
         private void OnEnable()
         {
             // 차지 상태는 다음 차지 시작 알림을 받을 때까지 알 수 없으므로 차지 바를 숨겨둔다.
             ResetFireChargeHud();
             // 대상 유무도 바뀔 때만 알림이 오므로 다음 알림까지 안내를 숨겨둔다.
-            ResetInteractPrompt();
+            ResetInteractLabel();
 
             if ((_playerFacade == null) || (_view == null))
             {
@@ -89,7 +89,7 @@ namespace UI.PlayerHud
         {
             UnsubscribePlayer();
             ResetFireChargeHud();
-            ResetInteractPrompt();
+            ResetInteractLabel();
         }
 
         private void Update()
@@ -123,7 +123,7 @@ namespace UI.PlayerHud
             _bluetoothCooldown = default;
             _scanCooldown = default;
             ResetFireChargeHud();
-            ResetInteractPrompt();
+            ResetInteractLabel();
 
             if (_view == null)
             {
@@ -154,10 +154,10 @@ namespace UI.PlayerHud
         // 상호작용 안내를 막거나 푸는 함수
         // UIManager에서 대화 시작 때 true, 대화 종료 때 false로 호출한다.
         // 막혀 있는 동안에도 대상 유무는 계속 기억해서, 풀릴 때 여전히 조준 중이면 바로 다시 띄운다.
-        public void SetInteractPromptBlocked(bool isBlocked)
+        public void SetInteractLabelBlocked(bool isBlocked)
         {
-            _isInteractPromptBlocked = isBlocked;
-            UpdateInteractPrompt();
+            _isInteractLabelBlocked = isBlocked;
+            UpdateInteractLabel();
         }
 
         // HUD의 모든 게이지를 한 번에 갱신하는 함수
@@ -311,25 +311,25 @@ namespace UI.PlayerHud
         private void HandleInteractableChanged(bool hasTarget)
         {
             _hasInteractTarget = hasTarget;
-            UpdateInteractPrompt();
+            UpdateInteractLabel();
         }
 
         // 대상이 있고 막혀 있지 않을 때만 안내를 보인다.
-        private void UpdateInteractPrompt()
+        private void UpdateInteractLabel()
         {
             if (_view == null)
             {
                 return;
             }
 
-            _view.SetInteractPromptVisible(_hasInteractTarget && !_isInteractPromptBlocked);
+            _view.SetInteractLabelVisible(_hasInteractTarget && !_isInteractLabelBlocked);
         }
 
         // 대상 유무를 비우고 안내를 숨기는 함수 (대화로 막힌 상태는 유지한다)
-        private void ResetInteractPrompt()
+        private void ResetInteractLabel()
         {
             _hasInteractTarget = false;
-            UpdateInteractPrompt();
+            UpdateInteractLabel();
         }
 
         private void UpdateHpHud()
