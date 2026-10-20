@@ -100,6 +100,14 @@
 - `DialogueManager.cs`·`SODialogueTable.cs`를 .meta와 함께 `UI/Dialogue/`로 이동(GUID 유지), 네임스페이스 `UI.Cutscene` → `UI.Dialogue`, 같은 네임스페이스가 되어 필요 없어진 `using UI.Dialogue` 삭제. `UIManager`의 `using UI.Cutscene` 삭제. 빈 `Cutscene` 폴더·.meta 삭제.
 - 확인: 컴파일 0에러, `UI.Cutscene` 타입 0개, Canvas_InGame의 DialogueManager·UIManager `_cutsceneTable` → `SODialogueTable.asset` 연결 유지, TestScene Play에서 `PlayDialogue(2)` 재생 → 끝까지 넘기면 Player 맵 복귀.
 
+## 추가 반영: 대화 흐름 한 방향 정리 + DialogueManager → DialogueDirector (intent-049)
+- 문제: `UIManager.PlayDialogue` → `DialogueManager.Play` → `UIManager.StartDialogue(콜백 2개)` → Presenter로 서로를 불러, 콜백 전달용 필드가 양쪽에 있었다.
+- 결정(사용자): 대화 진행은 UIManager 한 곳, 연출 부품 이름은 `DialogueDirector`(Instance 제거), Director가 연결되지 않으면 지금처럼 재생하지 않는다(경고).
+- `DialogueDirector.cs`(파일·클래스 이름 변경, GUID 유지): UIManager 참조·`Play`·`_onFinished`·`HandleFinished`·`Instance` 삭제. `BeginStaging()`·`ShowLine(SDialogueLine)`(옛 HandleLineChanged)·`EndStaging()`만 public.
+- `UIManager`: `[SerializeField] DialogueDirector _dialogueDirector` 추가, `PlayDialogue` → private `StartDialogue(sequence)`(BeginStaging → 안내 숨김 → Dialogue 맵 → Presenter 시작), 줄 바뀜 → `ShowLine`, 끝 → `EndStaging`. 콜백 필드 2개와 `using System` 삭제. 바깥 API(`PlayDialogue`·`StopDialogue`·`IsDialoguePlaying`) 그대로.
+- `Canvas_InGame.prefab`: UIManager `_dialogueDirector` 연결, 오브젝트 이름 `DialogueManager` → `DialogueDirector`(diff 2줄). 주석의 DialogueManager 언급(DialoguePresenter, SODialogue)도 변경.
+- 확인: 컴파일 0에러. TestScene Play에서 재생·대화 중 설정창·줄마다 카메라 교대·끝나면 Player 맵/카메라 끔/펫 원래 자리, StopDialogue 정리, 없는 번호 경고, Director 미연결 시 경고만 하고 재생 안 함(콜백 직접 호출로 확인).
+
 ## 현재 상태 및 이슈
 - TestScene(Assets/Test, Git 미포함) 디스크 파일에 삭제된 `Cutscene.DialogueCutscene.Play`를 부르는 TriggerPlate가 남아 있다(Missing 호출). 에디터에서 저장 안 된 변경일 수 있음.
 
