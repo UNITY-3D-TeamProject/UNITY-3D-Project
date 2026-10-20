@@ -9,7 +9,7 @@ using UI.Dialogue;
 namespace UI.Cutscene
 {
     /// <summary>
-    /// 대화 연출을 맡는 씬 단위 컴포넌트. 씬에 하나 두고 UIManager.PlayCutscene이 Instance로 찾아 쓴다.
+    /// 대화 연출을 맡는 씬 단위 컴포넌트. 씬에 하나 두고 UIManager.PlayDialogue(번호)가 Instance로 찾아 쓴다.
     /// 대화가 시작된 자리에서 펫을 플레이어 앞에 세워 플레이어를 보게 하고, 말하는 사람을 비추는 카메라로 전환한다.
     /// 대화가 끝나면 펫을 원래 자리로 돌려보내고 연출 카메라를 끈다.
     /// 고정 카메라는 씬 오브젝트라 대화 SO에 넣을 수 없으므로 이 컴포넌트에 목록으로 두고, 대사의 CameraIndex로 고른다.
@@ -101,7 +101,7 @@ namespace UI.Cutscene
             // 첫 줄의 카메라가 대화 시작과 동시에 정해지므로 펫과 카메라를 먼저 배치한다.
             BeginStaging();
 
-            if (!uiManager.PlayDialogue(sequence, HandleLineChanged, HandleFinished))
+            if (!uiManager.StartDialogue(sequence, HandleLineChanged, HandleFinished))
             {
                 EndStaging();
                 _onFinished = null;

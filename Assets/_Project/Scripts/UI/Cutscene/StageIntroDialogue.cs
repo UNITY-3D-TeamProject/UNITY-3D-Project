@@ -52,7 +52,7 @@ namespace UI.Cutscene
             if (_hasPlayed || (UIManager.Instance == null)) return;
 
             _hasPlayed = true;
-            UIManager.Instance.PlayCutscene(_cutsceneId);
+            UIManager.Instance.PlayDialogue(_cutsceneId);
         }
         #endregion
     }
