@@ -5,6 +5,9 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-18** — 사용자 요청으로 Codex commit 스킬의 AI 공동 작성자 자동 추가 규칙을 제거하고 작성 금지로 변경: [작업 기록](./2026-10-18/commit-ai-attribution-preference.md)
+- **2026-10-18** — EffectManager 1단계 구현(intent-043 해결): SO별 자동 풀·일회성/루프·자식 파티클·안전한 핸들·부모 수명 처리 및 프리팹. Unity 컴파일 오류 0, Play 검증 27항목 통과. 게임 씬 배치·기존 호출부 교체 제외: [작업 기록](./2026-10-18/effect-manager-phase1.md)
+- **2026-10-18** — EffectManager 설계 검토: 기본 구조 유지 권장. 테스트 VFX의 루트 파티클 부재, Stop 중복·일회성 정책, 핸들 세대 및 외부 부모 수명 정리 보완 제안. 구현·Play 검증 없음: [검토 기록](./2026-10-18/effect-manager-design-review.md)
 - **2026-10-17** — AudioManager 과설계 정적 검토: 기본 구조 유지 권장, BGM 전환 중 Skip 초기화 누락 가능성과 UI까지 적용되는 공통 중복 제한 지적. 코드 변경·Play 검증 없음: [검토 기록](./2026-10-17/audio-manager-complexity-review.md)
 - **2026-10-17** — AudioManager 1단계 구현(intent-038): `Core/Audio` 스크립트 4개, 믹서·SO·프리팹, 설정창 볼륨 슬라이더 연결, `AudioListener.pause` 일시정지. 컴파일 0에러·프레임 스텝 Play 로직 검증. 씬 배치는 사용자 지시로 보류, 실제 청취 미확인: [작업 기록](./2026-10-17/audio-manager-phase1.md)
 - **2026-10-17** — VFX 전제 EffectManager 씬 단위 싱글톤·기존 풀 재사용 설계 제안. 범위 및 사용자 결정 미확정, 코드 변경 없음: [설계 기록](./2026-10-17/effect-manager-design.md)

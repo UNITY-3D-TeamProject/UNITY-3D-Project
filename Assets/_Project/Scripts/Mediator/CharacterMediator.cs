@@ -94,12 +94,18 @@ namespace Mediator
 
             // 시점 입력 전에도 이동이 카메라 기준이 되도록 초기 방향을 한 번 전달
             if (_cameraMediator) _cameraMediator.PublishViewForward();
+
+            // 비활성 중 놓친 구르기·탑승 종료와 초기 탑승 상태를 카메라에 맞춘다
+            SyncCameraSpeedFeedback();
         }
 
         private void OnDisable()
         {
             UnbindCallbacks();
             Unsubscribe();
+
+            // 이벤트 경로가 끊기므로 카메라 속도감 효과를 해제한다
+            if (_cameraMediator) _cameraMediator.SyncSpeedFeedback(false, false);
         }
         #endregion
 
@@ -187,6 +193,17 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 피격 후 무적 지속 시간을 바꾼다. 진행 중인 무적에는 적용하지 않고 다음 피격부터 적용한다.
+        /// </summary>
+        /// <param name="duration">무적 지속 시간(초). 음수는 0 으로 처리한다</param>
+        public void SetHitInvincibilityDuration(float duration)
+        {
+            if (!_combatMediator) return;
+
+            _combatMediator.SetHitInvincibilityDuration(duration);
+        }
+
+        /// <summary>
         /// 사망 처리로 바뀐 상태를 되돌린다. 오브젝트 풀에서 다시 꺼낸 캐릭터가 재사용될 때 호출한다.
         /// </summary>
         public void ResetForReuse()
@@ -195,6 +212,7 @@ namespace Mediator
             if (_moveMediator) _moveMediator.enabled = true;
             if (_skillMediator) _skillMediator.enabled = true;
             if (_rotateMediator) _rotateMediator.enabled = true;
+            SyncCameraSpeedFeedback();
         }
         #endregion
 
@@ -228,6 +246,8 @@ namespace Mediator
                 if (_cameraMediator) _spawnMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
             }
             if (_playerAnimationMediator && _cameraMediator) _playerAnimationMediator.SetGetAimPoint(_cameraMediator.GetAimPoint);
+            if (_skillMediator && _cameraMediator) _cameraMediator.SetGetRollFollowSettings(_skillMediator.GetRollFollowSettings);
+            if (_skillMediator && _cameraMediator) _cameraMediator.SetGetRidingViewSettings(_skillMediator.GetRidingViewSettings);
             if (_skillMediator && _moveMediator) _skillMediator.SetGetGrounded(_moveMediator.IsGrounded);
             if (_skillMediator && _cameraMediator) _skillMediator.SetGetAimRay(_cameraMediator.GetAimRay);
             if (_attributeMediator && _combatMediator) _attributeMediator.SetIsDamageBlocked(_combatMediator.IsDamageBlocked);
@@ -251,6 +271,8 @@ namespace Mediator
                 _spawnMediator.ClearGetAimPoint();
             }
             if (_playerAnimationMediator) _playerAnimationMediator.ClearGetAimPoint();
+            if (_cameraMediator) _cameraMediator.ClearGetRollFollowSettings();
+            if (_cameraMediator) _cameraMediator.ClearGetRidingViewSettings();
             if (_skillMediator) _skillMediator.ClearGetGrounded();
             if (_skillMediator) _skillMediator.ClearGetAimRay();
             if (_attributeMediator) _attributeMediator.ClearIsDamageBlocked();
@@ -374,6 +396,18 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 구르기·탑승의 실제 상태를 카메라 중재자에 즉시 맞춘다. 사망 상태에서는 모두 해제한다.
+        /// </summary>
+        private void SyncCameraSpeedFeedback()
+        {
+            if (!_cameraMediator) return;
+
+            bool isRolling = !_isDead && _moveMediator && _moveMediator.IsRolling();
+            bool isRiding = !_isDead && _skillMediator && _skillMediator.IsRiding();
+            _cameraMediator.SyncSpeedFeedback(isRolling, isRiding);
+        }
+
+        /// <summary>
         /// 자동 전진 상태를 기록하고 이동 중재자로 전달한다.
         /// </summary>
         /// <param name="isEnabled">켜면 true</param>
@@ -465,6 +499,7 @@ namespace Mediator
             Debug.Log($"{name} is Death!");
             OnDeath?.Invoke();
             DisableControl();
+            SyncCameraSpeedFeedback();
             if (_petMediator) _petMediator.NotifyDeath();
 
             if (!_playerAnimationMediator && !_enemyAnimationMediator)
@@ -541,6 +576,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnBuffRatiosChanged += OnBuffRatiosChangedCallback;
             if (_skillMediator) _skillMediator.OnRidingChanged += OnRidingChangedCallback;
             if (_skillMediator && _playerAnimationMediator) _skillMediator.OnRidingChanged += _playerAnimationMediator.NotifyRidingChanged;
+            if (_skillMediator && _cameraMediator) _skillMediator.OnRidingChanged += _cameraMediator.NotifyRidingChanged;
             if (_skillMediator && _moveMediator) _skillMediator.OnMountJumpRequested += _moveMediator.CommandAirJump;
             if (_skillMediator && _playerAnimationMediator) _skillMediator.OnVehicleAttached += _playerAnimationMediator.SetRidingBoard;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded += _skillMediator.NotifyLanded;
@@ -552,6 +588,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnAutoForwardChanged += OnAutoForwardChangedCallback;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted += _cameraMediator.NotifyRollStarted;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded += _cameraMediator.NotifyRollEnded;
+            if (_skillMediator && _cameraMediator) _skillMediator.OnFireRequested += _cameraMediator.NotifyFire;
             if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged += _combatMediator.NotifyFireCharge;
             if (_cameraMediator && _combatMediator) _cameraMediator.OnAimChanged += _combatMediator.NotifyAim;
             if (_cameraMediator && _playerAnimationMediator) _cameraMediator.OnAimChanged += _playerAnimationMediator.NotifyAim;
@@ -599,6 +636,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnBuffRatiosChanged -= OnBuffRatiosChangedCallback;
             if (_skillMediator) _skillMediator.OnRidingChanged -= OnRidingChangedCallback;
             if (_skillMediator && _playerAnimationMediator) _skillMediator.OnRidingChanged -= _playerAnimationMediator.NotifyRidingChanged;
+            if (_skillMediator && _cameraMediator) _skillMediator.OnRidingChanged -= _cameraMediator.NotifyRidingChanged;
             if (_skillMediator && _moveMediator) _skillMediator.OnMountJumpRequested -= _moveMediator.CommandAirJump;
             if (_skillMediator && _playerAnimationMediator) _skillMediator.OnVehicleAttached -= _playerAnimationMediator.SetRidingBoard;
             if (_moveMediator && _skillMediator) _moveMediator.OnJumpEnded -= _skillMediator.NotifyLanded;
@@ -610,6 +648,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnAutoForwardChanged -= OnAutoForwardChangedCallback;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollStarted -= _cameraMediator.NotifyRollStarted;
             if (_moveMediator && _cameraMediator) _moveMediator.OnRollEnded -= _cameraMediator.NotifyRollEnded;
+            if (_skillMediator && _cameraMediator) _skillMediator.OnFireRequested -= _cameraMediator.NotifyFire;
             if (_skillMediator && _combatMediator) _skillMediator.OnFireChargeChanged -= _combatMediator.NotifyFireCharge;
             if (_cameraMediator && _combatMediator) _cameraMediator.OnAimChanged -= _combatMediator.NotifyAim;
             if (_cameraMediator && _playerAnimationMediator) _cameraMediator.OnAimChanged -= _playerAnimationMediator.NotifyAim;

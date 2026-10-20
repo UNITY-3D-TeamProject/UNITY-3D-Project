@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Attribute.Core;
+using CameraControl;
+using Rendering;
 using Skill.Buff;
 using Skill.Core;
 using Skill.Skills;
@@ -35,6 +37,7 @@ namespace Mediator.SubMediators
         private Fire _fireSkill;
         private Interact _interactSkill;
         private SpawnVehicle _spawnVehicleSkill;
+        private Roll _rollSkill;
         private Scan _scanSkill;
         // 점프 시작 ~ 착지. 이 동안 탑승하면 착지할 때 탈것을 생성한다
         private bool _isJumping;
@@ -117,6 +120,7 @@ namespace Mediator.SubMediators
             if (_skillController) _fireSkill = _skillController.GetComponentInChildren<Fire>(true);
             if (_skillController) _interactSkill = _skillController.GetComponentInChildren<Interact>(true);
             if (_skillController) _spawnVehicleSkill = _skillController.GetComponentInChildren<SpawnVehicle>(true);
+            if (_skillController) _rollSkill = _skillController.GetComponentInChildren<Roll>(true);
             if (_skillController) _scanSkill = _skillController.GetComponentInChildren<Scan>(true);
             BindRequest();
         }
@@ -158,6 +162,53 @@ namespace Mediator.SubMediators
         public bool IsSkillEnabled(string skillName)
         {
             return _skillController && _skillController.IsSkillEnabled(skillName);
+        }
+
+        /// <summary>
+        /// 구르기 스킬의 카메라 추종 설정을 반환한다. 스킬 활성 여부와 무관하게 설정값을 읽는다.
+        /// </summary>
+        /// <returns>카메라 추종 설정. 구르기 스킬이 없으면 기본값(효과 없음)</returns>
+        public SRollFollowSettings GetRollFollowSettings()
+        {
+            if (!_rollSkill) return default;
+
+            return new SRollFollowSettings
+            {
+                Damping = _rollSkill.CameraFollowDamping,
+                RecoverTime = _rollSkill.CameraDampingRecoverTime,
+            };
+        }
+
+        /// <summary>
+        /// 탑승 스킬의 시야·가장자리 블러 설정을 반환한다. 스킬 활성 여부와 무관하게 설정값을 읽는다.
+        /// </summary>
+        /// <returns>시야·블러 설정. 탑승 스킬이 없으면 기본값(효과 없음)</returns>
+        public SRidingViewSettings GetRidingViewSettings()
+        {
+            if (!_spawnVehicleSkill) return default;
+
+            return new SRidingViewSettings
+            {
+                FovOffset = _spawnVehicleSkill.FovOffset,
+                TransitionTime = _spawnVehicleSkill.SpeedFeedbackTransitionTime,
+                EdgeBlur = new SSpeedEdgeBlurSettings
+                {
+                    Strength = _spawnVehicleSkill.EdgeBlurStrength,
+                    CenterRadius = _spawnVehicleSkill.EdgeBlurCenterRadius,
+                    Feather = _spawnVehicleSkill.EdgeBlurFeather,
+                    SampleCount = _spawnVehicleSkill.EdgeBlurSampleCount,
+                    Center = _spawnVehicleSkill.EdgeBlurCenter,
+                },
+            };
+        }
+
+        /// <summary>
+        /// 탑승 중인지 반환한다. 이 중재자가 꺼져 있으면 탑승 이벤트를 받지 못하므로 탑승 중이 아닌 것으로 본다.
+        /// </summary>
+        /// <returns>탑승 중이면 true. 탑승 스킬이 없거나 이 중재자가 비활성이면 false</returns>
+        public bool IsRiding()
+        {
+            return isActiveAndEnabled && _spawnVehicleSkill && _spawnVehicleSkill.IsRiding;
         }
 
         /// <summary>

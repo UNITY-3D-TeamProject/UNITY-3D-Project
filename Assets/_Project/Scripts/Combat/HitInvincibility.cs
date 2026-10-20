@@ -61,6 +61,15 @@ namespace Combat
             _remainTime = 0.0f;
             IsInvincible = false;
         }
+
+        /// <summary>
+        /// 무적 지속 시간을 바꾼다. 진행 중인 무적의 남은 시간은 그대로 두고, 다음 Begin 부터 적용한다.
+        /// </summary>
+        /// <param name="duration">무적 지속 시간(초). 음수는 0 으로 처리한다</param>
+        public void SetDuration(float duration)
+        {
+            _duration = Mathf.Max(0.0f, duration);
+        }
         #endregion
     }
 }
