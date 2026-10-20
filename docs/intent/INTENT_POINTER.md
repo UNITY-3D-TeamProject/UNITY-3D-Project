@@ -36,6 +36,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI / Input]** UIManager가 Dialogue 입력 맵을 PlayerInput으로 직접 다뤄 입력 처리가 Facade와 둘로 갈라져 있었음. 일반 C# 클래스 `UIInputHandler`가 Facade 설정창 이벤트 중계·Dialogue 맵 액션·맵 전환 3종을 맡고 UIManager는 이벤트만 구독, PlayerFacade·프리팹 미수정 → [문서](./clear/intent-048-ui-input-handler.md) (resolved: 2026-10-20)
 - **[UI / Cutscene / Stage]** 스테이지 시작 대화를 씬 오브젝트 없이 재생. `StageManager.PlayIntroDialogue`(스테이지 종류로 번호 선택, 지금은 모두 꺼 둠), `DialogueManager`·말하는 사람 카메라를 `Canvas_InGame` 프리팹으로 이동, `StageIntroDialogue` 삭제, 맵 씬 미수정 → [문서](./clear/intent-047-stage-intro-without-scene-objects.md) (resolved: 2026-10-20)
 - **[UI / Interaction]** 상호작용 대상을 조준하면 크로스헤어 아래 `[E] 상호작용` 표시. 이미 있던 `PlayerFacade.OnInteractableChanged`를 PlayerHud가 구독, 대화 중 숨김. Facade·스킬 수정 없음, TestScene Play 검증 → [문서](./clear/intent-045-interact-prompt.md) (resolved: 2026-10-19)
 - **[Core / Effect / VFX]** EffectManager·SOEffectData·SEffectHandle 및 매니저 프리팹 구현. SO별 자동 풀·자식 파티클·중복 Stop·오래된 핸들·부모 수명 처리, Unity 컴파일 및 Play 27항목 통과. 게임 씬 배치·기존 호출부 교체 제외 → [문서](./clear/intent-043-effect-manager.md) (resolved: 2026-10-18)

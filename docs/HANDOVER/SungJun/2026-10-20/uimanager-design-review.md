@@ -86,6 +86,15 @@
 - 수정: 두 SO의 `_amount`만 100으로 변경. 플레이어 프리팹·PlayerSpawner 프리팹·코드는 건드리지 않음.
 - 확인: TestScene Play(SpawnReason NewGame)에서 CurrentHp 100/100, CurrentBattery 100/100.
 
+## 추가 반영: UIManager 입력 처리를 UIInputHandler로 분리 (intent-048)
+- 문제: Player·UI 맵과 설정창 입력은 PlayerFacade를 거치는데, Dialogue 맵은 UIManager가 PlayerInput을 직접 잡아 처리해 입력 처리가 둘로 갈라져 있었다.
+- 결정(사용자): PlayerFacade는 수정하지 않는다(다른 파트 담당이고, 대사 넘기기는 플레이어가 받을 입력이 아님). UI 전용 입력 클래스를 일반 C# 클래스로 만든다(프리팹 수정 없음).
+- `UI/UIInputHandler.cs`(새 파일): Dialogue 맵 상수·PlayerInput·액션 구독을 UIManager에서 옮김. `BindPlayer(PlayerFacade)`/`UnbindPlayer()`, `SwitchToPlayerInput`/`SwitchToUIInput`(Facade에 위임)/`SwitchToDialogueInput`(PlayerInput 직접), 이벤트 `OnOpenSettingsRequested`(Player 맵 ESC + Dialogue 맵 ESC를 하나로)·`OnCloseSettingsRequested`·`OnNextLineRequested`, `HasPlayer`.
+- `UIManager`: `_input` 필드 하나만 둔다. 이벤트는 OnEnable/OnDisable에서 한 번만 구독한다(플레이어가 바뀌어도 그대로). `_playerFacade == null` 검사는 `!_input.HasPlayer`로 바꿨다. 플레이어 교체 시 맵 복원(설정창 → UI, 대화 중 → Dialogue)은 UI 상태를 아는 `HandlePlayerSpawned`에 남겼다.
+- 네임스페이스는 `UI`. `UI.Input`은 `UnityEngine.Input`과 충돌해서 쓰지 않았다. 프로젝트에 `PlayerInput` 네임스페이스가 있어 타입은 `UnityEngine.InputSystem.PlayerInput`으로 전체 이름을 쓴다.
+- 확인: 컴파일 0에러. TestScene Play에서 설정창 열기 → UI 맵·Pause, 닫기 → Player·Playing, `PlayDialogue(2)` → Dialogue 맵, 대화 중 ESC → UI 맵, 닫기 → Dialogue 맵, 다음 줄 → 1·2·3 증가, 끝나면 Player 맵·상호작용 안내 차단 해제. 에디터가 백그라운드라 simulate_key가 전달되지 않아 PlayerFacade·UIInputHandler의 입력 콜백을 리플렉션으로 직접 호출해 확인했다(실제 키 입력은 미확인).
+- 커밋 안 함. intent-048은 resolved로 clear/에 이동.
+
 ## 현재 상태 및 이슈
 - TestScene(Assets/Test, Git 미포함) 디스크 파일에 삭제된 `Cutscene.DialogueCutscene.Play`를 부르는 TriggerPlate가 남아 있다(Missing 호출). 에디터에서 저장 안 된 변경일 수 있음.
 
