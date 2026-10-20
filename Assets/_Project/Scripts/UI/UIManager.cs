@@ -202,6 +202,10 @@ namespace UI
                 _gameManager.CurrentState == GameManager.GameState.Pause)
             {
                 _gameManager.ResumeGame();
+
+                // 대화 중에 연 설정창이면 대화가 끝날 때까지 다시 멈춘다.
+                if (IsDialoguePlaying)
+                    _gameManager.PauseGameForDialogue();
             }
         }
         #endregion
@@ -238,6 +242,9 @@ namespace UI
             // 첫 줄의 카메라가 대화 시작과 동시에 정해지므로 펫과 카메라를 먼저 배치한다.
             _dialogueDirector.BeginStaging();
 
+            // 대화 동안 플레이어·펫 대기 애니메이션과 BGM만 남기고 게임을 멈춘다.
+            _gameManager?.PauseGameForDialogue();
+
             // 대화 중에는 상호작용 안내를 숨긴다.
             if (_playerHudPresenter != null)
                 _playerHudPresenter.SetInteractLabelBlocked(true);
@@ -260,6 +267,8 @@ namespace UI
         {
             _dialoguePresenter.OnDialogueLineChanged -= HandleDialogueLineChanged;
             _dialoguePresenter.OnDialogueEnded -= HandleDialogueEnded;
+
+            _gameManager?.ResumeGameForDialogue();
 
             if (_dialogueDirector != null)
                 _dialogueDirector.EndStaging();
