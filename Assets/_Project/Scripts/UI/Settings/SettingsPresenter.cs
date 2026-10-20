@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Core.Audio;
 
-namespace UI
+namespace UI.Settings
 {
     public class SettingsPresenter : MonoBehaviour
     {

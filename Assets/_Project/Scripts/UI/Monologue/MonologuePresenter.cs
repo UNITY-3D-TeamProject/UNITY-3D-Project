@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UI
+namespace UI.Monologue
 {
     public class MonologuePresenter : MonoBehaviour
     {
