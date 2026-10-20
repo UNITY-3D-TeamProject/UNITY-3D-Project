@@ -4,6 +4,8 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[AI / Boss / Arena]** 보스 A 칸 예고가 켜지자마자 가득 차 있어 발동 시점을 읽을 수 없음. 중앙에서 스케일·알파가 0→1로 채워지게(채움 시간 = 패턴 예고 시간), 가득 차면 손이 내려쳐 붕괴. 스크립트만 수정, 정사각형 방식 → [문서](./intent-047-bossa-telegraph-fill-in.md)
+- **[AI / Boss / Arena]** 보스 아레나를 3×3(칸 20 m)에서 5×5(전체 60 m 유지, 칸 12 m)로 확장. `ArenaGrid.SIZE` 5 + 테스트 씬 타일 25개 배치. 보스 A 패턴의 3×3 전제(가운데 칸·모서리·세 칸 줄)는 열린 질문 → [문서](./intent-046-boss-arena-4x4.md)
 - **[AI / Boss / Animation]** 보스 B 는 기본 5종 모션만 장착돼 스킬마다 다른 모션이 없음(Combo 만 Attack 트리거). 보스 B 전용 컨트롤러 + 스킬별 매핑, Charge·Evade 는 사용자 제작 클립, Combo·Leap 은 기존 Tanker Robot 클립. 열린 질문 3건 → [문서](./intent-045-bossb-skill-animations.md)
 - **[AI / Boss]** 보스 B 가 스폰 직후 플레이어를 못 봐 공격을 고르지 못함(수색 노드 없음, 센서 5m·90도). 센서 50m·360도 + 대상을 처음 발견해 고르는 첫 공격만 도약(1-1 에서도 1회). 코드·프리팹 수정 완료, 게이트 루프·Play 육안 확인 남음 → [문서](./intent-044-bossb-first-encounter-leap.md)
 - **[Audio / Core / UI]** 소리 재생 기반이 없음. `AudioManager` 싱글톤(BGM 1·UI 1·3D 16 소스), `SOBgmTable`(ESceneType 키 + 메인메뉴 곡 필드)로 씬별 BGM, 믹서 볼륨 저장·설정창 연결, `AudioListener.pause`로 일시정지. 코드·믹서·SO·프리팹·설정창 슬라이더 연결 완료, Play 로직 검증 완료, MainScene 배치 완료. 맵 씬 배치와 실제 청취 확인 남음 → [문서](./intent-038-audio-manager-phase1.md)
