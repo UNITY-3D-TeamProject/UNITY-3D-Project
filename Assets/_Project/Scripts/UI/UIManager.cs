@@ -13,10 +13,13 @@ namespace UI
 {
     public class UIManager : MonoBehaviour
     {
+        #region Constants
         private const string ACTION_MAP_DIALOGUE = "Dialogue";
         private const string ACTION_ADVANCE_DIALOGUE = "Dialogue/Advance";
         private const string ACTION_OPEN_SETTINGS_IN_DIALOGUE = "Dialogue/OpenSettings";
+        #endregion
 
+        #region Serialized Fields
         // 플레이어 데이터를 UI에 보여줘야하는데 그 데이터를 조작하는 Presenter를 갖고있는다.
         [Header("References")]
         // 플레이어 HUD (HP, 스킬 쿨타임 표시)
@@ -29,7 +32,9 @@ namespace UI
         [SerializeField] private DialoguePresenter _dialoguePresenter;
         [Tooltip("PlayCutscene(번호)로 재생할 컷씬 목록")]
         [SerializeField] private SOCutsceneTable _cutsceneTable;
+        #endregion
 
+        #region Private Fields
         // 이벤트 구독용
         private GameManager _gameManager;
 
@@ -45,13 +50,17 @@ namespace UI
         // 대화를 시작한 쪽에 돌려줄 콜백. 대화 중일 때만 값이 있다.
         private Action<SDialogueLine> _dialogueLineChanged;
         private Action _dialogueFinished;
+        #endregion
 
+        #region Properties
         // 지금 씬의 UIManager. 배치하지 않은 씬이거나 Awake 전이면 null이다.
         // DontDestroyOnLoad를 쓰지 않으므로 공용 Singleton<T>을 상속하지 않는다.
         public static UIManager Instance { get; private set; }
 
         public bool IsDialoguePlaying => (_dialoguePresenter != null) && _dialoguePresenter.IsDialoguePlaying;
+        #endregion
 
+        #region Unity Lifecycle
         private void Awake()
         {
             // 같은 씬에 둘이면 배치 실수다. (이전 씬의 UIManager가 아직 남아 있는 경우는 씬으로 구분한다)
@@ -63,12 +72,11 @@ namespace UI
 
         private void OnEnable()
         {
-            // 1. 플레이어를 연결할 HUD가 있는지 확인한다.
+            // 1. 플레이어를 연결할 HUD가 있는지 확인한다. 없어도 설정창·대화는 동작한다.
             if (_playerHudPresenter == null)
             {
-                Debug.LogError(
-                    "PlayerHudPresenter가 연결되지 않았습니다.", this);
-                return;
+                Debug.LogWarning(
+                    "PlayerHudPresenter가 연결되지 않았습니다. HUD 없이 동작합니다.", this);
             }
 
             // 2. 플레이어 등록을 담당하는 GameManager를 가져온다.
@@ -80,8 +88,8 @@ namespace UI
                 return;
             }
 
-            // 3. 앞으로 플레이어가 스폰되면 
-            // HandlePlayerSpawned를 실행해 달라고 등록한다. HandlePlayerSpwned 함수는 => UI를 스폰된 플레이어와 동기화 시키는 함수
+            // 3. 앞으로 플레이어가 스폰되면
+            // HandlePlayerSpawned를 실행해 달라고 등록한다. HandlePlayerSpawned 함수는 => UI를 스폰된 플레이어와 동기화 시키는 함수
             _gameManager.OnPlayerSpawned += HandlePlayerSpawned;
 
             // 4. UI가 켜지기 전에 이미 등록된 플레이어가 있다면
@@ -116,9 +124,11 @@ namespace UI
             if (Instance == this)
                 Instance = null;
         }
+        #endregion
 
-        public void ShowPlayerHud() => _playerHudPresenter.Show();
-        public void HidePlayerHud() => _playerHudPresenter.Hide();
+        #region Public Methods
+        public void ShowPlayerHud() => _playerHudPresenter?.Show();
+        public void HidePlayerHud() => _playerHudPresenter?.Hide();
 
         // 번호에 맞는 펫 안내 문구를 띄운다. 번호와 문구는 SOPetGuideTable에서 정한다.
         public void ShowPetGuide(int id) => _petGuidePresenter?.Show(id);
@@ -233,11 +243,13 @@ namespace UI
                 _gameManager.ResumeGame();
             }
         }
+        #endregion
 
+        #region Private Methods
         private void HandlePlayerSpawned(PlayerFacade playerFacade)
         {
             // 전달받은 플레이어를 HUD에 연결한다.
-            _playerHudPresenter.SetPlayer(playerFacade);
+            _playerHudPresenter?.SetPlayer(playerFacade);
             BindPlayerInput(playerFacade);
         }
 
@@ -326,6 +338,6 @@ namespace UI
             _advanceDialogueAction = null;
             _openSettingsInDialogueAction = null;
         }
-
+        #endregion
     }
 }
