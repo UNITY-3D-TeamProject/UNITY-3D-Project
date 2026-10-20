@@ -130,11 +130,9 @@ namespace UI
         public void ShowPetGuide(int id) => _petGuidePresenter?.Show(id);
         public void HidePetGuide() => _petGuidePresenter?.Hide();
 
-        /// <summary>
-        /// 번호에 맞는 컷씬을 지금 플레이어 자리에서 재생한다. 번호와 대화는 SODialogueTable에서 정한다.
-        /// 연출(펫 세우기·카메라)은 DialogueDirector가 맡는다. 본 기록은 남기지 않으므로 부를 때마다 재생된다.
-        /// 이미 대화 중이면 무시한다. 발판(TriggerPlate) 같은 UnityEvent에서도 연결할 수 있도록 반환값이 없다.
-        /// </summary>
+        // 번호에 맞는 컷씬을 지금 플레이어 자리에서 재생한다. 번호와 대화는 SODialogueTable에서 정한다.
+        // 연출(펫 세우기·카메라)은 DialogueDirector가 맡는다. 본 기록은 남기지 않으므로 부를 때마다 재생된다.
+        // 이미 대화 중이면 무시한다. 발판(TriggerPlate) 같은 UnityEvent에서도 연결할 수 있도록 반환값이 없다.
         public void PlayDialogue(int id)
         {
             if ((_cutsceneTable == null) || !_cutsceneTable.TryGetSequence(id, out SODialogue sequence))
@@ -223,12 +221,9 @@ namespace UI
                 _input.SwitchToDialogueInput();
         }
 
-        /// <summary>
-        /// 대화를 시작한다. 끝날 때까지 Dialogue 입력 맵으로 바꿔 플레이어 조작을 막는다.
-        /// Dialogue 맵에서는 Space로 대사를 넘기고, ESC로 설정창을 연다.
-        /// 이미 대화 중이거나 설정창이 열려 있거나 플레이어가 없으면 시작하지 않는다.
-        /// </summary>
-        /// <param name="sequence">재생할 대화</param>
+        // 대화를 시작한다. 끝날 때까지 Dialogue 입력 맵으로 바꿔 플레이어 조작을 막는다.
+        // Dialogue 맵에서는 Space로 대사를 넘기고, ESC로 설정창을 연다.
+        // 이미 대화 중이거나 설정창이 열려 있거나 플레이어가 없으면 시작하지 않는다.
         private void StartDialogue(SODialogue sequence)
         {
             if ((_dialoguePresenter == null) ||
