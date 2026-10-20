@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Core;
 using Facade.Player;
 using UI.Cutscene;
@@ -13,15 +12,6 @@ namespace UI
 {
     public class UIManager : MonoBehaviour
     {
-        #region Constants
-        // 대화 중에 쓰는 입력 맵 이름 (PlayerInput의 Action Asset 기준)
-        private const string ACTION_MAP_DIALOGUE = "Dialogue";
-        // 대화 맵에서 대사를 넘기는 액션 (Space)
-        private const string ACTION_NEXT_LINE = "Dialogue/NextLine";
-        // 대화 맵에서 설정창을 여는 액션 (ESC)
-        private const string ACTION_OPEN_SETTINGS_IN_DIALOGUE = "Dialogue/OpenSettings";
-        #endregion
-
         #region Serialized Fields
         // 플레이어 데이터를 UI에 보여줘야하는데 그 데이터를 조작하는 Presenter를 갖고있는다.
         [Header("References")]
@@ -41,13 +31,8 @@ namespace UI
         // 이벤트 구독용
         private GameManager _gameManager;
 
-        // 현재 플레이어의 PlayerFacade. 설정창 입력 이벤트와 입력 맵 전환에 사용한다.
-        private PlayerFacade _playerFacade;
-        // 현재 플레이어의 PlayerInput. 대화 입력 맵(Dialogue)은 PlayerFacade를 거치지 않고 여기서 직접 전환·구독한다.
-        private UnityEngine.InputSystem.PlayerInput _playerInput;
-        // 구독을 풀 때 쓰려고 찾아 둔 대화 맵 액션
-        private InputAction _nextLineAction;
-        private InputAction _openSettingsInDialogueAction;
+        // 현재 플레이어의 입력(설정창 열기·닫기, 대사 넘기기)과 입력 맵 전환을 맡는다.
+        private readonly UIInputHandler _input = new UIInputHandler();
 
         // 설정창이 열려 있으면 true. 열린 동안에는 대화를 시작하지 않는다.
         private bool _isSettingsOpen;
@@ -79,6 +64,11 @@ namespace UI
 
         private void OnEnable()
         {
+            // 입력 이벤트는 플레이어가 바뀌어도 _input이 그대로이므로 한 번만 구독한다.
+            _input.OnOpenSettingsRequested += OpenSettings;
+            _input.OnCloseSettingsRequested += CloseSettings;
+            _input.OnNextLineRequested += HandleNextLine;
+
             // 1. 플레이어를 연결할 HUD가 있는지 확인한다. 없어도 설정창·대화는 동작한다.
             if (_playerHudPresenter == null)
             {
@@ -109,7 +99,10 @@ namespace UI
         {
             CloseSettings();
             StopDialogue();
-            UnbindPlayerInput();
+            _input.UnbindPlayer();
+            _input.OnOpenSettingsRequested -= OpenSettings;
+            _input.OnCloseSettingsRequested -= CloseSettings;
+            _input.OnNextLineRequested -= HandleNextLine;
             // 1. 알림을 신청했던 GameManager에서 구독을 해제한다.
             if (_gameManager != null)
             {
@@ -177,7 +170,7 @@ namespace UI
             if ((_dialoguePresenter == null) ||
                 (_dialoguePresenter.IsDialoguePlaying) ||
                 _isSettingsOpen ||
-                (_playerFacade == null))
+                (!_input.HasPlayer))
                 return false;
 
             _dialogueLineChanged = onLineChanged;
@@ -189,7 +182,7 @@ namespace UI
             if (_playerHudPresenter != null)
                 _playerHudPresenter.SetInteractLabelBlocked(true);
 
-            SwitchToDialogueInput();
+            _input.SwitchToDialogueInput();
 
             if (!_dialoguePresenter.StartDialogue(sequence))
             {
@@ -213,7 +206,7 @@ namespace UI
         {
             if (_isSettingsOpen ||
                 _settingsPresenter == null ||
-                _playerFacade == null ||
+                !_input.HasPlayer ||
                 _gameManager == null)
                 return;
 
@@ -226,7 +219,7 @@ namespace UI
 
             // 게임 상태와 입력 전환.
             _gameManager.PauseGame();
-            _playerFacade.SwitchToUIInput();
+            _input.SwitchToUIInput();
 
             _settingsPresenter.Open();
         }
@@ -244,9 +237,9 @@ namespace UI
 
             // 대화 중에 연 설정창이면 대화 입력으로 돌아간다.
             if (IsDialoguePlaying)
-                SwitchToDialogueInput();
-            else if (_playerFacade != null)
-                _playerFacade.SwitchToPlayerInput();
+                _input.SwitchToDialogueInput();
+            else
+                _input.SwitchToPlayerInput();
 
             if (_gameManager != null &&
                 _gameManager.CurrentState == GameManager.GameState.Pause)
@@ -262,7 +255,13 @@ namespace UI
         {
             // 전달받은 플레이어를 HUD에 연결한다.
             _playerHudPresenter?.SetPlayer(playerFacade);
-            BindPlayerInput(playerFacade);
+            _input.BindPlayer(playerFacade);
+
+            // 설정창이 열렸거나 대화 중인 상태에서 플레이어가 교체된 경우에도 그 입력 맵을 유지.
+            if (_isSettingsOpen)
+                _input.SwitchToUIInput();
+            else if (IsDialoguePlaying)
+                _input.SwitchToDialogueInput();
         }
 
         // 대사 줄이 바뀌면 대화를 시작한 쪽(DialogueManager 등)에 그대로 전달한다.
@@ -280,8 +279,7 @@ namespace UI
             if (_playerHudPresenter != null)
                 _playerHudPresenter.SetInteractLabelBlocked(false);
 
-            if (_playerFacade != null)
-                _playerFacade.SwitchToPlayerInput();
+            _input.SwitchToPlayerInput();
 
             Action onFinished = _dialogueFinished;
             _dialogueLineChanged = null;
@@ -290,72 +288,9 @@ namespace UI
         }
 
         // 대화 맵 Space: 다음 대사로 넘긴다.
-        private void HandleNextLine(InputAction.CallbackContext context)
+        private void HandleNextLine()
         {
             _dialoguePresenter?.ShowNextLine();
-        }
-
-        // 대화 맵 ESC: 대화 중에 설정창을 연다.
-        private void HandleOpenSettingsInDialogue(InputAction.CallbackContext context)
-        {
-            OpenSettings();
-        }
-
-        // PlayerFacade에는 대화 맵 전환이 없으므로 PlayerInput에서 직접 바꾼다.
-        private void SwitchToDialogueInput()
-        {
-            if (_playerInput != null)
-                _playerInput.SwitchCurrentActionMap(ACTION_MAP_DIALOGUE);
-        }
-
-        // 이전 플레이어의 구독을 풀고, 새 플레이어의 설정창 이벤트와 대화 맵 액션을 구독한다.
-        private void BindPlayerInput(PlayerFacade playerFacade)
-        {
-            UnbindPlayerInput();
-
-            if (playerFacade == null) return;
-
-            _playerFacade = playerFacade;
-            _playerFacade.OnOpenSettingsRequested += OpenSettings;
-            _playerFacade.OnCloseSettingsRequested += CloseSettings;
-
-            // 대화 입력은 플레이어의 PlayerInput에서 직접 받는다.
-            if (_playerFacade.TryGetComponent(out _playerInput) && (_playerInput.actions != null))
-            {
-                _nextLineAction = _playerInput.actions.FindAction(ACTION_NEXT_LINE);
-                _openSettingsInDialogueAction = _playerInput.actions.FindAction(ACTION_OPEN_SETTINGS_IN_DIALOGUE);
-
-                if (_nextLineAction != null) _nextLineAction.performed += HandleNextLine;
-                if (_openSettingsInDialogueAction != null) _openSettingsInDialogueAction.performed += HandleOpenSettingsInDialogue;
-            }
-
-            // 설정창이 열렸거나 대화 중인 상태에서 플레이어가 교체된 경우에도 그 입력 맵을 유지.
-            if (_isSettingsOpen)
-            {
-                _playerFacade.SwitchToUIInput();
-            }
-            else if (IsDialoguePlaying)
-            {
-                SwitchToDialogueInput();
-            }
-        }
-
-        // 현재 플레이어의 이벤트·액션 구독을 모두 풀고 참조를 비운다.
-        private void UnbindPlayerInput()
-        {
-            if (_playerFacade != null)
-            {
-                _playerFacade.OnOpenSettingsRequested -= OpenSettings;
-                _playerFacade.OnCloseSettingsRequested -= CloseSettings;
-            }
-
-            if (_nextLineAction != null) _nextLineAction.performed -= HandleNextLine;
-            if (_openSettingsInDialogueAction != null) _openSettingsInDialogueAction.performed -= HandleOpenSettingsInDialogue;
-
-            _playerFacade = null;
-            _playerInput = null;
-            _nextLineAction = null;
-            _openSettingsInDialogueAction = null;
         }
         #endregion
     }
