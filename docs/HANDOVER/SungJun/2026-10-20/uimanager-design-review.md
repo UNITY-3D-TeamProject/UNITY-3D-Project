@@ -67,6 +67,13 @@
 - 안내 문구 쪽: `PetGuideView.ShowNextLineHint`·`HideNextLineHint`, 직렬화 필드 `_advanceHintText` → `_nextLineHintText`(Canvas_InGame 프리팹 YAML의 필드명도 같이 수정, 연결 유지 확인), `DialoguePresenter` Header "Next Line Hint". 프리팹 오브젝트 이름 `AdvanceHint`는 그대로 둠.
 - 확인: 컴파일 0에러, 프리팹 `_nextLineHintText` → AdvanceHint 연결 유지, TestScene Play에서 `Dialogue/NextLine` 액션 enabled·구독자 `HandleNextLine`, 호출 시 다음 줄로 넘어감. 에디터가 백그라운드라 Game 창 포커스 규칙(PointersAndKeyboardsRespectGameViewFocus) 때문에 simulate_key Space는 전달되지 않아 실제 키 입력은 확인 못 함.
 
+## 추가 반영: 키 안내 이름을 Label로 (NextLabel, InteractLabel)
+- 결정(사용자): 화면에 뜨는 키 안내 글자는 Hint·Prompt 대신 Label로 부른다. 같은 패널의 `NameLabel`과 맞춤.
+- 대화 넘기기 안내: `PetGuideView.ShowNextLabel(text)`·`HideNextLabel`, 필드 `_nextLabelText`, `DialoguePresenter` 문구 필드 `_nextLineLabel`·`_lastLineLabel`, Header "Next Label", 프리팹 오브젝트 `AdvanceHint` → `NextLabel`.
+- 상호작용 안내: `PlayerHudView.SetInteractLabelVisible`, 필드 `_interactLabelRoot`, Header "Interact Label", `PlayerHudPresenter`의 `_isInteractLabelBlocked`·`SetInteractLabelBlocked`·`UpdateInteractLabel`·`ResetInteractLabel`, UIManager 호출, 프리팹 오브젝트 `InteractPrompt` → `InteractLabel`.
+- 직렬화 필드는 Canvas_InGame 프리팹 YAML의 필드명도 같이 바꿔 연결·문구 값 유지. 씬/다른 프리팹 참조 없음(텍스트 검색으로 확인).
+- 확인: 컴파일 0에러, 프리팹 `_nextLabelText` → NextLabel, `_interactLabelRoot` → InteractLabel 연결 유지, TestScene Play에서 대화 중 NextLabel "Space ▶ 다음" 표시·종료 후 숨김, 상호작용 안내 차단 true → 종료 후 false.
+
 ## 현재 상태 및 이슈
 - TestScene(Assets/Test, Git 미포함) 디스크 파일에 삭제된 `Cutscene.DialogueCutscene.Play`를 부르는 TriggerPlate가 남아 있다(Missing 호출). 에디터에서 저장 안 된 변경일 수 있음.
 

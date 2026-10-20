@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-20** — 키 안내 이름을 Label로: 대화 넘기기 `NextLabel`(ShowNextLabel·HideNextLabel 등), 상호작용 `InteractLabel`(SetInteractLabelVisible 등), 프리팹 오브젝트 이름도 변경(연결 유지). 컴파일 0에러·TestScene Play 확인, 커밋 안 함: [작업 기록](./2026-10-20/uimanager-design-review.md)
 - **2026-10-20** — Dialogue 입력 `Advance` → `NextLine`, UIManager·PetGuideView 관련 이름 변경(`HandleNextLine`, `ShowNextLineHint` 등, 프리팹 연결 유지). 컴파일 0에러·TestScene 확인(실제 Space 입력은 미확인), 커밋 안 함: [작업 기록](./2026-10-20/uimanager-design-review.md)
 - **2026-10-20** — 스테이지 시작 대화를 씬 오브젝트 없이(intent-047): `StageManager.PlayIntroDialogue`(스테이지 종류로 번호 선택, 지금은 모두 꺼 둠), `DialogueManager`·말하는 사람 카메라를 `Canvas_InGame` 프리팹으로 이동, `StageIntroDialogue` 삭제. 튜토리얼 씬 미수정. 컴파일 0에러·TestScene Play 확인: [작업 기록](./2026-10-20/uimanager-design-review.md)
 - **2026-10-20** — `UIManager.PlayCutscene(id)` → `PlayDialogue(id)`, 기존 `PlayDialogue(SODialogue, …)` → `StartDialogue`. TestScene 발판 연결 갱신, 튜토리얼 미수정. 컴파일 0에러·TestScene 시작 대화·발판 대화 재생 확인: [작업 기록](./2026-10-20/uimanager-design-review.md)
