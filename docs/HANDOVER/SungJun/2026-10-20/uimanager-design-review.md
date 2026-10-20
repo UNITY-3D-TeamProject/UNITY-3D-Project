@@ -37,6 +37,14 @@
 - 확인: 컴파일 에러 0. TestScene Play에서 시작 컷씬(1번)이 재생되고 끝까지 넘어가며, "DialogueManager가 없어" 경고가 없었다. Map_0_Tutorial은 Play로 확인하지 않았다.
 - 씬 오브젝트 이름과 씬 YAML의 `m_EditorClassIdentifier`는 그대로 뒀다. 동작에는 영향이 없다.
 
+## 추가 반영: SO 이름 정리
+- 이름 규칙: "번호로 찾는 목록 = Table, 순서대로 재생하는 대화 하나 = SODialogue". `SOPetGuideTable`은 번호마다 한 줄이라 Table로 그대로 둔다.
+- `SOCutsceneTable` → `SODialogueTable`: 스크립트, 메뉴(`UI/Dialogue Table`), 에셋(`ScriptableObjects/UI/SODialogueTable.asset`, Unity rename으로 GUID df949ebf… 유지)을 바꿨다. 내부 struct는 `SDialogueEntry`로 바꿨다.
+- `SODialogueSequence` → `SODialogue`: 스크립트와 메뉴(`UI/Dialogue`)를 바꿨다. CameraIndex Tooltip에 남아 있던 `DialogueCutscene`을 `DialogueManager`로 고쳤다.
+- 일부러 그대로 둔 것: `_cutsceneTable` 필드, `PlayCutscene`, `TryGetSequence`, 항목 필드 `Sequence`(직렬화 이름), 변수명 `sequence`, Test 폴더의 `SOCutsceneTable_Test.asset` 파일명.
+- 확인: 컴파일 에러 0. 에셋 데이터(1번 → SODialogue_Tutorial)와 Canvas_InGame 연결이 유지됐다. TestScene Play에서 시작 컷씬이 재생됐다.
+- 남은 것: `SODialogue._id` Tooltip "본 기록 저장 키"는 본 기록을 없앤 뒤라 맞지 않는다(미수정).
+
 ## 현재 상태 및 이슈
 - TestScene(Assets/Test, Git 미포함) 디스크 파일에 삭제된 `Cutscene.DialogueCutscene.Play`를 부르는 TriggerPlate가 남아 있다(Missing 호출). 에디터에서 저장 안 된 변경일 수 있음.
 
