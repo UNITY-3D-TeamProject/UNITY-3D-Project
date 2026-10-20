@@ -23,11 +23,6 @@ namespace UI.PlayerHud
         [Header("Root")]
         [SerializeField] private GameObject _root;
 
-        [Header("Gauges")]
-        [SerializeField] private Slider _hpSlider;
-        [SerializeField] private Slider _batterySlider;
-        [SerializeField] private Slider _heatSlider;
-
         // HP 칸 게이지들. 최대 HP를 칸 개수로 나눈 값이 한 칸의 HP가 된다. (10칸, 최대 HP 100 => 한 칸 10)
         [Header("HP Cells")]
         [SerializeField] private Slider[] _hpCellSliders;
@@ -39,11 +34,6 @@ namespace UI.PlayerHud
         [SerializeField] private TMP_Text _heatPercentText;
         [SerializeField] private SArcCell[] _batteryArcCells;
         [SerializeField] private TMP_Text _batteryPercentText;
-
-        [Header("Skill Cooldowns")]
-        [SerializeField] private Slider _rollCooldownSlider;
-        [SerializeField] private Slider _bluetoothCooldownSlider;
-        [SerializeField] private Slider _scanCooldownSlider;
 
         // 스킬 카드의 원형 쿨타임 바(Filled 이미지)와 남은 시간 글자
         [Header("Skill Cards")]
@@ -89,38 +79,32 @@ namespace UI.PlayerHud
 
         public void SetHp(float currentValue, float maxValue)
         {
-            SetGaugeValue(_hpSlider, currentValue, maxValue);
             SetHpCells(currentValue, maxValue);
         }
 
         public void SetBattery(float currentValue, float maxValue)
         {
-            SetGaugeValue(_batterySlider, currentValue, maxValue);
             SetArcCells(_batteryArcCells, _batteryPercentText, currentValue, maxValue);
         }
 
         public void SetHeat(float currentValue, float maxValue)
         {
-            SetGaugeValue(_heatSlider, currentValue, maxValue);
             SetArcCells(_heatArcCells, _heatPercentText, currentValue, maxValue);
         }
 
         // 남은 쿨타임 비율(0~1)과 남은 시간(초)을 표시한다. 비율 1 = 방금 사용, 0 = 사용 가능
         public void SetRollCooldown(float remainingRatio, float remainingTime)
         {
-            SetGaugeValue(_rollCooldownSlider, remainingRatio, 1.0f);
             SetCooldownGauge(_rollCooldownBar, _rollCooldownText, remainingRatio, remainingTime);
         }
 
         public void SetBluetoothCooldown(float remainingRatio, float remainingTime)
         {
-            SetGaugeValue(_bluetoothCooldownSlider, remainingRatio, 1.0f);
             SetCooldownGauge(_bluetoothCooldownBar, _bluetoothCooldownText, remainingRatio, remainingTime);
         }
 
         public void SetScanCooldown(float remainingRatio, float remainingTime)
         {
-            SetGaugeValue(_scanCooldownSlider, remainingRatio, 1.0f);
             SetCooldownGauge(_scanCooldownBar, _scanCooldownText, remainingRatio, remainingTime);
         }
 
