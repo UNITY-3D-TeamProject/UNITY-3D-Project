@@ -14,7 +14,7 @@ namespace UI.Cutscene
     /// 대화가 끝나면 펫을 원래 자리로 돌려보내고 연출 카메라를 끈다.
     /// 고정 카메라는 씬 오브젝트라 대화 SO에 넣을 수 없으므로 이 컴포넌트에 목록으로 두고, 대사의 CameraIndex로 고른다.
     /// </summary>
-    public class DialogueDirector : MonoBehaviour
+    public class DialogueManager : MonoBehaviour
     {
         #region Serialized Fields
         [Header("Speakers")]
@@ -53,8 +53,8 @@ namespace UI.Cutscene
         #endregion
 
         #region Properties
-        // 지금 씬의 DialogueDirector. 배치하지 않은 씬이거나 Awake 전이면 null이다.
-        public static DialogueDirector Instance { get; private set; }
+        // 지금 씬의 DialogueManager. 배치하지 않은 씬이거나 Awake 전이면 null이다.
+        public static DialogueManager Instance { get; private set; }
         #endregion
 
         #region Unity Lifecycle
@@ -62,7 +62,7 @@ namespace UI.Cutscene
         {
             // 같은 씬에 둘이면 배치 실수다. (이전 씬의 Director가 아직 남아 있는 경우는 씬으로 구분한다)
             if ((Instance != null) && (Instance.gameObject.scene == gameObject.scene))
-                Debug.LogError("[DialogueDirector] 한 씬에 DialogueDirector가 두 개 있습니다. 나중에 Awake된 쪽이 Instance가 됩니다.", this);
+                Debug.LogError("[DialogueManager] 한 씬에 DialogueManager가 두 개 있습니다. 나중에 Awake된 쪽이 Instance가 됩니다.", this);
 
             Instance = this;
 
@@ -90,7 +90,7 @@ namespace UI.Cutscene
 
             if (uiManager == null)
             {
-                Debug.LogWarning("[DialogueDirector] 씬에 UIManager가 없어 대화를 재생하지 못했습니다.", this);
+                Debug.LogWarning("[DialogueManager] 씬에 UIManager가 없어 대화를 재생하지 못했습니다.", this);
                 return false;
             }
 

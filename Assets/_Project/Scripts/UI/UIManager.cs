@@ -54,6 +54,7 @@ namespace UI
 
         // 대화를 시작한 쪽에 돌려줄 콜백. 대화 중일 때만 값이 있다.
         private Action<SDialogueLine> _dialogueLineChanged;
+        // 대화가 끝났을 때 호출함
         private Action _dialogueFinished;
         #endregion
 
@@ -143,7 +144,7 @@ namespace UI
 
         /// <summary>
         /// 번호에 맞는 컷씬을 지금 플레이어 자리에서 재생한다. 번호와 대화는 SOCutsceneTable에서 정한다.
-        /// 연출(펫 세우기·카메라)은 씬의 DialogueDirector가 맡는다. 본 기록은 남기지 않으므로 부를 때마다 재생된다.
+        /// 연출(펫 세우기·카메라)은 씬의 DialogueManager가 맡는다. 본 기록은 남기지 않으므로 부를 때마다 재생된다.
         /// 이미 대화 중이면 무시한다. 발판(TriggerPlate) 같은 UnityEvent에서도 연결할 수 있도록 반환값이 없다.
         /// </summary>
         public void PlayCutscene(int id)
@@ -154,13 +155,13 @@ namespace UI
                 return;
             }
 
-            if (DialogueDirector.Instance == null)
+            if (DialogueManager.Instance == null)
             {
-                Debug.LogWarning("[UIManager] 씬에 DialogueDirector가 없어 컷씬을 재생하지 못했습니다.", this);
+                Debug.LogWarning("[UIManager] 씬에 DialogueManager가 없어 컷씬을 재생하지 못했습니다.", this);
                 return;
             }
 
-            DialogueDirector.Instance.Play(sequence, null);
+            DialogueManager.Instance.Play(sequence, null);
         }
 
         /// <summary>
@@ -264,7 +265,7 @@ namespace UI
             BindPlayerInput(playerFacade);
         }
 
-        // 대사 줄이 바뀌면 대화를 시작한 쪽(DialogueDirector 등)에 그대로 전달한다.
+        // 대사 줄이 바뀌면 대화를 시작한 쪽(DialogueManager 등)에 그대로 전달한다.
         private void HandleDialogueLineChanged(SDialogueLine line)
         {
             _dialogueLineChanged?.Invoke(line);
