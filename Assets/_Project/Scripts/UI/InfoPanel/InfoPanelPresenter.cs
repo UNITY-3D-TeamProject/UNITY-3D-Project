@@ -86,14 +86,16 @@ namespace UI.InfoPanel
             }
         }
 
-        // 가진 숫자·연산자. 목표값은 맵의 퍼즐 패널에 보인다. 예: "숫자 3 5 _ · 연산 + _"
+        // 목표값과 가진 숫자·연산자. 예: "목표 12 · 숫자 3 5 _ · 연산 + _"
         private string BuildPuzzleText(NumberPuzzleRound puzzle)
         {
             if (puzzle.IsSolved)
                 return "정답! 문이 열렸습니다";
 
             _builder.Clear();
-            _builder.Append("숫자 ");
+            _builder.Append("목표 ");
+            _builder.Append(puzzle.TargetValue);
+            _builder.Append(" · 숫자 ");
             AppendHeld(puzzle.HeldNumbers, puzzle.MaxHeldNumberCount);
             _builder.Append(" · 연산 ");
             AppendHeld(puzzle.HeldOperators, puzzle.MaxHeldOperatorCount);
