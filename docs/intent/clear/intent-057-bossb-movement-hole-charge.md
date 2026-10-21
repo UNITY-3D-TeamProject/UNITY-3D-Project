@@ -2,9 +2,9 @@
 id: intent-057
 title: 보스 B 대각선 돌진이 A 예고에 막혀 멈추고, 1-1 에서 구멍 앞에 막힘
 part: AI / Boss / BossB
-status: open   # open | resolved
+status: resolved
 created: 2026-10-21
-resolved: null # 해결 시 YYYY-MM-DD 로 변경
+resolved: 2026-10-21
 ---
 
 ## 문제 (Problem)
@@ -41,11 +41,11 @@ AI_TODO [보스-3] "작은 보스가 멍청하게 움직이는 문제". 사용�
 - 조건을 "1-1" 이 아니라 "구멍 + 도약 불가 + 돌진 준비" 로 잡았다. 1-2·최종에서 도약 쿨타임 중일 때도 같은 동작이 된다.
 
 ## 진행 기록
-- 2026-10-21: 구현·리컴파일 통과(에러 0). eval 로 로직 확인, Play(`Map_4_Security_Boss_Phase_T`)로 B 자리 옮김·돌진과 A 규칙 1 예고 확인. 육안 확인 대기 → [기록](../HANDOVER/BF_Leers/2026-10-21/boss-b-hole-charge-lane.md)
+- 2026-10-21: 구현·리컴파일 통과(에러 0). eval 로 로직 확인, Play(`Map_4_Security_Boss_Phase_T`)로 B 자리 옮김·돌진과 A 규칙 1 예고 확인. 육안 확인 대기 → [기록](../../HANDOVER/BF_Leers/2026-10-21/boss-b-hole-charge-lane.md)
 
 - 2026-10-21: 추가 제보(구멍이 먼저 있어도 짧게 예고하고 돌진) — `HasHoleBetween` 0.25칸 표본이 대각선 모서리 구멍을 놓치던 것(8.1%)을 칸 경계 추적으로 수정. 놓침 0건, Play 확인.
 - 2026-10-21: 추가 제보(돌진 예고 중 A 가 찍어 범위가 줄어듦) — 사용자 결정에 따라 돌진 예고~돌진 중엔 A 의 모든 패턴이 돌진 직선 위 칸을 빼고 침(A1 은 경로 밖 가장 가까운 칸으로 대체). Play 확인.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
-- 최종 결정:
-- 관련 커밋/PR:
+- 최종 결정: A 는 B 돌진 예고~돌진 중 돌진 직선 위 칸을 빼고 친다(`BossAPatternSelector.ExcludeBlocked`, 규칙 1 옆 칸 후보도 직선 위 칸 제외). B 는 사이에 구멍이 있어 공격을 못 고르고 돌진이 준비됐으면 직선이 깨끗한 칸으로 옮긴 뒤 돌진한다(`BossBChooseAttackAction`). `HasHoleBetween` 은 칸 경계 추적으로 판정. A 손 충돌은 보류. 사용자 육안 확인 완료(2026-10-21).
+- 관련 커밋/PR: 커밋 전

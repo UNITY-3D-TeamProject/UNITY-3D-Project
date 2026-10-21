@@ -15,7 +15,7 @@
   - `IArenaQuery.FindClearLineTile` / `BossArena` 구현.
   - `BossBChooseAttackAction` — 고른 공격이 None 이고 사이에 구멍 + 돌진 준비됨이면 직선이 깨끗한 칸으로 걸으며 Running. 직선이 깨끗해지면 규칙으로 다시 골라 성공(보통 돌진), 정체·도착·그 칸이 위험해지면 None 으로 성공. `OnEnd` 에서 이동 정지. 새 필드 `_clearLineTile` 은 다른 BT 노드처럼 `[CreateProperty]`.
 - 실행자: Claude 직접. 예외 이유: 이 PC 에 Codex CLI 없음(`which codex` 실패).
-- intent: [intent-057](../../../intent/intent-057-bossb-movement-hole-charge.md)
+- intent: [intent-057](../../../intent/clear/intent-057-bossb-movement-hole-charge.md)
 
 ## 결정 사항
 - BT 그래프(`SmallBoss.asset`)와 공용 `AIChaseTargetAction` 은 건드리지 않았다. 자리 옮기기는 고르기 노드가 Running 으로 Switch 를 늦추는 방식.
@@ -57,6 +57,6 @@
 - 발견(미조치, 사용자 확인 필요): B 가 돌진을 고를 때 플레이어 칸이 이미 예고·붕괴 상태인 경우가 있다. `HasHoleBetween` 이 끝점(플레이어 칸)을 검사하지 않아 돌진을 고르고 그 칸 가장자리에서 멈춘다(Play 에서 0~4 m 돌진 여러 번). 단 이 Play 는 플레이어를 무너진 칸 위에 순간이동시킨 인위적 상황이 섞여 있어 실제 빈도는 낮을 수 있다.
 
 ## 다음 할 일 (Next Steps)
-- 사용자 육안 확인: 1-1 대각선 돌진이 끝까지 가는지, 구멍 건너편 플레이어에게 옆 칸으로 돌아 돌진하는지. 확인되면 intent-057 resolved → `clear/` 이동, AI_TODO 보스-3 체크.
+- ~~사용자 육안 확인~~ → 완료(2026-10-21, 보스-3·보스-9). intent-057 resolved·`clear/` 이동, AI_TODO 보스-3·보스-9 완료 처리함. 게이트 루프는 아직 미실행, 커밋 전.
 - A 손에 B 가 걸리는 문제가 남아 있으면 그때 처리(B 이동이 A 손·팔 콜라이더를 통과하게).
 - AI_TODO 보스 순서 4번: 보스-10 → 보스-13(그랩 묶음).
