@@ -112,6 +112,17 @@ namespace AI
         {
             _hasLastKnownPosition = false;
         }
+
+        /// <summary>
+        /// 확정된 대상, 놓친 뒤 유예, 마지막 목격 위치를 모두 지운다.
+        /// 다음 감지부터는 대상이 없는 상태처럼 시야각 안에서만 다시 찾는다.
+        /// </summary>
+        public void ForgetTarget()
+        {
+            _currentTarget = null;
+            _graceTimer = 0.0f;
+            _hasLastKnownPosition = false;
+        }
         #endregion
 
         #region Private Methods
