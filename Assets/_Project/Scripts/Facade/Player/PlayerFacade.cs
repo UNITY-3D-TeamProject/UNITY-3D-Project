@@ -32,6 +32,7 @@ namespace Facade.Player
         #region Private Fields
         private InputAction _openSettingsAction;
         private InputAction _closeSettingsAction;
+        private bool _isSpawnEnded = false;
         #endregion
 
         #region Properties
@@ -40,6 +41,8 @@ namespace Facade.Player
 
         /// <summary>사격 차지 진행도(0~1). 차지 중이 아니면(발사·취소 후, 재차지 대기 중) 0.</summary>
         public float FireChargeRatio => _characterMediator ? _characterMediator.FireChargeRatio : 0.0f;
+        
+        public bool IsSpawnEnded => _isSpawnEnded;
         #endregion
 
         #region Events
@@ -301,6 +304,7 @@ namespace Facade.Player
 
         private void RelaySpawnEffectEnded()
         {
+            _isSpawnEnded = true;
             OnSpawnEffectEnded?.Invoke();
         }
 
