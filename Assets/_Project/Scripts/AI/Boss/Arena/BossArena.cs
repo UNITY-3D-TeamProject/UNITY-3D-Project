@@ -120,6 +120,13 @@ namespace AI.Boss.Arena
             return Grid.HasHoleBetween(ax, az, bx, bz);
         }
 
+        public int FindClearLineTile(Vector3 from, Vector3 target)
+        {
+            ToTileSpace(from, out float fromX, out float fromZ);
+            ToTileSpace(target, out float targetX, out float targetZ);
+            return Grid.FindClearLineTile(fromX, fromZ, targetX, targetZ);
+        }
+
         public void SetReservedTile(int index)
         {
             Grid.SetReservedTile(index);

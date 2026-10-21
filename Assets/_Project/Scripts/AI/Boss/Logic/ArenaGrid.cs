@@ -14,14 +14,14 @@ namespace AI.Boss.Logic
         public const int COUNT = SIZE * SIZE;
         /// <summary>정가운데 칸 인덱스. SIZE 가 홀수일 때만 가운데 칸이 하나로 정해진다.</summary>
         public const int CENTER = (SIZE / 2) * SIZE + (SIZE / 2);
-
-        private const float HOLE_SAMPLE_SPACING = 0.25f;
         #endregion
 
         #region Private Fields
         private float _restoreSeconds;
         private readonly ETileState[] _states = new ETileState[COUNT];
         private readonly float[] _restoreRemaining = new float[COUNT];
+        // HasHoleBetween 이 선분이 지나는 칸을 담는 재사용 목록
+        private readonly List<int> _walkTiles = new List<int>();
         #endregion
 
         #region Properties
@@ -238,33 +238,125 @@ namespace AI.Boss.Logic
         }
 
         /// <summary>
-        /// 두 점을 잇는 선분 위에 구멍(붕괴·예고 칸)이나 판 밖이 있는지 0.25칸 간격 표본으로 판정한다.
-        /// 두 끝점이 속한 칸은 검사하지 않는다.
+        /// 두 점을 잇는 선분 위에 구멍(붕괴·예고 칸)이나 판 밖이 있는지 판정한다.
+        /// 칸 경계를 따라가므로 모서리만 스치는 칸도 빠지지 않는다(B 돌진은 그런 칸 앞에서도 멈춘다). 두 끝점이 속한 칸은 검사하지 않는다.
         /// </summary>
-        /// <returns>지나는 칸 중 구멍이 있거나 판 밖 표본이 있으면 true</returns>
+        /// <returns>지나는 칸 중 구멍이 있거나 선분이 판 밖으로 나가면 true</returns>
         public bool HasHoleBetween(float ax, float az, float bx, float bz)
         {
             TryGetTile(ax, az, out int startTile);
             TryGetTile(bx, bz, out int endTile);
 
-            float dx = bx - ax;
-            float dz = bz - az;
-            float length = (float)Math.Sqrt(dx * dx + dz * dz);
-            int sampleCount = Math.Max(1, (int)Math.Ceiling(length / HOLE_SAMPLE_SPACING));
+            if (!TryWalkTiles(ax, az, bx - ax, bz - az, 1.0f, _walkTiles)) return true;
 
-            for (int i = 0; i <= sampleCount; i++)
+            foreach (int tile in _walkTiles)
             {
-                float t = (float)i / sampleCount;
-                if (!TryGetTile(ax + dx * t, az + dz * t, out int tile)) return true;
                 if (tile == startTile || tile == endTile) continue;
                 if (IsHoleOrTelegraphed(tile)) return true;
             }
 
             return false;
         }
+
+        /// <summary>
+        /// 시작점에서 한 방향으로 판 밖에 닿을 때까지 지나는 칸을 지나는 순서대로 채운다(시작 칸 포함).
+        /// 칸 경계를 차례로 넘으며 따라가므로 모서리만 스치는 칸도 빠지지 않는다. 방향이 0 이거나 시작점이 판 밖이면 비어 있다.
+        /// </summary>
+        /// <param name="results">결과를 담을 목록. 먼저 비운다</param>
+        public void GetTilesAlongRay(float ox, float oz, float dx, float dz, List<int> results)
+        {
+            results.Clear();
+            if ((dx == 0.0f) && (dz == 0.0f)) return;
+
+            TryWalkTiles(ox, oz, dx, dz, float.PositiveInfinity, results);
+        }
+
+        /// <summary>
+        /// 칸 중심에서 대상까지 직선에 구멍·예고·판 밖이 없는 멀쩡한 칸 중 시작점에서 가장 가까운 칸을 찾는다.
+        /// 시작점 칸·대상 칸·착지 예약 칸은 고르지 않는다. 거리가 같으면 인덱스가 작은 칸.
+        /// </summary>
+        /// <returns>칸 인덱스. 없으면 -1</returns>
+        public int FindClearLineTile(float x, float z, float targetX, float targetZ)
+        {
+            TryGetTile(x, z, out int startTile);
+            TryGetTile(targetX, targetZ, out int targetTile);
+
+            int nearest = -1;
+            float nearestSqrDistance = float.MaxValue;
+
+            for (int i = 0; i < COUNT; i++)
+            {
+                if (!IsSafe(i) || (i == ReservedTile) || (i == startTile) || (i == targetTile)) continue;
+
+                GetTileCenter(i, out float centerX, out float centerZ);
+                if (HasHoleBetween(centerX, centerZ, targetX, targetZ)) continue;
+
+                float dx = centerX - x;
+                float dz = centerZ - z;
+                float sqrDistance = dx * dx + dz * dz;
+                if (sqrDistance >= nearestSqrDistance) continue;
+
+                nearest = i;
+                nearestSqrDistance = sqrDistance;
+            }
+
+            return nearest;
+        }
         #endregion
 
         #region Private Methods
+        /// <summary>
+        /// 시작점에서 (dx, dz) 방향으로 매개변수 t 가 maxT 에 닿을 때까지 지나는 칸을 지나는 순서대로 채운다(시작 칸 포함).
+        /// 칸 경계를 차례로 넘으며 따라간다. 방향이 0 이면 시작 칸만 넣는다.
+        /// </summary>
+        /// <param name="results">결과를 담을 목록. 먼저 비운다</param>
+        /// <returns>maxT 전에 판 밖으로 나갔으면(시작점이 판 밖이면 포함) false</returns>
+        private bool TryWalkTiles(float ox, float oz, float dx, float dz, float maxT, List<int> results)
+        {
+            results.Clear();
+
+            int col = (int)Math.Floor(ox);
+            int row = (int)Math.Floor(oz);
+            int stepCol = Math.Sign(dx);
+            int stepRow = Math.Sign(dz);
+
+            // 다음 세로·가로 경계까지의 매개변수 t 와 한 칸을 건너는 데 드는 t
+            // 축 방향이 0 이면 그 축 경계는 넘지 않는다(무한대 × 0 = NaN 을 피한다)
+            float deltaX = float.PositiveInfinity;
+            float deltaZ = float.PositiveInfinity;
+            float nextX = float.PositiveInfinity;
+            float nextZ = float.PositiveInfinity;
+            if (stepCol != 0)
+            {
+                deltaX = Math.Abs(1.0f / dx);
+                nextX = ((stepCol > 0) ? (col + 1 - ox) : (ox - col)) * deltaX;
+            }
+            if (stepRow != 0)
+            {
+                deltaZ = Math.Abs(1.0f / dz);
+                nextZ = ((stepRow > 0) ? (row + 1 - oz) : (oz - row)) * deltaZ;
+            }
+
+            while (true)
+            {
+                if (!IsInside(row, col)) return false;
+
+                results.Add(GetIndex(row, col));
+                if (Math.Min(nextX, nextZ) >= maxT) return true;
+
+                if (nextX < nextZ)
+                {
+                    col += stepCol;
+                    nextX += deltaX;
+                }
+                else
+                {
+                    row += stepRow;
+                    nextZ += deltaZ;
+                }
+            }
+        }
+
         private void Restore(int index)
         {
             _states[index] = ETileState.Normal;

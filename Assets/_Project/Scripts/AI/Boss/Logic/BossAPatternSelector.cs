@@ -6,7 +6,7 @@ namespace AI.Boss.Logic
     /// <summary>
     /// 상황 스냅샷을 보고 A 의 다음 패턴과 표적 칸을 고른다. Unity 를 참조하지 않는다.
     /// 순서: 단계별 열린 패턴 → 붕괴 제한 → 상황 규칙 1~5 → 기본 순서. A4 는 직전에 끝난 패턴이 A4 면 고르지 않는다.
-    /// 고른 뒤 B 의 착지 예약 칸(ArenaGrid.ReservedTile)을 표적에서 뺀다.
+    /// 고른 뒤 B 가 쓰는 칸(착지 예약 칸 ArenaGrid.ReservedTile, 돌진 예고~돌진 중이면 돌진 직선 위 칸)을 표적에서 뺀다.
     /// </summary>
     public class BossAPatternSelector
     {
@@ -37,6 +37,8 @@ namespace AI.Boss.Logic
         private readonly int _collapseLimit;
         private readonly float _lineStaySeconds;
         private readonly List<int> _candidates = new List<int>();
+        private readonly List<int> _chargePathTiles = new List<int>();
+        private readonly List<int> _blockedTiles = new List<int>();
 
         private int _defaultIndex;
         private bool _isLastFinishedGrab;
@@ -74,10 +76,10 @@ namespace AI.Boss.Logic
 
             if (TryChooseBySituation(in situation, targetTile, out SBossAPatternChoice choice))
             {
-                return ExcludeReserved(situation.Grid, choice);
+                return ExcludeBlocked(in situation, choice);
             }
 
-            return ExcludeReserved(situation.Grid, ChooseByDefaultOrder(in situation, targetTile));
+            return ExcludeBlocked(in situation, ChooseByDefaultOrder(in situation, targetTile));
         }
 
         /// <summary>
@@ -108,7 +110,7 @@ namespace AI.Boss.Logic
             // 규칙 1: B 가 돌진을 준비 중이면 돌진 경로 바로 옆 칸 (1페이즈)
             if (situation.IsBChargePreparing && stage != EBossStage.Final)
             {
-                int sideTile = PickChargeSideTile(grid, targetTile, situation.ChargeDirectionIsRow);
+                int sideTile = PickChargeSideTile(grid, targetTile, in situation);
                 if (sideTile >= 0)
                 {
                     choice = CreateSlam(stage, grid, sideTile);
@@ -193,14 +195,15 @@ namespace AI.Boss.Logic
 
         /// <summary>
         /// 표적 칸에서 돌진 방향에 수직인 두 이웃 중 멀쩡한 칸. 둘 다면 무작위, 없으면 -1.
+        /// 대각선 돌진이면 수직 이웃이 돌진 직선 위일 수 있어, 직선이 지나는 칸은 뺀다(B 가 예고 칸 앞에서 급정거하므로).
         /// </summary>
-        private int PickChargeSideTile(ArenaGrid grid, int tile, bool isChargeAlongRow)
+        private int PickChargeSideTile(ArenaGrid grid, int tile, in SBossSituation situation)
         {
             int row = ArenaGrid.GetRow(tile);
             int col = ArenaGrid.GetCol(tile);
 
             _candidates.Clear();
-            if (isChargeAlongRow)
+            if (situation.ChargeDirectionIsRow)
             {
                 AddIfSafe(grid, ArenaGrid.GetIndex(row, col - 1));
                 AddIfSafe(grid, ArenaGrid.GetIndex(row, col + 1));
@@ -210,6 +213,14 @@ namespace AI.Boss.Logic
                 AddIfSafe(grid, ArenaGrid.GetIndex(row - 1, col));
                 AddIfSafe(grid, ArenaGrid.GetIndex(row + 1, col));
             }
+
+            grid.GetTilesAlongRay(
+                situation.ChargeOriginX,
+                situation.ChargeOriginZ,
+                situation.ChargeDirectionX,
+                situation.ChargeDirectionZ,
+                _chargePathTiles);
+            _candidates.RemoveAll(_chargePathTiles.Contains);
 
             return PickCandidate();
         }
@@ -369,40 +380,75 @@ namespace AI.Boss.Logic
         }
 
         /// <summary>
-        /// B 의 착지 예약 칸을 표적에서 뺀다. A1·A1Double 은 예약 칸 대신 가장 가까운 멀쩡한 칸을 치고,
-        /// 대신할 칸이 없거나 이미 표적이면 그 칸만 뺀다. 줄·모양 패턴은 예약 칸만 비운다.
-        /// 빠진 칸을 치던 손은 남은 칸 중 가장 가까운 칸(다른 손이 치지 않는 칸)으로 옮기고, 그런 칸이 없으면 쓰지 않는다.
+        /// B 가 쓰는 칸(착지 예약 칸, 돌진 예고~돌진 중이면 돌진 직선 위 칸)을 표적에서 하나씩 뺀다.
+        /// 돌진 직선 위 칸을 치면 돌진이 그 칸 앞에서 멈춰 범위가 줄어든다(플레이어 칸도 직선 위다).
         /// A4 는 칸을 손 고르기에만 쓰고(끌려올 칸은 BossAGrab 이 예약 칸을 건너뛰어 고른다),
         /// A6 은 칸 순서로 손 자리를 정하며 최종(B 없음) 전용이라 그대로 둔다.
         /// </summary>
-        private static SBossAPatternChoice ExcludeReserved(ArenaGrid grid, SBossAPatternChoice choice)
+        private SBossAPatternChoice ExcludeBlocked(in SBossSituation situation, SBossAPatternChoice choice)
         {
-            int reserved = grid.ReservedTile;
             bool isUntouched = (choice.Pattern == EBossAPattern.A4) || (choice.Pattern == EBossAPattern.A6);
-            if ((reserved < 0) || isUntouched || (choice.TileCount == 0)) return choice;
+            if (isUntouched) return choice;
 
-            int reservedIndex = Array.IndexOf(choice.Tiles, reserved);
-            if (reservedIndex < 0) return choice;
+            CollectBlockedTiles(in situation);
+            foreach (int blocked in _blockedTiles)
+            {
+                if (choice.TileCount == 0) break;
+
+                choice = ExcludeTile(situation.Grid, choice, blocked);
+            }
+
+            return choice;
+        }
+
+        private void CollectBlockedTiles(in SBossSituation situation)
+        {
+            ArenaGrid grid = situation.Grid;
+
+            _blockedTiles.Clear();
+            if (grid.ReservedTile >= 0) _blockedTiles.Add(grid.ReservedTile);
+            if (!situation.IsBChargePreparing) return;
+
+            grid.GetTilesAlongRay(
+                situation.ChargeOriginX,
+                situation.ChargeOriginZ,
+                situation.ChargeDirectionX,
+                situation.ChargeDirectionZ,
+                _chargePathTiles);
+            foreach (int tile in _chargePathTiles)
+            {
+                if (!_blockedTiles.Contains(tile)) _blockedTiles.Add(tile);
+            }
+        }
+
+        /// <summary>
+        /// 칸 하나를 표적에서 뺀다. A1·A1Double 은 그 칸 대신 가장 가까운 멀쩡한 칸(B 가 쓰는 칸 제외)을 치고,
+        /// 대신할 칸이 없거나 이미 표적이면 그 칸만 뺀다. 줄·모양 패턴은 그 칸만 비운다.
+        /// 빠진 칸을 치던 손은 남은 칸 중 가장 가까운 칸(다른 손이 치지 않는 칸)으로 옮기고, 그런 칸이 없으면 쓰지 않는다.
+        /// </summary>
+        private SBossAPatternChoice ExcludeTile(ArenaGrid grid, SBossAPatternChoice choice, int excluded)
+        {
+            int excludedIndex = Array.IndexOf(choice.Tiles, excluded);
+            if (excludedIndex < 0) return choice;
 
             List<int> tiles = new List<int>(choice.Tiles);
             bool isSingleTileSlam = (choice.Pattern == EBossAPattern.A1) || (choice.Pattern == EBossAPattern.A1Double);
             int replacement = -1;
             if (isSingleTileSlam)
             {
-                grid.GetTileCenter(reserved, out float x, out float z);
-                replacement = grid.FindNearestSafe(x, z);
+                replacement = FindNearestUnblockedSafe(grid, excluded);
                 if (tiles.Contains(replacement)) replacement = -1;
             }
 
-            if (replacement >= 0) tiles[reservedIndex] = replacement;
-            else tiles.RemoveAt(reservedIndex);
+            if (replacement >= 0) tiles[excludedIndex] = replacement;
+            else tiles.RemoveAt(excludedIndex);
 
             if (tiles.Count == 0) return CreateRest();
 
             int left = choice.HandTileLeft;
             int right = choice.HandTileRight;
-            if (left == reserved) left = (replacement >= 0) ? replacement : FindClosestTile(tiles, reserved, right);
-            if (right == reserved) right = (replacement >= 0) ? replacement : FindClosestTile(tiles, reserved, left);
+            if (left == excluded) left = (replacement >= 0) ? replacement : FindClosestTile(tiles, excluded, right);
+            if (right == excluded) right = (replacement >= 0) ? replacement : FindClosestTile(tiles, excluded, left);
 
             return new SBossAPatternChoice(
                 choice.Pattern,
@@ -411,6 +457,27 @@ namespace AI.Boss.Logic
                 right,
                 choice.IsRowLine,
                 choice.LineIndex);
+        }
+
+        /// <returns>B 가 쓰는 칸이 아닌 멀쩡한 칸 중 기준 칸에 가장 가까운 칸. 거리가 같으면 인덱스가 작은 칸, 없으면 -1</returns>
+        private int FindNearestUnblockedSafe(ArenaGrid grid, int origin)
+        {
+            int nearest = -1;
+            int nearestSqrDistance = int.MaxValue;
+            for (int tile = 0; tile < ArenaGrid.COUNT; tile++)
+            {
+                if (!grid.IsSafe(tile) || _blockedTiles.Contains(tile)) continue;
+
+                int dRow = ArenaGrid.GetRow(tile) - ArenaGrid.GetRow(origin);
+                int dCol = ArenaGrid.GetCol(tile) - ArenaGrid.GetCol(origin);
+                int sqrDistance = dRow * dRow + dCol * dCol;
+                if (sqrDistance >= nearestSqrDistance) continue;
+
+                nearest = tile;
+                nearestSqrDistance = sqrDistance;
+            }
+
+            return nearest;
         }
 
         /// <returns>후보 칸 중 기준 칸에 가장 가까운 칸(제외 칸 빼고). 없으면 -1</returns>
