@@ -651,6 +651,10 @@ MonoBehaviour:
     m_Bits: 256
   _mediator: {fileID: 0}
   _speedAttributeKey: MoveSpeed
+  _hitLookDuration: 1
+  _shouldFaceVisibleTargetOnHit: 0
+  _hitStunDuration: 0.4
+  _hitStunImmuneDuration: 1.5
 --- !u!114 &7711118245858961342
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -795,6 +799,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.EnemyPoolReturner
   _characterMediator: {fileID: 7711118245858961342}
+  _graphAgent: {fileID: 0}
 --- !u!1 &2893440626600557970
 GameObject:
   m_ObjectHideFlags: 0
@@ -1739,6 +1744,10 @@ PrefabInstance:
       propertyPath: _hitPrefab
       value: 
       objectReference: {fileID: 7208164379763720249}
+    - target: {fileID: 3076383128098632315, guid: b23cd218046b6d949bfbee204635bbdf, type: 3}
+      propertyPath: _holdDuration
+      value: 1.2
+      objectReference: {fileID: 0}
     - target: {fileID: 6343464521176282097, guid: b23cd218046b6d949bfbee204635bbdf, type: 3}
       propertyPath: m_Name
       value: EnemyMeleeAttack

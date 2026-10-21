@@ -75,9 +75,9 @@ namespace AI
         [SerializeField, Min(0.0f)] private float _hitLookDuration = 1.0f;
         [Tooltip("대상이 보이는 전투 중에도 피격 시 대상을 바라본다. 360도 센서를 쓰는 보스 등에 사용한다. Hold 중인 스킬 방향은 유지한다.")]
         [SerializeField] private bool _shouldFaceVisibleTargetOnHit;
-        [Tooltip("피격 시 이동과 스킬 요청을 멈추는 경직 시간(초). 0 이면 경직하지 않는다. 대상이 보이는 중에도 걸린다.")]
+        [Tooltip("피격 시 이동과 스킬 요청을 멈추는 경직 시간(초). 0 이면 경직하지 않는다. 대상이 보이는 중에도 걸린다. 피격 애니메이션은 경직이 걸릴 때만 재생된다.")]
         [SerializeField, Min(0.0f)] private float _hitStunDuration = 0.4f;
-        [Tooltip("경직이 끝난 뒤 다시 경직되지 않는 시간(초). 연사로 계속 묶이지 않게 한다. 피격 애니메이션은 이 동안에도 재생된다.")]
+        [Tooltip("경직이 끝난 뒤 다시 경직되지 않는 시간(초). 연사로 계속 묶이지 않게 한다. 이 동안의 피격은 피해만 받고 피격 애니메이션은 재생하지 않는다.")]
         [SerializeField, Min(0.0f)] private float _hitStunImmuneDuration = 1.5f;
         #endregion
 
@@ -215,7 +215,11 @@ namespace AI
         {
             // 풀에서 다시 꺼낼 때도 그 자리를 순찰 중심으로 삼는다 (풀은 위치를 옮긴 뒤 켠다)
             _spawnPosition = _body.position;
-            if (_mediator) _mediator.OnHitFrom += OnHitFromCallback;
+            if (_mediator)
+            {
+                _mediator.OnHitFrom += OnHitFromCallback;
+                _mediator.SetRequestHitStun(TryStartHitStun);
+            }
         }
 
         private void Start()
@@ -303,7 +307,11 @@ namespace AI
 
         private void OnDisable()
         {
-            if (_mediator) _mediator.OnHitFrom -= OnHitFromCallback;
+            if (_mediator)
+            {
+                _mediator.OnHitFrom -= OnHitFromCallback;
+                _mediator.ClearRequestHitStun();
+            }
             // 오브젝트 풀에서 다시 꺼냈을 때 멈춤이 남아 있지 않게 한다
             _hitLookTimer = 0.0f;
             _holdTimer = 0.0f;
@@ -701,22 +709,30 @@ namespace AI
         }
 
         /// <summary>
-        /// 피격되면 짧게 경직시키고, 대상이 안 보이면 잠시 멈춰 맞은 쪽을 바라보게 한다.
-        /// 경직은 스킬 사용 중(Hold·슈퍼아머)이거나 직전 경직의 면역 시간 안이면 걸리지 않는다.
+        /// 피격 시 중재자가 호출한다. 짧게 경직시키고, 걸렸는지를 돌려준다. 중재자는 걸렸을 때만 힛모션을 재생한다.
+        /// 경직은 스킬 사용 중(Hold·슈퍼아머)이거나 직전 경직·면역 시간 안이면 걸리지 않는다.
+        /// 면역 타이머가 경직 시간을 포함하므로 경직 중 추가 피격은 경직을 늘리거나 힛모션을 다시 재생하지 않는다.
+        /// </summary>
+        /// <returns>이번 피격으로 경직이 걸렸으면 true</returns>
+        private bool TryStartHitStun()
+        {
+            bool canStun = (_hitStunDuration > 0.0f) &&
+                (!IsHolding && !IsSuperArmor) &&
+                (_hitStunImmuneTimer <= 0.0f);
+            if (!canStun) return false;
+
+            _hitStunTimer = _hitStunDuration;
+            _hitStunImmuneTimer = _hitStunDuration + _hitStunImmuneDuration;
+            return true;
+        }
+
+        /// <summary>
+        /// 피격되면 대상이 안 보일 때 잠시 멈춰 맞은 쪽을 바라보게 한다. 경직은 TryStartHitStun 이 맡는다.
         /// 전투 중 돌아보기 설정이 켜져 있으면 보이는 대상을 바라본다. Hold·슈퍼아머 중 스킬 방향은 유지한다.
         /// </summary>
         /// <param name="hitSource">피격 방향 기준 월드 위치(맞은 지점 또는 공격자 위치)</param>
         private void OnHitFromCallback(Vector3 hitSource)
         {
-            bool canStun = (_hitStunDuration > 0.0f) &&
-                (!IsHolding && !IsSuperArmor) &&
-                (_hitStunImmuneTimer <= 0.0f);
-            if (canStun)
-            {
-                _hitStunTimer = _hitStunDuration;
-                _hitStunImmuneTimer = _hitStunDuration + _hitStunImmuneDuration;
-            }
-
             if (HasVisibleTarget)
             {
                 if (_shouldFaceVisibleTargetOnHit && !IsHolding && !IsSuperArmor)

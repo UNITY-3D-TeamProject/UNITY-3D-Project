@@ -29,6 +29,9 @@ namespace AI.BT
 
         /// <summary>예비 동작 동안 켜 두는 조준선 스킬 이름.</summary>
         private const string WINDUP_SKILL = "AttackWindup";
+
+        /// <summary>그래프에 AttackMotionDuration 값이 없을 때 쓰는 발사 모션 시간(초).</summary>
+        private const float DEFAULT_ATTACK_MOTION_DURATION = 0.85f;
         #endregion
 
         #region Serialized Fields
@@ -37,12 +40,14 @@ namespace AI.BT
         [SerializeReference] public BlackboardVariable<float> MaxInterval = new BlackboardVariable<float>(3.0f);
         [SerializeReference] public BlackboardVariable<float> WindupDuration = new BlackboardVariable<float>(0.6f);
         [SerializeReference] public BlackboardVariable<bool> KeepMoving = new BlackboardVariable<bool>(false);
+        [SerializeReference] public BlackboardVariable<float> AttackMotionDuration = new BlackboardVariable<float>(DEFAULT_ATTACK_MOTION_DURATION);
         #endregion
 
         #region Private Fields
         [CreateProperty] private bool _isWindingUp;
         [CreateProperty] private float _phaseEndTime;
         [CreateProperty] private Vector3 _aimDirection;
+        [CreateProperty] private float _superArmorEndTime;
         #endregion
 
         #region Node Lifecycle
@@ -107,6 +112,9 @@ namespace AI.BT
         /// </summary>
         private void UpdateWait()
         {
+            // 발사 모션이 끝나면 슈퍼아머를 풀어 다시 경직될 수 있게 한다
+            if (Controller.IsSuperArmor && (Time.time >= _superArmorEndTime)) Controller.IsSuperArmor = false;
+
             Vector3 toTarget = Vector3.ProjectOnPlane(Controller.VisibleTarget.position - Controller.Position, Vector3.up);
             Controller.FaceDirection(toTarget);
 
@@ -135,7 +143,9 @@ namespace AI.BT
             Controller.ExecuteSkill(ATTACK_SKILL);
             // 누르고 있는 동안 반복되는 스킬이어도 한 번만 발동하도록 바로 뗀다
             Controller.StopSkill(ATTACK_SKILL);
-            Controller.IsSuperArmor = false;
+            // 발사 모션 동안에도 슈퍼아머를 유지해 힛모션이 공격 모션을 덮거나 뒤로 밀리지 않게 한다. 해제는 UpdateWait 가 맡는다
+            float motionDuration = (AttackMotionDuration != null) ? AttackMotionDuration.Value : DEFAULT_ATTACK_MOTION_DURATION;
+            _superArmorEndTime = Time.time + motionDuration;
 
             BeginWait();
         }
