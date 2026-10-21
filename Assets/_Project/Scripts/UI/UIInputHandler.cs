@@ -13,7 +13,7 @@ namespace UI
         #region Constants
         // 대화 중에 쓰는 입력 맵 이름 (PlayerInput의 Action Asset 기준)
         private const string ACTION_MAP_DIALOGUE = "Dialogue";
-        // 대화 맵에서 대사를 넘기는 액션 (Space)
+        // 대화 맵에서 대사를 넘기는 액션 (E)
         private const string ACTION_NEXT_LINE = "Dialogue/NextLine";
         // 대화 맵에서 설정창을 여는 액션 (ESC)
         private const string ACTION_OPEN_SETTINGS_IN_DIALOGUE = "Dialogue/OpenSettings";
@@ -39,7 +39,7 @@ namespace UI
         public event Action OnOpenSettingsRequested;
         // 설정창 닫기 입력 (UI 맵 ESC)
         public event Action OnCloseSettingsRequested;
-        // 다음 대사 입력 (Dialogue 맵 Space)
+        // 다음 대사 입력 (Dialogue 맵 E)
         public event Action OnNextLineRequested;
         #endregion
 
@@ -119,7 +119,7 @@ namespace UI
             OnCloseSettingsRequested?.Invoke();
         }
 
-        // 대화 맵 Space
+        // 대화 맵 E
         private void HandleNextLine(InputAction.CallbackContext context)
         {
             OnNextLineRequested?.Invoke();

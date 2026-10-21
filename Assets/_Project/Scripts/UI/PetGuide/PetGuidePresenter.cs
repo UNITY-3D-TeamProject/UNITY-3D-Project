@@ -14,7 +14,7 @@ namespace UI.PetGuide
 
         [Header("Close Label")]
         [Tooltip("안내 패널 아래에 보이는 닫기 안내")]
-        [SerializeField] private string _closeLabel = "Space ▶ 닫기";
+        [SerializeField] private string _closeLabel = "E ▶ 닫기";
 
         // 번호에 맞는 문구를 테이블에서 찾아 패널에 띄운다. 패널이나 문구가 없으면 띄우지 않고 false를 돌려준다.
         public bool Show(int id)
@@ -28,7 +28,7 @@ namespace UI.PetGuide
                 return false;
             }
 
-            // Space로 닫는다는 것을 알려 준다.
+            // E로 닫는다는 것을 알려 준다.
             _view.ShowNextLabel(_closeLabel);
 
             // 항목에 표정이 지정돼 있으면 그 얼굴, 아니면 펫 기본 얼굴.

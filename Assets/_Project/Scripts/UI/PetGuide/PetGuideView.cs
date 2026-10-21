@@ -10,7 +10,7 @@ namespace UI.PetGuide
         [SerializeField] private TMP_Text _messageText;
         [SerializeField] private TMP_Text _nameText;
         [SerializeField] private Image _portraitImage;
-        [Tooltip("대화 중에만 보이는 넘기기 안내 (예: Space ▶ 다음)")]
+        [Tooltip("대화 중에만 보이는 넘기기 안내 (예: E ▶ 다음)")]
         [SerializeField] private TMP_Text _nextLabelText;
 
         public void Show(string message)

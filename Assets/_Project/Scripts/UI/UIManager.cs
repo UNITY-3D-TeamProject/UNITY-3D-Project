@@ -37,7 +37,7 @@ namespace UI
         // 설정창이 열려 있으면 true. 열린 동안에는 대화를 시작하지 않는다.
         private bool _isSettingsOpen;
 
-        // 펫 안내가 떠 있으면 true. Space로 닫을 때까지 게임을 멈춘다.
+        // 펫 안내가 떠 있으면 true. E로 닫을 때까지 게임을 멈춘다.
         private bool _isPetGuideOpen;
         #endregion
 
@@ -131,7 +131,7 @@ namespace UI
         public void HidePlayerHud() => _playerHudPresenter?.Hide();
 
         // 번호에 맞는 펫 안내 문구를 띄운다. 번호와 문구는 SOPetGuideTable에서 정한다.
-        // Space로 닫을 때까지 BGM만 남기고 게임을 멈추며, 입력은 Dialogue 맵(Space 닫기·ESC 설정창)으로 바꾼다.
+        // E로 닫을 때까지 BGM만 남기고 게임을 멈추며, 입력은 Dialogue 맵(E 닫기·ESC 설정창)으로 바꾼다.
         // 대화 중이거나 설정창이 열려 있거나 이미 안내 중이거나 플레이어가 없으면 무시한다.
         public void ShowPetGuide(int id)
         {
@@ -256,7 +256,7 @@ namespace UI
         }
 
         // 대화를 시작한다. 끝날 때까지 Dialogue 입력 맵으로 바꿔 플레이어 조작을 막는다.
-        // Dialogue 맵에서는 Space로 대사를 넘기고, ESC로 설정창을 연다.
+        // Dialogue 맵에서는 E로 대사를 넘기고, ESC로 설정창을 연다.
         // 이미 대화 중이거나 설정창·펫 안내가 열려 있거나 플레이어가 없으면 시작하지 않는다.
         private void StartDialogue(SODialogue sequence)
         {
@@ -310,7 +310,7 @@ namespace UI
             _input.SwitchToPlayerInput();
         }
 
-        // 대화 맵 Space: 펫 안내 중이면 안내를 닫고, 아니면 다음 대사로 넘긴다.
+        // 대화 맵 E: 펫 안내 중이면 안내를 닫고, 아니면 다음 대사로 넘긴다.
         private void HandleNextLine()
         {
             if (_isPetGuideOpen)

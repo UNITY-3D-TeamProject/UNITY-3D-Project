@@ -6,7 +6,7 @@ using UI.PetGuide;
 namespace UI.Dialogue
 {
     // 대화 묶음을 한 줄씩 펫 안내 패널에 띄운다. 입력은 모르고, ShowNextLine 호출로만 넘어간다.
-    // 입력(Space)과 카메라 전환은 UIManager·DialogueDirector가 맡고, 여기서는 "지금 몇 번째 줄인지"만 관리한다.
+    // 입력(E)과 카메라 전환은 UIManager·DialogueDirector가 맡고, 여기서는 "지금 몇 번째 줄인지"만 관리한다.
     public class DialoguePresenter : MonoBehaviour
     {
         // 말하는 사람별 기본 얼굴. 대사에 초상화가 없을 때 쓴다.
@@ -28,9 +28,9 @@ namespace UI.Dialogue
 
         [Header("Next Label")]
         [Tooltip("다음 줄이 남아 있을 때 패널 아래에 보이는 안내")]
-        [SerializeField] private string _nextLineLabel = "Space ▶ 다음";
+        [SerializeField] private string _nextLineLabel = "E ▶ 다음";
         [Tooltip("마지막 줄일 때 패널 아래에 보이는 안내")]
-        [SerializeField] private string _lastLineLabel = "Space ▶ 닫기";
+        [SerializeField] private string _lastLineLabel = "E ▶ 닫기";
 
         // 지금 재생 중인 대화. 대화 중이 아니면 null이다.
         private SODialogue _currentDialogue;
@@ -96,7 +96,7 @@ namespace UI.Dialogue
 
             _petGuideView.ShowLine(line.SpeakerName, portrait, line.Message);
 
-            // 마지막 줄이면 Space로 대화가 닫힌다는 것을 알려 준다.
+            // 마지막 줄이면 E로 대화가 닫힌다는 것을 알려 준다.
             bool isLastLine = (_currentLineIndex >= _currentDialogue.LineCount - 1);
             _petGuideView.ShowNextLabel(isLastLine ? _lastLineLabel : _nextLineLabel);
 
