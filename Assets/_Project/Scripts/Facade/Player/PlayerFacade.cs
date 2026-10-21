@@ -171,6 +171,26 @@ namespace Facade.Player
         }
 
         /// <summary>
+        /// 펫을 켜거나 끈다. 펫이 꺼져 있는 동안에는 스캔을 쓸 수 없다. 펫 생성 전에 호출하면 생성 직후 적용한다.
+        /// </summary>
+        /// <param name="isEnabled">켜려면 true</param>
+        public void SetPetEnabled(bool isEnabled)
+        {
+            if (!_characterMediator) return;
+
+            _characterMediator.SetPetEnabled(isEnabled);
+        }
+
+        /// <summary>
+        /// 펫이 켜져 있는지 반환한다.
+        /// </summary>
+        /// <returns>펫이 켜져 있으면 true</returns>
+        public bool IsPetEnabled()
+        {
+            return _characterMediator && _characterMediator.IsPetEnabled();
+        }
+
+        /// <summary>
         /// 입력 맵을 UI 용으로 전환한다.
         /// </summary>
         public void SwitchToUIInput()

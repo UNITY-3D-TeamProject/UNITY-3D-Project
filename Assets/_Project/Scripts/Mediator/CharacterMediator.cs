@@ -204,6 +204,27 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 펫을 켜거나 끈다. 펫이 꺼져 있는 동안에는 스캔을 쓸 수 없다.
+        /// </summary>
+        /// <param name="isEnabled">켜려면 true</param>
+        public void SetPetEnabled(bool isEnabled)
+        {
+            if (!_petMediator) return;
+
+            _petMediator.SetPetEnabled(isEnabled);
+            if (_skillMediator) _skillMediator.SetScanBlocked(!isEnabled);
+        }
+
+        /// <summary>
+        /// 펫이 켜져 있는지 반환한다.
+        /// </summary>
+        /// <returns>펫이 켜져 있으면 true. 펫 중재자가 없으면 false</returns>
+        public bool IsPetEnabled()
+        {
+            return _petMediator && _petMediator.IsPetEnabled();
+        }
+
+        /// <summary>
         /// 사망 처리로 바뀐 상태를 되돌린다. 오브젝트 풀에서 다시 꺼낸 캐릭터가 재사용될 때 호출한다.
         /// </summary>
         public void ResetForReuse()
