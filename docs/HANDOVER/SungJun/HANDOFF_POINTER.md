@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-21** — AudioManager 효과음 반복·끊기(intent-055 해결): `PlaySfx`·`PlaySfxLoop(SO, Transform)`이 int 번호 반환, `StopSfx(번호, fadeDuration = 0)`로 원샷·반복음 모두 끊기, 3D 소스 16개 공유·대상 따라가기·반복음은 50ms 차단 미적용. 새 파일 없음. 컴파일 0에러·TestScene Play 로직 확인(청취 안 함), 커밋 안 함: [작업 기록](./2026-10-21/audio-loop-sfx.md)
 - **2026-10-21** — 대화·펫 안내 넘기기 키 Space → E: Dialogue 맵 `NextLine` 바인딩 변경, 안내 문구(스크립트 기본값·Canvas_InGame 프리팹) `E ▶ 다음/닫기`. 컴파일 0에러, Play 확인·커밋 안 함: [작업 기록](./2026-10-21/dialogue-next-key-e.md)
 - **2026-10-20** — TestScene 발판 10곳을 `UIManager.Instance` 경유로 변경: Test 전용 `TestUIManagerCaller`(ShowPetGuide·PlayDialogue)를 발판에 붙이고 UnityEvent 대상 교체. 펫 안내 9곳 정상, `Plate_Cutscene`은 공용 테이블 번호 1로 바꿔 재생 확인. 씬 저장 안 함: [작업 기록](./2026-10-20/testscene-plate-uimanager-instance.md)
 - **2026-10-20** — UI View 공통 부모 `BaseView`(intent-052): `_root`·`IsVisible`·`Show`·`Hide`·private `SetVisible`, InfoPanel·PlayerHud·PetGuide·Settings가 상속, MainMenu 제외. 프리팹 Root 연결 유지, 컴파일 0에러·TestScene Play 확인, 커밋 안 함: [작업 기록](./2026-10-20/ui-base-view.md)
