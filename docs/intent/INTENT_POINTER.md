@@ -44,6 +44,8 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[AI / Boss / BossA]** 최종 A6 박수가 칸을 안 무너뜨리는데 줄 전체를 예고해 "예고 후 땅이 안 사라짐"으로 보임. 맞는 칸만 예고(1타 양 끝, 2타 가운데). 구현·Play 수치·육안 확인 완료 → [문서](./clear/intent-056-bossa-clap-telegraph.md) (resolved: 2026-10-21)
+- **[AI / Boss / BossB]** B 스킬이 겹쳐 실행되어 돌진하면서 도약함(회피 체공 중 도약 시작 + 회피 착지가 붙잡힘을 풀어 돌진 시작). 스킬은 한 번에 하나만 시작, 진행 중이면 공격 고르기 None. 구현·Play 겹침 0건·육안 확인 완료 → [문서](./clear/intent-055-bossb-skill-overlap.md) (resolved: 2026-10-21)
 - **[AI / Boss]** 보스 B None→추격·쿨타임 실행 그래프·피격 회전 및 타일 간 NavMesh 복구. 테스트 11/11, 경로 81/81, Play 추격·3타·180도 회전 확인 → [문서](./clear/intent-046-bossb-melee-hit-facing.md) (resolved: 2026-10-19)
 - **[UI]** View 4개(InfoPanel·PlayerHud·PetGuide·Settings)가 루트 켜기·끄기 코드를 각자 복사해 들고 있었음. `BaseView`(abstract, `_root`·`IsVisible`·`Show`·`Hide`·private `SetVisible`)로 합침, MainMenu 제외 → [문서](./clear/intent-052-ui-base-view.md) (resolved: 2026-10-20)
 - **[UI / PetGuide / Core]** 펫 가이드가 떠도 게임이 그대로 진행되고 닫는 입력이 없었음. 모든 펫 가이드에서 timeScale 0(BGM만 들림), Dialogue 맵 Space로 닫기·ESC 설정창, 대화와 겹치면 무시, `PauseGameForDialogue` → `PauseGameTime`으로 공용화 → [문서](./clear/intent-051-pet-guide-pause.md) (resolved: 2026-10-20)
