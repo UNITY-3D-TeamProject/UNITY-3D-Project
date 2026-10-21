@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Attribute.Core;
 using CameraControl;
+using CharacterSound;
 using Rendering;
 using Skill.Buff;
 using Skill.Core;
@@ -110,6 +111,15 @@ namespace Mediator.SubMediators
 
         /// <summary>스캔 스킬이 발동했을 때 발생한다. 받는 쪽은 발동 위치가 정해지면 BeginScan 을 호출한다.</summary>
         public event Action OnScanRequested;
+
+        /// <summary>스킬이 실제로 동작한 단계의 단발음 요청. (실제 스킬 이름, 단계, 소리 위치. null 이면 캐릭터 위치)</summary>
+        public event Action<string, ESoundPhase, Vector3?> OnSkillSound;
+
+        /// <summary>스킬 반복음 시작·종료 요청. (실제 스킬 이름, 단계, 시작이면 true)</summary>
+        public event Action<string, ESoundPhase, bool> OnSkillSoundLoop;
+
+        /// <summary>실제 탈것이 붙거나 떨어졌을 때 발생한다. (탈것 스킬의 실제 이름, 붙었으면 true)</summary>
+        public event Action<string, bool> OnVehicleSoundChanged;
         #endregion
 
         #region Unity Lifecycle
@@ -304,6 +314,7 @@ namespace Mediator.SubMediators
         public void NotifyRollStarted(Vector3 direction)
         {
             _isRolling = true;
+            if (_rollSkill) OnSkillSound?.Invoke(_rollSkill.SkillName, ESoundPhase.Start, null);
             _wasFireEnabledOnRoll = IsSkillEnabled(FIRE_SKILL_NAME);
             if (_spawnVehicleSkill) _spawnVehicleSkill.StopHover();
             SetSkillEnabled(FIRE_SKILL_NAME, false);
@@ -337,7 +348,18 @@ namespace Mediator.SubMediators
         {
             if (!_scanSkill) return;
 
-            _scanSkill.BeginWave(origin);
+            // 파동이 실제로 시작됐을 때만 소리를 낸다
+            if (_scanSkill.TryBeginWave(origin)) OnSkillSound?.Invoke(_scanSkill.SkillName, ESoundPhase.Wave, origin);
+        }
+
+        /// <summary>
+        /// 지금 차지 중인지와 탈것이 붙어 있는지를 사운드 알림으로 다시 전달한다.
+        /// 구독이 늦어 놓친 상태를 맞출 때 호출한다. 스킬을 다시 실행하지 않는다.
+        /// </summary>
+        public void SyncSoundState()
+        {
+            if (_fireSkill) OnSkillSoundLoop?.Invoke(_fireSkill.SkillName, ESoundPhase.Charge, _fireSkill.IsCharging);
+            if (_spawnVehicleSkill) OnVehicleSoundChanged?.Invoke(_spawnVehicleSkill.SkillName, _spawnVehicleSkill.Vehicle);
         }
         #endregion
         
@@ -450,12 +472,17 @@ namespace Mediator.SubMediators
                         if (_isMounting) SetMountBlocked(false);
                         OnVehicleAttached?.Invoke(null);
                         OnAutoForwardChanged?.Invoke(false, 0.0f);
+                        OnVehicleSoundChanged?.Invoke(spawnVehicle.SkillName, false);
                     }
                     // 강제 하차(자원 고갈 등)도 쿨타임이 시작되므로 하차는 여기서 알린다
                     if (!spawnVehicle.IsRiding) OnSkillUsed?.Invoke(spawnVehicle.SkillName, spawnVehicle.Cooldown);
                     break;
                 case Scan:
                     OnScanRequested?.Invoke();
+                    break;
+                default:
+                    // 위의 특화 스킬은 실제 동작 시점에 따로 소리를 내므로 일반 실행음은 나머지 스킬만 낸다
+                    OnSkillSound?.Invoke(skill.SkillName, ESoundPhase.Execute, null);
                     break;
             }
         }
@@ -498,6 +525,8 @@ namespace Mediator.SubMediators
             if (_isMounting) SetMountBlocked(false);
             OnVehicleAttached?.Invoke(spawnVehicle.Vehicle.transform);
             OnAutoForwardChanged?.Invoke(true, spawnVehicle.ForwardTurnSpeed);
+            OnVehicleSoundChanged?.Invoke(spawnVehicle.SkillName, true);
+            OnSkillSound?.Invoke(spawnVehicle.SkillName, ESoundPhase.Mount, null);
         }
 
         /// <summary>
@@ -554,13 +583,17 @@ namespace Mediator.SubMediators
             {
                 case EFirePhase.ChargeStarted:
                     OnFireChargeChanged?.Invoke(true);
+                    OnSkillSoundLoop?.Invoke(fire.SkillName, ESoundPhase.Charge, true);
                     break;
                 case EFirePhase.Fired:
                     OnFireChargeChanged?.Invoke(false);
+                    OnSkillSoundLoop?.Invoke(fire.SkillName, ESoundPhase.Charge, false);
+                    OnSkillSound?.Invoke(fire.SkillName, ESoundPhase.Shot, null);
                     OnFireRequested?.Invoke(fire.FirePosition, fire.IsCharged);
                     break;
                 case EFirePhase.Canceled:
                     OnFireChargeChanged?.Invoke(false);
+                    OnSkillSoundLoop?.Invoke(fire.SkillName, ESoundPhase.Charge, false);
                     break;
             }
         }

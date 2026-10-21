@@ -78,7 +78,8 @@ namespace Skill.Skills
 
         protected override bool IsPayOnExecute => false;
 
-        private bool IsCharging => _chargeCoroutine != null;
+        /// <summary>차지 중인지 여부. 발사·취소 후와 재차지 대기 중에는 false.</summary>
+        public bool IsCharging => _chargeCoroutine != null;
         #endregion
 
         #region Unity Lifecycle
