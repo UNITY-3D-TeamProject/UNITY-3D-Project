@@ -629,6 +629,14 @@ namespace AI
         }
 
         /// <summary>
+        /// 추적 중인 대상과 마지막 목격 위치를 잊는다. 교전을 끝내고 순찰로 돌아갈 때 호출한다.
+        /// </summary>
+        public void ForgetTarget()
+        {
+            if (_sensor) _sensor.ForgetTarget();
+        }
+
+        /// <summary>
         /// 반경 안 동료들에게서 멀어지는 수평 방향을 구한다. 가까운 동료일수록 크게 반영한다.
         /// 붙은 두 적이 동시에 서로를 피해 자리만 맞바꾸지 않도록, 나보다 InstanceID 가 작은 동료만 피한다.
         /// 그래서 뭉친 무리에서 ID 가 가장 작은 적은 제자리에 있고 나머지가 비킨다.
