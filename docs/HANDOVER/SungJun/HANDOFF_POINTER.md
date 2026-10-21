@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-21** — 보안 앱(전투 맵) 라운드 로직(intent-057): StageManager → `SecurityApp`(사망 리셋 전달·라운드 클리어 판정) (라운드를 `[Serializable]` 일반 클래스 필드로 들고 지금 라운드로 직접 분기, FileApp과 같은 형식: `MobRoomRound` 문·패널 / `SpecialMobRound` 다음 발판 / `BossRound` 탈출 문) → `CombatZone`(진입 시 `SOMonsterData + 마리 수`대로 생성·사망 집계만), `Core/Stage/Security/`. `Canvas_InGame/BossHealth` 두 보스 체력바(차례인 보스 위·크게, `UI/BossHealth`). TestScene 런타임 확인, `Map_4_Security` 연결 안 함, 커밋 안 함: [작업 기록](./2026-10-21/security-app-rounds.md)
 - **2026-10-21** — 2라운드 정보 패널에 목표값 다시 표시(`InfoPanelPresenter.BuildPuzzleText`, 예: `목표 12 · 숫자 3 5 _ · 연산 + _`). 리컴파일 통과, Play·글자 넘침 미확인, 커밋 안 함: [작업 기록](./2026-10-21/puzzle-panel-target-value.md)
 - **2026-10-21** — `Map_3_File` 3라운드 테스트 설정: `Thief_Spawner` 도둑 수 씬 오버라이드 1(프리팹 20 유지), `FileApp` 제한 시간 60 → 180초. 코드 변경 없음, Play 미확인, 커밋 안 함. GC 속도는 `GC.prefab` `SpeedOverTime` 커브에서 조절 가능(안내만): [작업 기록](./2026-10-21/map3-thief-test-settings.md)
 - **2026-10-21** — 숫자 퍼즐 패널을 2라운드 출구 문 앞으로: `FileApp.PlacePuzzleBoard`가 시작할 때 맵의 패널 하나를 문 기준 로컬 (0, 0, `_puzzleBoardOffset` 1.5)에 문과 같은 회전으로 옮긴다(`NumberPuzzleRound.Board` 추가). `Map_3_File`에 패널 하나 배치. Play 3회(출구 열 14·14·13)에서 위치·회전 일치, 리셋 버튼 재배치, 정답 → 문 열림 확인. 실제 걷기·사격 미확인, 커밋 안 함: [작업 기록](./2026-10-21/puzzle-board-exit-placement.md)
