@@ -83,8 +83,11 @@ namespace Core.Stage
 
             if (RemainingSeconds > 0.0f) return;
 
-            _isTimerRunning = false;
-            KillPlayer();
+            // 피격 무적 중이면 체력 감소가 막히므로, 죽을 때까지 매 프레임 다시 시도한다
+            if (TryKillPlayer())
+            {
+                _isTimerRunning = false;
+            }
         }
         #endregion
 
@@ -126,16 +129,18 @@ namespace Core.Stage
             NotifyProgressChanged();
         }
 
-        private void KillPlayer()
+        // 체력을 0으로 만들고, 실제로 0이 됐는지 돌려준다. 플레이어가 없으면 더 시도하지 않도록 true 를 돌려준다.
+        private bool TryKillPlayer()
         {
             PlayerFacade player = (GameManager.Instance != null) ? GameManager.Instance.CurrentPlayerFacade : null;
             if ((player == null) || !player.HasAttribute(HP_ATTRIBUTE))
             {
                 Debug.LogWarning("플레이어가 없어 시간 초과 사망을 처리하지 못했습니다.");
-                return;
+                return true;
             }
 
             player.SetAttribute(HP_ATTRIBUTE, 0.0f);
+            return player.GetAttribute(HP_ATTRIBUTE) <= 0.0f;
         }
 
         private void HandleCountChanged(int caughtCount, int totalCount)
