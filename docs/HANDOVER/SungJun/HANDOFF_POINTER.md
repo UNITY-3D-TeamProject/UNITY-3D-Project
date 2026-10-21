@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — 대화 중 대화창 외 인게임 UI 숨기기(intent-058 해결): `UIManager._inGameCanvasGroup`(Canvas_InGame 루트 CanvasGroup) alpha를 대화 시작·끝에 0/1, `PetGuidePanel`(중첩 Canvas 추가)·`SettingsPanel`은 `Ignore Parent Groups`로 계속 보임, 펫 안내는 제외. 컴파일 0에러·TestScene Play 화면 캡처로 숨김·설정창·복구 확인, 보스 체력바·맵 씬 미확인, 커밋 안 함: [작업 기록](./2026-10-22/hide-ui-during-dialogue.md)
 - **2026-10-21** — AudioManager 효과음 반복·끊기(intent-055 해결): `PlaySfx`·`PlaySfxLoop(SO, Transform)`이 int 번호 반환, `StopSfx(번호, fadeDuration = 0)`로 원샷·반복음 모두 끊기, 3D 소스 16개 공유·대상 따라가기·반복음은 50ms 차단 미적용. 새 파일 없음. 컴파일 0에러·TestScene Play 로직 확인(청취 안 함), 커밋 안 함: [작업 기록](./2026-10-21/audio-loop-sfx.md)
 - **2026-10-21** — 대화·펫 안내 넘기기 키 Space → E: Dialogue 맵 `NextLine` 바인딩 변경, 안내 문구(스크립트 기본값·Canvas_InGame 프리팹) `E ▶ 다음/닫기`. 컴파일 0에러, Play 확인·커밋 안 함: [작업 기록](./2026-10-21/dialogue-next-key-e.md)
 - **2026-10-21** — 2라운드에 보스 A·B 미리 생성(BT 정지): `BossFightSpawner`에 `Prespawn Round Index` 추가, `Map_4_Security`는 1로 설정. 3라운드가 되면 같은 보스로 보스전 시작. 맵 Play 확인: [작업 기록](./2026-10-21/security-zone-prespawn-lockin.md)
