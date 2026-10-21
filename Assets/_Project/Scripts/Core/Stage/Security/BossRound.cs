@@ -25,6 +25,11 @@ namespace Core.Stage.Security
         public bool IsCleared { get; private set; }
         #endregion
 
+        #region Events
+        /// <summary>보스를 쓰러뜨리면 호출된다. 화면 갱신용.</summary>
+        public event Action OnProgressChanged;
+        #endregion
+
         #region Public Methods
         /// <summary>스테이지가 시작될 때 한 번 호출된다. 탈출 문을 꺼 두고 보스 격파를 구독한다.</summary>
         public void Begin()
@@ -52,6 +57,8 @@ namespace Core.Stage.Security
         {
             IsCleared = true;
             if (_exitDoor != null) _exitDoor.SetActive(true);
+
+            OnProgressChanged?.Invoke();
         }
         #endregion
     }

@@ -4,7 +4,9 @@ using UnityEngine;
 namespace Core.Stage.Security
 {
     /// <summary>
-    /// 2라운드 특수몹 발판. 발판(CombatZone)의 특수몹을 다 잡으면 꺼 두었던 다음 발판이 나타난다.
+    /// 2라운드 특수몹 발판. 발판은 순서대로 하나씩 진행한다.
+    /// - 지금 발판(아직 못 깬 첫 발판)의 특수몹은 미리 만들어 제자리에 묶어 두고, 플레이어가 발판 구역에 들어오면 움직인다.
+    /// - 특수몹을 다 잡으면 꺼 두었던 다음 발판이 나타나고, 그 발판의 특수몹을 만들어 둔다.
     /// SecurityApp 이 필드로 들고, 스테이지 시작 때 Begin, 끝날 때 End, 이 라운드 중 죽으면 ResetUnclearedSteps 를 부른다.
     /// </summary>
     [Serializable]
@@ -23,30 +25,45 @@ namespace Core.Stage.Security
         #endregion
 
         #region Serialized Fields
-        [Tooltip("발판마다 특수몹 구역·다음 발판")]
+        [Tooltip("진행 순서대로 발판마다 특수몹 구역·다음 발판")]
         [SerializeField] private SPlatformStep[] _steps;
         #endregion
 
         #region Properties
-        /// <summary>모든 발판을 깼는지 여부.</summary>
-        public bool IsCleared
+        /// <summary>발판 수.</summary>
+        public int StepCount => (_steps != null) ? _steps.Length : 0;
+
+        /// <summary>지금 발판 번호 (1부터, 아직 못 깬 첫 발판). 다 깼으면 StepCount.</summary>
+        public int CurrentStepNumber
         {
             get
             {
-                if (_steps == null) return true;
-
-                foreach (SPlatformStep step in _steps)
-                {
-                    if ((step.Zone != null) && !step.Zone.IsCleared) return false;
-                }
-
-                return true;
+                int index = FindCurrentStepIndex();
+                return (index >= 0) ? index + 1 : StepCount;
             }
         }
+
+        /// <summary>지금 발판에 남은 적 수. 다 깼으면 0.</summary>
+        public int RemainingEnemyCount
+        {
+            get
+            {
+                int index = FindCurrentStepIndex();
+                return ((index >= 0) && (_steps[index].Zone != null)) ? _steps[index].Zone.AliveCount : 0;
+            }
+        }
+
+        /// <summary>모든 발판을 깼는지 여부.</summary>
+        public bool IsCleared => FindCurrentStepIndex() < 0;
+        #endregion
+
+        #region Events
+        /// <summary>발판 진행·남은 적 수가 바뀌면 호출된다. 화면 갱신용.</summary>
+        public event Action OnProgressChanged;
         #endregion
 
         #region Public Methods
-        /// <summary>스테이지가 시작될 때 한 번 호출된다. 다음 발판을 꺼 두고 발판 클리어를 구독한다.</summary>
+        /// <summary>스테이지가 시작될 때 한 번 호출된다. 다음 발판을 꺼 두고, 구독하고, 첫 발판 특수몹을 만들어 둔다.</summary>
         public void Begin()
         {
             if (_steps == null) return;
@@ -54,8 +71,13 @@ namespace Core.Stage.Security
             foreach (SPlatformStep step in _steps)
             {
                 if (step.NextPlatform != null) step.NextPlatform.SetActive(false);
-                if (step.Zone != null) step.Zone.OnCleared += HandleZoneCleared;
+                if (step.Zone == null) continue;
+
+                step.Zone.OnCleared += HandleZoneCleared;
+                step.Zone.OnProgressChanged += HandleZoneProgressChanged;
             }
+
+            PrepareCurrentStep();
         }
 
         /// <summary>스테이지가 없어질 때 한 번 호출된다. 구독을 푼다.</summary>
@@ -65,11 +87,14 @@ namespace Core.Stage.Security
 
             foreach (SPlatformStep step in _steps)
             {
-                if (step.Zone != null) step.Zone.OnCleared -= HandleZoneCleared;
+                if (step.Zone == null) continue;
+
+                step.Zone.OnCleared -= HandleZoneCleared;
+                step.Zone.OnProgressChanged -= HandleZoneProgressChanged;
             }
         }
 
-        /// <summary>아직 못 깬 발판만 처음 상태로 돌린다. 이미 나타난 발판은 그대로 둔다.</summary>
+        /// <summary>아직 못 깬 발판만 처음 상태로 돌리고 지금 발판 특수몹을 다시 만들어 둔다. 이미 나타난 발판은 그대로 둔다.</summary>
         public void ResetUnclearedSteps()
         {
             if (_steps == null) return;
@@ -78,19 +103,45 @@ namespace Core.Stage.Security
             {
                 if (step.Zone != null) step.Zone.ResetIfNotCleared();
             }
+
+            PrepareCurrentStep();
         }
         #endregion
 
         #region Private Methods
-        // 어느 발판이 깨졌는지 이벤트로 알 수 없으므로, 깬 발판의 다음 발판을 모두 켠다.
-        private void HandleZoneCleared()
+        // 아직 못 깬 첫 발판. 다 깼으면 -1.
+        private int FindCurrentStepIndex()
+        {
+            if (_steps == null) return -1;
+
+            for (int i = 0; i < _steps.Length; i++)
+            {
+                if ((_steps[i].Zone != null) && !_steps[i].Zone.IsCleared) return i;
+            }
+
+            return -1;
+        }
+
+        private void PrepareCurrentStep()
+        {
+            int index = FindCurrentStepIndex();
+            if (index >= 0) _steps[index].Zone.Prepare();
+        }
+
+        // 깬 발판의 다음 발판을 켜고, 그 발판의 특수몹을 만들어 둔다. (발판이 먼저 켜져야 그 위에 만들 수 있다)
+        private void HandleZoneCleared(CombatZone zone)
         {
             foreach (SPlatformStep step in _steps)
             {
-                if ((step.Zone == null) || !step.Zone.IsCleared) continue;
-
-                if (step.NextPlatform != null) step.NextPlatform.SetActive(true);
+                if ((step.Zone == zone) && (step.NextPlatform != null)) step.NextPlatform.SetActive(true);
             }
+
+            PrepareCurrentStep();
+        }
+
+        private void HandleZoneProgressChanged()
+        {
+            OnProgressChanged?.Invoke();
         }
         #endregion
     }

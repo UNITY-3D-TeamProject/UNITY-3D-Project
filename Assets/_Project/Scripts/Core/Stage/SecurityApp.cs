@@ -40,6 +40,15 @@ namespace Core.Stage
 
         #region Properties
         public override EStageType StageType => EStageType.SecurityApp;
+
+        /// <summary>1라운드 잡몹 방.</summary>
+        public MobRoomRound MobRoomRound => _mobRoomRound;
+
+        /// <summary>2라운드 특수몹 발판.</summary>
+        public SpecialMobRound SpecialMobRound => _specialMobRound;
+
+        /// <summary>3라운드 보스.</summary>
+        public BossRound BossRound => _bossRound;
         #endregion
 
         #region Unity Lifecycle
@@ -49,6 +58,10 @@ namespace Core.Stage
             if (_stageManager == null) return;
 
             _stageManager.OnPlayerRespawnRequested -= HandlePlayerRespawnRequested;
+
+            _mobRoomRound.OnProgressChanged -= HandleRoundProgressChanged;
+            _specialMobRound.OnProgressChanged -= HandleRoundProgressChanged;
+            _bossRound.OnProgressChanged -= HandleRoundProgressChanged;
 
             _mobRoomRound.End();
             _specialMobRound.End();
@@ -70,6 +83,10 @@ namespace Core.Stage
             }
 
             _stageManager.OnPlayerRespawnRequested += HandlePlayerRespawnRequested;
+
+            _mobRoomRound.OnProgressChanged += HandleRoundProgressChanged;
+            _specialMobRound.OnProgressChanged += HandleRoundProgressChanged;
+            _bossRound.OnProgressChanged += HandleRoundProgressChanged;
 
             _mobRoomRound.Begin();
             _specialMobRound.Begin();
@@ -107,6 +124,11 @@ namespace Core.Stage
                     _specialMobRound.ResetUnclearedSteps();
                     break;
             }
+        }
+
+        private void HandleRoundProgressChanged()
+        {
+            NotifyProgressChanged();
         }
         #endregion
     }
