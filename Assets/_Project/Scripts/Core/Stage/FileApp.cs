@@ -7,7 +7,7 @@ namespace Core.Stage
     /// 파일 앱 스테이지. 미로 하나가 라운드 하나다 (Maze_0 = 1라운드, Maze_1 = 2라운드, Maze_2 = 3라운드).
     /// 지금 라운드 번호는 StageBase 가 따라가고, 이 컴포넌트는 번호를 보고 그 라운드의 로직을 직접 부른다. 설정은 인스펙터의 각 라운드 항목에서 한다.
     /// - 1라운드: 따로 로직이 없다. 출구에 닿으면 문이 열린다.
-    /// - 2라운드: 숫자 퍼즐(NumberPuzzleRound). 맵에 놓인 노드(MazePuzzleItem)와 패널(MazePuzzleBoard)을 찾아 쓴다.
+    /// - 2라운드: 숫자 퍼즐(NumberPuzzleRound). 맵에 놓인 노드(MazePuzzleItem)와 패널(MazePuzzleBoard)을 찾아 쓰고, 패널은 출구 문 앞으로 옮긴다.
     /// - 3라운드: 경찰과 도둑(ThiefChaseRound). 씬의 ThiefSpawner 를 찾아 쓰고, 제한 시간 안에 못 잡으면 플레이어가 죽는다.
     /// 2·3라운드의 미로 출구 문은 막아 두었다가, 그 라운드를 깨면 연다.
     /// </summary>
@@ -26,6 +26,9 @@ namespace Core.Stage
         #region Serialized Fields
         [Header("2라운드 · 숫자 퍼즐")]
         [SerializeField] private NumberPuzzleRound _numberPuzzleRound = new NumberPuzzleRound();
+
+        [Tooltip("패널을 놓을 자리. 2라운드 출구 칸 가운데에서 문 쪽으로 이만큼 (m). 문짝은 칸 끝(칸 크기의 절반)에 있다.")]
+        [SerializeField] private float _puzzleBoardOffset = 1.5f;
 
         [Header("3라운드 · 경찰과 도둑")]
         [SerializeField] private ThiefChaseRound _thiefChaseRound = new ThiefChaseRound();
@@ -138,6 +141,19 @@ namespace Core.Stage
 
             _numberPuzzleGate = LockMazeGate(generator.GeneratedRoot, NUMBER_PUZZLE_ROUND_INDEX);
             _thiefChaseGate = LockMazeGate(generator.GeneratedRoot, THIEF_CHASE_ROUND_INDEX);
+            PlacePuzzleBoard();
+        }
+
+        // 출구 칸은 생성할 때마다 바뀌므로, 맵에 하나 놓인 퍼즐 패널을 2라운드 출구 문 앞으로 옮긴다. 패널의 +Z 가 문 쪽이다.
+        private void PlacePuzzleBoard()
+        {
+            MazePuzzleBoard board = _numberPuzzleRound.Board;
+            if ((board == null) || (_numberPuzzleGate == null)) return;
+
+            Transform gateTransform = _numberPuzzleGate.transform;
+            board.transform.SetPositionAndRotation(
+                gateTransform.TransformPoint(new Vector3(0.0f, 0.0f, _puzzleBoardOffset)),
+                gateTransform.rotation);
         }
 
         // roundIndex 번 미로의 출구 문을 찾아 돌려준다. 출구 문은 들어가기만 하면 열리므로 트리거를 꺼 두고, 라운드를 깨면 직접 연다.

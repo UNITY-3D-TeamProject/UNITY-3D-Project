@@ -53,6 +53,9 @@ namespace Core.Stage
         /// <summary>노드와 패널을 찾아 준비되었는지 여부.</summary>
         public bool IsReady => _board != null;
 
+        /// <summary>맵에서 찾은 패널. 못 찾았으면 null.</summary>
+        public MazePuzzleBoard Board => _board;
+
         /// <summary>지금 이 라운드가 진행 중인지 여부.</summary>
         public bool IsActive { get; private set; }
 
