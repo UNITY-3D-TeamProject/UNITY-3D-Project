@@ -4,6 +4,8 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Stage / FileApp / UI]** FileApp에 2라운드만 있고 라운드 클리어 판정이 없어 3라운드 문이 그냥 열림, 3라운드 제한 시간 없음. `StageRoundBase`로 라운드별 로직 분리(2R 퍼즐, 3R `ThiefChaseRound` 타이머·시간 초과 사망), FileApp은 문 연결만, 2R 패널 괄호 표시 → [문서](./intent-055-file-app-round-split.md). 후속: [Manager·Base·Round 책임 분리 설계](../design/stage-lifecycle-responsibilities.md) 작성, 구현 전.
+- **[Stage / FileApp / UI]** 파일 앱 2라운드(Maze_1)에 숫자 퍼즐이 없음. 숫자 1~9·연산자 4개 중 3·2개를 먹고, 출구 5칸을 쏴서 목표값을 맞추면 문이 열림. 리셋·사망 시 초기화, Active Mission에 목표·보유 표시. Map 스크립트는 수정 안 함 → [문서](./intent-054-file-maze-number-puzzle.md)
 - **[UI / Stage / FeedApp]** 피드 앱 1라운드 재료 수·2라운드 분류 수를 화면에서 알 수 없음. `FeedApp`(Core)이 진행도를 계산해 알리고, 비어 있던 `InfoPanelPresenter`/`View`가 `Canvas_InGame/Active Mission`에 `1라운드 / 피드 재료 3/5`, `2라운드 / 피드 분류 1/12`로 표시. Map/Feed 스크립트는 수정 안 함 → [문서](./intent-053-feed-round-progress-panel.md)
 - **[AI / Boss / BossB]** 보스 B 예고가 보스 A 와 같은 빨강 머터리얼이라 헷갈리고, 돌진은 바닥 예고가 없으며 도약 원은 켜지자마자 가득 참. B 전용 머터리얼(파랑) + 돌진 직선 예고 + 페이드 인 → [문서](./intent-049-bossb-telegraph-color.md)
 - **[AI / Boss / BossA]** 보스 A 의 A4 가 칸 위 내려찍기 + 판 밖으로 던지기라 의도(블리츠크랭크 Q 식 그랩)와 반대. 한 손이 직선으로 날아가 잡아 보스 쪽으로 끌어당기고 반대 손이 1칸 내려치는 방식으로 재설계. 결정 완료·코드 구현·컴파일 통과·Play 흐름 확인, 육안 확인과 게이트 루프 남음 → [문서](./intent-048-bossa-a4-hook-grab.md)
