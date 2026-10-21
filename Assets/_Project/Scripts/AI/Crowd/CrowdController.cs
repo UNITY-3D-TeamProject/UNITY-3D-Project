@@ -10,7 +10,7 @@ namespace AI.Crowd
     /// 로비 군중(보행자·차량)을 스플라인 레인을 따라 이동시키는 조종부.
     /// 닫힌 스플라인은 계속 돌고, 열린 스플라인은 끝에 닿으면 멈추고 OnLaneEndReached 를 알린다.
     /// 열린 레인에서 지금 스플라인의 Knot 에 다른 스플라인의 0번 Knot 이 Link 돼 있으면 갈림길로 보고, 직진과 갈래 중 하나를 무작위로 고른다.
-    /// AIController 와 같은 방식으로 이동·회전 요청만 중재자에게 보내며, 앞이 막히면 이동을 멈춘다.
+    /// AIController 와 같은 방식으로 이동·회전 요청만 중재자에게 보내며, 앞이 막히면 이동을 멈추고 앞이 빈 뒤 _restartDelay 만큼 기다렸다 출발한다.
     /// 이동 속도는 CharacterMediator 의 속도 어트리뷰트가 정한다. 레인이 꺼낼 때마다 ApplySpeed 로 개체별 순항 속도를 넣는다.
     /// 앞을 막은 것이 같은 방향으로 가는 더 느린 개체이면 점프 중에만 속도를 올려 넘어간다. 점프 금지 구간(CrowdNoJumpZone)과 열린 레인의 시작·끝 근처에서는 멈춰 기다린다.
     /// 플레이어에게 막혔는지는 IsBlockedByPlayer 로 알린다 (CrowdExpression 이 읽어 표정을 바꾼다).
@@ -53,6 +53,8 @@ namespace AI.Crowd
         [SerializeField] private LayerMask _detectLayers;
         [Tooltip("앞을 막았을 때 IsBlockedByPlayer 를 켜는 플레이어 레이어. 감지 레이어에도 들어 있어야 한다.")]
         [SerializeField] private LayerMask _playerLayers;
+        [Tooltip("막혀 멈춘 뒤 앞이 비어도 이 시간(초) 동안 더 기다렸다 출발한다. 느린 개체 뒤에서 멈춤·출발이 매 프레임 반복되지 않게 한다.")]
+        [SerializeField] private float _restartDelay = 0.4f;
 
         [Header("Speed")]
         [Tooltip("꺼낼 때마다 속도에 (1-값)~(1+값) 사이 무작위 배율을 곱한다. 보행자 0.2 / 차량 0 권장.")]
@@ -80,6 +82,8 @@ namespace AI.Crowd
         private bool _isJumpingOver;
         private float _jumpOverStartTime;
         private bool _isBlockedByPlayer;
+        private Vector3 _moveDirection;
+        private float _restartTime;
 
         private SplineContainer _lane;
         private int _splineIndex;
@@ -108,6 +112,12 @@ namespace AI.Crowd
 
         /// <summary>이번 프레임에 플레이어가 앞을 막아 멈췄는지 여부.</summary>
         public bool IsBlockedByPlayer => _isBlockedByPlayer;
+
+        /// <summary>
+        /// 레인을 따라가는 정규화된 수평 진행 방향. 막혀 멈춰 있어도 직전 방향을 유지한다.
+        /// 회전은 모델 자식에 적용되고 루트는 돌지 않으므로, 다른 개체가 같은 방향인지 판단할 때 transform.forward 대신 이 값을 읽는다.
+        /// </summary>
+        public Vector3 MoveDirection => _moveDirection;
         #endregion
 
         #region Events
@@ -157,6 +167,7 @@ namespace AI.Crowd
             }
 
             direction.Normalize();
+            _moveDirection = direction;
 
             // 점프로 넘어가는 중에는 앞 개체 위를 지나가므로 막힘 검사를 하지 않는다
             if (_isJumpingOver)
@@ -166,6 +177,13 @@ namespace AI.Crowd
             else if (!TryPassAhead(direction))
             {
                 // 막히면 이동 0 만 요청한다. 회전은 보내지 않아 직전 방향을 유지한다.
+                _restartTime = Time.time + _restartDelay;
+                RequestMove(Vector2.zero);
+                return;
+            }
+            else if (!_isJumpingOver && (Time.time < _restartTime))
+            {
+                // 앞이 비어도 바로 출발하지 않는다. 점프로 넘어가기 시작했으면 기다리지 않는다.
                 RequestMove(Vector2.zero);
                 return;
             }
@@ -184,6 +202,10 @@ namespace AI.Crowd
             // 점프 중 반납돼도 다음에 꺼낼 때 ApplySpeed 가 순항 속도를 다시 넣는다
             _isJumpingOver = false;
             _isBlockedByPlayer = false;
+
+            // 풀에서 다시 꺼낼 때 이전 진행 방향과 재출발 대기가 남지 않게 한다
+            _moveDirection = Vector3.zero;
+            _restartTime = 0.0f;
         }
         #endregion
 
@@ -583,7 +605,7 @@ namespace AI.Crowd
             if (!other || other.IsJumpingOver) return false;
 
             // 더 느린 개체만 넘어야 착지한 뒤 넘겨진 개체가 다시 넘어오는 왕복이 생기지 않는다
-            bool isSameDirection = Vector3.Dot(other.transform.forward, direction) > 0.0f;
+            bool isSameDirection = Vector3.Dot(other.MoveDirection, direction) > 0.0f;
             bool isSlower = other.CruiseSpeed < _cruiseSpeed;
             if (!isSameDirection || !isSlower) return false;
 
