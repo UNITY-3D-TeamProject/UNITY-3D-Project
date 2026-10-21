@@ -65,6 +65,21 @@ namespace AI.Boss.BossB
                 return false;
             }
         }
+
+        /// <summary>
+        /// B 의 스킬 중 하나라도 진행 중인지. 붙잡힘(Hold)은 AIController 에 하나뿐이라 스킬은 한 번에 하나만 진행해야 한다.
+        /// </summary>
+        public bool IsSkillRunning
+        {
+            get
+            {
+                foreach (BossBSkillBase skill in _skills)
+                {
+                    if (skill.IsRunning) return true;
+                }
+                return false;
+            }
+        }
         #endregion
 
         #region Events

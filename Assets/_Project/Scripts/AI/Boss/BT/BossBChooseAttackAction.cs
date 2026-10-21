@@ -10,7 +10,7 @@ namespace AI.Boss.BT
 {
     /// <summary>
     /// B 의 다음 공격을 BossBAttackRule 로 고르고 결과를 블랙보드 열거형에 쓴 뒤 즉시 성공한다.
-    /// 쿨타임 준비 시각과 보스전 단계는 블랙보드에서 읽는다. 대상이 안 보이거나 아레나가 없으면 None 으로 쓴다.
+    /// 쿨타임 준비 시각과 보스전 단계는 블랙보드에서 읽는다. 대상이 안 보이거나 아레나가 없거나 스킬이 진행 중이면 None 으로 쓴다.
     /// 대상을 처음 발견해 고르는 첫 공격만 규칙과 무관하게 도약이다(첫 조우).
     /// </summary>
     [Serializable, GeneratePropertyBag]
@@ -53,6 +53,9 @@ namespace AI.Boss.BT
 
             Transform target = Controller.VisibleTarget;
             if (!_boss || (_boss.Arena == null) || !target) return Status.Success;
+
+            // 회피 도약 등 다른 스킬이 진행 중이면 공격은 시작되지 못하므로 쿨타임을 쓰지 않게 고르지 않는다
+            if (_boss.IsSkillRunning) return Status.Success;
 
             bool hasHole = _boss.Arena.HasHoleBetween(Controller.Position, target.position);
             bool isLeapOpen = (Stage.Value == EBossBTStage.Stage1_2) || (Stage.Value == EBossBTStage.Final);
