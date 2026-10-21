@@ -262,6 +262,17 @@ namespace AI.Boss.BossA
         }
 
         /// <summary>
+        /// 내려침 사이에 예고 칸을 바꾼다. 지금 예고를 끄고 새 칸에 채움 시간 동안 띄운다.
+        /// 패턴이 끝나거나 중단될 때 끄는 예고도 새 칸이다.
+        /// </summary>
+        protected void ReplaceTelegraph(int[] tiles, float fillSeconds)
+        {
+            ClearTelegraph();
+            _tiles = tiles;
+            ShowTelegraph(fillSeconds);
+        }
+
+        /// <summary>
         /// 플레이어가 해당 칸 위에 있는지. 높이는 보지 않는다.
         /// </summary>
         protected bool IsPlayerOnTile(int tile)
