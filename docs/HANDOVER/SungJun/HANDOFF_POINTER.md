@@ -5,6 +5,8 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-21** — `Map_4_Security` 방 4개 입구 문·패널 직접 연결(2번 방 입구가 안 닫혀 적이 도망가던 문제), 트리거를 입구에서 2m 안쪽으로, 생성 위치 방향 조정. 잡몹 체력 10(근접·원거리·특수 SO). 맵 Play에서 Room_1~3 입구 닫힘 확인, 커밋 안 함: [작업 기록](./2026-10-21/security-zone-prespawn-lockin.md)
+- **2026-10-21** — 보안 앱 후속(intent-057): Codex 맵 연결을 씬 YAML로 교차 확인(참조 정상). 피드백 3건 반영: 지금 방 적을 미리 만들어 들어올 때까지 `AIController.Hold`로 묶기, 들어오면 입구 문 닫고 입구 패널 잠금(클리어해도 유지, 죽으면 해제), 정보 패널 `구역 2/4 · 남은 적 5명`·`발판 3/5`·보스 문구. TestScene 확인, 맵 새 칸 연결은 Codex 요청 2로 남김, 커밋 안 함: [작업 기록](./2026-10-21/security-zone-prespawn-lockin.md)
 - **2026-10-21** — 보안 앱(전투 맵) 라운드 로직(intent-057): StageManager → `SecurityApp`(사망 리셋 전달·라운드 클리어 판정) (라운드를 `[Serializable]` 일반 클래스 필드로 들고 지금 라운드로 직접 분기, FileApp과 같은 형식: `MobRoomRound` 문·패널 / `SpecialMobRound` 다음 발판 / `BossRound` 탈출 문) → `CombatZone`(진입 시 `SOMonsterData + 마리 수`대로 생성·사망 집계만), `Core/Stage/Security/`. `Canvas_InGame/BossHealth` 두 보스 체력바(차례인 보스 위·크게, `UI/BossHealth`). TestScene 런타임 확인, `Map_4_Security` 연결 안 함, 커밋 안 함: [작업 기록](./2026-10-21/security-app-rounds.md)
 - **2026-10-21** — 2라운드 정보 패널에 목표값 다시 표시(`InfoPanelPresenter.BuildPuzzleText`, 예: `목표 12 · 숫자 3 5 _ · 연산 + _`). 리컴파일 통과, Play·글자 넘침 미확인, 커밋 안 함: [작업 기록](./2026-10-21/puzzle-panel-target-value.md)
 - **2026-10-21** — `Map_3_File` 3라운드 테스트 설정: `Thief_Spawner` 도둑 수 씬 오버라이드 1(프리팹 20 유지), `FileApp` 제한 시간 60 → 180초. 코드 변경 없음, Play 미확인, 커밋 안 함. GC 속도는 `GC.prefab` `SpeedOverTime` 커브에서 조절 가능(안내만): [작업 기록](./2026-10-21/map3-thief-test-settings.md)
