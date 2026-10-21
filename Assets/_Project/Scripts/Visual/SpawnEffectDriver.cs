@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using INab.Common;
@@ -76,6 +77,8 @@ namespace Visual
         public bool IsPrepared => _isPrepared;
         public bool IsPlaying { get; private set; }
         public bool IsCompleted { get; private set; }
+        /// <summary>연출이 끝났는지 여부. 정상 종료뿐 아니라 준비 실패·도중 비활성화로 건너뛴 경우도 true.</summary>
+        public bool IsEnded { get; private set; }
         public bool AreMaterialsSwapped => _areMaterialsSwapped;
         public bool IsMeshSwapped => _isMeshSwapped;
         public Material RuntimeMaterial => _vfxSourceMaterial;
@@ -86,11 +89,19 @@ namespace Visual
         public int ParticleCountAtRestore { get; private set; } = -1;
         #endregion
 
+        #region Events
+        /// <summary>연출이 끝났을 때 한 번 발생한다. 준비 실패·도중 비활성화로 건너뛴 경우에도 발생한다.</summary>
+        public event Action OnSpawnEffectEnded;
+        #endregion
+
         #region Unity Lifecycle
         private void Awake()
         {
             // 첫 프레임에 원본이 그대로 보이지 않도록, 렌더 전에 재질·mask 를 모두 준비한다
-            if (!TryPrepare()) enabled = false;
+            if (TryPrepare()) return;
+
+            enabled = false;
+            NotifyEnded();
         }
 
         private void Start()
@@ -109,6 +120,9 @@ namespace Visual
         {
             StopAllCoroutines();
             Restore();
+
+            // 끝나기 전에 꺼지면 연출을 건너뛴 것으로 알린다
+            NotifyEnded();
         }
 
         private void OnDestroy()
@@ -403,6 +417,17 @@ namespace Visual
 
             IsPlaying = false;
         }
+
+        /// <summary>
+        /// 연출 종료를 한 번만 알린다.
+        /// </summary>
+        private void NotifyEnded()
+        {
+            if (IsEnded) return;
+
+            IsEnded = true;
+            OnSpawnEffectEnded?.Invoke();
+        }
         #endregion
 
         #region Coroutines
@@ -436,6 +461,7 @@ namespace Visual
             ParticleCountAtRestore = _effect.visualEffect.aliveParticleCount;
             Restore();
             IsCompleted = true;
+            NotifyEnded();
         }
         #endregion
     }

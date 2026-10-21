@@ -6,6 +6,7 @@ using Mediator.SubMediators;
 using Skill.Buff;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Visual;
 
 namespace Mediator
 {
@@ -28,6 +29,8 @@ namespace Mediator
         [Tooltip("AI(적·군중) 전용 애니메이션 중재자. 플레이어는 비워 둔다.")]
         [SerializeField] private EnemyAnimationMediator _enemyAnimationMediator;
         [SerializeField] private PetMediator _petMediator;
+        [Tooltip("생성 연출. 끝날 때까지 이동·스킬·시점 프리팹을 꺼 둔다. AI(적·군중)는 비워 둔다.")]
+        [SerializeField] private SpawnEffectDriver _spawnEffectDriver;
         #endregion
 
         #region Private Fields
@@ -37,6 +40,8 @@ namespace Mediator
         private bool _isDead;
         private bool _isRiding;
         private bool _isAutoForward;
+        // 생성 연출 때문에 이동·스킬·시점 프리팹을 꺼 둔 상태인지 여부
+        private bool _isSpawnLocked;
         // 가장 최근 어트리뷰트 변경의 출처 정보. 피격은 Health 변경 알림 도중 동기로 오므로 피격 방향 계산에 쓴다
         private SEffectContext _lastChangeContext;
         #endregion
@@ -78,6 +83,8 @@ namespace Mediator
         public event Action<bool> OnInteractableChanged;
         /// <summary>사격 차지 상태 변경. 차지 시작이면 true, 발사·취소로 끝나면 false.</summary>
         public event Action<bool> OnFireChargeChanged;
+        /// <summary>생성 연출이 끝나 이동·스킬·시점 프리팹을 다시 켠 직후 한 번 발생한다. 연출을 건너뛴 경우에도 발생한다.</summary>
+        public event Action OnSpawnEffectEnded;
         #endregion
 
         #region Unity Lifecycle
@@ -97,6 +104,22 @@ namespace Mediator
 
             // 비활성 중 놓친 구르기·탑승 종료와 초기 탑승 상태를 카메라에 맞춘다
             SyncCameraSpeedFeedback();
+        }
+
+        private void Start()
+        {
+            if (!_spawnEffectDriver) return;
+
+            // 준비 실패 등으로 연출을 이미 건너뛰었으면 조작을 막지 않고 바로 알린다
+            if (_spawnEffectDriver.IsEnded)
+            {
+                OnSpawnEffectEnded?.Invoke();
+                return;
+            }
+
+            // 자식들의 초기화(Awake·OnEnable·Start)가 끝난 뒤 끈다
+            _isSpawnLocked = true;
+            SetSpawnLockedObjectsActive(false);
         }
 
         private void OnDisable()
@@ -417,6 +440,30 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 생성 연출이 끝나면 꺼 둔 이동·스킬·시점 프리팹을 켠 뒤 종료를 알린다.
+        /// </summary>
+        private void OnSpawnEffectEndedCallback()
+        {
+            // 캐릭터가 꺼지는 중(파괴·씬 종료)에 온 알림은 무시한다
+            if (!_isSpawnLocked || !isActiveAndEnabled) return;
+
+            _isSpawnLocked = false;
+            SetSpawnLockedObjectsActive(true);
+            OnSpawnEffectEnded?.Invoke();
+        }
+
+        /// <summary>
+        /// 생성 연출 동안 조작을 막도록 이동·스킬·시점 중재자가 있는 프리팹을 끄거나 켠다.
+        /// </summary>
+        /// <param name="isActive">켜려면 true</param>
+        private void SetSpawnLockedObjectsActive(bool isActive)
+        {
+            if (_moveMediator) _moveMediator.gameObject.SetActive(isActive);
+            if (_skillMediator) _skillMediator.gameObject.SetActive(isActive);
+            if (_cameraMediator) _cameraMediator.gameObject.SetActive(isActive);
+        }
+
+        /// <summary>
         /// 구르기·탑승의 실제 상태를 카메라 중재자에 즉시 맞춘다. 사망 상태에서는 모두 해제한다.
         /// </summary>
         private void SyncCameraSpeedFeedback()
@@ -624,6 +671,7 @@ namespace Mediator
             if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnJumpEnded += _enemyAnimationMediator.NotifyJumpEnded;
             if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillUsed += _enemyAnimationMediator.NotifySkillUsed;
             if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillStopped += _enemyAnimationMediator.NotifySkillStopped;
+            if (_spawnEffectDriver) _spawnEffectDriver.OnSpawnEffectEnded += OnSpawnEffectEndedCallback;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -684,6 +732,7 @@ namespace Mediator
             if (_moveMediator && _enemyAnimationMediator) _moveMediator.OnJumpEnded -= _enemyAnimationMediator.NotifyJumpEnded;
             if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillUsed -= _enemyAnimationMediator.NotifySkillUsed;
             if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillStopped -= _enemyAnimationMediator.NotifySkillStopped;
+            if (_spawnEffectDriver) _spawnEffectDriver.OnSpawnEffectEnded -= OnSpawnEffectEndedCallback;
         }
         #endregion
     }
