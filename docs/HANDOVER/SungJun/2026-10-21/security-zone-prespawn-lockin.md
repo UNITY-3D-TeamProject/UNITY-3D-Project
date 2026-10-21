@@ -64,6 +64,17 @@ intent: [intent-057](../../../intent/intent-057-security-app-rounds.md)
 - 보스 체력 테스트값: `SOMonsterData_BossA` 1000→50, `BossB` 600→50.
 - 남은 문제: 근접 몹 시야가 프리팹 설정 5m·90°(원거리 30m·150°, 특수 8m·90°)라, 큰 방에서 10m만 떨어져도 근접 몹이 플레이어를 못 본다. AI 프리팹 값이라 사용자 결정 필요.
 
+## 추가 3: 2라운드에 보스 미리 생성 (로직 정지)
+- 사용자 요청: 2라운드가 시작되면 필드 보스·거대 보스를 미리 만들어 두되, 보스 로직은 돌지 않게.
+- `BossFightSpawner`(보스 담당 BFandLee 파일)에 `Prespawn Round Index`(기본 -1 = 끔)를 추가했다.
+  - 그 라운드가 되면 보스 A·B를 만들고 몬스터 데이터를 넣은 뒤 `BehaviorGraphAgent`를 꺼 둔다. 보스전(`BossEncounter.Begin`)은 시작하지 않는다.
+  - 보스전 라운드(`Active Round Index`)가 되면 미리 만든 보스의 BT를 켜고 그 보스로 `Begin`한다. 없으면 기존처럼 그때 만든다.
+  - 생성 코드는 `TryCreateBosses`로 묶어 두 경로가 같이 쓴다. `Despawn`·`OnDisable`은 미리 만든 보스도 지운다.
+- `Map_4_Security`의 `05_Boss/BossFight` → `Prespawn Round Index` = 1(2라운드). 씬 변경은 이 값 하나다.
+- 맵 Play 확인: 2라운드 체크포인트 → 보스 A·B 생성(BT 꺼짐, 보스전 미시작, 체력 50/50, 체력바 숨김), 몇 초 뒤에도 제자리 → 3라운드 체크포인트 → 같은 개체(ID 동일)의 BT가 켜지고 보스전 1-1 시작, 체력바 표시, 중복 생성 없음(A 1·B 1).
+- 주의: 미리 서 있는 동안에도 맞으면 체력이 줄 수 있다(데미지 규칙은 보스전 시작 때 정해짐). 2라운드 발판에서 아레나까지 멀어서 그대로 둠.
+- 테스트 중 켠 `Application.runInBackground`가 `ProjectSettings.asset`에 저장돼서 원래 값(0)으로 되돌렸다.
+
 ## 다음 할 일 (Next Steps)
 - ~~Codex 요청 2~~ → 위 "추가"에서 직접 처리함.
 - 실제 맵에서 걷기·사격으로 방 진입 → 뒷문 닫힘 → 클리어 → 다음 방, 패널 문구를 눈으로 확인.
