@@ -10,12 +10,12 @@ namespace Core.Stage
     /// 노드(MazePuzzleItem)와 패널(MazePuzzleBoard)은 맵에 미리 놓여 있어야 한다. 시작할 때 씬에서 찾고,
     /// 노드 중 13개를 무작위로 골라 값을 붙인다. 리셋하면 목표값을 새로 고르고, 다시 섞어 값의 자리가 바뀐다. 남는 노드는 숨긴다.
     /// 라운드 중에만 아이템을 먹을 수 있고, 라운드 중 죽으면 리셋된다. 정답을 맞추면 클리어다.
+    /// FileApp 이 필드로 들고, 라운드에 들어오고 나갈 때 SetActive, 라운드 중 죽으면 ResetPuzzle 을 부른다.
     /// </summary>
     [Serializable]
-    public class NumberPuzzleRound : StageRound
+    public class NumberPuzzleRound
     {
         #region Constants
-        private const int DEFAULT_ROUND_INDEX = 1;  // 2라운드
         private const int MAX_HELD_NUMBER_COUNT = 3;
         private const int MAX_HELD_OPERATOR_COUNT = 2;
         private const int MIN_NUMBER = 1;
@@ -53,13 +53,17 @@ namespace Core.Stage
         /// <summary>노드와 패널을 찾아 준비되었는지 여부.</summary>
         public bool IsReady => _board != null;
 
+        /// <summary>지금 이 라운드가 진행 중인지 여부.</summary>
+        public bool IsActive { get; private set; }
+
         /// <summary>맞춰야 하는 값.</summary>
         public int TargetValue { get; private set; }
 
         /// <summary>정답을 맞췄는지 여부.</summary>
         public bool IsSolved { get; private set; }
 
-        public override bool IsCleared => IsSolved;
+        /// <summary>이 라운드를 깼는지 여부.</summary>
+        public bool IsCleared => IsSolved;
 
         /// <summary>먹은 숫자 (먹은 순서).</summary>
         public IReadOnlyList<SMazeToken> HeldNumbers => _heldNumbers;
@@ -72,15 +76,19 @@ namespace Core.Stage
         public int MaxHeldOperatorCount => MAX_HELD_OPERATOR_COUNT;
         #endregion
 
-        public NumberPuzzleRound() : base(DEFAULT_ROUND_INDEX)
-        {
-        }
+        #region Events
+        /// <summary>먹은 아이템이 바뀌거나 리셋·클리어되면 호출된다. 화면 갱신용.</summary>
+        public event Action OnProgressChanged;
+
+        /// <summary>정답을 맞춘 순간 한 번 호출된다.</summary>
+        public event Action OnCleared;
+        #endregion
 
         #region Public Methods
         /// <summary>
-        /// 씬에서 노드와 패널을 찾고, 목표값을 고른 뒤 비어 있는 상태로 시작한다.
+        /// 스테이지가 시작될 때 한 번 호출된다. 씬에서 노드와 패널을 찾고, 목표값을 고른 뒤 비어 있는 상태로 시작한다.
         /// </summary>
-        public override void Begin()
+        public void Begin()
         {
             _tokens = new List<SMazeToken>();
             _heldNumbers = new List<SMazeToken>();
@@ -101,7 +109,7 @@ namespace Core.Stage
             MazePuzzleBoard board = UnityEngine.Object.FindAnyObjectByType<MazePuzzleBoard>();
             if ((board == null) || (_items.Count == 0))
             {
-                Debug.LogWarning($"맵에 숫자 퍼즐 노드({_items.Count}개) 또는 패널이 없어 {RoundNumber}라운드 숫자 퍼즐을 시작하지 않습니다.");
+                Debug.LogWarning($"맵에 숫자 퍼즐 노드({_items.Count}개) 또는 패널이 없어 숫자 퍼즐을 시작하지 않습니다.");
                 return;
             }
 
@@ -117,12 +125,19 @@ namespace Core.Stage
             ResetPuzzle();
         }
 
-        public override void End()
+        /// <summary>스테이지가 없어질 때 한 번 호출된다. 구독을 푼다.</summary>
+        public void End()
         {
             if (_board == null) return;
 
             _board.OnSlotShot -= CycleSlot;
             _board.OnResetShot -= ResetPuzzle;
+        }
+
+        /// <summary>이 라운드가 진행 중인지 알려 준다. 진행 중일 때만 아이템을 먹을 수 있다.</summary>
+        public void SetActive(bool isActive)
+        {
+            IsActive = isActive;
         }
 
         /// <summary>
@@ -138,7 +153,7 @@ namespace Core.Stage
             if (held.Count >= maxCount) return false;
 
             held.Add(token);
-            NotifyProgressChanged();
+            OnProgressChanged?.Invoke();
             return true;
         }
 
@@ -183,14 +198,7 @@ namespace Core.Stage
 
             AssignTokensToItems();
             RefreshBoard();
-            NotifyProgressChanged();
-        }
-        #endregion
-
-        #region Protected Methods
-        protected override void OnPlayerRespawnRequested()
-        {
-            ResetPuzzle();
+            OnProgressChanged?.Invoke();
         }
         #endregion
 
@@ -330,7 +338,8 @@ namespace Core.Stage
 
             // 패널이 출구 앞 통로를 막지 않도록 치운다
             _board.gameObject.SetActive(false);
-            NotifyCleared();
+            OnCleared?.Invoke();
+            OnProgressChanged?.Invoke();
         }
 
         // 서로 다른 숫자 3개·연산자 2개로 만들 수 있는 모든 식을 계산해, 만들 수 있는 아이템 조합이 충분히 많은 값 중 하나를 고른다.

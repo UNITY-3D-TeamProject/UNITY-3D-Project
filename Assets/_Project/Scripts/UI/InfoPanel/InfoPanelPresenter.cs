@@ -5,8 +5,8 @@ using Core.Stage;
 
 namespace UI.InfoPanel
 {
-    // 피드 앱은 라운드 진행도를, 파일 앱은 진행 중인 라운드(숫자 퍼즐, 도둑 잡기)의 진행 상황을 패널에 보여 준다.
-    // 둘 다 없거나 보여 줄 라운드가 없으면 패널을 숨긴다.
+    // 피드 앱은 라운드 진행도를, 파일 앱은 지금 라운드 번호와 진행 중인 라운드(숫자 퍼즐, 도둑 잡기)의 진행 상황을 패널에 보여 준다.
+    // 둘 다 없거나 스테이지 진행 전이면 패널을 숨긴다.
     public class InfoPanelPresenter : MonoBehaviour
     {
         private const string EMPTY_HELD_TEXT = "_";
@@ -51,8 +51,12 @@ namespace UI.InfoPanel
                 return;
             }
 
-            if ((_fileApp != null) && TryRefreshFileApp(_fileApp.ActiveRound))
+            if ((_fileApp != null) && (_fileApp.CurrentRoundIndex >= 0))
+            {
+                _view.Show();
+                _view.SetTexts($"{_fileApp.CurrentRoundIndex + 1}라운드", BuildFileAppText());
                 return;
+            }
 
             _view.Hide();
         }
@@ -66,49 +70,44 @@ namespace UI.InfoPanel
                 _view.SetTexts("2라운드", $"피드 분류 {_feedApp.Round2SentCount}/{_feedApp.Round2TotalCount}");
         }
 
-        // 보여 줄 라운드면 내용을 채우고 true 를 돌려준다.
-        private bool TryRefreshFileApp(StageRound round)
+        // 2라운드는 먹은 숫자·연산자, 3라운드는 남은 도둑 수. 로직이 없는 라운드(1라운드)는 비운다.
+        private string BuildFileAppText()
         {
-            if (round is NumberPuzzleRound puzzle && puzzle.IsReady)
+            switch (_fileApp.CurrentRoundIndex)
             {
-                _view.Show();
-                _view.SetTexts($"{round.RoundNumber}라운드", BuildPuzzleText(puzzle));
-                return true;
-            }
+                case FileApp.NUMBER_PUZZLE_ROUND_INDEX:
+                    return _fileApp.NumberPuzzleRound.IsReady ? BuildPuzzleText(_fileApp.NumberPuzzleRound) : string.Empty;
 
-            if (round is ThiefChaseRound thiefChase)
-            {
-                _view.Show();
-                _view.SetTexts($"{round.RoundNumber}라운드", BuildThiefChaseText(thiefChase));
-                return true;
-            }
+                case FileApp.THIEF_CHASE_ROUND_INDEX:
+                    return BuildThiefChaseText(_fileApp.ThiefChaseRound);
 
-            return false;
+                default:
+                    return string.Empty;
+            }
         }
 
-        // 목표값과 가진 숫자·연산자. 예: "목표 24 · 숫자 3 5 _ · 연산 + _"
+        // 가진 숫자·연산자. 목표값은 맵의 퍼즐 패널에 보인다. 예: "숫자 3 5 _ · 연산 + _"
         private string BuildPuzzleText(NumberPuzzleRound puzzle)
         {
             if (puzzle.IsSolved)
                 return "정답! 문이 열렸습니다";
 
             _builder.Clear();
-            _builder.Append("목표 ").Append(puzzle.TargetValue);
-            _builder.Append(" · 숫자 ");
+            _builder.Append("숫자 ");
             AppendHeld(puzzle.HeldNumbers, puzzle.MaxHeldNumberCount);
             _builder.Append(" · 연산 ");
             AppendHeld(puzzle.HeldOperators, puzzle.MaxHeldOperatorCount);
             return _builder.ToString();
         }
 
-        // 남은 시간과 잡은 도둑 수. 예: "남은 시간 45초 · 도둑 3/20"
+        // 남은 도둑 수와 남은 시간. 예: "남은 도둑 17명 · 남은 시간 45초"
         private static string BuildThiefChaseText(ThiefChaseRound thiefChase)
         {
             if (thiefChase.IsCleared)
                 return "도둑을 모두 잡았습니다";
 
             int remainingSeconds = Mathf.CeilToInt(thiefChase.RemainingSeconds);
-            return $"남은 시간 {remainingSeconds}초 · 도둑 {thiefChase.CaughtCount}/{thiefChase.TotalCount}";
+            return $"남은 도둑 {thiefChase.TotalCount - thiefChase.CaughtCount}명 · 남은 시간 {remainingSeconds}초";
         }
 
         // 가진 값을 차례로 쓰고, 빈 자리는 "_" 로 채운다.

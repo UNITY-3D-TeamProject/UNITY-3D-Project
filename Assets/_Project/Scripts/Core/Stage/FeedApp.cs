@@ -47,11 +47,11 @@ namespace Core.Stage
 
         public event Action<EFeedItemType> OnItemCollected;
 
-        // 아이템을 먹거나, 2라운드가 시작되거나, 2라운드 남은 피드 수가 바뀌면 호출된다.
-        public event Action OnProgressChanged;
-
-        private void Update()
+        // 아이템을 먹거나, 2라운드가 시작되거나, 2라운드 남은 피드 수가 바뀌면 NotifyProgressChanged 로 알린다.
+        protected override void Update()
         {
+            base.Update();
+
             if ((_round2 == null) || !_round2.IsStarted)
                 return;
 
@@ -60,7 +60,7 @@ namespace Core.Stage
                 return;
 
             _lastRound2RemainingCount = remainingCount;
-            OnProgressChanged?.Invoke();
+            NotifyProgressChanged();
         }
 
         private void OnDestroy()
@@ -84,7 +84,7 @@ namespace Core.Stage
 
             Round2TotalCount = 0;
             _lastRound2RemainingCount = 0;
-            OnProgressChanged?.Invoke();
+            NotifyProgressChanged();
         }
 
         public bool HasItem(EFeedItemType itemType)
@@ -102,7 +102,7 @@ namespace Core.Stage
 
             StageProgress = _collectedItems.Count;
             OnItemCollected?.Invoke(itemType);
-            OnProgressChanged?.Invoke();
+            NotifyProgressChanged();
         }
 
         public override void EndStage()
@@ -110,17 +110,12 @@ namespace Core.Stage
             
         }
 
-        //protected override void Update()
-        //{
-        //    base.Update();
-        //}
-
         // 2라운드 시작 직후에는 피드가 모두 남아 있으므로 그 수를 전체 수로 기록한다.
         private void HandleRound2Started()
         {
             Round2TotalCount = _round2.RemainingCount;
             _lastRound2RemainingCount = Round2TotalCount;
-            OnProgressChanged?.Invoke();
+            NotifyProgressChanged();
         }
     }
 }
