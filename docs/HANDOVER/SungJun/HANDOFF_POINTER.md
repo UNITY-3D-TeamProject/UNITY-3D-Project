@@ -5,6 +5,9 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-21** — 라운드 공통 부모 `StageRound` 제거: StageBase는 라운드 번호·진행 알림·`IsRoundCleared`만 맡고, FileApp이 라운드 번호 상수로 숫자 퍼즐·도둑 잡기를 직접 부름(켜기·사망 리셋·문 열기). TestScene 3라운드 공간을 퍼즐 북쪽으로 이동(NavMesh 새로 구움). Play에서 1→2→3라운드·사망 재스폰·시간 초과 확인, 실제 걷기·Map_3_File 미확인, 커밋 안 함(intent-056): [작업 기록](./2026-10-21/file-round-panel.md)
+- **2026-10-21** — 라운드 번호·진행 알림을 `StageBase` 공통으로(`CurrentRoundIndex`·`OnRoundChanged`·`OnProgressChanged`, FileApp·FeedApp 적용, CP949 유지), 3라운드 패널에 남은 시간 추가, `ThiefChaseRound` 시간 초과가 피격 무적에 막혀 0초에서 멈추던 버그 수정(죽을 때까지 재시도). TestScene에 2라운드(퍼즐)·3라운드(도둑) 시작 체크포인트·연결 바닥·표지판 추가(라운드 시작점 [0,11,12]), Play에서 순간이동으로 진입·사망 재스폰·패널 확인. 실제 걷기·Map_3_File 미확인, 커밋 안 함(intent-056): [작업 기록](./2026-10-21/file-round-panel.md)
+- **2026-10-21** — 미로(파일 앱) 패널: 1라운드부터 `N라운드` 표시(`FileApp.CurrentRoundIndex`·번호 변경 시 알림), 본문은 2라운드 먹은 숫자·연산자, 3라운드 `남은 도둑 N명`만(목표값·남은 시간 제거). 1라운드 사망은 씬 재시작 안 함(Map_3_File 설정 false) 확인, 적 생성·재생성은 적 파트 스포너가 이미 처리. TestScene에서 리플렉션 호출로 확인, 실제 걷기·Map_3_File 미확인, 커밋 안 함: [작업 기록](./2026-10-21/file-round-panel.md)
 - **2026-10-21** — develop → feature/ui-feed-round-progress 로컬 병합: INTENT_POINTER 충돌에서 파일·피드 앱 3개와 보스 아레나 2개 항목 모두 보존. 기존 intent 번호·상태 유지: [작업 기록](./2026-10-21/develop-merge-intent-pointer.md)
 - **2026-10-21** — StageManager·StageBase·StageRound 책임 분리 설계 작성: 진행 확정·복구 / 공통 라운드 실행 / 개별 규칙으로 구분, FileApp·FeedApp 전환·사망 복구·코드 이동·검증 기준 정의. 설계만 작성, 런타임 미수정: [설계](../../design/stage-lifecycle-responsibilities.md), [작업 기록](./2026-10-21/stage-lifecycle-design.md)
 - **2026-10-21** — 숫자 퍼즐 칸 규칙: 괄호 표시 제거, 숫자 칸·연산 칸 모두 같은 종류끼리 값 겹침 금지, 쏘면 다음 값·다른 칸이 쓰는 값이면 서로 자리 바꿈(`+ ×` → `× +`, `3 2 4` → `4 2 3`). TestScene에서 직접 호출로 확인, 커밋 안 함: [작업 기록](./2026-10-21/file-app-round-split.md)

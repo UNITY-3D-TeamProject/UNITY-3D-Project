@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Stage / FileApp / UI]** 미로 1라운드에 로직이 없어 패널이 숨겨져 지금 라운드를 모름, 라운드 번호 추적·진행 알림이 앱마다 따로 있음. `StageBase`에 `CurrentRoundIndex`·`OnRoundChanged`·`OnProgressChanged` 공통화, 패널은 `N라운드` + 2R 먹은 숫자·연산자 / 3R 남은 도둑·남은 시간, TestScene에 1→2→3라운드 공간 → [문서](./intent-056-stage-round-panel.md)
 - **[Stage / FileApp / UI]** FileApp에 2라운드만 있고 라운드 클리어 판정이 없어 3라운드 문이 그냥 열림, 3라운드 제한 시간 없음. `StageRoundBase`로 라운드별 로직 분리(2R 퍼즐, 3R `ThiefChaseRound` 타이머·시간 초과 사망), FileApp은 문 연결만, 2R 패널 괄호 표시 → [문서](./intent-055-file-app-round-split.md). 후속: [Manager·Base·Round 책임 분리 설계](../design/stage-lifecycle-responsibilities.md) 작성, 구현 전.
 - **[Stage / FileApp / UI]** 파일 앱 2라운드(Maze_1)에 숫자 퍼즐이 없음. 숫자 1~9·연산자 4개 중 3·2개를 먹고, 출구 5칸을 쏴서 목표값을 맞추면 문이 열림. 리셋·사망 시 초기화, Active Mission에 목표·보유 표시. Map 스크립트는 수정 안 함 → [문서](./intent-054-file-maze-number-puzzle.md)
 - **[UI / Stage / FeedApp]** 피드 앱 1라운드 재료 수·2라운드 분류 수를 화면에서 알 수 없음. `FeedApp`(Core)이 진행도를 계산해 알리고, 비어 있던 `InfoPanelPresenter`/`View`가 `Canvas_InGame/Active Mission`에 `1라운드 / 피드 재료 3/5`, `2라운드 / 피드 분류 1/12`로 표시. Map/Feed 스크립트는 수정 안 함 → [문서](./intent-053-feed-round-progress-panel.md)
