@@ -5,6 +5,8 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-21** — 숫자 퍼즐 패널을 2라운드 출구 문 앞으로: `FileApp.PlacePuzzleBoard`가 시작할 때 맵의 패널 하나를 문 기준 로컬 (0, 0, `_puzzleBoardOffset` 1.5)에 문과 같은 회전으로 옮긴다(`NumberPuzzleRound.Board` 추가). `Map_3_File`에 패널 하나 배치. Play 3회(출구 열 14·14·13)에서 위치·회전 일치, 리셋 버튼 재배치, 정답 → 문 열림 확인. 실제 걷기·사격 미확인, 커밋 안 함: [작업 기록](./2026-10-21/puzzle-board-exit-placement.md)
+- **2026-10-21** — 숫자 퍼즐 아이템 13개를 `Map_3_File` 미로 생성기 웨이포인트(`MazeIndex: 1` 그룹, `PuzzleWaypoint_0~12` 밑에 `MazePuzzleItem`)로 배치. 코드 변경 없음. 리셋 때는 위치 13곳은 그대로 두고 값만 다시 섞는다. Play에서 서로 다른 칸 13곳, 먹은 뒤 리셋하면 전부 다시 켜지고 값이 섞이는 것을 확인(패널은 Play 중 임시 생성). **맵에 퍼즐 패널이 없어 실제 플레이에서는 퍼즐이 시작되지 않음, 커밋 안 함**: [작업 기록](./2026-10-21/puzzle-item-waypoints.md)
 - **2026-10-21** — 라운드 공통 부모 `StageRound` 제거: StageBase는 라운드 번호·진행 알림·`IsRoundCleared`만 맡고, FileApp이 라운드 번호 상수로 숫자 퍼즐·도둑 잡기를 직접 부름(켜기·사망 리셋·문 열기). TestScene 3라운드 공간을 퍼즐 북쪽으로 이동(NavMesh 새로 구움). Play에서 1→2→3라운드·사망 재스폰·시간 초과 확인, 실제 걷기·Map_3_File 미확인, 커밋 안 함(intent-056): [작업 기록](./2026-10-21/file-round-panel.md)
 - **2026-10-21** — 라운드 번호·진행 알림을 `StageBase` 공통으로(`CurrentRoundIndex`·`OnRoundChanged`·`OnProgressChanged`, FileApp·FeedApp 적용, CP949 유지), 3라운드 패널에 남은 시간 추가, `ThiefChaseRound` 시간 초과가 피격 무적에 막혀 0초에서 멈추던 버그 수정(죽을 때까지 재시도). TestScene에 2라운드(퍼즐)·3라운드(도둑) 시작 체크포인트·연결 바닥·표지판 추가(라운드 시작점 [0,11,12]), Play에서 순간이동으로 진입·사망 재스폰·패널 확인. 실제 걷기·Map_3_File 미확인, 커밋 안 함(intent-056): [작업 기록](./2026-10-21/file-round-panel.md)
 - **2026-10-21** — 미로(파일 앱) 패널: 1라운드부터 `N라운드` 표시(`FileApp.CurrentRoundIndex`·번호 변경 시 알림), 본문은 2라운드 먹은 숫자·연산자, 3라운드 `남은 도둑 N명`만(목표값·남은 시간 제거). 1라운드 사망은 씬 재시작 안 함(Map_3_File 설정 false) 확인, 적 생성·재생성은 적 파트 스포너가 이미 처리. TestScene에서 리플렉션 호출로 확인, 실제 걷기·Map_3_File 미확인, 커밋 안 함: [작업 기록](./2026-10-21/file-round-panel.md)
