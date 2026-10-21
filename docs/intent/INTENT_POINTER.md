@@ -49,6 +49,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI / Dialogue]** 대화 중에도 미션 패널·크로스헤어·HP·스킬·보스 체력바가 떠 있어 연출을 가림. `Canvas_InGame` 루트 CanvasGroup alpha를 UIManager가 대화 시작·끝에 0/1로, 대화창(중첩 Canvas)·설정창은 `Ignore Parent Groups`로 계속 보임, 펫 안내는 제외 → [문서](./clear/intent-058-hide-ui-during-dialogue.md) (resolved: 2026-10-22)
 - **[Audio / Core]** AudioManager 효과음이 원샷뿐이라 차지음처럼 반복하다 멈추거나 중간에 끊을 수 없었음. `PlaySfx`·`PlaySfxLoop(SO, Transform)`이 int 번호 반환, `StopSfx(번호, fadeDuration = 0)`로 원샷·반복음 모두 끊기, 3D 소스 16개 공유·대상 따라가기 → [문서](./clear/intent-055-audio-loop-sfx.md) (resolved: 2026-10-21)
 - **[AI / Boss]** 보스 B None→추격·쿨타임 실행 그래프·피격 회전 및 타일 간 NavMesh 복구. 테스트 11/11, 경로 81/81, Play 추격·3타·180도 회전 확인 → [문서](./clear/intent-046-bossb-melee-hit-facing.md) (resolved: 2026-10-19)
 - **[UI]** View 4개(InfoPanel·PlayerHud·PetGuide·Settings)가 루트 켜기·끄기 코드를 각자 복사해 들고 있었음. `BaseView`(abstract, `_root`·`IsVisible`·`Show`·`Hide`·private `SetVisible`)로 합침, MainMenu 제외 → [문서](./clear/intent-052-ui-base-view.md) (resolved: 2026-10-20)

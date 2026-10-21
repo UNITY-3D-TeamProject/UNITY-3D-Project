@@ -1582,6 +1582,8 @@ GameObject:
   - component: {fileID: 7887929865638432593}
   - component: {fileID: 8348777327934478301}
   - component: {fileID: 8731293427100546493}
+  - component: {fileID: 2833129856539580348}
+  - component: {fileID: 3067892471152308597}
   m_Layer: 5
   m_Name: PetGuidePanel
   m_TagString: Untagged
@@ -1706,6 +1708,42 @@ MonoBehaviour:
     DefaultPortrait: {fileID: 21300000, guid: 623d10fefd86d67459f01c6ebbc8267d, type: 3}
   _nextLineLabel: "E \u25B6 \uB2E4\uC74C"
   _lastLineLabel: "E \u25B6 \uB2EB\uAE30"
+--- !u!225 &2833129856539580348
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1050254020887225767}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 1
+--- !u!223 &3067892471152308597
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1050254020887225767}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
 --- !u!1 &1055932373874516276
 GameObject:
   m_ObjectHideFlags: 0
@@ -2346,6 +2384,7 @@ MonoBehaviour:
   _dialoguePresenter: {fileID: 8731293427100546493}
   _dialogueDirector: {fileID: 2693135122848582690}
   _cutsceneTable: {fileID: 11400000, guid: df949ebf8d31b7b40bbd77e7a68ae343, type: 2}
+  _inGameCanvasGroup: {fileID: 9165166112743255090}
 --- !u!1 &1528345610701737432
 GameObject:
   m_ObjectHideFlags: 0
@@ -3709,6 +3748,7 @@ GameObject:
   - component: {fileID: 3889746765410077304}
   - component: {fileID: 276350479985785480}
   - component: {fileID: 8122085205354459766}
+  - component: {fileID: 8423608364174858679}
   m_Layer: 5
   m_Name: SettingsPanel
   m_TagString: Untagged
@@ -3832,6 +3872,18 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!225 &8423608364174858679
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2046728677839913899}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 1
 --- !u!1 &2082510910767179029
 GameObject:
   m_ObjectHideFlags: 0
@@ -6231,6 +6283,7 @@ GameObject:
   - component: {fileID: 2190341253988823641}
   - component: {fileID: 3948385155539054475}
   - component: {fileID: 1962530390432859705}
+  - component: {fileID: 9165166112743255090}
   m_Layer: 5
   m_Name: Canvas_InGame
   m_TagString: Untagged
@@ -6336,6 +6389,18 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!225 &9165166112743255090
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2957563478840300196}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &3002076114356414525
 GameObject:
   m_ObjectHideFlags: 0

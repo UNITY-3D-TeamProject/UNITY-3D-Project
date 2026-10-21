@@ -25,6 +25,8 @@ namespace UI
         [SerializeField] private DialogueDirector _dialogueDirector;
         [Tooltip("PlayDialogue(번호)로 재생할 대화 목록")]
         [SerializeField] private SODialogueTable _cutsceneTable;
+        [Tooltip("대화 중 alpha를 0으로 내려 인게임 UI를 숨길 캔버스 루트의 CanvasGroup. 대화창·설정창은 Ignore Parent Groups로 계속 보인다.")]
+        [SerializeField] private CanvasGroup _inGameCanvasGroup;
         #endregion
 
         #region Private Fields
@@ -255,7 +257,7 @@ namespace UI
                 _input.SwitchToDialogueInput();
         }
 
-        // 대화를 시작한다. 끝날 때까지 Dialogue 입력 맵으로 바꿔 플레이어 조작을 막는다.
+        // 대화를 시작한다. 끝날 때까지 Dialogue 입력 맵으로 바꿔 플레이어 조작을 막고, 대화창 외 UI를 숨긴다.
         // Dialogue 맵에서는 E로 대사를 넘기고, ESC로 설정창을 연다.
         // 이미 대화 중이거나 설정창·펫 안내가 열려 있거나 플레이어가 없으면 시작하지 않는다.
         private void StartDialogue(SODialogue sequence)
@@ -280,6 +282,10 @@ namespace UI
             if (_playerHudPresenter != null)
                 _playerHudPresenter.SetInteractLabelBlocked(true);
 
+            // 대화 중에는 대화창만 보이도록 나머지 인게임 UI를 숨긴다.
+            if (_inGameCanvasGroup != null)
+                _inGameCanvasGroup.alpha = 0.0f;
+
             _input.SwitchToDialogueInput();
 
             if (!_dialoguePresenter.StartDialogue(sequence))
@@ -293,7 +299,7 @@ namespace UI
                 _dialogueDirector.ShowLine(line);
         }
 
-        // 대화가 끝나면 구독을 풀고, 연출을 정리한 뒤 상호작용 안내와 플레이어 조작을 돌려준다.
+        // 대화가 끝나면 구독을 풀고, 연출을 정리한 뒤 상호작용 안내·숨긴 UI와 플레이어 조작을 돌려준다.
         private void HandleDialogueEnded()
         {
             _dialoguePresenter.OnDialogueLineChanged -= HandleDialogueLineChanged;
@@ -306,6 +312,9 @@ namespace UI
 
             if (_playerHudPresenter != null)
                 _playerHudPresenter.SetInteractLabelBlocked(false);
+
+            if (_inGameCanvasGroup != null)
+                _inGameCanvasGroup.alpha = 1.0f;
 
             _input.SwitchToPlayerInput();
         }
