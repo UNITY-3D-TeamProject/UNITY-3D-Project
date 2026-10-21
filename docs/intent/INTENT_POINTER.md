@@ -4,6 +4,8 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[AI / Boss / Arena]** 복구되는 보스 아레나 칸이 그 자리에 툭 나타나 다시 생긴 느낌이 약함. 아래에서 덜컥 솟아오르기(EaseOutBack) + 솟는 동안 NavMesh 구멍 유지, `Map_4_Security` 타일 Batching Static 해제. 구현·수치 확인 완료, 육안 조정 남음 → [문서](./intent-054-boss-tile-rise-restore.md)
+- **[AI / Boss / Arena]** 실제 맵 `Map_4_Security`의 보스 바닥 25칸(`BossFloor_Tile_R??_C??`)에 `BossArena`·`BossTile`이 없음. 칸 연결 완료, 예고는 맵 담당의 `WarningSignals` 사용. 이어서 3라운드 체크포인트·보스 스포너·NavMesh(`Boss` 에이전트 타입 복원) 추가. 채우기 연출 모양·원/직선 예고 프리팹·발판과 아레나 사이 빈 구간·낙사 구역은 열린 질문 → [문서](./intent-053-map4-boss-tiles.md)
 - **[AI / Boss / BossB]** 보스 B 예고가 보스 A 와 같은 빨강 머터리얼이라 헷갈리고, 돌진은 바닥 예고가 없으며 도약 원은 켜지자마자 가득 참. B 전용 머터리얼(파랑) + 돌진 직선 예고 + 페이드 인 → [문서](./intent-049-bossb-telegraph-color.md)
 - **[AI / Boss / BossA]** 보스 A 의 A4 가 칸 위 내려찍기 + 판 밖으로 던지기라 의도(블리츠크랭크 Q 식 그랩)와 반대. 한 손이 직선으로 날아가 잡아 보스 쪽으로 끌어당기고 반대 손이 1칸 내려치는 방식으로 재설계. 결정 완료·코드 구현·컴파일 통과·Play 흐름 확인, 육안 확인과 게이트 루프 남음 → [문서](./intent-048-bossa-a4-hook-grab.md)
 - **[AI / Boss / Arena]** 보스 A 칸 예고가 켜지자마자 가득 차 있어 발동 시점을 읽을 수 없음. 중앙에서 스케일·알파가 0→1로 채워지게(채움 시간 = 패턴 예고 시간), 가득 차면 손이 내려쳐 붕괴. 스크립트만 수정, 정사각형 방식 → [문서](./intent-047-bossa-telegraph-fill-in.md)
