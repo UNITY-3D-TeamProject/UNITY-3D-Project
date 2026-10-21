@@ -7,6 +7,7 @@ namespace Map.Maze
     /// <summary>
     /// 미로의 출구. 플레이어가 출구 칸에 들어오면 문(출구 벽)이 사라져 다음 미로로 가는 다리로 나갈 수 있다.
     /// 마지막 미로의 문은 라운드를 클리어해야 열린다.
+    /// 플레이어가 문을 지나가면 Close 로 다시 닫으며, 닫힌 문은 다시 열리지 않는다. (문 밖 TriggerPlate 에 연결)
     /// 출구 칸 중앙에 놓고, 콜라이더의 Is Trigger를 켠다.
     /// </summary>
     [RequireComponent(typeof(Collider))]
@@ -25,6 +26,9 @@ namespace Map.Maze
         #region Properties
         /// <summary>문이 열렸는지 여부.</summary>
         public bool IsOpen { get; private set; }
+
+        /// <summary>플레이어가 지나간 뒤 다시 닫혔는지 여부.</summary>
+        public bool IsClosedBehind { get; private set; }
 
         /// <summary>라운드를 클리어해야 열리는 문인지 여부.</summary>
         public bool ShouldRequireRoundClear
@@ -47,7 +51,7 @@ namespace Map.Maze
 
         private void OnTriggerEnter(Collider other)
         {
-            if (IsOpen) return;
+            if (IsOpen || IsClosedBehind) return;
 
             if (!GimmickUtility.TryGetPlayer(other, out _)) return;
             if (_shouldRequireRoundClear && !IsRoundCleared()) return;
@@ -71,6 +75,21 @@ namespace Map.Maze
             }
 
             OnOpened?.Invoke();
+        }
+
+        /// <summary>
+        /// 열린 문을 다시 닫는다. 플레이어가 문을 지나간 뒤 되돌아오지 못하게 할 때 쓴다. (UnityEvent로 연결 가능)
+        /// </summary>
+        public void Close()
+        {
+            if (!IsOpen) return;
+
+            IsOpen = false;
+            IsClosedBehind = true;
+            if (_door != null)
+            {
+                _door.SetActive(true);
+            }
         }
         #endregion
 

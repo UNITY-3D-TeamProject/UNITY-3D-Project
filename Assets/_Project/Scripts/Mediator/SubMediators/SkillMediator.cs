@@ -50,6 +50,8 @@ namespace Mediator.SubMediators
         private bool _wasFireEnabled;
         private bool _wasRollEnabled;
         private bool _wasMultiJumpEnabled;
+        // 펫이 꺼져 있는 동안 스캔 실행 요청을 막는다. 스킬 활성화 상태와는 별개로 관리한다
+        private bool _isScanBlocked;
         #endregion
 
         #region Properties
@@ -318,6 +320,16 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 스캔 실행 요청을 막거나 푼다. 막는 동안 스캔은 발동하지 않으며 쿨타임·코스트도 쓰지 않는다.
+        /// SetSkillEnabled 로 정한 활성화 상태는 바꾸지 않는다.
+        /// </summary>
+        /// <param name="isBlocked">막으면 true</param>
+        public void SetScanBlocked(bool isBlocked)
+        {
+            _isScanBlocked = isBlocked;
+        }
+
+        /// <summary>
         /// origin 에서 스캔 파동을 시작한다. OnScanRequested 를 받은 쪽이 발동 위치를 정한 뒤 호출한다.
         /// </summary>
         /// <param name="origin">파동의 중심(월드 좌표)</param>
@@ -375,6 +387,7 @@ namespace Mediator.SubMediators
             // 지상 구르기는 공중 횟수와 무관하므로, 걸어서 떨어졌다 착지해 남은 횟수를 발동 전에 지운다
             bool isRoll = string.Equals(skillName, ROLL_SKILL_NAME, StringComparison.OrdinalIgnoreCase);
             if (isRoll && IsGrounded()) ResetRollCount();
+            if (_isScanBlocked && IsScanSkill(skillName)) return;
 
             if (!_skillController.TryExecuteSkill(skillName)) return;
 
@@ -560,6 +573,16 @@ namespace Mediator.SubMediators
         private bool IsSpawnVehicleSkill(string skillName)
         {
             return _spawnVehicleSkill && string.Equals(skillName, _spawnVehicleSkill.SkillName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 스캔 스킬 이름인지 반환한다.
+        /// </summary>
+        /// <param name="skillName">확인할 스킬 이름</param>
+        /// <returns>스캔 스킬이면 true. 스캔 스킬이 없으면 false</returns>
+        private bool IsScanSkill(string skillName)
+        {
+            return _scanSkill && string.Equals(skillName, _scanSkill.SkillName, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

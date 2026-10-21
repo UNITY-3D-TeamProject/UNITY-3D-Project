@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-21** — develop → feature/ui-feed-round-progress 로컬 병합: INTENT_POINTER 충돌에서 파일·피드 앱 3개와 보스 아레나 2개 항목 모두 보존. 기존 intent 번호·상태 유지: [작업 기록](./2026-10-21/develop-merge-intent-pointer.md)
 - **2026-10-21** — StageManager·StageBase·StageRound 책임 분리 설계 작성: 진행 확정·복구 / 공통 라운드 실행 / 개별 규칙으로 구분, FileApp·FeedApp 전환·사망 복구·코드 이동·검증 기준 정의. 설계만 작성, 런타임 미수정: [설계](../../design/stage-lifecycle-responsibilities.md), [작업 기록](./2026-10-21/stage-lifecycle-design.md)
 - **2026-10-21** — 숫자 퍼즐 칸 규칙: 괄호 표시 제거, 숫자 칸·연산 칸 모두 같은 종류끼리 값 겹침 금지, 쏘면 다음 값·다른 칸이 쓰는 값이면 서로 자리 바꿈(`+ ×` → `× +`, `3 2 4` → `4 2 3`). TestScene에서 직접 호출로 확인, 커밋 안 함: [작업 기록](./2026-10-21/file-app-round-split.md)
 - **2026-10-21** — 숫자 퍼즐 추가 변경: 리셋(리셋 장치·사망) 시 목표값도 새로 뽑음, 노드를 닿기 대신 상호작용(E)으로 먹게 변경(`MazePuzzleItem` IInteractable, 노드 프리팹 Interact 레이어). TestScene에서 레이캐스트 감지·Interact 호출·리셋 목표값 변경 확인, 실제 E 입력은 미확인(창 백그라운드), 커밋 안 함: [작업 기록](./2026-10-21/file-app-round-split.md)
