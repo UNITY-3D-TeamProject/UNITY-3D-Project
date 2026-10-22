@@ -28,7 +28,7 @@ namespace Core.Cinematic
         public bool ShouldPauseTime;
 
         [Header("Dialogue")]
-        [Tooltip("UIManager.PlayDialogue로 재생할 대화 번호(SODialogueTable)")]
+        [Tooltip("대화 단계에서 재생할 대화 번호(SODialogueTable). UIManager가 재생한다")]
         public int DialogueId;
     }
 

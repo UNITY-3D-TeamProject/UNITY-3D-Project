@@ -11,7 +11,8 @@ using UI.Settings;
 
 namespace UI
 {
-    public class UIManager : MonoBehaviour
+    // 대화를 맡는 쪽(IDialogueController)으로 등록되어 Core(CinematicManager·StageManager)가 UIManager를 직접 참조하지 않고 대화를 튼다.
+    public class UIManager : MonoBehaviour, IDialogueController
     {
         #region Serialized Fields
         // 플레이어 데이터를 UI에 보여줘야하는데 그 데이터를 조작하는 Presenter를 갖고있는다.
@@ -24,7 +25,7 @@ namespace UI
         [SerializeField] private PetGuidePresenter _petGuidePresenter;
         // 대화 진행 (대화 SO를 한 줄씩 펫 안내 패널에 표시)
         [SerializeField] private DialoguePresenter _dialoguePresenter;
-        // 대화 연출 (펫 세우기, 말하는 사람 카메라). 없으면 대화를 재생하지 않는다.
+        // 대화 연출 (펫 세우기, 말하는 사람 카메라, Core.Cinematic). 없으면 대화를 재생하지 않는다.
         [SerializeField] private DialogueDirector _dialogueDirector;
         [Tooltip("PlayDialogue(번호)로 재생할 대화 목록")]
         [SerializeField] private SODialogueTable _cutsceneTable;
@@ -80,6 +81,8 @@ namespace UI
 
         private void OnEnable()
         {
+            DialogueController.Register(this);
+
             // 입력 이벤트는 플레이어가 바뀌어도 _input이 그대로이므로 한 번만 구독한다.
             _input.OnOpenSettingsRequested += OpenSettings;
             _input.OnCloseSettingsRequested += CloseSettings;
@@ -148,6 +151,8 @@ namespace UI
             {
                 _playerHudPresenter.SetPlayer(null);
             }
+
+            DialogueController.Unregister(this);
         }
 
         private void OnDestroy()
@@ -355,7 +360,7 @@ namespace UI
         private void HandleDialogueLineChanged(SDialogueLine line)
         {
             if (_dialogueDirector != null)
-                _dialogueDirector.ShowLine(line);
+                _dialogueDirector.ShowLine(line.SpeakerName, line.CameraIndex);
         }
 
         // 대화가 끝나면 구독을 풀고, 연출을 정리한 뒤 상호작용 안내·숨긴 UI와 플레이어 조작을 돌려준다.

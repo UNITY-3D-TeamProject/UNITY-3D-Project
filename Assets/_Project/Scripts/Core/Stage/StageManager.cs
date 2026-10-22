@@ -3,7 +3,7 @@ using Facade.Player;
 using JetBrains.Annotations;
 using Map.Gimmicks;
 using System;
-using UI;
+using Core.Cinematic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -284,9 +284,9 @@ namespace Core.Stage
                 _ => 0,
             };
 
-            if ((dialogueId > 0) && (UIManager.Instance != null))
+            if ((dialogueId > 0) && (DialogueController.Current != null))
             {
-                UIManager.Instance.PlayDialogue(dialogueId);
+                DialogueController.Current.PlayDialogue(dialogueId);
             }
         }
 

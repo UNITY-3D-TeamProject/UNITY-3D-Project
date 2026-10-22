@@ -1,10 +1,9 @@
 using UnityEngine;
 using Unity.Cinemachine;
-using Core;
 using Facade.Player;
 using Pet;
 
-namespace UI.Dialogue
+namespace Core.Cinematic
 {
     /// <summary>
     /// 대화 연출(펫·카메라)만 맡는 컴포넌트. 대화 진행은 모르고, UIManager가 시작·줄 바뀜·끝에 맞춰 부른다.
@@ -134,16 +133,16 @@ namespace UI.Dialogue
             _petPivot = null;
         }
 
-        // 줄이 바뀔 때 부른다. CameraIndex가 0 이상이면 고정 카메라, -1이면 말하는 사람 카메라를 켠다.
-        public void ShowLine(SDialogueLine line)
+        // 줄이 바뀔 때 그 줄의 말하는 사람·카메라 번호로 부른다. cameraIndex가 0 이상이면 고정 카메라, -1이면 말하는 사람 카메라를 켠다.
+        public void ShowLine(string speakerName, int cameraIndex)
         {
             CinemachineCamera target = null;
 
-            if ((_fixedCameras != null) && (line.CameraIndex >= 0) && (line.CameraIndex < _fixedCameras.Length))
-                target = _fixedCameras[line.CameraIndex];
-            else if (line.SpeakerName == _playerSpeakerName)
+            if ((_fixedCameras != null) && (cameraIndex >= 0) && (cameraIndex < _fixedCameras.Length))
+                target = _fixedCameras[cameraIndex];
+            else if (speakerName == _playerSpeakerName)
                 target = _playerShotCamera;
-            else if (line.SpeakerName == _petSpeakerName)
+            else if (speakerName == _petSpeakerName)
                 target = _petShotCamera;
 
             SetActiveCamera(target);

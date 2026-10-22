@@ -3,7 +3,6 @@ using System.Collections;
 using UnityEngine;
 using Unity.Cinemachine;
 using Core.InputMap;
-using UI;
 
 namespace Core.Cinematic
 {
@@ -101,10 +100,10 @@ namespace Core.Cinematic
                 return false;
             }
 
-            UIManager uiManager = UIManager.Instance;
-            if (uiManager == null)
+            IDialogueController dialogueController = DialogueController.Current;
+            if (dialogueController == null)
             {
-                Debug.LogWarning("[CinematicManager] 씬에 UIManager가 없어 연출을 재생하지 못했습니다.", this);
+                Debug.LogWarning("[CinematicManager] 씬에 대화를 재생하는 쪽(UIManager)이 없어 연출을 재생하지 못했습니다.", this);
                 return false;
             }
 
@@ -114,7 +113,7 @@ namespace Core.Cinematic
                 (gameManager.CurrentPlayerFacade == null))
                 return false;
 
-            if (uiManager.IsDialoguePlaying || uiManager.IsPetGuideOpen) return false;
+            if (dialogueController.IsDialoguePlaying || dialogueController.IsPetGuideOpen) return false;
             if (sequence.ShouldPlayOnce && HasSeen(sequence)) return false;
 
             // 중간에 끊겨도 다시 보지 않도록 시작할 때 본 기록을 남긴다.
@@ -143,8 +142,7 @@ namespace Core.Cinematic
             }
 
             // 대화 단계 중이면 대화도 끝낸다. 대화는 자기 요청만 풀고, 연출의 시간·입력 요청과 UI 숨김은 Finish가 푼다.
-            if (UIManager.Instance != null)
-                UIManager.Instance.StopDialogue();
+            DialogueController.Current?.StopDialogue();
 
             Finish();
         }
@@ -306,13 +304,14 @@ namespace Core.Cinematic
             if (GameManager.Instance != null)
                 GameManager.Instance.PauseGameTime(this);
 
-            UIManager uiManager = UIManager.Instance;
-            if (uiManager == null) yield break;
+            IDialogueController dialogueController = DialogueController.Current;
+            if (dialogueController == null) yield break;
 
             // 테이블에 없거나 시작하지 못하면 IsDialoguePlaying이 false라 바로 다음 단계로 넘어간다.
-            uiManager.PlayCinematicDialogue(step.DialogueId);
+            dialogueController.PlayCinematicDialogue(step.DialogueId);
 
-            while ((uiManager != null) && uiManager.IsDialoguePlaying)
+            // 대화 중에 대화 재생 쪽이 꺼져 등록이 풀리면 기다리지 않는다.
+            while ((DialogueController.Current == dialogueController) && dialogueController.IsDialoguePlaying)
                 yield return null;
         }
 
