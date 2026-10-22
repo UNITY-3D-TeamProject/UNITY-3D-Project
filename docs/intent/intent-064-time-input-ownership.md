@@ -100,6 +100,25 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   - 연출: 시작 Dialogue, 대화 단계 끝나도 Dialogue, 연출 끝 Player.
   - **버그 4 해결**: 연출 중 UIManager 컴포넌트를 끄고 연출이 끝나면 Player, 다시 켜도 Player.
   - 미확인: 사망 재스폰 때 맵 다시 적용, 실제 키 입력.
+- 커밋: `5feeed10`(컴포넌트·프리팹), `7c1f816a`(연결), `42671b58`(문서)
+
+### 3. UIManager 연출 코드 제거·외부 대화 거절·Play 검사·UI 숨기기 이벤트 (2026-10-22, 커밋 안 함)
+- `CinematicManager`
+  - `Play`: 꺼져 있으면(`!isActiveAndEnabled`) 경고 후 false(**버그 3**). 시작 조건(설정창 아님·플레이어 있음·대화·펫 안내 아님)을 GameManager·`UIManager.IsDialoguePlaying/IsPetGuideOpen`으로 직접 확인. `UIManager.BeginCinematic` 호출 제거.
+  - static 이벤트 `OnPlayStarted`/`OnPlayFinished(CinematicManager)`. 씬마다 매니저가 새로 생겨 Awake 순서와 상관없이 구독하려고 static.
+  - `Finish`: `UIManager.EndCinematic` 대신 `OnPlayFinished`. 대화 단계는 `UIManager.PlayCinematicDialogue`.
+- `UIManager`
+  - 삭제: `_isCinematicActive`, `BeginCinematic`, `EndCinematic`.
+  - 추가: `IsPetGuideOpen`, `IsCinematicPlaying`(private, `CinematicManager.Instance.IsPlaying`), `PlayCinematicDialogue(id)`, `PlayDialogueById`(private, 테이블 찾기).
+  - `PlayDialogue`: 연출 중이면 경고 후 재생하지 않음(**버그 2**). 시그니처 유지.
+  - 인게임 UI 숨기기: `_inGameUIHiders` + `HideInGameUI/ShowInGameUI/ApplyInGameUIVisibility`. 대화는 `_dialoguePresenter`, 연출은 이벤트로 받은 `CinematicManager`가 숨김 요청. 하나라도 남으면 alpha 0·상호작용 안내 숨김.
+  - 연출 이벤트를 OnEnable에서 구독(이미 연출 중이면 바로 숨김), OnDisable에서 해제하고 숨김을 비워 UI를 보이게 둔다.
+- 확인: 컴파일 0에러. TestScene Play(eval 직접 호출)
+  - 꺼진 CinematicManager `Play` false, 맵·시간·UI 그대로(버그 3 해결). 대화·펫 안내·설정창 중 `Play` false.
+  - 연출 중 밖에서 `PlayDialogue(1)` → 재생 안 됨, 펫 안내도 안 열림(버그 2 해결). 연출의 대화 단계는 정상 재생.
+  - 연출 대화가 끝나도 alpha 0·Dialogue 맵·시간 정지 유지, 연출 끝 alpha 1·Player·1.
+  - 단독 대화 alpha 0 → 끝 1. 연출 중 UIManager 끄면 alpha 1, 다시 켜면 0, `Stop` 1.
+  - 미확인: 실제 키 입력, 맵 씬.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:

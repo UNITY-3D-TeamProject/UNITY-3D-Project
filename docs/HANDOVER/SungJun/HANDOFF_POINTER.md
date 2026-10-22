@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — intent-064 3단계: UIManager 연출 전용 코드(`_isCinematicActive`·`BeginCinematic`·`EndCinematic`) 제거, 연출 중 밖에서 부른 `PlayDialogue` 거절(연출 대화는 `PlayCinematicDialogue`), `CinematicManager.Play` 활성 검사, 인게임 UI 숨기기를 요청 방식 + 연출 static 이벤트로. 컴파일 0에러·TestScene Play로 버그 2·3 해결 확인, 커밋 안 함. Brain 정리 남음: [작업 기록](./2026-10-22/time-input-ownership.md)
 - **2026-10-22** — intent-064 2단계 입력 맵: 새 `Core.InputMap.InputMapController`(요청자별 `RequestMap/ReleaseMap`, UI > Dialogue > Player, 스폰 때 다시 적용, 꺼지면 Player)를 `Canvas_InGame` 프리팹 `UIManager` 오브젝트에 추가. UIInputHandler는 입력 이벤트만, UIManager는 Presenter별 요청, CinematicManager는 자기 요청. 컴파일 0에러·TestScene Play로 맵 전환·UIManager 껐다 켜기 버그 해결 확인, 커밋 안 함: [작업 기록](./2026-10-22/time-input-ownership.md)
 - **2026-10-22** — 시간·입력·Brain 주인 정리(intent-064) 1단계: `GameManager.PauseGameTime/ResumeGameTime(requester)` 요청 방식 + `ApplyGameTime`(설정창 Pause 또는 요청 하나라도 → 정지), UIManager·CinematicManager 땜질 두 곳 삭제. 컴파일 0에러·TestScene Play 확인(설정창 닫을 때 한 프레임 흐르던 문제 해결), 커밋 안 함. 입력 맵 컴포넌트·외부 대화 거절·Brain·UI 숨기기 남음: [작업 기록](./2026-10-22/time-input-ownership.md)
 - **2026-10-22** — 연출 호출을 스테이지 코드에서 뺌: `StageManager._introCinematic`·호출 제거(`StageManager.cs`는 카메라 연출 작업 전과 동일). 연출 호출은 맵 담당이 씬에서 `CinematicSequence.Play()`로 연결. TestScene `Cinematic_Intro`는 컷씬 공간 `Plate_CinematicIntro` 발판에 연결(한 번만 재생), 컴파일 0에러·Play 확인, 커밋 안 함: [작업 기록](./2026-10-22/camera-cinematic-implementation.md)

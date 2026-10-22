@@ -10,6 +10,10 @@
 - 2단계로 입력 맵 담당 `Core.InputMap.InputMapController`를 만들어 `Canvas_InGame` 프리팹 `UIManager` 오브젝트에 붙였다. 상세는 intent-064 "진행 기록 2".
   - `RequestMap(requester, EInputMapType)`/`ReleaseMap(requester)`, 우선순위 UI > Dialogue > Player, 플레이어 스폰 때 다시 적용, 꺼지면 Player.
   - UIInputHandler는 입력 이벤트만, UIManager는 Presenter별로 요청, CinematicManager는 자기 이름으로 Dialogue 요청.
+  - 커밋: `5feeed10`, `7c1f816a`, `42671b58`.
+- 3단계로 UIManager의 연출 전용 코드(`_isCinematicActive`·`BeginCinematic`·`EndCinematic`)를 지웠다. 상세는 intent-064 "진행 기록 3".
+  - CinematicManager: `Play` 활성 검사·시작 조건 직접 확인, static `OnPlayStarted/OnPlayFinished`, 대화 단계는 `PlayCinematicDialogue`.
+  - UIManager: 연출 중 `PlayDialogue` 거절, 인게임 UI 숨기기를 요청 방식(`_inGameUIHiders`)으로, 연출 이벤트 구독.
 
 ## 2. 결정 사항
 - 시간 = GameManager(싱글톤, 설정창 Pause와 같은 곳). 씬 로드 때 파괴된 요청자만 지운다.
@@ -24,9 +28,9 @@
 - 입력 맵 단계: 컴파일 0에러, TestScene Play로 대화·펫 안내·설정창·연출 맵 전환과 버그 4(UIManager 껐다 켜기) 해결 확인. 사망 재스폰 때 다시 적용·실제 키 입력은 미확인. 커밋 안 함.
 - 에디터가 백그라운드면 Play 프레임이 멈춘다. Play 중 eval로 `Application.runInBackground = true`를 주면 돈다(Play 종료 시 원래대로).
 - TestScene에 UIManager가 3개 잡힌다(`FindObjectsByType` 기준, 비활성 포함 여부 미확인). 이번 작업과 무관하게 그대로 둠.
-- 아직 남은 버그: 2(외부 대화), 3(비활성 매니저), 1(Brain).
+- 3단계: 컴파일 0에러, TestScene Play로 버그 2·3 해결과 UI 숨김 유지·복구 확인. 커밋 안 함.
+- 아직 남은 버그: 1(Brain).
 
 ## 4. 다음 할 일
-- UIManager 연출 전용 코드(`_isCinematicActive`·Begin/EndCinematic) 제거, 외부 대화 거절, `Play` 활성 검사.
-- Brain 저장·복구 제거, UI 숨기기 이벤트화.
+- Brain `IgnoreTimeScale` 저장·복구 제거(DialogueDirector·CinematicManager), 켜기만 하기.
 - 끝나면 TestScene에서 버그 5건 재현 확인 후 intent-064 해결 처리.
