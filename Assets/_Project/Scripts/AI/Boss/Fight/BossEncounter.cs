@@ -55,6 +55,9 @@ namespace AI.Boss.Fight
         private bool _isBegun;
         private bool _isChargePreparing;
         private bool _chargeDirectionIsRow;
+        // 칸 단위 좌표(x → col, z → row)
+        private Vector3 _chargeOrigin;
+        private Vector3 _chargeDirection;
         #endregion
 
         #region Properties
@@ -221,6 +224,10 @@ namespace AI.Boss.Fight
                 ColStaySeconds = _tracker.ColStaySeconds,
                 IsBChargePreparing = _isChargePreparing,
                 ChargeDirectionIsRow = _chargeDirectionIsRow,
+                ChargeOriginX = _chargeOrigin.x,
+                ChargeOriginZ = _chargeOrigin.z,
+                ChargeDirectionX = _chargeDirection.x,
+                ChargeDirectionZ = _chargeDirection.z,
             };
         }
 
@@ -230,6 +237,24 @@ namespace AI.Boss.Fight
             if (!_player || !effect) return false;
 
             return _player.ApplyEffect(new SEffectContext(_player.EffectTarget, effect));
+        }
+
+        /// <inheritdoc />
+        public void SetPlayerMoveLocked(bool isLocked)
+        {
+            if (_player) _player.SetMoveLocked(isLocked);
+        }
+
+        /// <inheritdoc />
+        public void SetPlayerHeld(bool isHeld)
+        {
+            if (_player) _player.SetHeld(isHeld);
+        }
+
+        /// <inheritdoc />
+        public void ShakePlayerCamera(float force)
+        {
+            if (_player) _player.PlayCameraShake(force);
         }
         #endregion
 
@@ -253,6 +278,8 @@ namespace AI.Boss.Fight
         {
             Vector3 local = _arena.transform.InverseTransformDirection(direction);
             _chargeDirectionIsRow = Mathf.Abs(local.z) >= Mathf.Abs(local.x);
+            _chargeOrigin = _arena.transform.InverseTransformPoint(origin) / _arena.TileSize;
+            _chargeDirection = local;
             _isChargePreparing = true;
         }
 

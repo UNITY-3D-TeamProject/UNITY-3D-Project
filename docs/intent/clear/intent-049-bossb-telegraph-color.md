@@ -2,9 +2,9 @@
 id: intent-049
 title: 보스 B 예고를 보스 A 와 다른 색으로 + 돌진 예고 추가 + 도약 원 페이드 인
 part: AI / Boss / BossB
-status: open   # open | resolved
+status: resolved   # open | resolved
 created: 2026-10-20
-resolved: null # 해결 시 YYYY-MM-DD 로 변경
+resolved: 2026-10-21
 ---
 
 ## 문제 (Problem)
@@ -29,5 +29,5 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 보스 B 예고 색: 임시로 파랑(0.15, 0.6, 1.0, α 0.4). 사용자 육안 확인 후 조정 가능.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
-- 최종 결정:
-- 관련 커밋/PR:
+- 최종 결정: B 전용 파랑 예고 머티리얼 + 돌진 직선 예고 + 페이드 인. 사용자 육안 확인 통과(2026-10-21).
+- 관련 커밋/PR: 커밋 전 → [기록](../../HANDOVER/BF_Leers/2026-10-20/boss-b-telegraph-color.md)

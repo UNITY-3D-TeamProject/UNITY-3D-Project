@@ -2,9 +2,9 @@
 id: intent-050
 title: 보스 B 도약 착지 칸 예약 — 보스 A 가 그 칸을 피한다
 part: AI / Boss / BossA·BossB
-status: open   # open | resolved
+status: resolved   # open | resolved
 created: 2026-10-20
-resolved: null # 해결 시 YYYY-MM-DD 로 변경
+resolved: 2026-10-21
 ---
 
 ## 문제 (Problem)
@@ -32,5 +32,5 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 없음(겹칠 때 A 의 동작은 사용자가 "그 칸만 빼고 공격"으로 결정).
 
 ## 해결 기록 (Resolution) — 해결 후 작성
-- 최종 결정:
-- 관련 커밋/PR:
+- 최종 결정: B 도약 착지 칸 예약(`ArenaGrid.ReservedTile`), A 는 예약 칸을 빼고 공격. 사용자 육안 확인 통과(2026-10-21).
+- 관련 커밋/PR: 커밋 전 → [기록](../../HANDOVER/BF_Leers/2026-10-20/boss-b-leap-reserved-tile.md)
