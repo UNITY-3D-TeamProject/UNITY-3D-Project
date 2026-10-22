@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Core / UI / Cinematic]** 게임 시간·입력 맵·CinemachineBrain 설정을 UIManager·CinematicManager·GameManager·DialogueDirector가 각자 바꿔 서로 덮어씀(종료 블렌드 중 Brain 복구 충돌, 연출 중 외부 대화, 비활성 매니저 재생, UIManager 껐다 켜면 입력 복구 누락, 설정창 닫을 때 한 프레임 흐름). 시간은 GameManager 요청 방식, 입력 맵은 씬 컴포넌트(`Canvas_InGame`), 연출 중 외부 대화 거절, Brain `IgnoreTimeScale`은 켜고 안 되돌림, UI 숨기기는 연출 이벤트로. 열린 질문 없음. 1단계(GameManager 시간 요청 방식) 구현·TestScene 확인, 입력 맵·Brain·UI 숨기기 남음 → [문서](./intent-064-time-input-ownership.md)
 - **[Camera / Cinematic / UI]** 카메라는 컷씬 대화 안에서만 바꿀 수 있고(대화 중 시간 정지라 움직이는 장면 불가), 대화와 따로 쓰는 카메라 연출이 없음. 씬 `CinematicSequence`(카메라 샷·대화 단계) + `Core.Cinematic.CinematicManager.Play`(씬 오브젝트)가 Dialogue 입력 맵·UI 숨김·시간·블렌드를 맡고 UIManager는 UI만. 열린 질문 모두 결정(건너뛰기 없음, 한 번만 재생은 PlayerPrefs, 샷마다 블렌드, 무적 없음·시간 흐르는 샷은 적 없는 곳만). 1차 구현·TestScene 시작 연출·발판 연출 확인 완료, 실제 조작·맵 씬 배치 남음 → [문서](./intent-063-camera-cinematic-sequence.md)
 - **[Stage / FeedApp / Player]** 피드 맵 악성 데이터 여러 개에 닿아도 피격 무적(1초) 중엔 데미지가 막히고 데이터만 사라져 1번만 맞음. 악성 데이터가 있을 때만 `PlayerFacade.SetHitInvincibilityDuration(0)`: `MaliciousFeed.OnCleared`로 생성 감지, 사라짐 감지(A: 있을 때만 null 확인 / B: 파괴 이벤트)·원래 값 출처 결정 대기, 구현 전 → [문서](./intent-061-feed-malicious-data-invincibility.md)
 - **[Stage / Player / Camera]** 낙하 복귀 시 체크포인트 방향이 아니라 떨어지기 전 방향을 바라봄(몸 모델이 카메라 yaw를 따라가는데 카메라 yaw는 그대로). RespawnPoint 방향 화살표 Gizmo 추가, Core만으로 복귀 방향을 맞출 방법 결정 대기 → [문서](./intent-059-checkpoint-respawn-facing.md)

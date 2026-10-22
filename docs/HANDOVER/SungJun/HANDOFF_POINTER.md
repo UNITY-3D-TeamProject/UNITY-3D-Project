@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — 시간·입력·Brain 주인 정리(intent-064) 1단계: `GameManager.PauseGameTime/ResumeGameTime(requester)` 요청 방식 + `ApplyGameTime`(설정창 Pause 또는 요청 하나라도 → 정지), UIManager·CinematicManager 땜질 두 곳 삭제. 컴파일 0에러·TestScene Play 확인(설정창 닫을 때 한 프레임 흐르던 문제 해결), 커밋 안 함. 입력 맵 컴포넌트·외부 대화 거절·Brain·UI 숨기기 남음: [작업 기록](./2026-10-22/time-input-ownership.md)
 - **2026-10-22** — 연출 호출을 스테이지 코드에서 뺌: `StageManager._introCinematic`·호출 제거(`StageManager.cs`는 카메라 연출 작업 전과 동일). 연출 호출은 맵 담당이 씬에서 `CinematicSequence.Play()`로 연결. TestScene `Cinematic_Intro`는 컷씬 공간 `Plate_CinematicIntro` 발판에 연결(한 번만 재생), 컴파일 0에러·Play 확인, 커밋 안 함: [작업 기록](./2026-10-22/camera-cinematic-implementation.md)
 - **2026-10-22** — `CinematicManager.PlayIntro()`·`_introSequence` 제거, 시작 연출은 `StageManager._introCinematic`에 지정해 `CinematicManager.Instance.Play`로 직접 호출. TestScene 연결 이동, 컴파일 0에러·Play로 시작 연출 확인, 커밋 안 함: [작업 기록](./2026-10-22/camera-cinematic-implementation.md)
 - **2026-10-22** — 시네마틱·대화 구조 정적 검토: 외부 대화 진입, 종료 블렌드 중 Brain 복구 충돌, 비활성 매니저 재생, UIManager 비활성화 후 입력 복구 누락 4건. 구현 수정·Play 재현 없음: [검토 기록](./2026-10-22/camera-cinematic-review.md)
