@@ -21,6 +21,11 @@ namespace Hit
         [SerializeField, Min(0.0f)] private float _lifeSpan = 0.2f;
         #endregion
 
+        #region Properties
+        /// <summary>판정 반지름(m). 공격하는 쪽의 기즈모 표시에 쓴다.</summary>
+        public float Radius => _radius;
+        #endregion
+
         #region Unity Lifecycle
         private void OnDrawGizmosSelected()
         {

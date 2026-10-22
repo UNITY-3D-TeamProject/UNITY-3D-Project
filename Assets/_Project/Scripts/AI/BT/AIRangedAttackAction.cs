@@ -8,6 +8,7 @@ namespace AI.BT
     /// <summary>
     /// 사거리 안의 대상을 예고 후 사격한다. 원거리 적 전용.
     /// 대기(랜덤 간격, 대상을 바라봄) → 예비 동작(고정 시간, 조준 방향 고정·조준선 표시) → 발사를 반복한다.
+    /// 발사 직후 발사 모션(AttackMotionDuration) 동안은 대기 중이어도 조준 방향을 유지한다.
     /// 언제 쏠지는 예측할 수 없지만, 조준선을 보고 움직이면 피할 수 있게 하기 위한 구조다.
     /// 대상이 사거리를 벗어나거나 노드가 중단되면(사선 차단 등) 예비 동작은 취소되고 총알은 나가지 않는다.
     /// 이 캐릭터에 "Attack"(사격)과 "AttackWindup"(조준선) 스킬이 등록되어 있어야 한다.
@@ -116,7 +117,8 @@ namespace AI.BT
             if (Controller.IsSuperArmor && (Time.time >= _superArmorEndTime)) Controller.IsSuperArmor = false;
 
             Vector3 toTarget = Vector3.ProjectOnPlane(Controller.VisibleTarget.position - Controller.Position, Vector3.up);
-            Controller.FaceDirection(toTarget);
+            // 발사 모션 중(슈퍼아머 유지 중)에는 쏜 방향을 유지해, 모션보다 늦게 나가는 총알과 몸 방향이 어긋나지 않게 한다
+            Controller.FaceDirection(Controller.IsSuperArmor ? _aimDirection : toTarget);
 
             if (Time.time < _phaseEndTime) return;
             // 경직 중에는 조준선 스킬이 무시되므로, 조준선 없이 쏘지 않도록 풀릴 때까지 예비 동작을 미룬다

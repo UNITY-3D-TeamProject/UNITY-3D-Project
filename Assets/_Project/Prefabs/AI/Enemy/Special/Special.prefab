@@ -146,6 +146,7 @@ MonoBehaviour:
   _mediator: {fileID: 0}
   _speedAttributeKey: MoveSpeed
   _hitLookDuration: 1
+  _shouldFaceVisibleTargetOnHit: 0
   _hitStunDuration: 0.4
   _hitStunImmuneDuration: 1.5
 --- !u!114 &8846040900669614
@@ -167,9 +168,10 @@ MonoBehaviour:
   _skillMediator: {fileID: 5205869999765618227}
   _rotateMediator: {fileID: 7522697657170877241}
   _spawnMediator: {fileID: 0}
-  _animationMediator: {fileID: 0}
+  _playerAnimationMediator: {fileID: 0}
   _enemyAnimationMediator: {fileID: 5967759098924237925}
   _petMediator: {fileID: 0}
+  _spawnEffectDriver: {fileID: 0}
 --- !u!114 &967865990031782053
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -184,7 +186,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AI.Sensor
   _eye: {fileID: 6115249260659916406}
   _sightRange: 8
-  _sightAngle: 90
+  _sightAngle: 360
   _loseGraceTime: 3
   _targetLayers:
     serializedVersion: 2
@@ -292,6 +294,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.EnemyPoolReturner
   _characterMediator: {fileID: 8846040900669614}
+  _graphAgent: {fileID: 0}
+  _shrinkDelay: 0
+  _shrinkDuration: 0.4
 --- !u!1 &541869566793280293
 GameObject:
   m_ObjectHideFlags: 0
@@ -6546,6 +6551,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4276742983745799476}
     m_Modifications:
+    - target: {fileID: 3076383128098632315, guid: b23cd218046b6d949bfbee204635bbdf, type: 3}
+      propertyPath: _hitDelay
+      value: 0.27
+      objectReference: {fileID: 0}
     - target: {fileID: 3076383128098632315, guid: b23cd218046b6d949bfbee204635bbdf, type: 3}
       propertyPath: _hitPoint
       value: 

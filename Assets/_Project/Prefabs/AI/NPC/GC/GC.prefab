@@ -269,6 +269,7 @@ MonoBehaviour:
   _mediator: {fileID: 0}
   _speedAttributeKey: MoveSpeed
   _hitLookDuration: 1
+  _shouldFaceVisibleTargetOnHit: 0
   _hitStunDuration: 0.4
   _hitStunImmuneDuration: 1.5
 --- !u!114 &7711118245858961342
@@ -293,6 +294,7 @@ MonoBehaviour:
   _playerAnimationMediator: {fileID: 0}
   _enemyAnimationMediator: {fileID: 5679427974575652425}
   _petMediator: {fileID: 0}
+  _spawnEffectDriver: {fileID: 0}
 --- !u!114 &7616960562340131530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1186,6 +1188,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5938694377441983231}
     m_Modifications:
+    - target: {fileID: 3076383128098632315, guid: b23cd218046b6d949bfbee204635bbdf, type: 3}
+      propertyPath: _hitDelay
+      value: 0.2
+      objectReference: {fileID: 0}
     - target: {fileID: 3076383128098632315, guid: b23cd218046b6d949bfbee204635bbdf, type: 3}
       propertyPath: _hitPoint
       value: 
