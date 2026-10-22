@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — IDialogueController의 역할, UIManager 구현 및 DialogueController.Current 등록·호출 흐름 설명: [작업 기록](./2026-10-22/dialogue-controller-explanation.md)
 - **2026-10-22** — 다른 파트용 `docs/cinematic-so-guide.md` 작성: 컷씬(대화만/대화+카메라)·카메라 샷·독백 SO 만들기, `CinematicCamera` 키 설정, 표 등록, 발판·코드에서 부르는 법, 문제 해결. 코드 변경 없음: [작업 기록](./2026-10-22/cinematic-so-guide.md)
 - **2026-10-22** — intent-066: 카메라 연출(`SOCameraShot`)·컷씬(`SOCutscene`, 대사 + 카메라 키 / 카메라 연출 단계)·독백(`SOMonologue`) SO 분리, 씬 카메라 키 `CinematicCamera`, `CinematicManager.PlayCutscene/PlayCameraShot`. 스크립트·SO 에셋을 UIandCinematic으로 정리, TestScene 발판 4개 예시. TestScene Play 확인, 실제 조작·맵 씬 연결 남음. 끝 블렌드 동안 조작·시간 유지 수정. 커밋 `392d83d9`·`02dedcf1`·`ebf39deb`: [작업 기록](./2026-10-22/cinematic-so-split.md)
 - **2026-10-22** — 재검토 P2 수정: `InputMapController`를 껐다 켜면 진행 중인 연출의 조작 차단이 풀리던 문제. 꺼질 때 요청을 지우지 않고 Player 맵만 적용, 켜질 때 남은 요청 재적용. TestScene Play로 재현·수정 확인(연출 중 UIManager 오브젝트 껐다 켜기 → Dialogue 복원), 커밋 안 함: [작업 기록](./2026-10-22/time-input-ownership.md)
