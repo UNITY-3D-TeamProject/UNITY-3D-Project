@@ -159,7 +159,7 @@ namespace UI
             if (!_petGuidePresenter.Show(id)) return;
 
             _isPetGuideOpen = true;
-            _gameManager?.PauseGameTime();
+            _gameManager?.PauseGameTime(this);
             _input.SwitchToDialogueInput();
         }
 
@@ -170,7 +170,7 @@ namespace UI
 
             _isPetGuideOpen = false;
             _petGuidePresenter.Hide();
-            _gameManager?.ResumeGameTime();
+            _gameManager?.ResumeGameTime(this);
             _input.SwitchToPlayerInput();
         }
 
@@ -312,15 +312,10 @@ namespace UI
             else
                 _input.SwitchToPlayerInput();
 
+            // 대화·펫 안내·연출 중에 연 설정창이면 그쪽 시간 정지 요청이 남아 있어 시간은 멈춘 채로 있다.
             if (_gameManager != null &&
                 _gameManager.CurrentState == GameManager.GameState.Pause)
-            {
                 _gameManager.ResumeGame();
-
-                // 대화·펫 안내 중에 연 설정창이면 그것이 끝날 때까지 다시 멈춘다.
-                if (IsDialoguePlaying || _isPetGuideOpen)
-                    _gameManager.PauseGameTime();
-            }
         }
         #endregion
 
@@ -361,7 +356,7 @@ namespace UI
             _dialogueDirector.BeginStaging();
 
             // 대화 동안 플레이어·펫 대기 애니메이션과 BGM만 남기고 게임을 멈춘다.
-            _gameManager?.PauseGameTime();
+            _gameManager?.PauseGameTime(this);
 
             // 대화 중에는 상호작용 안내를 숨긴다.
             if (_playerHudPresenter != null)
@@ -385,14 +380,14 @@ namespace UI
         }
 
         // 대화가 끝나면 구독을 풀고, 연출을 정리한 뒤 상호작용 안내·숨긴 UI와 플레이어 조작을 돌려준다.
-        // 카메라 연출 안에서 연 대화면 시간·입력·UI는 연출이 끝날 때 CinematicManager와 EndCinematic이 돌려준다.
+        // 게임 시간은 대화의 정지 요청만 푼다. 카메라 연출 안에서 연 대화면 연출의 요청이 남아 시간은 멈춘 채로 있다.
+        // 카메라 연출 안에서 연 대화면 입력·UI는 연출이 끝날 때 EndCinematic이 돌려준다.
         private void HandleDialogueEnded()
         {
             _dialoguePresenter.OnDialogueLineChanged -= HandleDialogueLineChanged;
             _dialoguePresenter.OnDialogueEnded -= HandleDialogueEnded;
 
-            if (!_isCinematicActive)
-                _gameManager?.ResumeGameTime();
+            _gameManager?.ResumeGameTime(this);
 
             if (_dialogueDirector != null)
                 _dialogueDirector.EndStaging();

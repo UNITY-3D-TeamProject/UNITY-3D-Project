@@ -191,7 +191,7 @@ namespace Core.Cinematic
             SetShotCamera(null);
 
             if (GameManager.Instance != null)
-                GameManager.Instance.ResumeGameTime();
+                GameManager.Instance.ResumeGameTime(this);
 
             if (UIManager.Instance != null)
                 UIManager.Instance.EndCinematic();
@@ -253,9 +253,9 @@ namespace Core.Cinematic
             if (gameManager != null)
             {
                 if (step.ShouldPauseTime)
-                    gameManager.PauseGameTime();
+                    gameManager.PauseGameTime(this);
                 else
-                    gameManager.ResumeGameTime();
+                    gameManager.ResumeGameTime(this);
             }
 
             float elapsed = 0.0f;
@@ -263,15 +263,8 @@ namespace Core.Cinematic
             {
                 yield return null;
 
-                if (gameManager != null)
-                {
-                    // 설정창이 열린 동안(Pause)은 샷 시간을 세지 않는다.
-                    if (gameManager.CurrentState != GameManager.GameState.Playing) continue;
-
-                    // 설정창을 닫으면 ResumeGame이 시간을 돌리므로, 멈추는 샷이면 다시 멈춘다.
-                    if (step.ShouldPauseTime && (Time.timeScale > 0.0f))
-                        gameManager.PauseGameTime();
-                }
+                // 설정창이 열린 동안(Pause)은 샷 시간을 세지 않는다.
+                if ((gameManager != null) && (gameManager.CurrentState != GameManager.GameState.Playing)) continue;
 
                 elapsed += Time.unscaledDeltaTime;
             }
@@ -284,6 +277,10 @@ namespace Core.Cinematic
                 _brain.DefaultBlend = _brainDefaultBlend;
 
             SetShotCamera(null);
+
+            // 대화가 끝난 뒤 다음 단계가 시간을 정할 때까지 시간이 흐르지 않도록, 대화 단계 동안 연출도 시간 정지를 요청해 둔다.
+            if (GameManager.Instance != null)
+                GameManager.Instance.PauseGameTime(this);
 
             UIManager uiManager = UIManager.Instance;
             if (uiManager == null) yield break;
