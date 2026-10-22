@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Map.Gimmicks;
 
 namespace Map.Feed
 {
@@ -16,6 +17,9 @@ namespace Map.Feed
 
         [Tooltip("만들 악성 데이터 수")]
         [SerializeField, Min(0)] private int _dataCount = 3;
+
+        [Tooltip("소환 순서마다 악성 데이터 속도에 곱할 배율. 데이터가 더 많으면 처음부터 다시 쓴다. 비우면 모두 프리팹 속도. 같은 순간에 닿아 무적에 막히지 않도록 서로 다르게 둔다")]
+        [SerializeField] private float[] _speedMultipliers = { 0.9f, 1.0f, 1.1f };
 
         [Tooltip("악성 데이터를 이 오브젝트의 뒤쪽 반원에 놓을 때의 반지름")]
         [SerializeField, Min(0f)] private float _spawnRadius = 4.0f;
@@ -63,8 +67,20 @@ namespace Map.Feed
                     (direction * (transform.forward * _spawnRadius)) +
                     (Vector3.up * _spawnHeight);
 
-                Instantiate(_dataPrefab, position, Quaternion.identity, transform.parent);
+                GameObject data = Instantiate(_dataPrefab, position, Quaternion.identity, transform.parent);
+                ApplySpeedMultiplier(data, i);
             }
+        }
+
+        // 반원의 왼쪽 끝부터 순서대로 배율을 넣어, 좌우 대칭 위치의 데이터가 같은 순간에 도착하지 않게 한다.
+        private void ApplySpeedMultiplier(GameObject data, int index)
+        {
+            if ((_speedMultipliers == null) || (_speedMultipliers.Length == 0)) return;
+
+            HomingHazard homingHazard = data.GetComponent<HomingHazard>();
+            if (homingHazard == null) return;
+
+            homingHazard.ScaleSpeed(_speedMultipliers[index % _speedMultipliers.Length]);
         }
         #endregion
     }
