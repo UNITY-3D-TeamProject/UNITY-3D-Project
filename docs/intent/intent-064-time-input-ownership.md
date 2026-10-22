@@ -119,6 +119,15 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   - 연출 대화가 끝나도 alpha 0·Dialogue 맵·시간 정지 유지, 연출 끝 alpha 1·Player·1.
   - 단독 대화 alpha 0 → 끝 1. 연출 중 UIManager 끄면 alpha 1, 다시 켜면 0, `Stop` 1.
   - 미확인: 실제 키 입력, 맵 씬.
+- 커밋: `e7585e40`(코드), `3229234d`(문서)
+
+### 4. Brain 설정 정리 (2026-10-22, 커밋 안 함)
+- `DialogueDirector`: `_brain`·`_isBrainIgnoringTimeScale` 삭제. `BeginStaging`에서 `IgnoreTimeScale = true`로만 두고, `EndStaging`의 복구 삭제.
+- `CinematicManager`: `_isBrainIgnoringTimeScale` 삭제. `BeginBrainControl`은 기본 블렌드만 저장하고 `IgnoreTimeScale = true`, `RestoreBrain`은 기본 블렌드만 되돌림.
+- 확인: 컴파일 0에러. TestScene Play
+  - **버그 1 재현**: 연출 `Stop` 직후(끝 블렌드 1.5초 대기 중) 단독 대화 시작 → 끝 블렌드가 지난 뒤에도 대화 중 `IgnoreTimeScale` true, 기본 블렌드 0.2로 복구. 대화 끝나도 true(결정대로). 전에는 이 시점에 false로 덮였다.
+  - 연출 전체(정지 샷 → 대화 → 시간 흐르는 샷 → 끝 블렌드): 끝난 뒤 Player 맵·시간 1·기본 블렌드 0.2·`IgnoreTimeScale` true, 콘솔 에러 없음.
+- 버그 5건 모두 TestScene에서 해결 확인. 실제 키 입력·맵 씬·사망 재스폰·씬 전환 요청 정리는 미확인이라 열어 둔다.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:

@@ -14,6 +14,8 @@
 - 3단계로 UIManager의 연출 전용 코드(`_isCinematicActive`·`BeginCinematic`·`EndCinematic`)를 지웠다. 상세는 intent-064 "진행 기록 3".
   - CinematicManager: `Play` 활성 검사·시작 조건 직접 확인, static `OnPlayStarted/OnPlayFinished`, 대화 단계는 `PlayCinematicDialogue`.
   - UIManager: 연출 중 `PlayDialogue` 거절, 인게임 UI 숨기기를 요청 방식(`_inGameUIHiders`)으로, 연출 이벤트 구독.
+  - 커밋: `e7585e40`, `3229234d`.
+- 4단계로 Brain `IgnoreTimeScale` 저장·복구를 DialogueDirector·CinematicManager에서 지웠다(켜기만 함). CinematicManager는 기본 블렌드만 저장·복구. 상세는 intent-064 "진행 기록 4".
 
 ## 2. 결정 사항
 - 시간 = GameManager(싱글톤, 설정창 Pause와 같은 곳). 씬 로드 때 파괴된 요청자만 지운다.
@@ -28,9 +30,12 @@
 - 입력 맵 단계: 컴파일 0에러, TestScene Play로 대화·펫 안내·설정창·연출 맵 전환과 버그 4(UIManager 껐다 켜기) 해결 확인. 사망 재스폰 때 다시 적용·실제 키 입력은 미확인. 커밋 안 함.
 - 에디터가 백그라운드면 Play 프레임이 멈춘다. Play 중 eval로 `Application.runInBackground = true`를 주면 돈다(Play 종료 시 원래대로).
 - TestScene에 UIManager가 3개 잡힌다(`FindObjectsByType` 기준, 비활성 포함 여부 미확인). 이번 작업과 무관하게 그대로 둠.
-- 3단계: 컴파일 0에러, TestScene Play로 버그 2·3 해결과 UI 숨김 유지·복구 확인. 커밋 안 함.
-- 아직 남은 버그: 1(Brain).
+- 3단계: 컴파일 0에러, TestScene Play로 버그 2·3 해결과 UI 숨김 유지·복구 확인.
+- 4단계: 컴파일 0에러, TestScene Play로 버그 1(끝 블렌드 중 새 대화) 해결과 연출 전체 흐름 확인. 커밋 안 함.
+- 버그 5건 모두 TestScene에서 해결 확인. intent-064는 실제 키 입력·맵 씬·사망 재스폰·씬 전환 요청 정리가 미확인이라 열어 둠.
 
 ## 4. 다음 할 일
-- Brain `IgnoreTimeScale` 저장·복구 제거(DialogueDirector·CinematicManager), 켜기만 하기.
+- 실제 키 입력(E·ESC)으로 대화·펫 안내·설정창·연출 확인, 사망 재스폰 때 입력 맵 다시 적용 확인.
+- 맵 씬에서 확인되면 intent-064 해결 처리(`clear/`로 이동, INTENT_POINTER 해결됨으로).
+- (선택) 2단계 구조 정리: DialogueDirector를 Cinematic 쪽으로 옮길지 판단.
 - 끝나면 TestScene에서 버그 5건 재현 확인 후 intent-064 해결 처리.
