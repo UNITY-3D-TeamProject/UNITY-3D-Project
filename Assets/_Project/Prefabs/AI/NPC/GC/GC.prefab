@@ -269,6 +269,7 @@ MonoBehaviour:
   _mediator: {fileID: 0}
   _speedAttributeKey: MoveSpeed
   _hitLookDuration: 1
+  _shouldFaceVisibleTargetOnHit: 0
   _hitStunDuration: 0.4
   _hitStunImmuneDuration: 1.5
 --- !u!114 &7711118245858961342
@@ -293,6 +294,7 @@ MonoBehaviour:
   _playerAnimationMediator: {fileID: 0}
   _enemyAnimationMediator: {fileID: 5679427974575652425}
   _petMediator: {fileID: 0}
+  _spawnEffectDriver: {fileID: 0}
 --- !u!114 &7616960562340131530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -306,8 +308,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Sensor
   _eye: {fileID: 337893104879012066}
-  _sightRange: 15
+  _sightRange: 8
   _sightAngle: 90
+  _proximityRange: 2.5
   _loseGraceTime: 3
   _targetLayers:
     serializedVersion: 2
@@ -354,6 +357,8 @@ MonoBehaviour:
   m_BlackboardVariableOverridesList:
   - rid: 5227937642859463175
   - rid: 7357922202479231213
+  - rid: 7357922412843499615
+  - rid: 7357922412843499616
   m_OriginalGraph: {fileID: -2824156914012740999, guid: 723f476f4d2f8304d95e20986c4d7152, type: 2}
   m_IsInitialised: 0
   m_IsStarted: 0
@@ -376,6 +381,22 @@ MonoBehaviour:
           m_Value1: 13694630971698747721
         Name: Player
         m_Value: {fileID: 7287643752218865281, guid: 082ce153dfae46a46a320b9bc7f8ee7a, type: 3}
+    - rid: 7357922412843499615
+      type: {class: 'BlackboardVariable`1[[System.Int32, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 8423329462215219215
+          m_Value1: 313411208688253151
+        Name: Seconds
+        m_Value: 30
+    - rid: 7357922412843499616
+      type: {class: 'BlackboardVariable`1[[System.Int32, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 6618907751924823571
+          m_Value1: 1523277500247810259
+        Name: Duration
+        m_Value: 45
 --- !u!114 &2361320754105844520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -452,7 +473,7 @@ Transform:
   m_GameObject: {fileID: 2893440626600557970}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 1}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1256,6 +1277,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6829823872737605967}
     m_Modifications:
+    - target: {fileID: 6825705834685790517, guid: 58d53d9c5b4d7484284a6cbfaca5b26d, type: 3}
+      propertyPath: _radius
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 7113003924990806920, guid: 58d53d9c5b4d7484284a6cbfaca5b26d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1454,6 +1479,10 @@ PrefabInstance:
       propertyPath: _body
       value: 
       objectReference: {fileID: 6829823872737605967}
+    - target: {fileID: 4313107193261961781, guid: ddb7337e6e074674c8bc33f618b3b463, type: 3}
+      propertyPath: _rotateSpeed
+      value: 1440
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

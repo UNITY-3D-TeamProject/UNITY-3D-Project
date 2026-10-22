@@ -8,6 +8,7 @@ namespace AI
     /// 출력은 "보이는가"(bool)가 아니라 대상 자체와 마지막 목격 위치다.
     /// 시야에 들어오면 바로 대상이 확정되고,
     /// 확정된 대상이 있는 동안(전투 중)에는 시야각을 보지 않고 시야 거리 안을 360도로 찾는다.
+    /// 근접 감지 거리를 주면 그 안의 대상은 대상이 없을 때도 시야각과 상관없이 찾는다.
     /// 확정된 대상을 놓쳐도 유예 시간 동안은 실제 위치를 계속 추적한다.
     /// 유예가 끝나도 마지막 목격 위치는 남아 수색의 목적지로 쓰인다.
     /// </summary>
@@ -28,6 +29,9 @@ namespace AI
         [Tooltip("시야 부채꼴의 전체 각도(도). 정면 기준 좌우로 절반씩 벌어진다.")]
         [Range(0.0f, 360.0f)]
         [SerializeField] private float _sightAngle = 90.0f;
+        [Tooltip("이 거리(m) 안의 대상은 시야각과 상관없이 감지한다. 시야 거리보다 넓어지지는 않는다. 0 이면 끈다.")]
+        [Min(0.0f)]
+        [SerializeField] private float _proximityRange;
 
         [Header("Awareness")]
         [Tooltip("확정된 대상을 놓친 뒤에도 실제 위치를 계속 추적하는 유예 시간(초).")]
@@ -51,6 +55,10 @@ namespace AI
         private bool _hasLastKnownPosition;
         private float _detectTimer;
         private float _graceTimer;
+
+        // 비활성화된 동안에도 시간이 흐르도록 남은 시간이 아니라 끝나는 시각을 기억한다
+        private float _limitedSightRange;
+        private float _sightLimitEndTime;
         #endregion
 
         #region Properties
@@ -65,6 +73,10 @@ namespace AI
 
         /// <summary>마지막 목격 위치가 기록되어 있는지 여부.</summary>
         public bool HasLastKnownPosition => _hasLastKnownPosition;
+
+        /// <summary>지금 적용 중인 시야 거리. 제한 중이면 제한 거리, 아니면 시야 거리 설정값.</summary>
+        public float CurrentSightRange =>
+            (Time.time < _sightLimitEndTime) ? Mathf.Min(_limitedSightRange, _sightRange) : _sightRange;
         #endregion
 
         #region Unity Lifecycle
@@ -123,13 +135,25 @@ namespace AI
             _graceTimer = 0.0f;
             _hasLastKnownPosition = false;
         }
+
+        /// <summary>
+        /// 지정한 시간 동안 시야 거리를 range 이하로 줄인다. 시야 거리 설정값보다 넓어지지는 않는다.
+        /// 제한 중에 다시 부르면 덮어쓴다. seconds 가 0 이하면 제한을 바로 푼다.
+        /// </summary>
+        /// <param name="range">제한할 시야 거리(m). 0 이면 그동안 아무것도 감지하지 않는다</param>
+        /// <param name="seconds">제한 시간(초)</param>
+        public void LimitSightRange(float range, float seconds)
+        {
+            _limitedSightRange = Mathf.Max(0.0f, range);
+            _sightLimitEndTime = Time.time + seconds;
+        }
         #endregion
 
         #region Private Methods
         /// <summary>
         /// 시야 범위 안의 대상 중 각도와 차폐 검사를 모두 통과한 가장 가까운 것을 찾아
         /// 대상과 놓친 뒤 유예 시간을 갱신한다.
-        /// 확정된 대상이 있는 동안에는 각도 검사를 건너뛴다.
+        /// 확정된 대상이 있는 동안이나 근접 감지 거리 안의 대상은 각도 검사를 건너뛴다.
         /// </summary>
         private void Detect()
         {
@@ -138,7 +162,7 @@ namespace AI
             Vector3 eyePosition = _eye.position;
             int hitCount = Physics.OverlapSphereNonAlloc(
                 eyePosition,
-                _sightRange,
+                CurrentSightRange,
                 _hitBuffer,
                 _targetLayers);
 
@@ -153,11 +177,13 @@ namespace AI
                 Vector3 targetPoint = hit.bounds.center;
                 Vector3 toTarget = targetPoint - eyePosition;
 
-                // 대상이 확정된 동안(전투 중)에는 시야각을 무시하고 시야 거리 안이면 360도로 찾는다
-                if (!HasTarget && !IsInSightAngle(toTarget)) continue;
+                float sqrDistance = toTarget.sqrMagnitude;
+                bool isInProximity = sqrDistance <= (_proximityRange * _proximityRange);
+
+                // 대상이 확정된 동안(전투 중)이나 근접 감지 거리 안에서는 시야각을 무시하고 360도로 찾는다
+                if (!HasTarget && !isInProximity && !IsInSightAngle(toTarget)) continue;
                 if (IsOccluded(eyePosition, toTarget)) continue;
 
-                float sqrDistance = toTarget.sqrMagnitude;
                 if (sqrDistance >= nearestSqrDistance) continue;
 
                 nearestSqrDistance = sqrDistance;
