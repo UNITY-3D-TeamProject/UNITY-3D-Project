@@ -2,9 +2,9 @@
 id: intent-048
 title: 보스 A A4 를 블리츠크랭크 Q 식 그랩(한 손이 날아가 잡아당김) + 반대 손 내려치기로 재설계
 part: AI / Boss / BossA
-status: open   # open | resolved
+status: resolved   # open | resolved
 created: 2026-10-20
-resolved: null # 해결 시 YYYY-MM-DD 로 변경
+resolved: 2026-10-21
 ---
 
 ## 문제 (Problem)
@@ -39,5 +39,5 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 씬의 `BossArena._linePrefab` 연결은 테스트 씬(저장소 밖)에 했다. 저장하지 않았고, 다른 씬에 보스를 쓰려면 직접 연결해야 한다.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
-- 최종 결정:
-- 관련 커밋/PR:
+- 최종 결정: 블리츠크랭크 Q 식 그랩. 이후 intent-059 에서 매달려 끌고 가고 오기로 다듬음. 사용자 육안 확인 통과(2026-10-21).
+- 관련 커밋/PR: 커밋 전 → [기록](../../HANDOVER/BF_Leers/2026-10-20/boss-a-a4-hook-grab.md)

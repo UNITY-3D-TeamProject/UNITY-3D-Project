@@ -2,9 +2,9 @@
 id: intent-047
 title: 보스 A 칸 예고를 중앙에서부터 채워지게 하고, 가득 차면 패턴 발동
 part: AI / Boss / Arena
-status: open   # open | resolved
+status: resolved   # open | resolved
 created: 2026-10-20
-resolved: null # 해결 시 YYYY-MM-DD 로 변경
+resolved: 2026-10-21
 ---
 
 ## 문제 (Problem)
@@ -29,5 +29,5 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 정사각형 확장으로 충분한지는 Play 육안 확인 후 판단한다(원형 셰이더는 필요하면 별도 intent).
 
 ## 해결 기록 (Resolution) — 해결 후 작성
-- 최종 결정:
-- 관련 커밋/PR:
+- 최종 결정: 칸 예고가 중앙에서 스케일·알파로 채워짐(채움 시간 = 패턴 예고 시간), 정사각형 방식 유지. 사용자 육안 확인 통과(2026-10-21).
+- 관련 커밋/PR: 커밋 전 → [기록](../../HANDOVER/BF_Leers/2026-10-20/boss-a-telegraph-fill-in.md)
