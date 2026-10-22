@@ -2,14 +2,14 @@
 
 맵·스테이지를 만드는 파트가 **컷씬(대화만), 컷씬(대화+카메라), 카메라 샷, 독백**을 직접 만들어 씬에 넣을 수 있도록 정리한 문서다. 코드를 고치지 않고 **SO 에셋 만들기 → 번호 표에 등록 → 발판이나 코드에서 번호로 부르기** 세 단계로 끝난다.
 
-> 관련 구현: [intent-066 연출·대화 SO 분리](./intent/intent-066-cinematic-so-split.md), [작업 기록](./HANDOVER/SungJun/2026-10-22/cinematic-so-split.md), 작성자 김성준
+> 관련 구현: [intent-066 연출·대화 SO 분리](./intent/intent-066-cinematic-so-split.md), [intent-067 Dialogue → Cutscene 이름 변경](./intent/clear/intent-067-dialogue-to-cutscene-naming.md), [작업 기록](./HANDOVER/SungJun/2026-10-22/cinematic-so-split.md), 작성자 김성준
 > 스크립트 위치: `Assets/_Project/Scripts/UIandCinematic/`, 네임스페이스 `UIandCinematic`
 
 ## 1. 한눈에 보기
 
 | 종류 | 만드는 SO | 등록하는 표 | 부르는 함수 | 게임 시간 | 조작 | 씬 카메라 필요 |
 |---|---|---|---|---|---|---|
-| 1. 컷씬(대화만) | `SOCutscene` | `SOCutsceneTable` | `CinematicManager.PlayCutscene(번호)` | 멈춤 | 막힘(E로 대사 넘김) | 없음 |
+| 1. 컷씬(대화만) | `SOCutscene` | `SOCutsceneTable` | `CinematicManager.PlayCutscene(번호)` | 멈춤 | 막힘(`Cutscene` 입력 맵: E로 대사 넘김, ESC 설정창) | 없음 |
 | 2. 컷씬(대화+카메라) | `SOCutscene` + `SOCameraShot` | `SOCutsceneTable` | `CinematicManager.PlayCutscene(번호)` | 멈춤 | 막힘 | **있음** (`CinematicCamera` + 키) |
 | 3. 카메라 샷 | `SOCameraShot` | `SOCameraShotTable` | `CinematicManager.PlayCameraShot(번호)` | 샷마다 선택 | 막힘 | **있음** (`CinematicCamera` + 키) |
 | 4. 독백 | `SOMonologue` | `SOMonologueTable` | `UIManager.PlayMonologue(번호)` | 그대로 흐름 | 그대로 움직임 | 없음 |
@@ -29,6 +29,15 @@
 ### 2-1. Canvas_InGame (UIManager)
 - `Assets/_Project/Prefabs/UI/Canvas_InGame.prefab`이 씬에 있어야 한다. 이 안의 `UIManager`가 대사창을 띄우고, 독백 표(`SOMonologueTable`)도 이미 연결돼 있다.
 - 컷씬·카메라 샷도 `UIManager`가 없으면 `씬에 대화를 재생하는 쪽(UIManager)이 없어…` 경고를 남기고 재생하지 않는다.
+- 프리팹 안에 컷씬·독백을 그리는 부품이 이미 연결돼 있어 **보통은 건드릴 필요가 없다.** 얼굴·펫 위치 등을 바꾸고 싶을 때만 아래 칸을 본다.
+
+| `Canvas_InGame` 안 오브젝트 · 컴포넌트 | 하는 일 | 바꿀 수 있는 칸 |
+|---|---|---|
+| `UIManager` · `UIManager` | 컷씬 대사·독백·펫 안내를 띄우는 창구. 켜질 때 `CutsceneController.Current`에 자기를 등록해 `CinematicManager`가 찾게 한다 | 독백 표(`Monologue Table`) |
+| `UIManager` · `InputMapController` | 컷씬·카메라 샷·펫 안내 동안 입력 맵을 `Cutscene`(E 넘기기·ESC 설정창)으로 바꾼다 | 없음 |
+| `PetGuidePanel` · `CutscenePresenter` | 컷씬 대사 한 줄을 패널에 그린다 | **Speaker Default Portraits**: `PET`·`PLAYER`의 기본 얼굴. SO에서 Portrait를 비운 줄은 이 얼굴을 쓴다<br>**Next / Last Line Label**: `E ▶ 다음` / `E ▶ 닫기` |
+| `CutsceneDirector` · `CutsceneDirector` | 컷씬 동안 펫을 플레이어 앞에 세우고, 말하는 사람을 비추는 카메라를 켠다 | **Player / Pet Speaker Name**: `PLAYER` / `PET` (SO의 Speaker Name과 같아야 함)<br>**Pet Stand Offset**: 펫이 설 위치<br>**Player / Pet Shot Offset**: 말하는 사람 카메라 위치 |
+| `MonologuePresenter` · `MonologuePresenter` | 독백을 같은 패널에 띄우고 게이지가 다 줄면 넘긴다 | **Default Line Duration**: SO의 Line Duration이 0일 때 쓰는 시간(기본 3초)<br>**Speaker Default Portraits**: 독백용 기본 얼굴 |
 
 ### 2-2. CinematicManager (컷씬·카메라 샷을 쓰는 씬)
 `CinematicManager`는 프리팹이 없어서 **씬에 직접 만든다**.
@@ -317,5 +326,6 @@ private void HandleCinematicFinished(CinematicManager manager)
 
 ## 10. 참고: 기존 구조
 
-- 씬 컴포넌트 `CinematicSequence`(카메라를 직접 드래그하는 방식)와 `SODialogue`·`SODialogueTable`(대화 번호, `CameraIndex`로 고정 카메라 선택)은 **당분간 그대로 동작**한다. 새로 만드는 연출은 이 문서의 SO 방식을 쓴다.
+- 옛 대화 방식 `SODialogue`·`SODialogueTable` + `UIManager.PlayDialogue(번호)`와 씬 컴포넌트 `CinematicSequence`는 **새로 만들지 않는다.** 튜토리얼(`Map_0_Tutorial`)이 대사를 `SOCutscene`으로 옮기고 발판을 `PlayCutscene`으로 바꾸면 폴더(`ScriptableObjects/UIandCinematic/Dialogue`·`DialogueTable`)와 함께 지울 예정이다. 그때까지는 그대로 동작한다.
+- 이전 이름과 지금 이름 (intent-067): `IDialogueController` → `ICutsceneController`, `DialogueController` → `CutsceneController`, `DialoguePresenter` → `CutscenePresenter`, `DialogueDirector` → `CutsceneDirector`, 입력 맵 `Dialogue` → `Cutscene`. 동작은 같다.
 - 예시는 개인 TestScene `CutsceneTest` 공간의 발판 4개(컷씬 대화만 `PlayCutscene(2)`, 대화+카메라 `PlayCutscene(1)`, 카메라 샷 `PlayCameraShot(1)`, 독백 `PlayMonologue(1)`)에 있다. TestScene은 Git에 올라가지 않으므로 필요하면 김성준에게 요청한다.

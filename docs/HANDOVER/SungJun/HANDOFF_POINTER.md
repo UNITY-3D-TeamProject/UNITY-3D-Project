@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — intent-067: 컷씬 대사 공용 부품 `ICutsceneController`·`CutsceneController`·`CutscenePresenter`·`CutsceneDirector`, 입력 맵 `Cutscene`으로 이름 변경(GUID·프리팹 연결 유지). 옛 대화 SO·코드는 폴더 삭제 때까지 유지, 가이드 Cutscene 기준 갱신. 컴파일 0에러·TestScene Play 확인, 커밋 `440d8861`: [작업 기록](./2026-10-22/dialogue-to-cutscene-naming.md)
 - **2026-10-22** — IDialogueController의 역할, UIManager 구현 및 DialogueController.Current 등록·호출 흐름 설명: [작업 기록](./2026-10-22/dialogue-controller-explanation.md)
 - **2026-10-22** — 다른 파트용 `docs/cinematic-so-guide.md` 작성: 컷씬(대화만/대화+카메라)·카메라 샷·독백 SO 만들기, `CinematicCamera` 키 설정, 표 등록, 발판·코드에서 부르는 법, 문제 해결. 코드 변경 없음: [작업 기록](./2026-10-22/cinematic-so-guide.md)
 - **2026-10-22** — intent-066: 카메라 연출(`SOCameraShot`)·컷씬(`SOCutscene`, 대사 + 카메라 키 / 카메라 연출 단계)·독백(`SOMonologue`) SO 분리, 씬 카메라 키 `CinematicCamera`, `CinematicManager.PlayCutscene/PlayCameraShot`. 스크립트·SO 에셋을 UIandCinematic으로 정리, TestScene 발판 4개 예시. TestScene Play 확인, 실제 조작·맵 씬 연결 남음. 끝 블렌드 동안 조작·시간 유지 수정. 커밋 `392d83d9`·`02dedcf1`·`ebf39deb`: [작업 기록](./2026-10-22/cinematic-so-split.md)
