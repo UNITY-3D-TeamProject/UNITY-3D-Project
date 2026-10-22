@@ -1,5 +1,4 @@
 using Attribute.Effect;
-using Core.Cinematic;
 using Facade.Player;
 using JetBrains.Annotations;
 using Map.Gimmicks;
@@ -31,10 +30,6 @@ namespace Core.Stage
         [Header("Restart")]
         [Tooltip("첫 라운드(다음 라운드 체크포인트 도달 전)에 사망하면 체크포인트 재스폰 대신 씬을 다시 불러옵니다.")]
         [SerializeField] private bool _restartSceneOnFirstRoundDeath;
-
-        [Header("Intro")]
-        [Tooltip("스테이지가 시작될 때 재생할 카메라 연출. 비우면 스테이지 시작 대화를 그대로 쓴다.")]
-        [SerializeField] private CinematicSequence _introCinematic;
 
         // 현재 라운드. 0부터 시작하며 -1은 아직 시작하지 않은 상태.
         private int _currentRoundIndex = -1;
@@ -283,12 +278,6 @@ namespace Core.Stage
         // [호출] StartStage에서 스테이지 시작 직후 호출된다.
         private void PlayIntroDialogue()
         {
-            // 이 씬에 시작 연출이 있으면 연출이 대화까지 맡는다.
-            if ((_introCinematic != null) &&
-                (CinematicManager.Instance != null) &&
-                CinematicManager.Instance.Play(_introCinematic))
-                return;
-
             // 지금은 모든 스테이지에서 시작 대화를 끈다. 켤 스테이지는 여기에 추가한다. (예: EStageType.Tutorial => 1,)
             int dialogueId = CurrentStage switch
             {
