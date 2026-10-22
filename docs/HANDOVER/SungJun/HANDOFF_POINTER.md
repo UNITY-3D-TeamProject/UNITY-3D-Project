@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — `CinematicManager.PlayIntro()`·`_introSequence` 제거, 시작 연출은 `StageManager._introCinematic`에 지정해 `CinematicManager.Instance.Play`로 직접 호출. TestScene 연결 이동, 컴파일 0에러·Play로 시작 연출 확인, 커밋 안 함: [작업 기록](./2026-10-22/camera-cinematic-implementation.md)
 - **2026-10-22** — 시네마틱·대화 구조 정적 검토: 외부 대화 진입, 종료 블렌드 중 Brain 복구 충돌, 비활성 매니저 재생, UIManager 비활성화 후 입력 복구 누락 4건. 구현 수정·Play 재현 없음: [검토 기록](./2026-10-22/camera-cinematic-review.md)
 - **2026-10-22** — 카메라 연출 1차 구현(intent-063): `Core.Cinematic.CinematicSequence`(샷·대화 단계)·`CinematicManager`(Play·Stop·PlayIntro, 한 번만 재생 PlayerPrefs, 샷마다 블렌드), `UIManager.BeginCinematic`/`EndCinematic`(연출 안 대화는 끝나도 시간·입력·UI 유지), StageManager 시작 연출. 발판 트리거에서 바로 시작하면 멈춰서 다음 Update로 시작. TestScene 시작 연출·`Plate_Cinematic` Play 확인, 실제 조작·맵 씬 미확인, 커밋 안 함: [작업 기록](./2026-10-22/camera-cinematic-implementation.md)
 - **2026-10-22** — 카메라 연출 설계(intent-063 작성, 구현 전): 대화 중 고정 카메라는 `CameraIndex`로 이미 되지만 시간 정지라 움직이는 장면 불가, 대화와 따로 쓰는 연출 없음. 씬 `CinematicSequence`(카메라 샷·대화 단계) + `CinematicManager.Play`가 입력·UI·시간·CinemachineBrain 담당, UIManager는 UI만. 열린 질문 모두 결정(무적은 첫 구현에서 빼고 시간이 흐르는 샷은 적 없는 곳만), 구현 전: [작업 기록](./2026-10-22/camera-cinematic-design.md)

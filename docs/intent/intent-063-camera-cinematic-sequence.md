@@ -100,13 +100,14 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 ## 진행 기록 (2026-10-22 1차 구현)
 - 새 파일 `Scripts/Core/Cinematic/`
   - `CinematicSequence`: `ECinematicStepType`(Shot·Dialogue), `SCinematicStep`, Id·한 번만 재생·끝 블렌드. Awake에서 샷 카메라를 끄고, `Play()`는 UnityEvent용이다.
-  - `CinematicManager`: `Instance`, `Play`·`Stop`·`PlayIntro`, 본 기록 키 `Cinematic.Seen.{Id}`.
+  - `CinematicManager`: `Instance`, `Play`·`Stop`, 본 기록 키 `Cinematic.Seen.{Id}`.
 - `UIManager`
   - `BeginCinematic()`(bool)·`EndCinematic()` 추가.
   - 연출 중이면 대화가 끝나도 시간·입력·UI를 돌려주지 않는다.
   - 연출 중에는 펫 안내·독백을 막는다.
   - 설정창 닫기와 플레이어 교체 때는 Dialogue 맵을 유지한다.
 - `StageManager.PlayIntroDialogue`: 시작 연출이 있으면 연출을 먼저 재생한다.
+  - 시작 연출은 `StageManager._introCinematic`(Header Intro)에 지정한다. 처음에는 `CinematicManager._introSequence` + `PlayIntro()`였으나 사용자 요청으로 없앴다. StageManager가 `CinematicManager.Instance.Play(_introCinematic)`를 직접 부른다.
 - 설계와 달라진 점
   - 대화 끝 알림 이벤트는 만들지 않았다. 연출이 `UIManager.IsDialoguePlaying`을 매 프레임 확인해 다음 단계로 넘어간다.
   - 발판 트리거(물리 콜백) 안에서 코루틴을 바로 시작하면, 게임 시간을 멈춘 뒤 단계가 진행되지 않았다. 그래서 `Play`는 상태만 바꾸고 코루틴은 다음 `Update`에서 시작한다.

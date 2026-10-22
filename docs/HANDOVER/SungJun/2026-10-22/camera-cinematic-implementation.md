@@ -8,7 +8,7 @@
     - 연출 설정 `_id`·`_shouldPlayOnce`·`_endBlendSeconds`(기본 1)
     - Awake에서 샷 카메라를 끈다. `Play()`는 UnityEvent용이다.
   - `CinematicManager.cs`
-    - 씬 오브젝트, `Instance`, `IsPlaying`, `Play(sequence)`(bool)·`Stop()`·`PlayIntro()`(`_introSequence`)
+    - 씬 오브젝트, `Instance`, `IsPlaying`, `Play(sequence)`(bool)·`Stop()`. 처음 넣었던 `PlayIntro()`·`_introSequence`는 후속으로 없앴다(아래).
     - 연출 동안 CinemachineBrain `IgnoreTimeScale` true. 샷마다 `DefaultBlend`를 바꾸고, 끝 블렌드가 끝나면 원래대로 돌린다.
     - 샷은 `ShouldPauseTime`에 따라 `PauseGameTime`/`ResumeGameTime`을 부른다. 설정창이 열린 동안에는 시간을 세지 않고, 닫은 뒤 멈추는 샷이면 다시 멈춘다.
     - 대화 단계는 `UIManager.PlayDialogue(id)`를 부르고 `IsDialoguePlaying`이 false가 될 때까지 기다린다.
@@ -18,7 +18,9 @@
   - `_isCinematicActive`, `BeginCinematic()`(bool)·`EndCinematic()` 추가. 연출 동안 상호작용 안내를 막고, 인게임 UI alpha를 0으로, Dialogue 맵으로 바꾼다.
   - `HandleDialogueEnded`: 연출 중이면 시간·입력·UI를 돌려주지 않는다(DialogueDirector 정리는 한다).
   - 연출 중에는 `ShowPetGuide`·`PlayMonologue`를 무시한다. `CloseSettings`·`HandlePlayerSpawned`는 연출 중이면 Dialogue 맵을 유지한다.
-- `Core/Stage/StageManager.cs` `PlayIntroDialogue`: `CinematicManager.Instance.PlayIntro()`가 성공하면 시작 대화를 부르지 않는다.
+- `Core/Stage/StageManager.cs` `PlayIntroDialogue`: 시작 연출이 재생되면 시작 대화를 부르지 않는다.
+  - 후속: `CinematicManager.PlayIntro()`·`_introSequence`를 없애고, 시작 연출을 `StageManager._introCinematic`(Header Intro)에 지정해 `CinematicManager.Instance.Play(_introCinematic)`로 직접 부르게 바꿨다.
+  - TestScene은 StageManager에 `Cinematic_Intro`를 연결했다. 컴파일 0에러, Play에서 시작 연출 1.5초 → 플레이어 카메라 복귀를 확인했다.
 - TestScene(개인 저장소, 커밋 안 함)
   - 루트 `CinematicManager`(시작 연출 = `Cinematic_Intro`)
   - `Cinematic_Intro`: Id `TestScene.Intro`, 한 번만 재생, 끝 블렌드 2초. 단계는 [전경 샷 `CinematicCam_IntroOverview` 1.5초, 컷, 시간 멈춤].
