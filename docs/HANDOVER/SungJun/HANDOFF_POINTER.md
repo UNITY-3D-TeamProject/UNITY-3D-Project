@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — 다른 파트용 `docs/cinematic-so-guide.md` 작성: 컷씬(대화만/대화+카메라)·카메라 샷·독백 SO 만들기, `CinematicCamera` 키 설정, 표 등록, 발판·코드에서 부르는 법, 문제 해결. 코드 변경 없음: [작업 기록](./2026-10-22/cinematic-so-guide.md)
 - **2026-10-22** — intent-066: 카메라 연출(`SOCameraShot`)·컷씬(`SOCutscene`, 대사 + 카메라 키 / 카메라 연출 단계)·독백(`SOMonologue`) SO 분리, 씬 카메라 키 `CinematicCamera`, `CinematicManager.PlayCutscene/PlayCameraShot`. 스크립트·SO 에셋을 UIandCinematic으로 정리, TestScene 발판 4개 예시. TestScene Play 확인, 실제 조작·맵 씬 연결 남음. 끝 블렌드 동안 조작·시간 유지 수정. 커밋 `392d83d9`·`02dedcf1`·`ebf39deb`: [작업 기록](./2026-10-22/cinematic-so-split.md)
 - **2026-10-22** — 재검토 P2 수정: `InputMapController`를 껐다 켜면 진행 중인 연출의 조작 차단이 풀리던 문제. 꺼질 때 요청을 지우지 않고 Player 맵만 적용, 켜질 때 남은 요청 재적용. TestScene Play로 재현·수정 확인(연출 중 UIManager 오브젝트 껐다 켜기 → Dialogue 복원), 커밋 안 함: [작업 기록](./2026-10-22/time-input-ownership.md)
 - **2026-10-22** — 시네마틱 리팩토링 재검토: 시간·입력 요청 방식과 대화 인터페이스 분리 타당, 이전 충돌 방어 반영 확인. InputMapController 자체 비활성화·재활성화 후 진행 중 연출의 입력 요청 유실 1건을 실제 컨트롤러 코드+모의 타입으로 재현. 구현 수정·Unity Play 없음: [검토 기록](./2026-10-22/camera-cinematic-refactor-review.md)
