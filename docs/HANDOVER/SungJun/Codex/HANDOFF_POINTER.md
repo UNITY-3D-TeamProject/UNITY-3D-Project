@@ -3,6 +3,7 @@
 이 파일은 Codex 명의로 진행한 작업 이력의 목차이다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — SOCameraShot 입력만 잠금 설계: 기존 ShouldPauseTime=false·Cutscene 맵 재사용, Finish의 무조건 시간 정지를 제거해 마지막 단계 정책을 복귀 블렌드까지 유지하도록 제안. 코드 변경·Play 없음: [검토 기록](./2026-10-22/camera-shot-input-only-design.md)
 - **2026-10-22** — 맵·플레이어·UI 기능 기준 필요한 사운드 후보와 제작 우선순위 정리: [작업 기록](./2026-10-22/sound-needs-inventory.md)
 - **2026-10-21** — Map_4_Security 방 4개·특수몹 발판 5개·보스 로비행 탈출문 연결, 발판 NavMesh 베이크, Play 생성·클리어·사망 복구·체력바 단계 검증. 직접 조작·로비 전환 미확인: [작업 기록](./2026-10-21/security-map-round-wiring.md)
 - **2026-10-20** — AudioManager Play 로직 검증: 기본 재생·곡 넘기기·셔플·볼륨·일시정지 통과, 실패한 SFX의 제한 기록·UI 제한·짧은 BGM 페이드 무음 재현. 게임 코드 미수정: [검증 기록](./2026-10-20/audio-manager-logic-review.md)
