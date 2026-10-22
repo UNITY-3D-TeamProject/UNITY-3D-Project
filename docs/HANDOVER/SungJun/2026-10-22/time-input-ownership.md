@@ -36,6 +36,11 @@
 - 키 입력(E·ESC, `simulate_key`)으로 대화·설정창·연출, 사망 재스폰 때 새 플레이어에 Dialogue 맵 다시 적용까지 TestScene에서 확인(intent-064 진행 기록 5). 코드 변경 없음.
 - intent-064는 맵 씬·씬 전환 요청 정리가 미확인이라 열어 둠.
 
+- 후속 [intent-065](../../../intent/intent-065-dialogue-director-core.md): 남은 구조 문제 2개 정리.
+  - `DialogueDirector`를 `Core/Cinematic`으로 이동(GUID 유지, `ShowLine(speakerName, cameraIndex)`).
+  - Core가 UIManager를 직접 부르지 않게 `IDialogueController` + `DialogueController.Current`(UIManager가 OnEnable 등록·OnDisable 해제). CinematicManager·StageManager의 `using UI` 삭제.
+  - 컴파일 0에러, 프리팹 연결 유지, TestScene Play로 대화 카메라 교대·연출 흐름·외부 대화 거절·UIManager 껐다 켜기 확인. 커밋 안 함.
+
 ## 4. 다음 할 일
 - 맵 씬(맵 담당 확인 또는 허락 후)에서 대화·연출·설정창 확인, 씬 전환 뒤 시간이 멈춘 채 시작하지 않는지 확인.
 - 확인되면 intent-064 해결 처리(`clear/`로 이동, INTENT_POINTER 해결됨으로).

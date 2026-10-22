@@ -5,6 +5,8 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — 시네마틱 리팩토링 재검토: 시간·입력 요청 방식과 대화 인터페이스 분리 타당, 이전 충돌 방어 반영 확인. InputMapController 자체 비활성화·재활성화 후 진행 중 연출의 입력 요청 유실 1건을 실제 컨트롤러 코드+모의 타입으로 재현. 구현 수정·Unity Play 없음: [검토 기록](./2026-10-22/camera-cinematic-refactor-review.md)
+- **2026-10-22** — intent-065: `DialogueDirector`를 `Core/Cinematic`으로 이동(GUID 유지, `ShowLine(speakerName, cameraIndex)`), Core → UI 직접 호출을 `IDialogueController` + `DialogueController.Current`(UIManager 등록)로 대체, CinematicManager·StageManager의 `using UI` 삭제. 컴파일 0에러·프리팹 연결 유지·TestScene Play 확인, 맵 씬 미확인, 커밋 안 함: [작업 기록](./2026-10-22/time-input-ownership.md)
 - **2026-10-22** — intent-064 확인: TestScene에서 키 입력(E·ESC 시뮬레이션)으로 대화·설정창·연출 흐름, 사망 재스폰 때 새 플레이어에 Dialogue 맵 다시 적용 확인. 코드 변경 없음. 맵 씬·씬 전환 확인 남아 intent 열어 둠: [작업 기록](./2026-10-22/time-input-ownership.md)
 - **2026-10-22** — intent-064 4단계: CinemachineBrain `IgnoreTimeScale` 저장·복구를 DialogueDirector·CinematicManager에서 제거(켜기만, 기본 블렌드만 복구). TestScene Play로 끝 블렌드 중 새 대화 때 값이 덮이던 버그 해결 확인, 버그 5건 모두 해결. 실제 키 입력·맵 씬·사망 재스폰 미확인, 커밋 안 함: [작업 기록](./2026-10-22/time-input-ownership.md)
 - **2026-10-22** — intent-064 3단계: UIManager 연출 전용 코드(`_isCinematicActive`·`BeginCinematic`·`EndCinematic`) 제거, 연출 중 밖에서 부른 `PlayDialogue` 거절(연출 대화는 `PlayCinematicDialogue`), `CinematicManager.Play` 활성 검사, 인게임 UI 숨기기를 요청 방식 + 연출 static 이벤트로. 컴파일 0에러·TestScene Play로 버그 2·3 해결 확인, 커밋 안 함. Brain 정리 남음: [작업 기록](./2026-10-22/time-input-ownership.md)
