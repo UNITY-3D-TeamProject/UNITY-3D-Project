@@ -19,8 +19,14 @@
   - `HandleDialogueEnded`: 연출 중이면 시간·입력·UI를 돌려주지 않는다(DialogueDirector 정리는 한다).
   - 연출 중에는 `ShowPetGuide`·`PlayMonologue`를 무시한다. `CloseSettings`·`HandlePlayerSpawned`는 연출 중이면 Dialogue 맵을 유지한다.
 - `Core/Stage/StageManager.cs` `PlayIntroDialogue`: 시작 연출이 재생되면 시작 대화를 부르지 않는다.
-  - 후속: `CinematicManager.PlayIntro()`·`_introSequence`를 없애고, 시작 연출을 `StageManager._introCinematic`(Header Intro)에 지정해 `CinematicManager.Instance.Play(_introCinematic)`로 직접 부르게 바꿨다.
-  - TestScene은 StageManager에 `Cinematic_Intro`를 연결했다. 컴파일 0에러, Play에서 시작 연출 1.5초 → 플레이어 카메라 복귀를 확인했다.
+  - 후속 1: `CinematicManager.PlayIntro()`·`_introSequence`를 없애고, 시작 연출을 `StageManager._introCinematic`에 지정하게 바꿨다.
+  - 후속 2(사용자 결정): 스테이지 코드에서 연출을 부르지 않기로 했다. 맵 담당이 씬에서 `CinematicSequence.Play()`를 연결한다.
+    - `StageManager.cs`를 이 작업 전(`189bf796`)과 똑같이 되돌렸다.
+    - TestScene StageManager의 남은 `_introCinematic` 오버라이드를 지웠다.
+    - 컴파일 0에러. Play에서 스테이지 시작 때 연출이 자동 재생되지 않는 것과 `Cinematic_PlateTest.Play()`가 정상인 것을 확인했다.
+    - TestScene `Cinematic_Intro`는 `CutsceneTest/Plate_CinematicIntro`((61, 0.55, -35.03), `Plate_Cinematic` 남쪽 7 m)와 표지판 `Sign_CinematicIntro`("시작 연출 (한 번만)")에 연결했다.
+      - Play에서 밟으면 전경 1.5초 → 복귀했다. 한 번만 재생이라 다시 밟으면 나오지 않는다.
+      - 확인 뒤 본 기록 키는 지워 두었다.
 - TestScene(개인 저장소, 커밋 안 함)
   - 루트 `CinematicManager`(시작 연출 = `Cinematic_Intro`)
   - `Cinematic_Intro`: Id `TestScene.Intro`, 한 번만 재생, 끝 블렌드 2초. 단계는 [전경 샷 `CinematicCam_IntroOverview` 1.5초, 컷, 시간 멈춤].

@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — 연출 호출을 스테이지 코드에서 뺌: `StageManager._introCinematic`·호출 제거(`StageManager.cs`는 카메라 연출 작업 전과 동일). 연출 호출은 맵 담당이 씬에서 `CinematicSequence.Play()`로 연결. TestScene `Cinematic_Intro`는 컷씬 공간 `Plate_CinematicIntro` 발판에 연결(한 번만 재생), 컴파일 0에러·Play 확인, 커밋 안 함: [작업 기록](./2026-10-22/camera-cinematic-implementation.md)
 - **2026-10-22** — `CinematicManager.PlayIntro()`·`_introSequence` 제거, 시작 연출은 `StageManager._introCinematic`에 지정해 `CinematicManager.Instance.Play`로 직접 호출. TestScene 연결 이동, 컴파일 0에러·Play로 시작 연출 확인, 커밋 안 함: [작업 기록](./2026-10-22/camera-cinematic-implementation.md)
 - **2026-10-22** — 시네마틱·대화 구조 정적 검토: 외부 대화 진입, 종료 블렌드 중 Brain 복구 충돌, 비활성 매니저 재생, UIManager 비활성화 후 입력 복구 누락 4건. 구현 수정·Play 재현 없음: [검토 기록](./2026-10-22/camera-cinematic-review.md)
 - **2026-10-22** — 카메라 연출 1차 구현(intent-063): `Core.Cinematic.CinematicSequence`(샷·대화 단계)·`CinematicManager`(Play·Stop·PlayIntro, 한 번만 재생 PlayerPrefs, 샷마다 블렌드), `UIManager.BeginCinematic`/`EndCinematic`(연출 안 대화는 끝나도 시간·입력·UI 유지), StageManager 시작 연출. 발판 트리거에서 바로 시작하면 멈춰서 다음 Update로 시작. TestScene 시작 연출·`Plate_Cinematic` Play 확인, 실제 조작·맵 씬 미확인, 커밋 안 함: [작업 기록](./2026-10-22/camera-cinematic-implementation.md)

@@ -45,7 +45,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 
 | 예시 | 단계 | 시작하는 곳 |
 |---|---|---|
-| 로비 첫 입장 | [전경 샷 3초] → [대화 N], 한 번만 재생 | `StageManager.PlayIntroDialogue` 자리 |
+| 로비 첫 입장 | [전경 샷 3초] → [대화 N], 한 번만 재생 | 맵 담당이 씬에서 연결(시작 트리거 등) |
 | 발판 밟으면 다른 곳 보여주기 | [먼 곳 샷 2초, 시간 멈춤] | 발판 `TriggerPlate` UnityEvent |
 | 미로 시작 | [미로 가운데 위 샷 1초], 끝 블렌드 2초로 플레이어 카메라 | 스테이지 시작 |
 | 튜토리얼 뒤에서 굴러오는 것 | [대화 3] → [굴러오는 쪽 샷 2초, 시간 흐름] → [대화 4] | 튜토리얼 진행 |
@@ -75,7 +75,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
       - "끝나도 돌려주지 않는" 대화 시작 옵션
       - 대화 끝 알림 이벤트. 지금은 밖에서 대화가 끝난 것을 `IsDialoguePlaying` 값으로만 알 수 있다.
     - `UI/UIInputHandler.cs`: 연출 중 `Dialogue` 맵 유지에 필요한 경우만.
-    - `Core/Stage/StageManager.cs`: 시작 대화 자리에서 그 씬의 시작 연출이 있으면 연출을 부른다.
+    - `Core/Stage/StageManager.cs`: 수정하지 않는다. 연출 호출은 맵 담당이 씬에서 연결한다(2026-10-22 결정).
   - 건드리지 않음: `PlayerFacade`·Mediator. 무적은 첫 구현 범위 밖이다.
   - 그대로 둠:
     - `DialogueDirector`: 말하는 사람 카메라·`CameraIndex` 고정 카메라 유지
@@ -106,8 +106,8 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   - 연출 중이면 대화가 끝나도 시간·입력·UI를 돌려주지 않는다.
   - 연출 중에는 펫 안내·독백을 막는다.
   - 설정창 닫기와 플레이어 교체 때는 Dialogue 맵을 유지한다.
-- `StageManager.PlayIntroDialogue`: 시작 연출이 있으면 연출을 먼저 재생한다.
-  - 시작 연출은 `StageManager._introCinematic`(Header Intro)에 지정한다. 처음에는 `CinematicManager._introSequence` + `PlayIntro()`였으나 사용자 요청으로 없앴다. StageManager가 `CinematicManager.Instance.Play(_introCinematic)`를 직접 부른다.
+- 시작 연출 호출: 스테이지 코드에서 부르지 않는다(사용자 결정). 맵 담당이 씬에서 `CinematicSequence.Play()`를 원하는 곳(시작 트리거·발판 등)에 연결한다.
+  - 경과: 처음에는 `CinematicManager._introSequence` + `PlayIntro()`를 StageManager가 불렀다. 그다음 `StageManager._introCinematic`으로 옮겼다가, 둘 다 없앴다. `StageManager.cs`는 이 작업 전과 같다.
 - 설계와 달라진 점
   - 대화 끝 알림 이벤트는 만들지 않았다. 연출이 `UIManager.IsDialoguePlaying`을 매 프레임 확인해 다음 단계로 넘어간다.
   - 발판 트리거(물리 콜백) 안에서 코루틴을 바로 시작하면, 게임 시간을 멈춘 뒤 단계가 진행되지 않았다. 그래서 `Play`는 상태만 바꾸고 코루틴은 다음 `Update`에서 시작한다.
