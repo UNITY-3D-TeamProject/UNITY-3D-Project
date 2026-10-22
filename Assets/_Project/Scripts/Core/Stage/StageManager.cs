@@ -83,6 +83,10 @@ namespace Core.Stage
         // 사망 후 라운드 체크포인트에서 플레이어를 다시 스폰해 달라는 요청. PlayerSpawner가 구독한다.
         public event Action OnPlayerRespawnRequested;
 
+        // 새 체크포인트에 도달하면 발생한다. true면 라운드 체크포인트(사망 복귀 지점), false면 일반 체크포인트(낙하 복귀 지점).
+        // 이미 지난 체크포인트를 다시 밟으면 발생하지 않는다. CheckpointNoticePresenter가 구독한다.
+        public event Action<bool> OnCheckpointReached;
+
         private void OnEnable()
         {
             _gameManager = GameManager.Instance;
@@ -369,6 +373,7 @@ namespace Core.Stage
             }
 
             // 이전 지점에 다시 닿아도 일반 진행도는 뒤로 가지 않는다.
+            bool isNewCheckpoint = checkpointIndex > _currentCheckpointIndex;
             _currentCheckpointIndex = Mathf.Max(_currentCheckpointIndex, checkpointIndex);
 
             // 일반 진행도와 별도로 실제 도달한 다음 라운드 시작점을 검사한다.
@@ -377,6 +382,10 @@ namespace Core.Stage
                 (nextRoundIndex >= _roundCheckpointIndices.Length) ||
                 (_roundCheckpointIndices[nextRoundIndex] != checkpointIndex))
             {
+                if (isNewCheckpoint)
+                {
+                    OnCheckpointReached?.Invoke(false);
+                }
                 return;
             }
 
@@ -389,6 +398,7 @@ namespace Core.Stage
             if (playerState.HasRoundSnapshot(nextRoundIndex))
             {
                 _currentRoundIndex = nextRoundIndex;
+                OnCheckpointReached?.Invoke(true);
             }
         }
 
