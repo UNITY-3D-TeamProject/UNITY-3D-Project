@@ -15,7 +15,8 @@ namespace Core.InputMap
     /// <summary>
     /// 현재 플레이어의 입력 맵(Player / Dialogue / UI)을 한곳에서 정한다. 씬마다 하나 둔다(Canvas_InGame 프리팹).
     /// 조작을 막거나 설정창을 여는 쪽이 자기 이름으로 맵을 요청·해제하면, 남은 요청 중 가장 우선하는 맵을 쓴다(UI > Dialogue > Player).
-    /// 요청이 없으면 Player 맵이다. 플레이어가 새로 스폰되면 지금 맵을 다시 적용하고, 꺼지면 요청을 비우고 Player 맵으로 돌린다.
+    /// 요청이 없으면 Player 맵이다. 플레이어가 새로 스폰되면 지금 맵을 다시 적용한다.
+    /// 꺼진 동안은 Player 맵으로 돌려 두되 요청은 남겨 두고, 다시 켜지면 남은 요청(진행 중인 연출 등)대로 다시 적용한다.
     /// </summary>
     public class InputMapController : MonoBehaviour
     {
@@ -59,8 +60,10 @@ namespace Core.InputMap
 
         private void OnDisable()
         {
-            _requests.Clear();
-            ApplyMap();
+            // 꺼진 동안은 입력 맵을 맡지 않으므로 플레이어 조작으로 돌려 둔다.
+            // 요청은 지우지 않는다. 요청한 쪽(연출 등)은 다시 요청하지 않으므로, 다시 켜질 때 OnEnable에서 그대로 다시 적용한다.
+            if (_playerFacade != null)
+                _playerFacade.SwitchToPlayerInput();
 
             if (_gameManager != null)
                 _gameManager.OnPlayerSpawned -= HandlePlayerSpawned;
