@@ -8,9 +8,9 @@ namespace UIandCinematic
     public struct SDialogueLine
     {
         public string SpeakerName;
-        [Tooltip("비워 두면 말하는 사람의 기본 얼굴(DialoguePresenter에 지정)을 쓴다. 표정을 바꿀 때만 넣는다")]
+        [Tooltip("비워 두면 말하는 사람의 기본 얼굴(CutscenePresenter에 지정)을 쓴다. 표정을 바꿀 때만 넣는다")]
         public Sprite Portrait;
-        [Tooltip("-1이면 말하는 사람을 비추는 카메라(자동). 0 이상이면 DialogueDirector의 Fixed Cameras 배열 순서의 고정 카메라")]
+        [Tooltip("-1이면 말하는 사람을 비추는 카메라(자동). 0 이상이면 CutsceneDirector의 Fixed Cameras 배열 순서의 고정 카메라")]
         public int CameraIndex;
         [TextArea(3, 5)] public string Message;
     }

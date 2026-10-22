@@ -1777,7 +1777,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 77d0d9dbc261a7543964fe9d950b81d8, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UI.DialoguePresenter
+  m_EditorClassIdentifier: Assembly-CSharp::UIandCinematic.CutscenePresenter
   _petGuideView: {fileID: 7887929865638432593}
   _speakerDefaultPortraits:
   - SpeakerName: PET
@@ -2460,8 +2460,8 @@ MonoBehaviour:
   _playerHudPresenter: {fileID: 5267068874630389090}
   _settingsPresenter: {fileID: 8503095452051354234}
   _petGuidePresenter: {fileID: 8348777327934478301}
-  _dialoguePresenter: {fileID: 8731293427100546493}
-  _dialogueDirector: {fileID: 2693135122848582690}
+  _cutscenePresenter: {fileID: 8731293427100546493}
+  _cutsceneDirector: {fileID: 2693135122848582690}
   _cutsceneTable: {fileID: 11400000, guid: df949ebf8d31b7b40bbd77e7a68ae343, type: 2}
   _monologuePresenter: {fileID: 5502527322457077893}
   _monologueTable: {fileID: 11400000, guid: 063cb77e35c31de4aaa9a88b93cbe923, type: 2}
@@ -16424,7 +16424,7 @@ GameObject:
   - component: {fileID: 6785853582119658445}
   - component: {fileID: 2693135122848582690}
   m_Layer: 0
-  m_Name: DialogueDirector
+  m_Name: CutsceneDirector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16458,7 +16458,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 36f4da30e39398d4d842c3032aa6f08e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Cutscene.DialogueDirector
+  m_EditorClassIdentifier: Assembly-CSharp::UIandCinematic.CutsceneDirector
   _playerSpeakerName: PLAYER
   _petSpeakerName: PET
   _petStandOffset: {x: 0, y: 1.2, z: 1.8}

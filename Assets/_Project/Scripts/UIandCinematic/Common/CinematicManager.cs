@@ -9,9 +9,9 @@ namespace UIandCinematic
 {
     /// <summary>
     /// 씬의 카메라 연출(CinematicSequence)과 번호 표의 컷씬(SOCutscene)·카메라 연출(SOCameraShot)을 단계 순서대로 실행한다. 씬마다 하나 둔다.
-    /// 연출 동안 InputMapController에 Dialogue 맵(조작 막기)을 요청하고, 샷 설정에 따라 게임 시간을 멈추거나 돌린다.
+    /// 연출 동안 InputMapController에 Cutscene 맵(조작 막기)을 요청하고, 샷 설정에 따라 게임 시간을 멈추거나 돌린다.
     /// 시작·끝을 이벤트로 알리면 UIManager가 받아 인게임 UI를 숨기고 보인다.
-    /// 시간이 멈춰도 카메라 블렌드가 돌도록 CinemachineBrain을 게임 시간과 상관없이 돌린다. 이 설정은 대화(DialogueDirector)도 쓰므로 되돌리지 않고,
+    /// 시간이 멈춰도 카메라 블렌드가 돌도록 CinemachineBrain을 게임 시간과 상관없이 돌린다. 이 설정은 대화(CutsceneDirector)도 쓰므로 되돌리지 않고,
     /// 샷마다 바꾼 기본 블렌드만 끝나면 원래대로 돌린다.
     /// 연출 중 플레이어는 무적이 아니므로, 시간이 흐르는 샷은 적이 없는 곳에서만 쓴다.
     /// </summary>
@@ -159,7 +159,7 @@ namespace UIandCinematic
             _playRoutine = null;
 
             // 대화 단계 중이면 대화도 끝낸다. 대화는 자기 요청만 풀고, 연출의 시간·입력 요청과 UI 숨김은 Finish가 푼다.
-            DialogueController.Current?.StopDialogue();
+            CutsceneController.Current?.StopDialogue();
 
             Finish();
         }
@@ -184,8 +184,8 @@ namespace UIandCinematic
                 return false;
             }
 
-            IDialogueController dialogueController = DialogueController.Current;
-            if (dialogueController == null)
+            ICutsceneController cutsceneController = CutsceneController.Current;
+            if (cutsceneController == null)
             {
                 Debug.LogWarning("[CinematicManager] 씬에 대화를 재생하는 쪽(UIManager)이 없어 연출을 재생하지 못했습니다.", this);
                 return false;
@@ -197,7 +197,7 @@ namespace UIandCinematic
                 (gameManager.CurrentPlayerFacade == null))
                 return false;
 
-            if (dialogueController.IsDialoguePlaying || dialogueController.IsPetGuideOpen) return false;
+            if (cutsceneController.IsDialoguePlaying || cutsceneController.IsPetGuideOpen) return false;
             if (shouldPlayOnce && HasSeen(id)) return false;
 
             // 중간에 끊겨도 다시 보지 않도록 시작할 때 본 기록을 남긴다.
@@ -206,7 +206,7 @@ namespace UIandCinematic
 
             _isPlaying = true;
             _endBlendSeconds = endBlendSeconds;
-            InputMapController.Instance?.RequestMap(this, EInputMapType.Dialogue);
+            InputMapController.Instance?.RequestMap(this, EInputMapType.Cutscene);
             BeginBrainControl();
             _pendingSteps = steps;
             OnPlayStarted?.Invoke(this);
@@ -277,7 +277,7 @@ namespace UIandCinematic
             SetShotCamera(null);
 
             // 컷씬 대사로 세워 둔 펫과 말하는 사람 카메라를 돌려놓는다. 컷씬이 아니었으면 아무것도 하지 않는다.
-            DialogueController.Current?.EndCutscene();
+            CutsceneController.Current?.EndCutscene();
 
             // 플레이어 카메라로 돌아오는 동안 움직이면 화면이 다 돌아오기 전에 떨어질 수 있으므로,
             // 게임 시간 정지와 조작 막기는 끝 블렌드가 끝난 뒤에 푼다. 시간이 흐르는 샷으로 끝났어도 블렌드 동안은 멈춘다.
@@ -380,7 +380,7 @@ namespace UIandCinematic
                 }
 
                 // 카메라 단계 동안은 대사창과 말하는 사람 카메라를 끈다. 세워 둔 펫은 컷씬이 끝날 때 돌려놓는다.
-                DialogueController.Current?.HideCutsceneLine();
+                CutsceneController.Current?.HideCutsceneLine();
 
                 if (step.CameraShot == null)
                 {
@@ -454,14 +454,14 @@ namespace UIandCinematic
             if (GameManager.Instance != null)
                 GameManager.Instance.PauseGameTime(this);
 
-            IDialogueController dialogueController = DialogueController.Current;
-            if (dialogueController == null) yield break;
+            ICutsceneController cutsceneController = CutsceneController.Current;
+            if (cutsceneController == null) yield break;
 
             // 테이블에 없거나 시작하지 못하면 IsDialoguePlaying이 false라 바로 다음 단계로 넘어간다.
-            dialogueController.PlayCinematicDialogue(step.DialogueId);
+            cutsceneController.PlayCinematicDialogue(step.DialogueId);
 
             // 대화 중에 대화 재생 쪽이 꺼져 등록이 풀리면 기다리지 않는다.
-            while ((DialogueController.Current == dialogueController) && dialogueController.IsDialoguePlaying)
+            while ((CutsceneController.Current == cutsceneController) && cutsceneController.IsDialoguePlaying)
                 yield return null;
         }
 
@@ -479,10 +479,10 @@ namespace UIandCinematic
             if (GameManager.Instance != null)
                 GameManager.Instance.PauseGameTime(this);
 
-            IDialogueController dialogueController = DialogueController.Current;
-            if (dialogueController == null) yield break;
+            ICutsceneController cutsceneController = CutsceneController.Current;
+            if (cutsceneController == null) yield break;
 
-            bool isShown = dialogueController.ShowCutsceneLine(
+            bool isShown = cutsceneController.ShowCutsceneLine(
                 step.SpeakerName,
                 step.Portrait,
                 step.Message,
@@ -491,7 +491,7 @@ namespace UIandCinematic
             if (!isShown) yield break;
 
             // 대사 중에 대화 재생 쪽이 꺼져 등록이 풀리면 기다리지 않는다.
-            while ((DialogueController.Current == dialogueController) && dialogueController.IsCutsceneLineWaiting)
+            while ((CutsceneController.Current == cutsceneController) && cutsceneController.IsCutsceneLineWaiting)
                 yield return null;
         }
 

@@ -5,8 +5,8 @@ using UnityEngine.Serialization;
 namespace UIandCinematic
 {
     // 대화 묶음을 한 줄씩 펫 안내 패널에 띄운다. 입력은 모르고, ShowNextLine 호출로만 넘어간다.
-    // 입력(E)과 카메라 전환은 UIManager·DialogueDirector가 맡고, 여기서는 "지금 몇 번째 줄인지"만 관리한다.
-    public class DialoguePresenter : MonoBehaviour
+    // 입력(E)과 카메라 전환은 UIManager·CutsceneDirector가 맡고, 여기서는 "지금 몇 번째 줄인지"만 관리한다.
+    public class CutscenePresenter : MonoBehaviour
     {
         // 말하는 사람별 기본 얼굴. 대사에 초상화가 없을 때 쓴다.
         [Serializable]

@@ -3,9 +3,9 @@ using UnityEngine;
 namespace UIandCinematic
 {
     /// <summary>
-    /// 번호로 대화를 시작·중지하고 상태를 알려 주는 쪽(UIManager)의 약속. Core는 UI를 직접 참조하지 않고 DialogueController.Current로 이것만 본다.
+    /// 번호로 대화를 시작·중지하고 상태를 알려 주는 쪽(UIManager)의 약속. Core는 UI를 직접 참조하지 않고 CutsceneController.Current로 이것만 본다.
     /// </summary>
-    public interface IDialogueController
+    public interface ICutsceneController
     {
         // 대화가 재생 중이면 true.
         bool IsDialoguePlaying { get; }

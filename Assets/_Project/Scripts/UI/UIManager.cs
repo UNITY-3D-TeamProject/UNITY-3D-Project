@@ -9,8 +9,8 @@ using UIandCinematic;
 
 namespace UI
 {
-    // 대화를 맡는 쪽(IDialogueController)으로 등록되어 CinematicManager·StageManager가 UIManager를 직접 참조하지 않고 대화를 튼다.
-    public class UIManager : MonoBehaviour, IDialogueController
+    // 대화를 맡는 쪽(ICutsceneController)으로 등록되어 CinematicManager·StageManager가 UIManager를 직접 참조하지 않고 대화를 튼다.
+    public class UIManager : MonoBehaviour, ICutsceneController
     {
         #region Serialized Fields
         // 플레이어 데이터를 UI에 보여줘야하는데 그 데이터를 조작하는 Presenter를 갖고있는다.
@@ -22,9 +22,9 @@ namespace UI
         // 펫 안내 문구 (번호로 테이블에서 찾아 패널에 표시)
         [SerializeField] private PetGuidePresenter _petGuidePresenter;
         // 대화 진행 (대화 SO를 한 줄씩 펫 안내 패널에 표시)
-        [SerializeField] private DialoguePresenter _dialoguePresenter;
+        [SerializeField] private CutscenePresenter _cutscenePresenter;
         // 대화 연출 (펫 세우기, 말하는 사람 카메라, UIandCinematic). 없으면 대화를 재생하지 않는다.
-        [SerializeField] private DialogueDirector _dialogueDirector;
+        [SerializeField] private CutsceneDirector _cutsceneDirector;
         [Tooltip("PlayDialogue(번호)로 재생할 대화 목록")]
         [SerializeField] private SODialogueTable _cutsceneTable;
         // 독백 진행 (게임을 멈추지 않고 대사를 펫 안내 패널에 띄운 뒤, 게이지가 다 줄면 숨긴다)
@@ -67,7 +67,7 @@ namespace UI
         public static UIManager Instance { get; private set; }
 
         // 대화가 재생 중이면 true. 대화 Presenter가 없으면 항상 false다.
-        public bool IsDialoguePlaying => (_dialoguePresenter != null) && _dialoguePresenter.IsDialoguePlaying;
+        public bool IsDialoguePlaying => (_cutscenePresenter != null) && _cutscenePresenter.IsDialoguePlaying;
 
         // 펫 안내가 떠 있으면 true.
         public bool IsPetGuideOpen => _isPetGuideOpen;
@@ -91,7 +91,7 @@ namespace UI
 
         private void OnEnable()
         {
-            DialogueController.Register(this);
+            CutsceneController.Register(this);
 
             // 입력 이벤트는 플레이어가 바뀌어도 _input이 그대로이므로 한 번만 구독한다.
             _input.OnOpenSettingsRequested += OpenSettings;
@@ -163,7 +163,7 @@ namespace UI
                 _playerHudPresenter.SetPlayer(null);
             }
 
-            DialogueController.Unregister(this);
+            CutsceneController.Unregister(this);
         }
 
         private void OnDestroy()
@@ -179,7 +179,7 @@ namespace UI
         public void HidePlayerHud() => _playerHudPresenter?.Hide();
 
         // 번호에 맞는 펫 안내 문구를 띄운다. 번호와 문구는 SOPetGuideTable에서 정한다.
-        // E로 닫을 때까지 BGM만 남기고 게임을 멈추며, 입력은 Dialogue 맵(E 닫기·ESC 설정창)으로 바꾼다.
+        // E로 닫을 때까지 BGM만 남기고 게임을 멈추며, 입력은 Cutscene 맵(E 닫기·ESC 설정창)으로 바꾼다.
         // 대화·연출 중이거나 설정창이 열려 있거나 이미 안내 중이거나 플레이어가 없으면 무시한다.
         public void ShowPetGuide(int id)
         {
@@ -198,7 +198,7 @@ namespace UI
 
             _isPetGuideOpen = true;
             _gameManager?.PauseGameTime(this);
-            InputMapController.Instance?.RequestMap(_petGuidePresenter, EInputMapType.Dialogue);
+            InputMapController.Instance?.RequestMap(_petGuidePresenter, EInputMapType.Cutscene);
         }
 
         // 펫 안내를 닫고 게임과 플레이어 조작을 돌려준다.
@@ -213,7 +213,7 @@ namespace UI
         }
 
         // 번호에 맞는 컷씬을 지금 플레이어 자리에서 재생한다. 번호와 대화는 SODialogueTable에서 정한다.
-        // 연출(펫 세우기·카메라)은 DialogueDirector가 맡는다. 본 기록은 남기지 않으므로 부를 때마다 재생된다.
+        // 연출(펫 세우기·카메라)은 CutsceneDirector가 맡는다. 본 기록은 남기지 않으므로 부를 때마다 재생된다.
         // 이미 대화 중이면 무시한다. 발판(TriggerPlate) 같은 UnityEvent에서도 연결할 수 있도록 반환값이 없다.
         // 카메라 연출 중에는 재생하지 않는다. 연출의 대화 단계는 PlayCinematicDialogue로 연다.
         public void PlayDialogue(int id)
@@ -234,7 +234,7 @@ namespace UI
         public void StopDialogue()
         {
             if (IsDialoguePlaying)
-                _dialoguePresenter.StopDialogue();
+                _cutscenePresenter.StopDialogue();
         }
 
         // 컷씬(SOCutscene)의 대사 한 줄을 띄운다. CinematicManager가 대사 단계마다 부르고, E를 누르면 IsCutsceneLineWaiting이 false가 된다.
@@ -247,7 +247,7 @@ namespace UI
             bool isLastLine,
             bool shouldUseSpeakerCamera)
         {
-            if ((_dialoguePresenter == null) || (_dialogueDirector == null) || IsDialoguePlaying)
+            if ((_cutscenePresenter == null) || (_cutsceneDirector == null) || IsDialoguePlaying)
                 return false;
 
             // 같은 패널을 쓰므로 독백은 끄고 대사를 띄운다.
@@ -256,20 +256,20 @@ namespace UI
             // 첫 대사의 말하는 사람 카메라가 바로 정해지므로 펫과 카메라를 먼저 배치한다.
             if (!_isCutsceneStaged)
             {
-                _dialogueDirector.BeginStaging();
+                _cutsceneDirector.BeginStaging();
                 _isCutsceneStaged = true;
             }
 
-            if (!_dialoguePresenter.ShowSingleLine(speakerName, portrait, message, isLastLine))
+            if (!_cutscenePresenter.ShowSingleLine(speakerName, portrait, message, isLastLine))
                 return false;
 
             _isCutsceneLineVisible = true;
             _isCutsceneLineWaiting = true;
 
             if (shouldUseSpeakerCamera)
-                _dialogueDirector.ShowLine(speakerName, -1);
+                _cutsceneDirector.ShowLine(speakerName, -1);
             else
-                _dialogueDirector.HideCameras();
+                _cutsceneDirector.HideCameras();
 
             return true;
         }
@@ -282,11 +282,11 @@ namespace UI
             if (_isCutsceneLineVisible)
             {
                 _isCutsceneLineVisible = false;
-                _dialoguePresenter.HideSingleLine();
+                _cutscenePresenter.HideSingleLine();
             }
 
             if (_isCutsceneStaged)
-                _dialogueDirector.HideCameras();
+                _cutsceneDirector.HideCameras();
         }
 
         // 컷씬 대사를 숨기고 세워 둔 펫을 돌려놓는다. 컷씬 대사를 띄운 적이 없으면 아무것도 하지 않는다.
@@ -297,7 +297,7 @@ namespace UI
             if (!_isCutsceneStaged) return;
 
             _isCutsceneStaged = false;
-            _dialogueDirector.EndStaging();
+            _cutsceneDirector.EndStaging();
         }
 
         // 번호에 맞는 독백을 띄운다. 번호는 SOMonologueTable, 대사·한 줄 시간은 SOMonologue에서 정한다.
@@ -388,22 +388,22 @@ namespace UI
                 return;
             }
 
-            if (_dialogueDirector == null)
+            if (_cutsceneDirector == null)
             {
-                Debug.LogWarning("[UIManager] DialogueDirector가 연결되지 않아 컷씬을 재생하지 못했습니다.", this);
+                Debug.LogWarning("[UIManager] CutsceneDirector가 연결되지 않아 컷씬을 재생하지 못했습니다.", this);
                 return;
             }
 
             StartDialogue(sequence);
         }
 
-        // 대화를 시작한다. 끝날 때까지 Dialogue 입력 맵으로 바꿔 플레이어 조작을 막고, 대화창 외 UI를 숨긴다.
-        // Dialogue 맵에서는 E로 대사를 넘기고, ESC로 설정창을 연다.
+        // 대화를 시작한다. 끝날 때까지 Cutscene 입력 맵으로 바꿔 플레이어 조작을 막고, 대화창 외 UI를 숨긴다.
+        // Cutscene 맵에서는 E로 대사를 넘기고, ESC로 설정창을 연다.
         // 이미 대화 중이거나 설정창·펫 안내가 열려 있거나 플레이어가 없으면 시작하지 않는다.
         private void StartDialogue(SODialogue sequence)
         {
-            if ((_dialoguePresenter == null) ||
-                (_dialoguePresenter.IsDialoguePlaying) ||
+            if ((_cutscenePresenter == null) ||
+                (_cutscenePresenter.IsDialoguePlaying) ||
                 _isSettingsOpen ||
                 _isPetGuideOpen ||
                 (!_input.HasPlayer))
@@ -412,45 +412,45 @@ namespace UI
             // 같은 패널을 쓰므로 독백은 끄고 대화를 띄운다.
             StopMonologue();
 
-            _dialoguePresenter.OnDialogueLineChanged += HandleDialogueLineChanged;
-            _dialoguePresenter.OnDialogueEnded += HandleDialogueEnded;
+            _cutscenePresenter.OnDialogueLineChanged += HandleDialogueLineChanged;
+            _cutscenePresenter.OnDialogueEnded += HandleDialogueEnded;
 
             // 첫 줄의 카메라가 대화 시작과 동시에 정해지므로 펫과 카메라를 먼저 배치한다.
-            _dialogueDirector.BeginStaging();
+            _cutsceneDirector.BeginStaging();
 
             // 대화 동안 플레이어·펫 대기 애니메이션과 BGM만 남기고 게임을 멈춘다.
             _gameManager?.PauseGameTime(this);
 
             // 대화 중에는 대화창만 보이도록 상호작용 안내와 나머지 인게임 UI를 숨긴다.
-            HideInGameUI(_dialoguePresenter);
+            HideInGameUI(_cutscenePresenter);
 
-            InputMapController.Instance?.RequestMap(_dialoguePresenter, EInputMapType.Dialogue);
+            InputMapController.Instance?.RequestMap(_cutscenePresenter, EInputMapType.Cutscene);
 
-            if (!_dialoguePresenter.StartDialogue(sequence))
+            if (!_cutscenePresenter.StartDialogue(sequence))
                 HandleDialogueEnded();
         }
 
         // 대사 줄이 바뀌면 그 줄의 말하는 사람·카메라 번호로 연출 카메라를 바꾼다.
         private void HandleDialogueLineChanged(SDialogueLine line)
         {
-            if (_dialogueDirector != null)
-                _dialogueDirector.ShowLine(line.SpeakerName, line.CameraIndex);
+            if (_cutsceneDirector != null)
+                _cutsceneDirector.ShowLine(line.SpeakerName, line.CameraIndex);
         }
 
         // 대화가 끝나면 구독을 풀고, 연출을 정리한 뒤 상호작용 안내·숨긴 UI와 플레이어 조작을 돌려준다.
         // 게임 시간·입력 맵·UI 숨김은 대화의 요청만 푼다. 카메라 연출 안에서 연 대화면 연출의 요청이 남아 시간은 멈추고 대화 맵·UI 숨김이 유지된다.
         private void HandleDialogueEnded()
         {
-            _dialoguePresenter.OnDialogueLineChanged -= HandleDialogueLineChanged;
-            _dialoguePresenter.OnDialogueEnded -= HandleDialogueEnded;
+            _cutscenePresenter.OnDialogueLineChanged -= HandleDialogueLineChanged;
+            _cutscenePresenter.OnDialogueEnded -= HandleDialogueEnded;
 
             _gameManager?.ResumeGameTime(this);
-            InputMapController.Instance?.ReleaseMap(_dialoguePresenter);
+            InputMapController.Instance?.ReleaseMap(_cutscenePresenter);
 
-            if (_dialogueDirector != null)
-                _dialogueDirector.EndStaging();
+            if (_cutsceneDirector != null)
+                _cutsceneDirector.EndStaging();
 
-            ShowInGameUI(_dialoguePresenter);
+            ShowInGameUI(_cutscenePresenter);
         }
 
         // 카메라 연출이 시작되면 인게임 UI를 숨긴다. 같은 패널을 쓰는 독백이 연출 화면에 남지 않도록 끈다.
@@ -511,7 +511,7 @@ namespace UI
                 return;
             }
 
-            _dialoguePresenter?.ShowNextLine();
+            _cutscenePresenter?.ShowNextLine();
         }
         #endregion
     }

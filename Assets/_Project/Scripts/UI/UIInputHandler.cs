@@ -6,15 +6,15 @@ namespace UI
 {
     /// <summary>
     /// UI가 쓰는 플레이어 입력(설정창 열기·닫기, 대사 넘기기)을 받아 알린다. 입력 맵 전환은 InputMapController가 맡는다.
-    /// 설정창 입력은 PlayerFacade를 거치고, PlayerFacade에 없는 대화 맵(Dialogue) 입력은 PlayerInput에서 직접 받는다.
+    /// 설정창 입력은 PlayerFacade를 거치고, PlayerFacade에 없는 컷씬 맵(Cutscene) 입력은 PlayerInput에서 직접 받는다.
     /// </summary>
     public class UIInputHandler
     {
         #region Constants
         // 대화 맵에서 대사를 넘기는 액션 (E)
-        private const string ACTION_NEXT_LINE = "Dialogue/NextLine";
+        private const string ACTION_NEXT_LINE = "Cutscene/NextLine";
         // 대화 맵에서 설정창을 여는 액션 (ESC)
-        private const string ACTION_OPEN_SETTINGS_IN_DIALOGUE = "Dialogue/OpenSettings";
+        private const string ACTION_OPEN_SETTINGS_IN_CUTSCENE = "Cutscene/OpenSettings";
         #endregion
 
         #region Private Fields
@@ -24,7 +24,7 @@ namespace UI
         private UnityEngine.InputSystem.PlayerInput _playerInput;
         // 구독을 풀 때 쓰려고 찾아 둔 대화 맵 액션
         private InputAction _nextLineAction;
-        private InputAction _openSettingsInDialogueAction;
+        private InputAction _openSettingsInCutsceneAction;
         #endregion
 
         #region Properties
@@ -33,11 +33,11 @@ namespace UI
         #endregion
 
         #region Events
-        // 설정창 열기 입력 (Player 맵 ESC, Dialogue 맵 ESC)
+        // 설정창 열기 입력 (Player 맵 ESC, Cutscene 맵 ESC)
         public event Action OnOpenSettingsRequested;
         // 설정창 닫기 입력 (UI 맵 ESC)
         public event Action OnCloseSettingsRequested;
-        // 다음 대사 입력 (Dialogue 맵 E)
+        // 다음 대사 입력 (Cutscene 맵 E)
         public event Action OnNextLineRequested;
         #endregion
 
@@ -57,10 +57,10 @@ namespace UI
             if (_playerFacade.TryGetComponent(out _playerInput) && (_playerInput.actions != null))
             {
                 _nextLineAction = _playerInput.actions.FindAction(ACTION_NEXT_LINE);
-                _openSettingsInDialogueAction = _playerInput.actions.FindAction(ACTION_OPEN_SETTINGS_IN_DIALOGUE);
+                _openSettingsInCutsceneAction = _playerInput.actions.FindAction(ACTION_OPEN_SETTINGS_IN_CUTSCENE);
 
                 if (_nextLineAction != null) _nextLineAction.performed += HandleNextLine;
-                if (_openSettingsInDialogueAction != null) _openSettingsInDialogueAction.performed += HandleOpenSettingsInDialogue;
+                if (_openSettingsInCutsceneAction != null) _openSettingsInCutsceneAction.performed += HandleOpenSettingsInCutscene;
             }
         }
 
@@ -74,12 +74,12 @@ namespace UI
             }
 
             if (_nextLineAction != null) _nextLineAction.performed -= HandleNextLine;
-            if (_openSettingsInDialogueAction != null) _openSettingsInDialogueAction.performed -= HandleOpenSettingsInDialogue;
+            if (_openSettingsInCutsceneAction != null) _openSettingsInCutsceneAction.performed -= HandleOpenSettingsInCutscene;
 
             _playerFacade = null;
             _playerInput = null;
             _nextLineAction = null;
-            _openSettingsInDialogueAction = null;
+            _openSettingsInCutsceneAction = null;
         }
         #endregion
 
@@ -103,7 +103,7 @@ namespace UI
         }
 
         // 대화 맵 ESC
-        private void HandleOpenSettingsInDialogue(InputAction.CallbackContext context)
+        private void HandleOpenSettingsInCutscene(InputAction.CallbackContext context)
         {
             OnOpenSettingsRequested?.Invoke();
         }

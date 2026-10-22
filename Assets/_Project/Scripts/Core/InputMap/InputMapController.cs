@@ -8,13 +8,13 @@ namespace Core.InputMap
     public enum EInputMapType
     {
         Player,
-        Dialogue,
+        Cutscene,
         UI,
     }
 
     /// <summary>
-    /// 현재 플레이어의 입력 맵(Player / Dialogue / UI)을 한곳에서 정한다. 씬마다 하나 둔다(Canvas_InGame 프리팹).
-    /// 조작을 막거나 설정창을 여는 쪽이 자기 이름으로 맵을 요청·해제하면, 남은 요청 중 가장 우선하는 맵을 쓴다(UI > Dialogue > Player).
+    /// 현재 플레이어의 입력 맵(Player / Cutscene / UI)을 한곳에서 정한다. 씬마다 하나 둔다(Canvas_InGame 프리팹).
+    /// 조작을 막거나 설정창을 여는 쪽이 자기 이름으로 맵을 요청·해제하면, 남은 요청 중 가장 우선하는 맵을 쓴다(UI > Cutscene > Player).
     /// 요청이 없으면 Player 맵이다. 플레이어가 새로 스폰되면 지금 맵을 다시 적용한다.
     /// 꺼진 동안은 Player 맵으로 돌려 두되 요청은 남겨 두고, 다시 켜지면 남은 요청(진행 중인 연출 등)대로 다시 적용한다.
     /// </summary>
@@ -22,7 +22,7 @@ namespace Core.InputMap
     {
         #region Constants
         // 대화 중에 쓰는 입력 맵 이름 (PlayerInput의 Action Asset 기준)
-        private const string ACTION_MAP_DIALOGUE = "Dialogue";
+        private const string ACTION_MAP_CUTSCENE = "Cutscene";
         #endregion
 
         #region Private Fields
@@ -30,7 +30,7 @@ namespace Core.InputMap
         private readonly Dictionary<Object, EInputMapType> _requests = new();
 
         private GameManager _gameManager;
-        // 현재 플레이어. Player·UI 맵은 PlayerFacade로 바꾸고, PlayerFacade에 없는 Dialogue 맵은 PlayerInput에서 직접 바꾼다.
+        // 현재 플레이어. Player·UI 맵은 PlayerFacade로 바꾸고, PlayerFacade에 없는 Cutscene 맵은 PlayerInput에서 직접 바꾼다.
         private PlayerFacade _playerFacade;
         private UnityEngine.InputSystem.PlayerInput _playerInput;
         #endregion
@@ -129,9 +129,9 @@ namespace Core.InputMap
                 case EInputMapType.UI:
                     _playerFacade.SwitchToUIInput();
                     break;
-                case EInputMapType.Dialogue:
+                case EInputMapType.Cutscene:
                     if (_playerInput != null)
-                        _playerInput.SwitchCurrentActionMap(ACTION_MAP_DIALOGUE);
+                        _playerInput.SwitchCurrentActionMap(ACTION_MAP_CUTSCENE);
                     break;
                 default:
                     _playerFacade.SwitchToPlayerInput();

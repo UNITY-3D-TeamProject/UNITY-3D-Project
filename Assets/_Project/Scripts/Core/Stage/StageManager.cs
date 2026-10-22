@@ -284,9 +284,9 @@ namespace Core.Stage
                 _ => 0,
             };
 
-            if ((dialogueId > 0) && (DialogueController.Current != null))
+            if ((dialogueId > 0) && (CutsceneController.Current != null))
             {
-                DialogueController.Current.PlayDialogue(dialogueId);
+                CutsceneController.Current.PlayDialogue(dialogueId);
             }
         }
 

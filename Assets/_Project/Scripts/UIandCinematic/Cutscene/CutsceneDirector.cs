@@ -14,7 +14,7 @@ namespace UIandCinematic
     /// CinemachineBrain은 게임 시간과 상관없이 돌도록 켜기만 하고 되돌리지 않는다(카메라 연출도 같은 설정을 쓰므로 서로 덮어쓰지 않게).
     /// 고정 카메라는 씬 오브젝트라 대화 SO에 넣을 수 없으므로 이 컴포넌트에 목록으로 두고, 대사의 CameraIndex로 고른다.
     /// </summary>
-    public class DialogueDirector : MonoBehaviour
+    public class CutsceneDirector : MonoBehaviour
     {
         #region Serialized Fields
         [Header("Speakers")]
