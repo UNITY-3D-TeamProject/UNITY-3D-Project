@@ -435,9 +435,13 @@ GameObject:
   - component: {fileID: 6871711762685359948}
   - component: {fileID: 3528763206315200719}
   - component: {fileID: 1640131713309441817}
+  - component: {fileID: 2825065429601117114}
+  - component: {fileID: 3477232359052379495}
+  - component: {fileID: 5244862616999642578}
+  - component: {fileID: 4711650153741772079}
   m_Layer: 8
   m_Name: HeadWeakPoint
-  m_TagString: Untagged
+  m_TagString: Scan
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -451,11 +455,11 @@ Transform:
   m_GameObject: {fileID: 3550683699119942483}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.414, y: 0.09, z: -0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 6114825604901765271}
+  m_Father: {fileID: 3389299908152101868}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &3528763206315200719
 SphereCollider:
@@ -492,6 +496,96 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossA.BossHitRelay
   _owner: {fileID: 7562927144991651820}
   _part: 2
+--- !u!114 &2825065429601117114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3550683699119942483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19318f87a581d0408f054d5de0cef90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.ScanTarget
+  _fadeInTime: 0.2
+  _fadeOutTime: 1
+  _reactions: []
+  _scanColliders:
+  - {fileID: 9132801528156409275}
+--- !u!114 &3477232359052379495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3550683699119942483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4f53d2a172f4ec9acb4b346fba4b519, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.SilhouetteReaction
+  _silhouetteRenderers: []
+  _autoShellMaterial: {fileID: 2100000, guid: 05975dd390a8b584db811058b74b4fdb, type: 2}
+  _shellSourceRoot: {fileID: 2090164281432657332}
+--- !u!114 &5244862616999642578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3550683699119942483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f04c8b694561ad646a373c957118ca4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.WeakPointShellMask
+  _silhouette: {fileID: 0}
+  _weakPoints: []
+--- !u!114 &4711650153741772079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3550683699119942483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a9d42fd781322439fef9ab97fd1c65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.WeakPointReaction
+--- !u!1 &3577572260117969118
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3389299908152101868}
+  m_Layer: 0
+  m_Name: WeakPointCandidate_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3389299908152101868
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3577572260117969118}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.414, y: 0.09, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 6871711762685359948}
+  m_Father: {fileID: 6114825604901765271}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3832139872358948861
 GameObject:
   m_ObjectHideFlags: 0
@@ -687,6 +781,9 @@ MonoBehaviour:
   _controller: {fileID: 4199479298084343665}
   _hitEffect: {fileID: 11400000, guid: 1bfabcda27e1d2f429385195afe057d0, type: 2}
   _telegraphSeconds: 1.5
+  _secondLineDelay: 1
+  _sweepSecondsPerTile: 0.15
+  _crossDelaySeconds: 0.3
 --- !u!1 &5888471709736403042
 GameObject:
   m_ObjectHideFlags: 0
@@ -1153,6 +1250,7 @@ GameObject:
   - component: {fileID: 4228440411905258379}
   - component: {fileID: 3052815084504843489}
   - component: {fileID: 6754248375782429067}
+  - component: {fileID: 3878175691785739089}
   m_Layer: 8
   m_Name: BossA
   m_TagString: Untagged
@@ -1359,6 +1457,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.SkillMediator
   _skillController: {fileID: 4901428296521891245}
+--- !u!114 &3878175691785739089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8734686264384130684}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d48d3fae004b614ca8871a86aae4be4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Combat.WeakPointSelector
+  _weakPoint: {fileID: 6871711762685359948}
+  _candidates:
+  - {fileID: 3389299908152101868}
 --- !u!1001 &1164542261768244123
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1512,7 +1625,7 @@ PrefabInstance:
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 4969001429755906828, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6871711762685359948}
+      addedObject: {fileID: 3389299908152101868}
     - targetCorrespondingSourceObject: {fileID: -6538596215938112056, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8466838990120759181}
