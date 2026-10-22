@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — intent-068: 튜토리얼 펫 켜기를 `Core.Stage.Tutorial`에 구현(시작 시 펫 끔·재스폰에도 유지, `UnlockPet()`은 대화가 끝나면 켬, PlayerFacade만 사용). 처음 만든 `PetUnlockPoint`는 삭제. TestScene `TutorialPetTest`로 Play 확인(직접 조작은 미확인), 씬 담당자는 `ResumeSpawnerCube` On Interacted에 `UnlockPet`만 연결(`docs/pet-unlock-setup-guide.md`). 브랜치 `feature/system-tutorial-pet`에 커밋: [작업 기록](./2026-10-22/tutorial-pet-unlock.md)
 - **2026-10-22** — intent-067: 컷씬 대사 공용 부품 `ICutsceneController`·`CutsceneController`·`CutscenePresenter`·`CutsceneDirector`, 입력 맵 `Cutscene`으로 이름 변경(GUID·프리팹 연결 유지). 옛 대화 SO·코드는 폴더 삭제 때까지 유지, 가이드 Cutscene 기준 갱신. 컴파일 0에러·TestScene Play 확인, 커밋 `440d8861`: [작업 기록](./2026-10-22/dialogue-to-cutscene-naming.md)
 - **2026-10-22** — IDialogueController의 역할, UIManager 구현 및 DialogueController.Current 등록·호출 흐름 설명: [작업 기록](./2026-10-22/dialogue-controller-explanation.md)
 - **2026-10-22** — 다른 파트용 `docs/cinematic-so-guide.md` 작성: 컷씬(대화만/대화+카메라)·카메라 샷·독백 SO 만들기, `CinematicCamera` 키 설정, 표 등록, 발판·코드에서 부르는 법, 문제 해결. 코드 변경 없음: [작업 기록](./2026-10-22/cinematic-so-guide.md)
