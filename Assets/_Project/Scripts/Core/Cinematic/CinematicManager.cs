@@ -1,13 +1,14 @@
 using System.Collections;
 using UnityEngine;
 using Unity.Cinemachine;
+using Core.InputMap;
 using UI;
 
 namespace Core.Cinematic
 {
     /// <summary>
     /// 씬의 카메라 연출(CinematicSequence)을 단계 순서대로 실행한다. 씬마다 하나 둔다.
-    /// 연출 동안 UIManager에 입력 막기·인게임 UI 숨기기를 요청하고, 샷 설정에 따라 게임 시간을 멈추거나 돌린다.
+    /// 연출 동안 InputMapController에 Dialogue 맵(조작 막기)을, UIManager에 인게임 UI 숨기기를 요청하고, 샷 설정에 따라 게임 시간을 멈추거나 돌린다.
     /// 시간이 멈춰도 카메라 블렌드가 돌도록 CinemachineBrain을 게임 시간과 상관없이 돌리고, 끝나면 모두 원래대로 돌린다.
     /// 연출 중 플레이어는 무적이 아니므로, 시간이 흐르는 샷은 적이 없는 곳에서만 쓴다.
     /// </summary>
@@ -99,6 +100,7 @@ namespace Core.Cinematic
                 MarkSeen(sequence);
 
             _currentSequence = sequence;
+            InputMapController.Instance?.RequestMap(this, EInputMapType.Dialogue);
             BeginBrainControl();
             _shouldStartRoutine = true;
             return true;
@@ -192,6 +194,8 @@ namespace Core.Cinematic
 
             if (GameManager.Instance != null)
                 GameManager.Instance.ResumeGameTime(this);
+
+            InputMapController.Instance?.ReleaseMap(this);
 
             if (UIManager.Instance != null)
                 UIManager.Instance.EndCinematic();

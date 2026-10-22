@@ -1,5 +1,6 @@
 using UnityEngine;
 using Core;
+using Core.InputMap;
 using Facade.Player;
 using UI.Dialogue;
 using UI.PetGuide;
@@ -37,7 +38,7 @@ namespace UI
         // 이벤트 구독용
         private GameManager _gameManager;
 
-        // 현재 플레이어의 입력(설정창 열기·닫기, 대사 넘기기)과 입력 맵 전환을 맡는다.
+        // 현재 플레이어의 입력(설정창 열기·닫기, 대사 넘기기)을 받는다. 입력 맵은 InputMapController에 요청한다.
         private readonly UIInputHandler _input = new UIInputHandler();
 
         // 설정창이 열려 있으면 true. 열린 동안에는 대화를 시작하지 않는다.
@@ -160,7 +161,7 @@ namespace UI
 
             _isPetGuideOpen = true;
             _gameManager?.PauseGameTime(this);
-            _input.SwitchToDialogueInput();
+            InputMapController.Instance?.RequestMap(_petGuidePresenter, EInputMapType.Dialogue);
         }
 
         // 펫 안내를 닫고 게임과 플레이어 조작을 돌려준다.
@@ -171,7 +172,7 @@ namespace UI
             _isPetGuideOpen = false;
             _petGuidePresenter.Hide();
             _gameManager?.ResumeGameTime(this);
-            _input.SwitchToPlayerInput();
+            InputMapController.Instance?.ReleaseMap(_petGuidePresenter);
         }
 
         // 번호에 맞는 컷씬을 지금 플레이어 자리에서 재생한다. 번호와 대화는 SODialogueTable에서 정한다.
@@ -226,8 +227,8 @@ namespace UI
         // 독백을 바로 끝내고 패널을 숨긴다.
         public void StopMonologue() => _monologuePresenter?.Stop();
 
-        // 카메라 연출을 시작할 때 CinematicManager가 부른다. 끝날 때까지 Dialogue 입력 맵으로 플레이어 조작을 막고 인게임 UI를 숨긴다.
-        // 게임 시간과 카메라는 CinematicManager가 맡는다. 연출 안에서 연 대화는 끝나도 시간·입력·UI를 돌려주지 않는다.
+        // 카메라 연출을 시작할 때 CinematicManager가 부른다. 끝날 때까지 인게임 UI를 숨긴다.
+        // 게임 시간·입력 맵·카메라는 CinematicManager가 요청한다. 연출 안에서 연 대화는 끝나도 UI를 돌려주지 않는다.
         // 이미 연출·대화 중이거나 설정창·펫 안내가 열려 있거나 플레이어가 없으면 시작하지 않고 false를 돌려준다.
         public bool BeginCinematic()
         {
@@ -249,11 +250,10 @@ namespace UI
             if (_inGameCanvasGroup != null)
                 _inGameCanvasGroup.alpha = 0.0f;
 
-            _input.SwitchToDialogueInput();
             return true;
         }
 
-        // 카메라 연출이 끝나면 CinematicManager가 부른다. 숨긴 UI와 플레이어 조작을 돌려준다.
+        // 카메라 연출이 끝나면 CinematicManager가 부른다. 숨긴 UI를 돌려준다.
         public void EndCinematic()
         {
             if (!_isCinematicActive) return;
@@ -265,10 +265,6 @@ namespace UI
 
             if (_inGameCanvasGroup != null)
                 _inGameCanvasGroup.alpha = 1.0f;
-
-            // 설정창이 열려 있으면 닫을 때 CloseSettings가 플레이어 입력으로 돌린다.
-            if (!_isSettingsOpen)
-                _input.SwitchToPlayerInput();
         }
 
         // 설정창을 열고 게임을 일시정지한다. 입력은 UI 맵으로 바꾼다.
@@ -290,12 +286,12 @@ namespace UI
 
             // 게임 상태와 입력 전환.
             _gameManager.PauseGame();
-            _input.SwitchToUIInput();
+            InputMapController.Instance?.RequestMap(_settingsPresenter, EInputMapType.UI);
 
             _settingsPresenter.Open();
         }
 
-        // 설정창을 닫고 게임을 다시 진행한다. 입력은 대화 중이면 대화 맵, 아니면 플레이어 맵으로 돌린다.
+        // 설정창을 닫고 게임을 다시 진행한다. 입력은 설정창 요청만 풀므로, 대화·펫 안내·연출 중이면 그쪽 요청대로 대화 맵이 된다.
         public void CloseSettings()
         {
             if (!_isSettingsOpen) return;
@@ -306,11 +302,7 @@ namespace UI
             _settingsPresenter.CloseRequested -= CloseSettings;
             _settingsPresenter.Close();
 
-            // 대화·펫 안내·연출 중에 연 설정창이면 대화 입력으로 돌아간다.
-            if (IsDialoguePlaying || _isPetGuideOpen || _isCinematicActive)
-                _input.SwitchToDialogueInput();
-            else
-                _input.SwitchToPlayerInput();
+            InputMapController.Instance?.ReleaseMap(_settingsPresenter);
 
             // 대화·펫 안내·연출 중에 연 설정창이면 그쪽 시간 정지 요청이 남아 있어 시간은 멈춘 채로 있다.
             if (_gameManager != null &&
@@ -321,17 +313,12 @@ namespace UI
 
         #region Private Methods
         // 플레이어가 스폰되거나 바뀌면 HUD와 입력을 새 플레이어에 연결한다. null이면 연결만 해제한다.
+        // 새 플레이어의 입력 맵은 InputMapController가 지금 요청대로 다시 적용한다.
         private void HandlePlayerSpawned(PlayerFacade playerFacade)
         {
             // 전달받은 플레이어를 HUD에 연결한다.
             _playerHudPresenter?.SetPlayer(playerFacade);
             _input.BindPlayer(playerFacade);
-
-            // 설정창이 열렸거나 대화·펫 안내·연출 중인 상태에서 플레이어가 교체된 경우에도 그 입력 맵을 유지.
-            if (_isSettingsOpen)
-                _input.SwitchToUIInput();
-            else if (IsDialoguePlaying || _isPetGuideOpen || _isCinematicActive)
-                _input.SwitchToDialogueInput();
         }
 
         // 대화를 시작한다. 끝날 때까지 Dialogue 입력 맵으로 바꿔 플레이어 조작을 막고, 대화창 외 UI를 숨긴다.
@@ -366,7 +353,7 @@ namespace UI
             if (_inGameCanvasGroup != null)
                 _inGameCanvasGroup.alpha = 0.0f;
 
-            _input.SwitchToDialogueInput();
+            InputMapController.Instance?.RequestMap(_dialoguePresenter, EInputMapType.Dialogue);
 
             if (!_dialoguePresenter.StartDialogue(sequence))
                 HandleDialogueEnded();
@@ -380,14 +367,15 @@ namespace UI
         }
 
         // 대화가 끝나면 구독을 풀고, 연출을 정리한 뒤 상호작용 안내·숨긴 UI와 플레이어 조작을 돌려준다.
-        // 게임 시간은 대화의 정지 요청만 푼다. 카메라 연출 안에서 연 대화면 연출의 요청이 남아 시간은 멈춘 채로 있다.
-        // 카메라 연출 안에서 연 대화면 입력·UI는 연출이 끝날 때 EndCinematic이 돌려준다.
+        // 게임 시간·입력 맵은 대화의 요청만 푼다. 카메라 연출 안에서 연 대화면 연출의 요청이 남아 시간은 멈추고 대화 맵이 유지된다.
+        // 카메라 연출 안에서 연 대화면 UI는 연출이 끝날 때 EndCinematic이 돌려준다.
         private void HandleDialogueEnded()
         {
             _dialoguePresenter.OnDialogueLineChanged -= HandleDialogueLineChanged;
             _dialoguePresenter.OnDialogueEnded -= HandleDialogueEnded;
 
             _gameManager?.ResumeGameTime(this);
+            InputMapController.Instance?.ReleaseMap(_dialoguePresenter);
 
             if (_dialogueDirector != null)
                 _dialogueDirector.EndStaging();
@@ -399,8 +387,6 @@ namespace UI
 
             if (_inGameCanvasGroup != null)
                 _inGameCanvasGroup.alpha = 1.0f;
-
-            _input.SwitchToPlayerInput();
         }
 
         // 대화 맵 E: 펫 안내 중이면 안내를 닫고, 아니면 다음 대사로 넘긴다.
