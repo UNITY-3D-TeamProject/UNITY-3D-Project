@@ -8,8 +8,8 @@ namespace AI.Boss.BossA
 {
     /// <summary>
     /// A 손 패턴 스킬의 공통 흐름.
-    /// 예고(시간 × TelegraphScale) → 손 이동 → 내려침 → 피해·붕괴 → 머묾 → 회수 → EndPattern.
-    /// StrikeCount 가 2 이상이면 내려침을 사이 간격을 두고 반복하고, UsesCannon 이면 내려친 직후 어깨 포격이 붙어 포격이 끝나야 패턴이 끝난다.
+    /// 예고(시간 × TelegraphScale) → 손 이동 → 내려침 → 피해·붕괴 → (이어지는 동작) → 머묾 → 회수 → EndPattern.
+    /// StrikeCount 가 2 이상이면 내려침을 사이 간격을 두고 반복한다.
     /// 코루틴 없이 Update 상태 머신으로 돌아서, Stop 한 번으로 모든 단계를 정리할 수 있다.
     /// </summary>
     public abstract class BossAPatternBase : SkillBase
@@ -21,9 +21,9 @@ namespace AI.Boss.BossA
             Telegraph,
             Moving,
             Slamming,
+            FollowingUp,
             Staying,
             Recalling,
-            WaitingCannon,
         }
         #endregion
 
@@ -45,7 +45,6 @@ namespace AI.Boss.BossA
         private float _remaining;
         private bool _isHoverStarted;
         private bool _isTelegraphOn;
-        private bool _isCannonPending;
         private int _strikeIndex;
         private int[] _tiles;
         #endregion
@@ -71,14 +70,14 @@ namespace AI.Boss.BossA
         /// <summary>true 면 예고가 시작될 때 손이 미리 떠오른다. 기본은 예고가 끝난 뒤 움직인다.</summary>
         protected virtual bool IsHoverDuringTelegraph => false;
 
+        /// <summary>true 면 손가락 끝 대신 주먹을 쥐고 망치처럼 내려친다.</summary>
+        protected virtual bool IsFistStrike => false;
+
         /// <summary>손이 내려치는 횟수. 2 이상이면 내려칠 때마다 RetargetHands 로 다음 칸을 정한다.</summary>
         protected virtual int StrikeCount => 1;
 
         /// <summary>한 번 내려친 충돌에서 다음 충돌까지의 간격(초). 손 이동 시간을 포함하며 TelegraphScale 을 곱하지 않는다. 손 이동이 더 오래 걸리면 도착 즉시 친다.</summary>
         protected virtual float NextStrikeDelay => 0.0f;
-
-        /// <summary>true 면 마지막으로 내려친 직후 플레이어에게 가까운 손 자리에 어깨 포격을 쏜다. 손이 둘일 때만 쏜다.</summary>
-        protected virtual bool UsesCannon => false;
         #endregion
 
         #region Unity Lifecycle
@@ -127,8 +126,6 @@ namespace AI.Boss.BossA
             if (_state == EPatternState.Idle) return;
 
             _state = EPatternState.Idle;
-            _isCannonPending = false;
-            if (_controller) _controller.CancelCannons();
             ClearTelegraph();
 
             for (int i = 0; i < _handCount; i++)
@@ -165,7 +162,6 @@ namespace AI.Boss.BossA
 
             _isHoverStarted = false;
             _strikeIndex = 0;
-            _isCannonPending = false;
             _remaining = telegraphSeconds;
             _state = EPatternState.Telegraph;
 
@@ -210,6 +206,26 @@ namespace AI.Boss.BossA
             {
                 Arena.Collapse(tile);
             }
+        }
+
+        /// <summary>
+        /// 마지막 내려침의 OnImpact 뒤, 머묾 전에 이어지는 동작을 시작한다. 기본은 없음.
+        /// true 를 돌려주면 동작이 끝날 때 FinishFollowUp 을 불러야 머묾으로 넘어간다.
+        /// </summary>
+        protected virtual bool StartFollowUp()
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// StartFollowUp 으로 시작한 동작이 끝났음을 알린다. 예고를 끄고 머묾으로 넘어간다.
+        /// </summary>
+        protected void FinishFollowUp()
+        {
+            if (_state != EPatternState.FollowingUp) return;
+
+            ClearTelegraph();
+            StartStay();
         }
 
         /// <summary>
@@ -262,6 +278,17 @@ namespace AI.Boss.BossA
         }
 
         /// <summary>
+        /// 내려침 사이에 예고 칸을 바꾼다. 지금 예고를 끄고 새 칸에 채움 시간 동안 띄운다.
+        /// 패턴이 끝나거나 중단될 때 끄는 예고도 새 칸이다.
+        /// </summary>
+        protected void ReplaceTelegraph(int[] tiles, float fillSeconds)
+        {
+            ClearTelegraph();
+            _tiles = tiles;
+            ShowTelegraph(fillSeconds);
+        }
+
+        /// <summary>
         /// 플레이어가 해당 칸 위에 있는지. 높이는 보지 않는다.
         /// </summary>
         protected bool IsPlayerOnTile(int tile)
@@ -270,6 +297,23 @@ namespace AI.Boss.BossA
             if (!body) return false;
 
             return Arena.TryGetTile(body.position, out int index) && (index == tile);
+        }
+
+        /// <returns>왼손이 오른손보다 point 에 가깝거나 같으면 true. 한쪽 손이 없으면 있는 손</returns>
+        protected bool IsLeftHandCloser(Vector3 point)
+        {
+            BossHand left = _controller.GetHand(true);
+            BossHand right = _controller.GetHand(false);
+            if (!left || !right) return (bool)left;
+
+            return GetSqrDistanceXZ(left.transform.position, point) <= GetSqrDistanceXZ(right.transform.position, point);
+        }
+
+        protected static float GetSqrDistanceXZ(Vector3 a, Vector3 b)
+        {
+            Vector3 offset = a - b;
+            offset.y = 0.0f;
+            return offset.sqrMagnitude;
         }
         #endregion
 
@@ -301,7 +345,7 @@ namespace AI.Boss.BossA
             _isHoverStarted = true;
             for (int i = 0; i < _handCount; i++)
             {
-                _hands[i].MoveToHover(_points[i]);
+                _hands[i].MoveToHover(_points[i], IsFistStrike);
             }
         }
 
@@ -358,39 +402,11 @@ namespace AI.Boss.BossA
                 return;
             }
 
+            _state = EPatternState.FollowingUp;
+            if (StartFollowUp()) return;
+
             ClearTelegraph();
-            if (UsesCannon) TryFireCannon();
             StartStay();
-        }
-
-        private void TryFireCannon()
-        {
-            if (_handCount < 2) return;
-
-            Transform body = Situation.PlayerBody;
-            if (!body) return;
-
-            // 플레이어에게 가까운 손이 친 자리를 쏜다. 왼쪽 포는 왼손, 오른쪽 포는 오른손 자리
-            int nearest = 0;
-            float nearestDistance = float.MaxValue;
-            for (int i = 0; i < _handCount; i++)
-            {
-                Vector3 offset = body.position - _points[i];
-                offset.y = 0.0f;
-                if (offset.sqrMagnitude >= nearestDistance) continue;
-
-                nearestDistance = offset.sqrMagnitude;
-                nearest = i;
-            }
-
-            _isCannonPending = true;
-            _controller.FireCannon(_hands[nearest] == _controller.GetHand(true), _points[nearest], OnCannonDone);
-        }
-
-        private void OnCannonDone()
-        {
-            _isCannonPending = false;
-            if (_state == EPatternState.WaitingCannon) Finish();
         }
 
         private void StartStay()
@@ -444,12 +460,6 @@ namespace AI.Boss.BossA
 
         private void Finish()
         {
-            if (_isCannonPending)
-            {
-                _state = EPatternState.WaitingCannon;
-                return;
-            }
-
             _state = EPatternState.Idle;
             _handCount = 0;
             _controller.EndPattern(this, true);

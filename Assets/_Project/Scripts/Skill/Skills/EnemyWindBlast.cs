@@ -17,6 +17,8 @@ namespace Skill.Skills
         #region Constants
         /// <summary>정상 종료는 ReleaseHold 가 맡으므로, 붙잡힘 안전 시간에 더하는 여유(초).</summary>
         private const float HOLD_MARGIN = 0.5f;
+        /// <summary>기즈모 호를 나누어 그리는 선분 수.</summary>
+        private const int GIZMO_ARC_SEGMENTS = 16;
         #endregion
 
         #region Serialized Fields
@@ -100,6 +102,35 @@ namespace Skill.Skills
         private void OnDisable()
         {
             Stop();
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            if (!_windOrigin) return;
+
+            // 발동 중이면 시작 순간 고정한 방향, 아니면 기준점 정면을 쓴다
+            Vector3 forward = (_phase != EWindPhase.Idle)
+                ? _forward
+                : Vector3.ProjectOnPlane(_windOrigin.forward, Vector3.up).normalized;
+            if (forward.sqrMagnitude <= Mathf.Epsilon) return;
+
+            Vector3 origin = _windOrigin.position;
+            Gizmos.color = Color.green;
+
+            // 수평 부채꼴
+            Vector3 left = Quaternion.AngleAxis(-_horizontalHalfAngle, Vector3.up) * forward;
+            Vector3 right = Quaternion.AngleAxis(_horizontalHalfAngle, Vector3.up) * forward;
+            Gizmos.DrawRay(origin, left * _range);
+            Gizmos.DrawRay(origin, right * _range);
+            DrawGizmoArc(origin, Vector3.up, left, _horizontalHalfAngle * 2.0f, _range);
+
+            // 수직 부채꼴
+            Vector3 side = Vector3.Cross(Vector3.up, forward);
+            Vector3 up = Quaternion.AngleAxis(-_verticalHalfAngle, side) * forward;
+            Vector3 down = Quaternion.AngleAxis(_verticalHalfAngle, side) * forward;
+            Gizmos.DrawRay(origin, up * _range);
+            Gizmos.DrawRay(origin, down * _range);
+            DrawGizmoArc(origin, side, up, _verticalHalfAngle * 2.0f, _range);
         }
         #endregion
 
@@ -245,6 +276,21 @@ namespace Skill.Skills
         private static float EaseOut(float t)
         {
             return 1.0f - ((1.0f - t) * (1.0f - t));
+        }
+
+        /// <summary>
+        /// from 방향에서 axis 를 축으로 angle 만큼 도는 반지름 radius 의 호를 기즈모 선분으로 그린다.
+        /// </summary>
+        private static void DrawGizmoArc(Vector3 center, Vector3 axis, Vector3 from, float angle, float radius)
+        {
+            Vector3 previous = center + (from * radius);
+            for (int i = 1; i <= GIZMO_ARC_SEGMENTS; i++)
+            {
+                Vector3 direction = Quaternion.AngleAxis(angle * i / GIZMO_ARC_SEGMENTS, axis) * from;
+                Vector3 point = center + (direction * radius);
+                Gizmos.DrawLine(previous, point);
+                previous = point;
+            }
         }
         #endregion
     }

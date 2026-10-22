@@ -233,6 +233,17 @@ namespace Mediator.SubMediators
 
             _targetCamera.PlayFireFeedback(isCharged);
         }
+
+        /// <summary>
+        /// 사격 쉐이크와 같은 임펄스로 카메라를 흔든다. 반동은 없다.
+        /// </summary>
+        /// <param name="force">차지샷 쉐이크(1) 대비 세기</param>
+        public void PlayShake(float force)
+        {
+            if (_targetCamera == null) return;
+
+            _targetCamera.PlayImpulse(force);
+        }
         #endregion
 
         #region Protected Methods

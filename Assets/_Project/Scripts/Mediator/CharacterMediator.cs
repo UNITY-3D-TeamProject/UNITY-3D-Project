@@ -44,6 +44,8 @@ namespace Mediator
         private bool _isSpawnLocked;
         // 가장 최근 어트리뷰트 변경의 출처 정보. 피격은 Health 변경 알림 도중 동기로 오므로 피격 방향 계산에 쓴다
         private SEffectContext _lastChangeContext;
+        // 피격 시 조종부(AI)에 경직을 요청하는 콜백. 경직이 걸렸으면 true 를 돌려준다
+        private Func<bool> _requestHitStun;
         #endregion
 
         #region Properties
@@ -245,6 +247,58 @@ namespace Mediator
         public bool IsPetEnabled()
         {
             return _petMediator && _petMediator.IsPetEnabled();
+        }
+
+        /// <summary>
+        /// 피격 시 경직을 요청할 조종부 콜백을 등록한다. 등록되어 있으면 경직이 걸린 피격에만 적 피격 모션을 재생한다.
+        /// 비어 있으면 매 피격마다 재생한다.
+        /// </summary>
+        /// <param name="requestHitStun">경직을 시도하고, 걸렸으면 true 를 돌려주는 콜백</param>
+        public void SetRequestHitStun(Func<bool> requestHitStun)
+        {
+            if (requestHitStun == null) return;
+            _requestHitStun = requestHitStun;
+        }
+
+        /// <summary>
+        /// 경직 요청 콜백 등록을 해제한다.
+        /// </summary>
+        public void ClearRequestHitStun()
+        {
+            _requestHitStun = null;
+        }
+
+        /// <summary>
+        /// 이동·점프·구르기 입력을 잠그거나 푼다. 잠긴 동안에도 넉백 등 외부 변위와 중력은 적용된다.
+        /// </summary>
+        /// <param name="isLocked">잠그려면 true</param>
+        public void SetMoveLocked(bool isLocked)
+        {
+            if (!_moveMediator) return;
+
+            _moveMediator.SetMoveLocked(isLocked);
+        }
+
+        /// <summary>
+        /// 붙잡힌 상태로 두거나 푼다. 붙잡힌 동안은 중력이 멈추고(상승 속도 0 인 일정 속도 상승) 외부 변위로만 움직인다.
+        /// </summary>
+        /// <param name="isHeld">붙잡으려면 true</param>
+        public void SetHeld(bool isHeld)
+        {
+            if (!_moveMediator) return;
+
+            _moveMediator.SetHover(isHeld, 0.0f);
+        }
+
+        /// <summary>
+        /// 사격 쉐이크와 같은 임펄스로 카메라를 흔든다. 카메라 중재자가 없으면 무시한다.
+        /// </summary>
+        /// <param name="force">차지샷 쉐이크(1) 대비 세기</param>
+        public void PlayCameraShake(float force)
+        {
+            if (!_cameraMediator) return;
+
+            _cameraMediator.PlayShake(force);
         }
 
         /// <summary>
@@ -535,8 +589,10 @@ namespace Mediator
             if (!_combatMediator.IsDead())
             {
                 Vector3? hitSource = GetHitSource(_lastChangeContext);
+                // 경직 요청은 애니메이션 중재자 유무와 상관없이 매 피격마다 보낸다. 힛모션은 경직이 걸렸을 때만 재생한다
+                bool shouldPlayEnemyHit = (_requestHitStun == null) || _requestHitStun();
                 if (_playerAnimationMediator) _playerAnimationMediator.NotifyHit(hitSource);
-                if (_enemyAnimationMediator) _enemyAnimationMediator.NotifyHit(hitSource);
+                if (_enemyAnimationMediator && shouldPlayEnemyHit) _enemyAnimationMediator.NotifyHit(hitSource);
                 if (_petMediator) _petMediator.NotifyHit(_playerAnimationMediator ? _playerAnimationMediator.GetHitDirection(hitSource) : 0);
                 if (hitSource.HasValue) OnHitFrom?.Invoke(hitSource.Value);
             }

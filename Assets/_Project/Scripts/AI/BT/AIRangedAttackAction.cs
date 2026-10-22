@@ -8,6 +8,7 @@ namespace AI.BT
     /// <summary>
     /// 사거리 안의 대상을 예고 후 사격한다. 원거리 적 전용.
     /// 대기(랜덤 간격, 대상을 바라봄) → 예비 동작(고정 시간, 조준 방향 고정·조준선 표시) → 발사를 반복한다.
+    /// 발사 직후 발사 모션(AttackMotionDuration) 동안은 대기 중이어도 조준 방향을 유지한다.
     /// 언제 쏠지는 예측할 수 없지만, 조준선을 보고 움직이면 피할 수 있게 하기 위한 구조다.
     /// 대상이 사거리를 벗어나거나 노드가 중단되면(사선 차단 등) 예비 동작은 취소되고 총알은 나가지 않는다.
     /// 이 캐릭터에 "Attack"(사격)과 "AttackWindup"(조준선) 스킬이 등록되어 있어야 한다.
@@ -29,6 +30,9 @@ namespace AI.BT
 
         /// <summary>예비 동작 동안 켜 두는 조준선 스킬 이름.</summary>
         private const string WINDUP_SKILL = "AttackWindup";
+
+        /// <summary>그래프에 AttackMotionDuration 값이 없을 때 쓰는 발사 모션 시간(초).</summary>
+        private const float DEFAULT_ATTACK_MOTION_DURATION = 0.85f;
         #endregion
 
         #region Serialized Fields
@@ -37,12 +41,14 @@ namespace AI.BT
         [SerializeReference] public BlackboardVariable<float> MaxInterval = new BlackboardVariable<float>(3.0f);
         [SerializeReference] public BlackboardVariable<float> WindupDuration = new BlackboardVariable<float>(0.6f);
         [SerializeReference] public BlackboardVariable<bool> KeepMoving = new BlackboardVariable<bool>(false);
+        [SerializeReference] public BlackboardVariable<float> AttackMotionDuration = new BlackboardVariable<float>(DEFAULT_ATTACK_MOTION_DURATION);
         #endregion
 
         #region Private Fields
         [CreateProperty] private bool _isWindingUp;
         [CreateProperty] private float _phaseEndTime;
         [CreateProperty] private Vector3 _aimDirection;
+        [CreateProperty] private float _superArmorEndTime;
         #endregion
 
         #region Node Lifecycle
@@ -107,8 +113,12 @@ namespace AI.BT
         /// </summary>
         private void UpdateWait()
         {
+            // 발사 모션이 끝나면 슈퍼아머를 풀어 다시 경직될 수 있게 한다
+            if (Controller.IsSuperArmor && (Time.time >= _superArmorEndTime)) Controller.IsSuperArmor = false;
+
             Vector3 toTarget = Vector3.ProjectOnPlane(Controller.VisibleTarget.position - Controller.Position, Vector3.up);
-            Controller.FaceDirection(toTarget);
+            // 발사 모션 중(슈퍼아머 유지 중)에는 쏜 방향을 유지해, 모션보다 늦게 나가는 총알과 몸 방향이 어긋나지 않게 한다
+            Controller.FaceDirection(Controller.IsSuperArmor ? _aimDirection : toTarget);
 
             if (Time.time < _phaseEndTime) return;
             // 경직 중에는 조준선 스킬이 무시되므로, 조준선 없이 쏘지 않도록 풀릴 때까지 예비 동작을 미룬다
@@ -135,7 +145,9 @@ namespace AI.BT
             Controller.ExecuteSkill(ATTACK_SKILL);
             // 누르고 있는 동안 반복되는 스킬이어도 한 번만 발동하도록 바로 뗀다
             Controller.StopSkill(ATTACK_SKILL);
-            Controller.IsSuperArmor = false;
+            // 발사 모션 동안에도 슈퍼아머를 유지해 힛모션이 공격 모션을 덮거나 뒤로 밀리지 않게 한다. 해제는 UpdateWait 가 맡는다
+            float motionDuration = (AttackMotionDuration != null) ? AttackMotionDuration.Value : DEFAULT_ATTACK_MOTION_DURATION;
+            _superArmorEndTime = Time.time + motionDuration;
 
             BeginWait();
         }

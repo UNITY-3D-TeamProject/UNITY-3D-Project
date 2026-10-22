@@ -30,10 +30,10 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 
 ## 열린 질문 (Open questions)
 - ~~`WarningSignals` 기준점·평면 문제~~ → 해결(2026-10-21, 사용자 결정 "가운데서 시작해 가장자리까지"): `BossTile`이 예고 메시 bounds 중심을 채움 기준점으로, 가장 얇은 축을 뺀 두 축을 채움 축으로 써서 위치를 보정한다. 메시·씬 수정 없음.
-- `BossArena`의 `_circlePrefab`/`_linePrefab`(B 도약 원·A4/B 돌진 직선 예고)은 사용자 지시에 따라 비워 두었다. 연결 여부를 정해야 한다.
+- `BossArena`의 `_circlePrefab`/`_linePrefab`(B 도약 원·A4/B 돌진 직선 예고)은 사용자 지시에 따라 비워 두었다. 연결 여부를 정해야 한다. (2026-10-21 재확인: 씬에 아직 비어 있음. `ShowCircle` 을 쓰는 어깨포 예고 원, `ShowLine` 을 쓰는 A4 그랩 직선 예고가 이 맵에서는 안 보인다.)
 - `SafeSignals`는 붕괴 때 꺼지는 렌더러로만 연결했다. 예고 중 안전 표시를 끌지는 정하지 않았다.
-- `Platform_5`(x≈306)와 아레나(x≈322.6) 사이 16 m에 바닥이 없다. 플레이어가 어떻게 건너가는지(맵 담당 의도) 확인이 필요하다.
-- 낙사 구역(`BossArenaFallZone`)은 아직 배치하지 않았다.
+- ~~`Platform_5`(x≈306)와 아레나(x≈322.6) 사이 16 m에 바닥이 없다.~~ → 사용자 육안 확인에서 문제없음(2026-10-21).
+- ~~낙사 구역(`BossArenaFallZone`)은 아직 배치하지 않았다.~~ → 배치 완료(`Stage_BossRun/BossArenaFallZone`), 사용자 육안 확인 통과(2026-10-21).
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:

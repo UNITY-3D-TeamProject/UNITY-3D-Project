@@ -3,6 +3,7 @@ using Core.Stage;
 using Facade.Player;
 using SceneTransition;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -59,6 +60,9 @@ namespace Core
         // 어떤 스테이지에서 넘어왔는지를 체크해서 그에 따라 다르게 스폰하게 저장할 값
         public EStageType? SpawnStage { get; private set; }
 
+        // 게임 시간을 멈춰 달라고 요청한 쪽들. 하나라도 남아 있으면 게임 시간이 멈춘다.
+        private readonly HashSet<UnityEngine.Object> _timePauseRequesters = new();
+
         public override void Awake()
         {
             base.Awake();
@@ -105,36 +109,44 @@ namespace Core
         public void PauseGame()
         {
             CurrentState = GameState.Pause;
-            Time.timeScale = 0f;
-            // 3D 효과음만 멈춘다. BGM·UI 소스는 ignoreListenerPause라 계속 들린다. (AudioManager)
-            AudioListener.pause = true;
+            ApplyGameTime();
             SetCursorLocked(false);
         }
 
+        // 설정창을 닫으면 부른다. 대화·연출 등이 아직 시간 정지를 요청 중이면 시간은 멈춘 채로 둔다.
         public void ResumeGame()
         {
             CurrentState = GameState.Playing;
-            Time.timeScale = 1f;
-            AudioListener.pause = false;
+            ApplyGameTime();
             SetCursorLocked(true);
         }
 
-        // 대화·펫 가이드 동안 게임 시간과 3D 효과음을 멈춘다. BGM·UI 소리는 계속 들린다.
-        // 상태는 Playing 그대로라 그동안에도 설정창을 열 수 있고, 커서는 잠근 채로 둔다.
-        public void PauseGameTime()
+        // 대화·펫 가이드·연출 동안 requester 이름으로 게임 시간과 3D 효과음을 멈춰 달라고 요청한다. BGM·UI 소리는 계속 들린다.
+        // 상태는 Playing 그대로라 그동안에도 설정창을 열 수 있고, 커서는 잠근 채로 둔다. 같은 requester가 여러 번 불러도 요청은 하나다.
+        public void PauseGameTime(UnityEngine.Object requester)
         {
-            Time.timeScale = 0f;
-            AudioListener.pause = true;
+            if (requester == null) return;
+
+            _timePauseRequesters.Add(requester);
+            ApplyGameTime();
         }
 
-        // 대화·펫 가이드가 끝나면 게임 시간과 3D 효과음을 돌린다.
-        // 설정창으로 멈춘 중(Pause)이면 설정창을 닫을 때 ResumeGame이 돌리므로 여기서는 두지 않는다.
-        public void ResumeGameTime()
+        // requester의 시간 정지 요청을 푼다. 다른 요청이 남아 있거나 설정창으로 멈춘 중(Pause)이면 시간은 멈춘 채로 둔다.
+        public void ResumeGameTime(UnityEngine.Object requester)
         {
-            if (CurrentState == GameState.Pause) return;
+            if (!_timePauseRequesters.Remove(requester)) return;
 
-            Time.timeScale = 1f;
-            AudioListener.pause = false;
+            ApplyGameTime();
+        }
+
+        // 설정창으로 멈춘 중(Pause)이거나 시간 정지 요청이 하나라도 있으면 게임 시간과 3D 효과음을 멈추고, 아니면 돌린다.
+        private void ApplyGameTime()
+        {
+            bool shouldPause = (CurrentState == GameState.Pause) || (_timePauseRequesters.Count > 0);
+
+            Time.timeScale = shouldPause ? 0f : 1f;
+            // 3D 효과음만 멈춘다. BGM·UI 소스는 ignoreListenerPause라 계속 들린다. (AudioManager)
+            AudioListener.pause = shouldPause;
         }
 
 
@@ -227,6 +239,10 @@ namespace Core
             {
                 return;
             }
+
+            // 이전 씬과 함께 파괴된 쪽의 시간 정지 요청이 남아 새 씬이 멈춘 채 시작하지 않도록 지운다.
+            _timePauseRequesters.RemoveWhere(requester => requester == null);
+            ApplyGameTime();
 
             _stageManager = FindAnyObjectByType<StageManager>();
 

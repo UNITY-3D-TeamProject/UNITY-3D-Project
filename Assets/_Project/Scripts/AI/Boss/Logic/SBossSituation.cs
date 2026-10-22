@@ -27,5 +27,11 @@ namespace AI.Boss.Logic
 
         /// <summary>B 돌진 방향이 row 축(row 인덱스가 바뀌는 방향, 아레나 로컬 z)인지. false 면 col 축(로컬 x).</summary>
         public bool ChargeDirectionIsRow;
+
+        /// <summary>B 돌진 시작점과 수평 방향(칸 단위 좌표, x → col, z → row). 방향이 0 이면 직선 위 칸을 빼지 않는다.</summary>
+        public float ChargeOriginX;
+        public float ChargeOriginZ;
+        public float ChargeDirectionX;
+        public float ChargeDirectionZ;
     }
 }
