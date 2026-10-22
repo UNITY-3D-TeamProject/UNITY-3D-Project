@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — 시간을 멈추지 않는 독백(intent-062 해결): `UIManager.PlayMonologue(id)`/`StopMonologue()`, 새 `MonologuePresenter`·`SOMonologueTable`(번호·`SODialogue`·한 줄 시간, 0이면 기본 3초). `PetGuidePanel`을 같이 쓰고 아래 `Gauge`가 다 줄면 다음 줄·마지막 뒤 숨김, 컷씬·펫 안내가 시작되면 독백 끔, 끄는 키 없음. 컴파일 0에러·TestScene Play 런타임 확인, 테이블 비어 있음, 커밋 안 함: [작업 기록](./2026-10-22/monologue-auto-hide.md)
 - **2026-10-22** — 피드 맵 악성 데이터 피격 무적 설계(intent-061 진행 중): 무적 1초 중 닿은 `HomingHazard`가 데미지 없이 사라져 1번만 맞음. 악성 데이터가 있을 때만 `PlayerFacade.SetHitInvincibilityDuration(0)`, 생성은 `MaliciousFeed.OnCleared`로 감지. 사라짐 감지·원래 값 출처 결정 대기, 코드 수정 없음: [작업 기록](./2026-10-22/feed-malicious-data-invincibility.md)
 - **2026-10-22** — 체크포인트 도달 알림 UI(intent-060 해결): `StageManager.OnCheckpointReached(bool)` + `UI.Checkpoint.CheckpointNoticePresenter/View`, `Canvas_InGame/CheckpointNotice`(왼쪽 가운데). 라운드 체크포인트는 주황 "사망하면 이곳에서 다시 시작", 일반은 하늘색 "떨어지면 이곳으로 돌아옴", 2.5초 뒤 숨김, 지난 체크포인트는 미표시. 컴파일 0에러·TestScene Play 캡처 확인, 맵 씬 미확인, 커밋 안 함: [작업 기록](./2026-10-22/checkpoint-notice-ui.md)
 - **2026-10-22** — 낙하 복귀 시 체크포인트 방향 바라보기(intent-059 진행 중): 몸 모델이 카메라 yaw를 따라가 떨어지기 전 방향을 유지하는 문제. Facade~카메라에 방향 설정을 넣는 1차 시도는 Core 밖 수정이라 되돌림. `CheckpointTrigger`에 RespawnPoint 정면 화살표 Gizmo 추가(컴파일 0에러, 육안 미확인). Core만으로 복귀 방향을 맞출 방법 결정 대기, 커밋 안 함: [작업 기록](./2026-10-22/checkpoint-respawn-facing.md)
