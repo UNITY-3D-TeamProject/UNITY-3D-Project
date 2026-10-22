@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using Unity.Cinemachine;
@@ -8,7 +9,8 @@ namespace Core.Cinematic
 {
     /// <summary>
     /// 씬의 카메라 연출(CinematicSequence)을 단계 순서대로 실행한다. 씬마다 하나 둔다.
-    /// 연출 동안 InputMapController에 Dialogue 맵(조작 막기)을, UIManager에 인게임 UI 숨기기를 요청하고, 샷 설정에 따라 게임 시간을 멈추거나 돌린다.
+    /// 연출 동안 InputMapController에 Dialogue 맵(조작 막기)을 요청하고, 샷 설정에 따라 게임 시간을 멈추거나 돌린다.
+    /// 시작·끝을 이벤트로 알리면 UIManager가 받아 인게임 UI를 숨기고 보인다.
     /// 시간이 멈춰도 카메라 블렌드가 돌도록 CinemachineBrain을 게임 시간과 상관없이 돌리고, 끝나면 모두 원래대로 돌린다.
     /// 연출 중 플레이어는 무적이 아니므로, 시간이 흐르는 샷은 적이 없는 곳에서만 쓴다.
     /// </summary>
@@ -38,6 +40,12 @@ namespace Core.Cinematic
 
         // 연출이 재생 중이면 true.
         public bool IsPlaying => _currentSequence != null;
+        #endregion
+
+        #region Events
+        // 연출이 시작·끝날 때 알린다. 씬마다 CinematicManager가 새로 생기므로 UIManager가 Awake 순서와 상관없이 구독할 수 있게 static으로 둔다.
+        public static event Action<CinematicManager> OnPlayStarted;
+        public static event Action<CinematicManager> OnPlayFinished;
         #endregion
 
         #region Unity Lifecycle
@@ -80,10 +88,18 @@ namespace Core.Cinematic
 
         #region Public Methods
         // 연출을 처음부터 재생한다.
-        // 이미 연출·대화 중이거나, 한 번만 보는 연출을 이미 봤거나, UIManager가 연출을 시작할 수 없으면 false.
+        // 이 매니저가 꺼져 있거나, 이미 연출·대화·펫 안내 중이거나, 설정창이 열려 있거나, 플레이어가 없거나,
+        // 한 번만 보는 연출을 이미 봤으면 false.
         public bool Play(CinematicSequence sequence)
         {
             if ((sequence == null) || IsPlaying) return false;
+
+            // 꺼져 있으면 Update가 돌지 않아 연출이 시작되지 않은 채 조작만 막히므로 받지 않는다.
+            if (!isActiveAndEnabled)
+            {
+                Debug.LogWarning("[CinematicManager] 꺼져 있어 연출을 재생하지 못했습니다.", this);
+                return false;
+            }
 
             UIManager uiManager = UIManager.Instance;
             if (uiManager == null)
@@ -92,8 +108,14 @@ namespace Core.Cinematic
                 return false;
             }
 
+            GameManager gameManager = GameManager.Instance;
+            if ((gameManager == null) ||
+                (gameManager.CurrentState != GameManager.GameState.Playing) ||
+                (gameManager.CurrentPlayerFacade == null))
+                return false;
+
+            if (uiManager.IsDialoguePlaying || uiManager.IsPetGuideOpen) return false;
             if (sequence.ShouldPlayOnce && HasSeen(sequence)) return false;
-            if (!uiManager.BeginCinematic()) return false;
 
             // 중간에 끊겨도 다시 보지 않도록 시작할 때 본 기록을 남긴다.
             if (sequence.ShouldPlayOnce)
@@ -103,6 +125,7 @@ namespace Core.Cinematic
             InputMapController.Instance?.RequestMap(this, EInputMapType.Dialogue);
             BeginBrainControl();
             _shouldStartRoutine = true;
+            OnPlayStarted?.Invoke(this);
             return true;
         }
 
@@ -119,7 +142,7 @@ namespace Core.Cinematic
                 _playRoutine = null;
             }
 
-            // 대화 단계 중이면 대화도 끝낸다. 연출 중이므로 UIManager는 시간·입력·UI를 돌려주지 않고 Finish가 돌려준다.
+            // 대화 단계 중이면 대화도 끝낸다. 대화는 자기 요청만 풀고, 연출의 시간·입력 요청과 UI 숨김은 Finish가 푼다.
             if (UIManager.Instance != null)
                 UIManager.Instance.StopDialogue();
 
@@ -197,8 +220,7 @@ namespace Core.Cinematic
 
             InputMapController.Instance?.ReleaseMap(this);
 
-            if (UIManager.Instance != null)
-                UIManager.Instance.EndCinematic();
+            OnPlayFinished?.Invoke(this);
 
             // Brain은 다음 프레임에 블렌드를 시작하므로, 블렌드 시간이 지난 뒤에 원래 기본 블렌드로 돌린다.
             if (isActiveAndEnabled)
@@ -290,7 +312,7 @@ namespace Core.Cinematic
             if (uiManager == null) yield break;
 
             // 테이블에 없거나 시작하지 못하면 IsDialoguePlaying이 false라 바로 다음 단계로 넘어간다.
-            uiManager.PlayDialogue(step.DialogueId);
+            uiManager.PlayCinematicDialogue(step.DialogueId);
 
             while ((uiManager != null) && uiManager.IsDialoguePlaying)
                 yield return null;

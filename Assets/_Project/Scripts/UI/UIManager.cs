@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Core;
+using Core.Cinematic;
 using Core.InputMap;
 using Facade.Player;
 using UI.Dialogue;
@@ -47,8 +49,8 @@ namespace UI
         // 펫 안내가 떠 있으면 true. E로 닫을 때까지 게임을 멈춘다.
         private bool _isPetGuideOpen;
 
-        // 카메라 연출(CinematicManager) 중이면 true. 연출 안에서 연 대화는 끝나도 시간·입력·UI를 돌려주지 않는다.
-        private bool _isCinematicActive;
+        // 인게임 UI를 숨겨 달라고 한 쪽들(대화, 카메라 연출). 하나라도 남아 있으면 숨긴다.
+        private readonly HashSet<Object> _inGameUIHiders = new();
         #endregion
 
         #region Properties
@@ -58,6 +60,12 @@ namespace UI
 
         // 대화가 재생 중이면 true. 대화 Presenter가 없으면 항상 false다.
         public bool IsDialoguePlaying => (_dialoguePresenter != null) && _dialoguePresenter.IsDialoguePlaying;
+
+        // 펫 안내가 떠 있으면 true.
+        public bool IsPetGuideOpen => _isPetGuideOpen;
+
+        // 카메라 연출이 재생 중이면 true. 연출 중에는 펫 안내·독백·밖에서 부른 대화를 시작하지 않는다.
+        private bool IsCinematicPlaying => (CinematicManager.Instance != null) && CinematicManager.Instance.IsPlaying;
         #endregion
 
         #region Unity Lifecycle
@@ -76,6 +84,12 @@ namespace UI
             _input.OnOpenSettingsRequested += OpenSettings;
             _input.OnCloseSettingsRequested += CloseSettings;
             _input.OnNextLineRequested += HandleNextLine;
+
+            // 카메라 연출 동안 인게임 UI를 숨긴다. 이미 연출 중에 켜졌으면 바로 숨긴다.
+            CinematicManager.OnPlayStarted += HandleCinematicStarted;
+            CinematicManager.OnPlayFinished += HandleCinematicFinished;
+            if (IsCinematicPlaying)
+                HandleCinematicStarted(CinematicManager.Instance);
 
             // 1. 플레이어를 연결할 HUD가 있는지 확인한다. 없어도 설정창·대화는 동작한다.
             if (_playerHudPresenter == null)
@@ -113,6 +127,13 @@ namespace UI
             _input.OnOpenSettingsRequested -= OpenSettings;
             _input.OnCloseSettingsRequested -= CloseSettings;
             _input.OnNextLineRequested -= HandleNextLine;
+
+            // 꺼진 동안에는 연출 알림을 받지 못하므로 숨긴 UI를 돌려 두고, 다시 켜질 때 연출 중이면 다시 숨긴다.
+            CinematicManager.OnPlayStarted -= HandleCinematicStarted;
+            CinematicManager.OnPlayFinished -= HandleCinematicFinished;
+            _inGameUIHiders.Clear();
+            ApplyInGameUIVisibility();
+
             // 1. 알림을 신청했던 GameManager에서 구독을 해제한다.
             if (_gameManager != null)
             {
@@ -143,14 +164,14 @@ namespace UI
 
         // 번호에 맞는 펫 안내 문구를 띄운다. 번호와 문구는 SOPetGuideTable에서 정한다.
         // E로 닫을 때까지 BGM만 남기고 게임을 멈추며, 입력은 Dialogue 맵(E 닫기·ESC 설정창)으로 바꾼다.
-        // 대화 중이거나 설정창이 열려 있거나 이미 안내 중이거나 플레이어가 없으면 무시한다.
+        // 대화·연출 중이거나 설정창이 열려 있거나 이미 안내 중이거나 플레이어가 없으면 무시한다.
         public void ShowPetGuide(int id)
         {
             if ((_petGuidePresenter == null) ||
                 IsDialoguePlaying ||
                 _isSettingsOpen ||
                 _isPetGuideOpen ||
-                _isCinematicActive ||
+                IsCinematicPlaying ||
                 (!_input.HasPlayer))
                 return;
 
@@ -178,22 +199,20 @@ namespace UI
         // 번호에 맞는 컷씬을 지금 플레이어 자리에서 재생한다. 번호와 대화는 SODialogueTable에서 정한다.
         // 연출(펫 세우기·카메라)은 DialogueDirector가 맡는다. 본 기록은 남기지 않으므로 부를 때마다 재생된다.
         // 이미 대화 중이면 무시한다. 발판(TriggerPlate) 같은 UnityEvent에서도 연결할 수 있도록 반환값이 없다.
+        // 카메라 연출 중에는 재생하지 않는다. 연출의 대화 단계는 PlayCinematicDialogue로 연다.
         public void PlayDialogue(int id)
         {
-            if ((_cutsceneTable == null) || !_cutsceneTable.TryGetSequence(id, out SODialogue sequence))
+            if (IsCinematicPlaying)
             {
-                Debug.LogWarning($"[UIManager] {id}번 컷씬이 테이블에 없습니다.", this);
+                Debug.LogWarning($"[UIManager] 카메라 연출 중이라 {id}번 컷씬을 재생하지 않았습니다.", this);
                 return;
             }
 
-            if (_dialogueDirector == null)
-            {
-                Debug.LogWarning("[UIManager] DialogueDirector가 연결되지 않아 컷씬을 재생하지 못했습니다.", this);
-                return;
-            }
-
-            StartDialogue(sequence);
+            PlayDialogueById(id);
         }
+
+        // 카메라 연출의 대화 단계에서 CinematicManager가 부른다. 연출 중에도 재생한다.
+        public void PlayCinematicDialogue(int id) => PlayDialogueById(id);
 
         // 대화를 끝까지 보지 않고 정리한다. 연출과 입력도 대화가 끝났을 때처럼 돌려놓는다.
         public void StopDialogue()
@@ -218,7 +237,7 @@ namespace UI
             if ((_monologuePresenter == null) ||
                 IsDialoguePlaying ||
                 _isPetGuideOpen ||
-                _isCinematicActive)
+                IsCinematicPlaying)
                 return;
 
             _monologuePresenter.Play(sequence, lineDuration);
@@ -226,46 +245,6 @@ namespace UI
 
         // 독백을 바로 끝내고 패널을 숨긴다.
         public void StopMonologue() => _monologuePresenter?.Stop();
-
-        // 카메라 연출을 시작할 때 CinematicManager가 부른다. 끝날 때까지 인게임 UI를 숨긴다.
-        // 게임 시간·입력 맵·카메라는 CinematicManager가 요청한다. 연출 안에서 연 대화는 끝나도 UI를 돌려주지 않는다.
-        // 이미 연출·대화 중이거나 설정창·펫 안내가 열려 있거나 플레이어가 없으면 시작하지 않고 false를 돌려준다.
-        public bool BeginCinematic()
-        {
-            if (_isCinematicActive ||
-                IsDialoguePlaying ||
-                _isSettingsOpen ||
-                _isPetGuideOpen ||
-                (!_input.HasPlayer))
-                return false;
-
-            // 같은 패널을 쓰는 독백이 연출 화면에 남지 않도록 끈다.
-            StopMonologue();
-
-            _isCinematicActive = true;
-
-            if (_playerHudPresenter != null)
-                _playerHudPresenter.SetInteractLabelBlocked(true);
-
-            if (_inGameCanvasGroup != null)
-                _inGameCanvasGroup.alpha = 0.0f;
-
-            return true;
-        }
-
-        // 카메라 연출이 끝나면 CinematicManager가 부른다. 숨긴 UI를 돌려준다.
-        public void EndCinematic()
-        {
-            if (!_isCinematicActive) return;
-
-            _isCinematicActive = false;
-
-            if (_playerHudPresenter != null)
-                _playerHudPresenter.SetInteractLabelBlocked(false);
-
-            if (_inGameCanvasGroup != null)
-                _inGameCanvasGroup.alpha = 1.0f;
-        }
 
         // 설정창을 열고 게임을 일시정지한다. 입력은 UI 맵으로 바꾼다.
         // 이미 열려 있거나, 플레이어가 없거나, 게임이 Playing 상태가 아니면 무시한다.
@@ -321,6 +300,24 @@ namespace UI
             _input.BindPlayer(playerFacade);
         }
 
+        // 번호에 맞는 대화를 테이블에서 찾아 시작한다.
+        private void PlayDialogueById(int id)
+        {
+            if ((_cutsceneTable == null) || !_cutsceneTable.TryGetSequence(id, out SODialogue sequence))
+            {
+                Debug.LogWarning($"[UIManager] {id}번 컷씬이 테이블에 없습니다.", this);
+                return;
+            }
+
+            if (_dialogueDirector == null)
+            {
+                Debug.LogWarning("[UIManager] DialogueDirector가 연결되지 않아 컷씬을 재생하지 못했습니다.", this);
+                return;
+            }
+
+            StartDialogue(sequence);
+        }
+
         // 대화를 시작한다. 끝날 때까지 Dialogue 입력 맵으로 바꿔 플레이어 조작을 막고, 대화창 외 UI를 숨긴다.
         // Dialogue 맵에서는 E로 대사를 넘기고, ESC로 설정창을 연다.
         // 이미 대화 중이거나 설정창·펫 안내가 열려 있거나 플레이어가 없으면 시작하지 않는다.
@@ -345,13 +342,8 @@ namespace UI
             // 대화 동안 플레이어·펫 대기 애니메이션과 BGM만 남기고 게임을 멈춘다.
             _gameManager?.PauseGameTime(this);
 
-            // 대화 중에는 상호작용 안내를 숨긴다.
-            if (_playerHudPresenter != null)
-                _playerHudPresenter.SetInteractLabelBlocked(true);
-
-            // 대화 중에는 대화창만 보이도록 나머지 인게임 UI를 숨긴다.
-            if (_inGameCanvasGroup != null)
-                _inGameCanvasGroup.alpha = 0.0f;
+            // 대화 중에는 대화창만 보이도록 상호작용 안내와 나머지 인게임 UI를 숨긴다.
+            HideInGameUI(_dialoguePresenter);
 
             InputMapController.Instance?.RequestMap(_dialoguePresenter, EInputMapType.Dialogue);
 
@@ -367,8 +359,7 @@ namespace UI
         }
 
         // 대화가 끝나면 구독을 풀고, 연출을 정리한 뒤 상호작용 안내·숨긴 UI와 플레이어 조작을 돌려준다.
-        // 게임 시간·입력 맵은 대화의 요청만 푼다. 카메라 연출 안에서 연 대화면 연출의 요청이 남아 시간은 멈추고 대화 맵이 유지된다.
-        // 카메라 연출 안에서 연 대화면 UI는 연출이 끝날 때 EndCinematic이 돌려준다.
+        // 게임 시간·입력 맵·UI 숨김은 대화의 요청만 푼다. 카메라 연출 안에서 연 대화면 연출의 요청이 남아 시간은 멈추고 대화 맵·UI 숨김이 유지된다.
         private void HandleDialogueEnded()
         {
             _dialoguePresenter.OnDialogueLineChanged -= HandleDialogueLineChanged;
@@ -380,13 +371,49 @@ namespace UI
             if (_dialogueDirector != null)
                 _dialogueDirector.EndStaging();
 
-            if (_isCinematicActive) return;
+            ShowInGameUI(_dialoguePresenter);
+        }
+
+        // 카메라 연출이 시작되면 인게임 UI를 숨긴다. 같은 패널을 쓰는 독백이 연출 화면에 남지 않도록 끈다.
+        private void HandleCinematicStarted(CinematicManager cinematicManager)
+        {
+            StopMonologue();
+            HideInGameUI(cinematicManager);
+        }
+
+        // 카메라 연출이 끝나면 숨긴 인게임 UI를 돌려준다.
+        private void HandleCinematicFinished(CinematicManager cinematicManager)
+        {
+            ShowInGameUI(cinematicManager);
+        }
+
+        // hider 이름으로 인게임 UI를 숨긴다.
+        private void HideInGameUI(Object hider)
+        {
+            if (hider == null) return;
+
+            _inGameUIHiders.Add(hider);
+            ApplyInGameUIVisibility();
+        }
+
+        // hider의 숨김 요청을 푼다. 다른 쪽이 아직 숨기고 있으면 숨긴 채로 둔다.
+        private void ShowInGameUI(Object hider)
+        {
+            if ((hider == null) || !_inGameUIHiders.Remove(hider)) return;
+
+            ApplyInGameUIVisibility();
+        }
+
+        // 숨김 요청이 하나라도 있으면 상호작용 안내와 인게임 UI를 숨기고, 없으면 보인다.
+        private void ApplyInGameUIVisibility()
+        {
+            bool shouldHide = _inGameUIHiders.Count > 0;
 
             if (_playerHudPresenter != null)
-                _playerHudPresenter.SetInteractLabelBlocked(false);
+                _playerHudPresenter.SetInteractLabelBlocked(shouldHide);
 
             if (_inGameCanvasGroup != null)
-                _inGameCanvasGroup.alpha = 1.0f;
+                _inGameCanvasGroup.alpha = shouldHide ? 0.0f : 1.0f;
         }
 
         // 대화 맵 E: 펫 안내 중이면 안내를 닫고, 아니면 다음 대사로 넘긴다.
