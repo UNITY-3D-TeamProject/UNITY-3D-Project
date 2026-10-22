@@ -5,6 +5,10 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-22** — 카메라 샷 끝 블렌드의 시간 강제 정지 제거: `CinematicManager.Finish()`에서 `PauseGameTime` 삭제, 끝 블렌드는 마지막 단계 시간 설정을 따르고 조작은 기존 `Cutscene` 맵으로만 막음, 가이드 6-2 갱신. 컴파일 0에러, TestScene에서 시간이 흐르는 샷의 블렌드 중 timeScale 1·블렌드 후 조작 복귀 확인, 정지 샷은 에디터 루프 문제로 미확인, 커밋 안 함: [작업 기록](./2026-10-22/camera-shot-time-flow-end-blend.md)
+- **2026-10-22** — intent-061 구현: `HomingHazard.OnDestroyed` 인스턴스 이벤트 추가, `FeedApp`이 악성 피드 제거 때 데이터를 한 번 찾아 무적 0초·모두 사라지면 1초 복귀·재스폰은 `OnPlayerSpawned`로 재적용(매 프레임 확인 없음). 컴파일 0에러, TestScene에서 0초·복귀 확인, 같은 프레임 동시 접촉은 `MaliciousFeed` 소환 속도 배율(0.9/1.0/1.1)로 해결(양준범 님 허락). TestScene에서 가만히 선 채 3번 피격(HP 100→70)·1초 복귀 확인, 재스폰·맵 씬 미확인, 커밋 안 함: [작업 기록](./2026-10-22/feed-malicious-data-invincibility-plan.md)
+- **2026-10-22** — StageManager가 StageBase를 통해 Tutorial의 시작을 호출하고, Tutorial은 펫 활성화·해금을 처리하는 구조 확인. 코드 변경 없음: [확인 기록](./2026-10-22/stagemanager-tutorial-relationship.md)
+- **2026-10-22** — intent-068: 튜토리얼 펫 켜기를 `Core.Stage.Tutorial`에 구현(시작 시 펫 끔·재스폰에도 유지, `UnlockPet()`은 대화가 끝나면 켬, PlayerFacade만 사용). 처음 만든 `PetUnlockPoint`는 삭제. TestScene `TutorialPetTest`로 Play 확인(직접 조작은 미확인), 씬 담당자는 `ResumeSpawnerCube` On Interacted에 `UnlockPet`만 연결(`docs/pet-unlock-setup-guide.md`). 브랜치 `feature/system-tutorial-pet`에 커밋: [작업 기록](./2026-10-22/tutorial-pet-unlock.md)
 - **2026-10-22** — intent-067: 컷씬 대사 공용 부품 `ICutsceneController`·`CutsceneController`·`CutscenePresenter`·`CutsceneDirector`, 입력 맵 `Cutscene`으로 이름 변경(GUID·프리팹 연결 유지). 옛 대화 SO·코드는 폴더 삭제 때까지 유지, 가이드 Cutscene 기준 갱신. 컴파일 0에러·TestScene Play 확인, 커밋 `440d8861`: [작업 기록](./2026-10-22/dialogue-to-cutscene-naming.md)
 - **2026-10-22** — IDialogueController의 역할, UIManager 구현 및 DialogueController.Current 등록·호출 흐름 설명: [작업 기록](./2026-10-22/dialogue-controller-explanation.md)
 - **2026-10-22** — 다른 파트용 `docs/cinematic-so-guide.md` 작성: 컷씬(대화만/대화+카메라)·카메라 샷·독백 SO 만들기, `CinematicCamera` 키 설정, 표 등록, 발판·코드에서 부르는 법, 문제 해결. 코드 변경 없음: [작업 기록](./2026-10-22/cinematic-so-guide.md)

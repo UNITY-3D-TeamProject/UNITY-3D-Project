@@ -34,22 +34,30 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 데이터가 남은 채 사망·재스폰하면 새 플레이어는 1초로 돌아오므로, `StartStage`에서 살아 있는 데이터가 있으면 0초를 다시 넣는다.
 - 되돌릴 원래 값: Facade에 현재 무적 시간 조회 기능 추가(`HitInvincibility.Duration` → CombatMediator → CharacterMediator → PlayerFacade) vs `FeedApp`에 평소 값 필드.
 
+채택안 (2026-10-22 구현, 매 프레임 확인 없이 이벤트로만):
+- `HomingHazard`에 인스턴스 이벤트 `OnDestroyed(HomingHazard)` 추가, `OnDestroy()`에서 호출(닿아서·공격받아 사라질 때 모두).
+- `FeedApp.StartStage()`: `MaliciousFeed`를 모두 찾아 `OnCleared` 구독, `GameManager.OnPlayerSpawned` 구독.
+- `OnCleared` 때 `FindObjectsByType<HomingHazard>`를 한 번 불러 처음 보는 데이터만 `HashSet`에 넣고 `OnDestroyed` 구독, 하나라도 있으면 무적 0초.
+- `OnDestroyed` 때 목록에서 빼고, 비면 `_defaultHitInvincibilityDuration`(기본 1초, 플레이어 프리팹 값과 맞춤)으로 되돌림.
+- 재스폰: `StageManager.StartStage`는 `IsRunning` 때문에 스테이지마다 한 번만 불린다(처음 적은 "재스폰마다 StartStage" 설명은 틀림). 그래서 `OnPlayerSpawned`에서 데이터가 남아 있으면 새 플레이어에 0초를 다시 넣는다.
+- `FeedApp.OnDestroy()`: 악성 피드·남은 데이터·스폰 이벤트 구독 해제.
+- 같은 프레임 동시 접촉 방지: `MaliciousFeed._speedMultipliers`(기본 `{ 0.9, 1.0, 1.1 }`)를 소환 순서대로 `HomingHazard.ScaleSpeed`에 넘겨, 좌우 대칭 위치의 데이터 속도를 다르게 한다(양준범 님 허락). 평균 속도는 프리팹 값과 같다.
+
 ## 영향 범위 (Affected users and systems)
 - 누가 사용하는가: 피드 맵(`Map_2_Feed`)을 플레이하는 플레이어
-- 어떤 시스템/모듈이 건드려지는가: `Core.Stage.FeedApp` 한 파일 (+ 씬의 FeedApp 인스펙터 값)
+- 어떤 시스템/모듈이 건드려지는가: `Core.Stage.FeedApp`, `Map.Gimmicks.HomingHazard`(파괴 이벤트·`ScaleSpeed` 추가), `Map.Feed.MaliciousFeed`(속도 배율) — 양준범 님 허락
 - 피드 맵의 다른 피해원도 무적 시간이 함께 짧아진다. 연속 접촉 피해인 `KnockbackHazard`는 자체 `_hitCooldown`(0.6초)이 있어 매 프레임 피해는 나지 않는다.
 
 ## 제약 (Constraints)
-- 지켜야 할 정책: Map/Feed·Map/Gimmicks 스크립트(`HomingHazard`, `MaliciousFeed`)는 수정하지 않는다. Facade에 이미 뺀 기능만 쓴다.
+- 지켜야 할 정책: `HitInvincibility`(이세훈 님)는 수정하지 않는다. 무적 시간은 Facade에 이미 있는 기능만 쓴다.
 - `FeedApp.cs`는 UTF-8이 아닌 인코딩(EUC-KR 추정)으로 저장돼 있어, 수정 시 기존 한글 주석이 깨지지 않게 인코딩을 유지해야 한다.
-- 무적 0초여도 `HitInvincibility.Begin()`이 `IsInvincible`을 켜고 다음 `Update`에서 끄므로, 같은 프레임에 둘이 동시에 닿으면 하나는 여전히 막힌다. 악성 데이터는 반원 위 다른 위치에서 출발하므로 드물다.
+- 무적 0초여도 `HitInvincibility.Begin()`이 `IsInvincible`을 켜고 다음 `Update`에서 끄므로, 같은 프레임에 둘이 동시에 닿으면 하나는 여전히 막힌다. TestScene에서 플레이어가 서 있을 때 좌우 대칭 위치의 데이터 2개가 같은 프레임에 닿아 실제로 1번 막혔다(드물지 않음).
 - 무적이 짧아지면 피격 깜빡임(`PlayerAnimationMediator`)도 그만큼 짧아진다.
 
 ## 열린 질문 (Open questions)
-- 적용 범위: 사용자는 악성 데이터가 있을 때만 0초를 원함(설계안 2). 구현은 아직 지시 없음.
-- 사라짐 감지: A안(데이터 있을 때만 null 확인) vs B안(`HomingHazard` 파괴 이벤트 추가)?
-- 되돌릴 원래 값: Facade 조회 기능 추가 vs `FeedApp` 필드?
-- 대안: `HomingHazard`가 무적 중이면 사라지지 않고 계속 쫓아오게 하는 방법도 있지만, Map 스크립트 수정이라 이번 범위에서 제외.
+- 결정됨: 적용 범위는 악성 데이터가 있을 때만, 사라짐 감지는 `HomingHazard` 인스턴스 이벤트, 원래 값은 `FeedApp` 필드, 동시 접촉은 `HitInvincibility` 대신 소환 속도 차이로 해결.
+- 확인됨: TestScene에서 가만히 선 채 3번 피격(HP 100 → 90 → 80 → 70, 프레임 93·104·107), 모두 사라진 뒤 무적 1초 복귀.
+- 남은 확인: 재스폰 시 0초 유지, `Map_2_Feed` 실제 플레이.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:

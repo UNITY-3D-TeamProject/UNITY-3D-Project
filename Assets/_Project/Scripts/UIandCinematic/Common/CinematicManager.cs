@@ -279,11 +279,8 @@ namespace UIandCinematic
             // 컷씬 대사로 세워 둔 펫과 말하는 사람 카메라를 돌려놓는다. 컷씬이 아니었으면 아무것도 하지 않는다.
             CutsceneController.Current?.EndCutscene();
 
-            // 플레이어 카메라로 돌아오는 동안 움직이면 화면이 다 돌아오기 전에 떨어질 수 있으므로,
-            // 게임 시간 정지와 조작 막기는 끝 블렌드가 끝난 뒤에 푼다. 시간이 흐르는 샷으로 끝났어도 블렌드 동안은 멈춘다.
-            if (GameManager.Instance != null)
-                GameManager.Instance.PauseGameTime(this);
-
+            // 플레이어 카메라로 돌아오는 동안은 마지막 단계의 게임 시간 설정과 조작 막기를 그대로 둔다.
+            // 시간이 흐르는 샷으로 끝났으면 블렌드 동안에도 시간이 흐르고, 끝 블렌드가 끝나면 ReleaseControl에서 둘 다 푼다.
             OnPlayFinished?.Invoke(this);
 
             // Brain은 다음 프레임에 블렌드를 시작하므로, 블렌드 시간이 지난 뒤에 원래 기본 블렌드로 돌리고 조작을 돌려준다.
