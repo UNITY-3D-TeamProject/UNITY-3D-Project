@@ -45,6 +45,9 @@ namespace UI
 
         // 펫 안내가 떠 있으면 true. E로 닫을 때까지 게임을 멈춘다.
         private bool _isPetGuideOpen;
+
+        // 카메라 연출(CinematicManager) 중이면 true. 연출 안에서 연 대화는 끝나도 시간·입력·UI를 돌려주지 않는다.
+        private bool _isCinematicActive;
         #endregion
 
         #region Properties
@@ -146,6 +149,7 @@ namespace UI
                 IsDialoguePlaying ||
                 _isSettingsOpen ||
                 _isPetGuideOpen ||
+                _isCinematicActive ||
                 (!_input.HasPlayer))
                 return;
 
@@ -212,7 +216,8 @@ namespace UI
 
             if ((_monologuePresenter == null) ||
                 IsDialoguePlaying ||
-                _isPetGuideOpen)
+                _isPetGuideOpen ||
+                _isCinematicActive)
                 return;
 
             _monologuePresenter.Play(sequence, lineDuration);
@@ -220,6 +225,51 @@ namespace UI
 
         // 독백을 바로 끝내고 패널을 숨긴다.
         public void StopMonologue() => _monologuePresenter?.Stop();
+
+        // 카메라 연출을 시작할 때 CinematicManager가 부른다. 끝날 때까지 Dialogue 입력 맵으로 플레이어 조작을 막고 인게임 UI를 숨긴다.
+        // 게임 시간과 카메라는 CinematicManager가 맡는다. 연출 안에서 연 대화는 끝나도 시간·입력·UI를 돌려주지 않는다.
+        // 이미 연출·대화 중이거나 설정창·펫 안내가 열려 있거나 플레이어가 없으면 시작하지 않고 false를 돌려준다.
+        public bool BeginCinematic()
+        {
+            if (_isCinematicActive ||
+                IsDialoguePlaying ||
+                _isSettingsOpen ||
+                _isPetGuideOpen ||
+                (!_input.HasPlayer))
+                return false;
+
+            // 같은 패널을 쓰는 독백이 연출 화면에 남지 않도록 끈다.
+            StopMonologue();
+
+            _isCinematicActive = true;
+
+            if (_playerHudPresenter != null)
+                _playerHudPresenter.SetInteractLabelBlocked(true);
+
+            if (_inGameCanvasGroup != null)
+                _inGameCanvasGroup.alpha = 0.0f;
+
+            _input.SwitchToDialogueInput();
+            return true;
+        }
+
+        // 카메라 연출이 끝나면 CinematicManager가 부른다. 숨긴 UI와 플레이어 조작을 돌려준다.
+        public void EndCinematic()
+        {
+            if (!_isCinematicActive) return;
+
+            _isCinematicActive = false;
+
+            if (_playerHudPresenter != null)
+                _playerHudPresenter.SetInteractLabelBlocked(false);
+
+            if (_inGameCanvasGroup != null)
+                _inGameCanvasGroup.alpha = 1.0f;
+
+            // 설정창이 열려 있으면 닫을 때 CloseSettings가 플레이어 입력으로 돌린다.
+            if (!_isSettingsOpen)
+                _input.SwitchToPlayerInput();
+        }
 
         // 설정창을 열고 게임을 일시정지한다. 입력은 UI 맵으로 바꾼다.
         // 이미 열려 있거나, 플레이어가 없거나, 게임이 Playing 상태가 아니면 무시한다.
@@ -256,8 +306,8 @@ namespace UI
             _settingsPresenter.CloseRequested -= CloseSettings;
             _settingsPresenter.Close();
 
-            // 대화·펫 안내 중에 연 설정창이면 대화 입력으로 돌아간다.
-            if (IsDialoguePlaying || _isPetGuideOpen)
+            // 대화·펫 안내·연출 중에 연 설정창이면 대화 입력으로 돌아간다.
+            if (IsDialoguePlaying || _isPetGuideOpen || _isCinematicActive)
                 _input.SwitchToDialogueInput();
             else
                 _input.SwitchToPlayerInput();
@@ -282,10 +332,10 @@ namespace UI
             _playerHudPresenter?.SetPlayer(playerFacade);
             _input.BindPlayer(playerFacade);
 
-            // 설정창이 열렸거나 대화·펫 안내 중인 상태에서 플레이어가 교체된 경우에도 그 입력 맵을 유지.
+            // 설정창이 열렸거나 대화·펫 안내·연출 중인 상태에서 플레이어가 교체된 경우에도 그 입력 맵을 유지.
             if (_isSettingsOpen)
                 _input.SwitchToUIInput();
-            else if (IsDialoguePlaying || _isPetGuideOpen)
+            else if (IsDialoguePlaying || _isPetGuideOpen || _isCinematicActive)
                 _input.SwitchToDialogueInput();
         }
 
@@ -335,15 +385,19 @@ namespace UI
         }
 
         // 대화가 끝나면 구독을 풀고, 연출을 정리한 뒤 상호작용 안내·숨긴 UI와 플레이어 조작을 돌려준다.
+        // 카메라 연출 안에서 연 대화면 시간·입력·UI는 연출이 끝날 때 CinematicManager와 EndCinematic이 돌려준다.
         private void HandleDialogueEnded()
         {
             _dialoguePresenter.OnDialogueLineChanged -= HandleDialogueLineChanged;
             _dialoguePresenter.OnDialogueEnded -= HandleDialogueEnded;
 
-            _gameManager?.ResumeGameTime();
+            if (!_isCinematicActive)
+                _gameManager?.ResumeGameTime();
 
             if (_dialogueDirector != null)
                 _dialogueDirector.EndStaging();
+
+            if (_isCinematicActive) return;
 
             if (_playerHudPresenter != null)
                 _playerHudPresenter.SetInteractLabelBlocked(false);
