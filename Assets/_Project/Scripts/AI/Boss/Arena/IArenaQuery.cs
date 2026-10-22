@@ -32,6 +32,9 @@ namespace AI.Boss.Arena
         /// <returns>두 점 사이에 구멍(붕괴·예고 칸)이나 판 밖이 있으면 true. 두 끝점의 칸은 검사하지 않는다</returns>
         bool HasHoleBetween(Vector3 a, Vector3 b);
 
+        /// <returns>칸 중심에서 target 까지 직선에 구멍이 없는 멀쩡한 칸 중 from 에서 가장 가까운 칸(from·target 칸, 착지 예약 칸 제외). 없으면 -1</returns>
+        int FindClearLineTile(Vector3 from, Vector3 target);
+
         /// <summary>B 가 착지할 칸을 예약한다. A 는 예약 칸을 노리지 않는다. 칸 상태는 바꾸지 않는다.</summary>
         /// <param name="index">예약할 칸. -1 이면 예약을 푼다</param>
         void SetReservedTile(int index);

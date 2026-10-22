@@ -192,6 +192,15 @@ namespace CameraControl
         }
 
         /// <summary>
+        /// 사격 쉐이크와 같은 Impulse Source 로 카메라만 흔든다. 반동은 없다.
+        /// </summary>
+        /// <param name="force">차지샷 쉐이크(1) 대비 세기</param>
+        public void PlayImpulse(float force)
+        {
+            if (_fireImpulseSource) _fireImpulseSource.GenerateImpulseWithForce(force);
+        }
+
+        /// <summary>
         /// 구르는 동안 지정한 Damping 으로 카메라 추종을 완화할지 정한다. 끄면 Damping 이 복귀 시간 동안 원래 값으로 돌아온다.
         /// 컴포넌트가 꺼져 있으면 상태만 기억하고, 켜질 때 반영한다.
         /// </summary>

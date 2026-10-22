@@ -16,7 +16,7 @@ namespace AI.Boss.Logic
         /// <summary>오른손이 칠 칸. -1 이면 오른손을 쓰지 않는다.</summary>
         public readonly int HandTileRight;
 
-        /// <summary>A2·A6 의 줄이 가로줄(row)인지. false 면 세로줄(col).</summary>
+        /// <summary>A2·A6 의 줄이 가로줄(row)인지. false 면 세로줄(col). A5Plus 는 먼저 무너질 줄.</summary>
         public readonly bool IsRowLine;
 
         /// <summary>A2·A6 의 줄 인덱스. 줄 패턴이 아니면 -1.</summary>

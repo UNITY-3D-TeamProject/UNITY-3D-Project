@@ -22,16 +22,18 @@ namespace AI.Boss.Arena
         void Collapse(int index);
 
         /// <summary>월드 좌표에 원형 예고를 켠다.</summary>
+        /// <param name="fillSeconds">DTT 원형 예고가 가운데에서 가득 차기까지의 시간(초). 0 이하면 처음부터 가득 찬다</param>
         /// <returns>끌 때 쓸 핸들. 빈 원판이 없으면 -1</returns>
-        int ShowCircle(Vector3 center, float radius);
+        int ShowCircle(Vector3 center, float radius, float fillSeconds = 0.0f);
 
         /// <param name="handle">ShowCircle 이 돌려준 핸들. 유효하지 않으면 무시한다</param>
         void HideCircle(int handle);
 
         /// <summary>월드 좌표 두 점을 잇는 직선 예고를 켠다. 높이 차는 무시하고 from 의 높이에 놓는다.</summary>
         /// <param name="width">직선의 폭(m)</param>
+        /// <param name="fillSeconds">DTT 직선 예고가 시작점에서 끝까지 차오르는 시간(초). 0 이하면 처음부터 가득 찬다</param>
         /// <returns>끌 때 쓸 핸들. 빈 직선 판이 없으면 -1</returns>
-        int ShowLine(Vector3 from, Vector3 to, float width);
+        int ShowLine(Vector3 from, Vector3 to, float width, float fillSeconds = 0.0f);
 
         /// <param name="handle">ShowLine 이 돌려준 핸들. 유효하지 않으면 무시한다</param>
         void HideLine(int handle);

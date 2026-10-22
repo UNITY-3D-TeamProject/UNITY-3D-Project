@@ -2,9 +2,9 @@
 id: intent-044
 title: 보스 B 첫 조우 도약 + 센서로 플레이어 즉시 발견
 part: AI / Boss
-status: open   # open | resolved
+status: resolved   # open | resolved
 created: 2026-10-19
-resolved: null # 해결 시 YYYY-MM-DD 로 변경
+resolved: 2026-10-21
 ---
 
 ## 문제 (Problem)
@@ -28,5 +28,5 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - Play 에서 첫 도약 착지/예고 연출의 육안 확인은 사람이 해야 한다.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
-- 최종 결정:
-- 관련 커밋/PR:
+- 최종 결정: 센서 50m·360도, 대상을 처음 발견해 고르는 첫 공격만 도약. 사용자 육안 확인 통과(2026-10-21).
+- 관련 커밋/PR: 커밋 전 → [기록](../../HANDOVER/BF_Leers/2026-10-18/boss-session-c.md)
