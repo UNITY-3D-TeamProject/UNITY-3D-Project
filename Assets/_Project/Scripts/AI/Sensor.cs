@@ -8,6 +8,7 @@ namespace AI
     /// 출력은 "보이는가"(bool)가 아니라 대상 자체와 마지막 목격 위치다.
     /// 시야에 들어오면 바로 대상이 확정되고,
     /// 확정된 대상이 있는 동안(전투 중)에는 시야각을 보지 않고 시야 거리 안을 360도로 찾는다.
+    /// 근접 감지 거리를 주면 그 안의 대상은 대상이 없을 때도 시야각과 상관없이 찾는다.
     /// 확정된 대상을 놓쳐도 유예 시간 동안은 실제 위치를 계속 추적한다.
     /// 유예가 끝나도 마지막 목격 위치는 남아 수색의 목적지로 쓰인다.
     /// </summary>
@@ -28,6 +29,9 @@ namespace AI
         [Tooltip("시야 부채꼴의 전체 각도(도). 정면 기준 좌우로 절반씩 벌어진다.")]
         [Range(0.0f, 360.0f)]
         [SerializeField] private float _sightAngle = 90.0f;
+        [Tooltip("이 거리(m) 안의 대상은 시야각과 상관없이 감지한다. 시야 거리보다 넓어지지는 않는다. 0 이면 끈다.")]
+        [Min(0.0f)]
+        [SerializeField] private float _proximityRange;
 
         [Header("Awareness")]
         [Tooltip("확정된 대상을 놓친 뒤에도 실제 위치를 계속 추적하는 유예 시간(초).")]
@@ -149,7 +153,7 @@ namespace AI
         /// <summary>
         /// 시야 범위 안의 대상 중 각도와 차폐 검사를 모두 통과한 가장 가까운 것을 찾아
         /// 대상과 놓친 뒤 유예 시간을 갱신한다.
-        /// 확정된 대상이 있는 동안에는 각도 검사를 건너뛴다.
+        /// 확정된 대상이 있는 동안이나 근접 감지 거리 안의 대상은 각도 검사를 건너뛴다.
         /// </summary>
         private void Detect()
         {
@@ -173,11 +177,13 @@ namespace AI
                 Vector3 targetPoint = hit.bounds.center;
                 Vector3 toTarget = targetPoint - eyePosition;
 
-                // 대상이 확정된 동안(전투 중)에는 시야각을 무시하고 시야 거리 안이면 360도로 찾는다
-                if (!HasTarget && !IsInSightAngle(toTarget)) continue;
+                float sqrDistance = toTarget.sqrMagnitude;
+                bool isInProximity = sqrDistance <= (_proximityRange * _proximityRange);
+
+                // 대상이 확정된 동안(전투 중)이나 근접 감지 거리 안에서는 시야각을 무시하고 360도로 찾는다
+                if (!HasTarget && !isInProximity && !IsInSightAngle(toTarget)) continue;
                 if (IsOccluded(eyePosition, toTarget)) continue;
 
-                float sqrDistance = toTarget.sqrMagnitude;
                 if (sqrDistance >= nearestSqrDistance) continue;
 
                 nearestSqrDistance = sqrDistance;
