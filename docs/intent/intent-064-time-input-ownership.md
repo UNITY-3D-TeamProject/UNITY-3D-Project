@@ -138,6 +138,17 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   - 콘솔 에러 없음.
 - 남은 미확인: 맵 씬에서 확인, 씬 전환 때 파괴된 시간 요청 정리(맵 씬을 열지 않아 TestScene만 사용).
 
+### 6. InputMapController를 껐다 켜면 연출의 조작 차단이 풀리던 문제 (2026-10-22, 커밋 안 함)
+- 지적: [재검토 기록](../HANDOVER/SungJun/2026-10-22/camera-cinematic-refactor-review.md) P2. `OnDisable`이 요청을 모두 지워, 다시 켜도 진행 중인 연출의 Dialogue 요청이 돌아오지 않았다. `Canvas_InGame`에서 UIManager와 같은 오브젝트라 그 오브젝트(또는 상위 Canvas)를 껐다 켜면 생긴다.
+- TestScene 재현: 연출 중 UIManager 오브젝트 끄기 → Player, 다시 켜기 → Player(연출은 계속).
+- 수정: `OnDisable`에서 요청을 지우지 않고 현재 플레이어만 Player 맵으로 돌린다. `OnEnable`이 남은 요청대로 다시 적용한다. 꺼진 동안 들어온 요청·해제도 목록에 반영돼 켜질 때 적용된다.
+- 확인: 컴파일 0에러. TestScene Play
+  - 연출 중 끄기 → Player, 켜기 → Dialogue(연출 계속), `Stop` → Player.
+  - 연출 중 끄고 꺼진 동안 `Stop` → 켜기 → Player.
+  - 대화 중 껐다 켜기 → 대화 끝(UIManager가 자기 요청 해제), Player·timeScale 1.
+  - 설정창 중 껐다 켜기 → 설정창 닫힘, Player·Playing·1.
+  - 콘솔 에러 없음.
+
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:
 - 관련 커밋/PR:

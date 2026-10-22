@@ -41,6 +41,9 @@
   - Core가 UIManager를 직접 부르지 않게 `IDialogueController` + `DialogueController.Current`(UIManager가 OnEnable 등록·OnDisable 해제). CinematicManager·StageManager의 `using UI` 삭제.
   - 컴파일 0에러, 프리팹 연결 유지, TestScene Play로 대화 카메라 교대·연출 흐름·외부 대화 거절·UIManager 껐다 켜기 확인. 커밋 안 함.
 
+- intent-065 커밋: `6d4677f1`, `a87d110e`, `b4581cb2`. 이름은 `IDialogueController`/`DialogueController`.
+- 재검토 P2 수정: `InputMapController.OnDisable`이 요청을 지우지 않고 Player 맵으로만 돌려 두고, `OnEnable`에서 남은 요청을 다시 적용. TestScene에서 연출 중 UIManager 오브젝트 껐다 켜기 → Dialogue 복원 확인(intent-064 진행 기록 6). 커밋 안 함.
+
 ## 4. 다음 할 일
 - 맵 씬(맵 담당 확인 또는 허락 후)에서 대화·연출·설정창 확인, 씬 전환 뒤 시간이 멈춘 채 시작하지 않는지 확인.
 - 확인되면 intent-064 해결 처리(`clear/`로 이동, INTENT_POINTER 해결됨으로).
