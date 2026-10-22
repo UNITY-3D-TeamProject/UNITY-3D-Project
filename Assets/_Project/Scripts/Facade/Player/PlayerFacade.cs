@@ -191,6 +191,39 @@ namespace Facade.Player
         }
 
         /// <summary>
+        /// 이동·점프·구르기 입력을 잠그거나 푼다. 잠긴 동안에도 넉백 등 외부 변위와 중력은 적용된다.
+        /// </summary>
+        /// <param name="isLocked">잠그려면 true</param>
+        public void SetMoveLocked(bool isLocked)
+        {
+            if (!_characterMediator) return;
+
+            _characterMediator.SetMoveLocked(isLocked);
+        }
+
+        /// <summary>
+        /// 붙잡힌 상태로 두거나 푼다. 붙잡힌 동안은 중력이 멈추고 넉백 등 외부 변위로만 움직인다.
+        /// </summary>
+        /// <param name="isHeld">붙잡으려면 true</param>
+        public void SetHeld(bool isHeld)
+        {
+            if (!_characterMediator) return;
+
+            _characterMediator.SetHeld(isHeld);
+        }
+
+        /// <summary>
+        /// 사격 쉐이크와 같은 임펄스로 카메라를 흔든다.
+        /// </summary>
+        /// <param name="force">차지샷 쉐이크(1) 대비 세기</param>
+        public void PlayCameraShake(float force)
+        {
+            if (!_characterMediator) return;
+
+            _characterMediator.PlayCameraShake(force);
+        }
+
+        /// <summary>
         /// 입력 맵을 UI 용으로 전환한다.
         /// </summary>
         public void SwitchToUIInput()

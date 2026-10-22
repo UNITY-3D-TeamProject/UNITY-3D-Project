@@ -22,6 +22,7 @@ namespace AI.Boss.BossA
             Staying,
             Recalling,
             Flying,
+            Sweeping,
         }
         #endregion
 
@@ -54,10 +55,12 @@ namespace AI.Boss.BossA
         private float _elapsed;
         private float _stayRemaining;
         private float _flySeconds;
+        private float _sweepSeconds;
         private float _fingerTilt;
         private float _fingerSink;
         private Action _onImpact;
         private Action _onFlyDone;
+        private Action _onSweepDone;
         private Action _onStayDone;
         private Action _onRecallDone;
         #endregion
@@ -116,6 +119,10 @@ namespace AI.Boss.BossA
                 case EHandState.Flying:
                     if (Advance(_flySeconds, deltaTime, true)) FinishFly();
                     break;
+
+                case EHandState.Sweeping:
+                    if (Advance(_sweepSeconds, deltaTime, true)) FinishSweep();
+                    break;
             }
         }
 
@@ -143,6 +150,7 @@ namespace AI.Boss.BossA
             // 내려친 순간부터 머무는 동안은 손끝이 지면 아래로 박힌다
             bool isSunk = (_state == EHandState.Slamming) ||
                           (_state == EHandState.Landed) ||
+                          (_state == EHandState.Sweeping) ||
                           (_state == EHandState.Staying);
             float sinkSeconds = isSunk ? _slamSeconds : _moveSeconds;
             float sinkStep = (sinkSeconds > 0.0f) ? (Time.deltaTime / sinkSeconds) : 1.0f;
@@ -191,6 +199,21 @@ namespace AI.Boss.BossA
             _flySeconds = seconds;
             _onFlyDone = onArrived;
             BeginMove(position, EHandState.Flying);
+        }
+
+        /// <summary>
+        /// 내려친 상태에서 바닥에 붙은 채 지면 위 한 점까지 일정한 속도로 쓸고 간다. 도착하면 onDone 을 부른다.
+        /// </summary>
+        /// <param name="point">쓸고 갈 지면 위치</param>
+        /// <param name="seconds">걸리는 시간(초)</param>
+        public void Sweep(Vector3 point, float seconds, Action onDone)
+        {
+            if (_state != EHandState.Landed) return;
+
+            ImpactPoint = point;
+            _sweepSeconds = seconds;
+            _onSweepDone = onDone;
+            BeginMove(point, EHandState.Sweeping);
         }
 
         /// <summary>
@@ -303,6 +326,14 @@ namespace AI.Boss.BossA
             onArrived?.Invoke();
         }
 
+        private void FinishSweep()
+        {
+            _state = EHandState.Landed;
+            Action onDone = _onSweepDone;
+            _onSweepDone = null;
+            onDone?.Invoke();
+        }
+
         private void FinishStay()
         {
             if (_stayObstacle) _stayObstacle.enabled = false;
@@ -325,6 +356,7 @@ namespace AI.Boss.BossA
         {
             _onImpact = null;
             _onFlyDone = null;
+            _onSweepDone = null;
             _onStayDone = null;
             _onRecallDone = null;
         }

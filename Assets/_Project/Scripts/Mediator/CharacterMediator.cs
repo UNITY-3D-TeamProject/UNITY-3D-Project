@@ -225,6 +225,39 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 이동·점프·구르기 입력을 잠그거나 푼다. 잠긴 동안에도 넉백 등 외부 변위와 중력은 적용된다.
+        /// </summary>
+        /// <param name="isLocked">잠그려면 true</param>
+        public void SetMoveLocked(bool isLocked)
+        {
+            if (!_moveMediator) return;
+
+            _moveMediator.SetMoveLocked(isLocked);
+        }
+
+        /// <summary>
+        /// 붙잡힌 상태로 두거나 푼다. 붙잡힌 동안은 중력이 멈추고(상승 속도 0 인 일정 속도 상승) 외부 변위로만 움직인다.
+        /// </summary>
+        /// <param name="isHeld">붙잡으려면 true</param>
+        public void SetHeld(bool isHeld)
+        {
+            if (!_moveMediator) return;
+
+            _moveMediator.SetHover(isHeld, 0.0f);
+        }
+
+        /// <summary>
+        /// 사격 쉐이크와 같은 임펄스로 카메라를 흔든다. 카메라 중재자가 없으면 무시한다.
+        /// </summary>
+        /// <param name="force">차지샷 쉐이크(1) 대비 세기</param>
+        public void PlayCameraShake(float force)
+        {
+            if (!_cameraMediator) return;
+
+            _cameraMediator.PlayShake(force);
+        }
+
+        /// <summary>
         /// 사망 처리로 바뀐 상태를 되돌린다. 오브젝트 풀에서 다시 꺼낸 캐릭터가 재사용될 때 호출한다.
         /// </summary>
         public void ResetForReuse()

@@ -5,7 +5,7 @@ namespace AI.Boss.Logic
 {
     /// <summary>
     /// 상황 스냅샷을 보고 A 의 다음 패턴과 표적 칸을 고른다. Unity 를 참조하지 않는다.
-    /// 순서: 단계별 열린 패턴 → 붕괴 제한 → 상황 규칙 1~5 → 기본 순서. A4 는 직전에 끝난 패턴이 A4 면 고르지 않는다.
+    /// 순서: 단계별 열린 패턴 → 붕괴 제한 → A4 보장 → 상황 규칙 1~5 → 기본 순서. A4 는 직전에 끝난 패턴이 A4 면 고르지 않는다.
     /// 고른 뒤 B 가 쓰는 칸(착지 예약 칸 ArenaGrid.ReservedTile, 돌진 예고~돌진 중이면 돌진 직선 위 칸)을 표적에서 뺀다.
     /// </summary>
     public class BossAPatternSelector
@@ -36,12 +36,14 @@ namespace AI.Boss.Logic
         private readonly Random _random;
         private readonly int _collapseLimit;
         private readonly float _lineStaySeconds;
+        private readonly int _grabGuaranteeCount;
         private readonly List<int> _candidates = new List<int>();
         private readonly List<int> _chargePathTiles = new List<int>();
         private readonly List<int> _blockedTiles = new List<int>();
 
         private int _defaultIndex;
         private bool _isLastFinishedGrab;
+        private int _finishedSinceGrab;
         private bool _hasLastSingleHand;
         private bool _isLastSingleHandLeft;
         #endregion
@@ -50,11 +52,17 @@ namespace AI.Boss.Logic
         /// <param name="random">무작위 선택에 쓸 난수</param>
         /// <param name="collapseLimit">무너진 칸이 이 수 이상이면 칸을 무너뜨리는 패턴을 고르지 않는다. 기본은 한 줄(A2)이 무너진 직후에는 걸리지 않는 값</param>
         /// <param name="lineStaySeconds">플레이어가 한 줄에 이 시간(초) 이상 머물면 그 줄에 A2</param>
-        public BossAPatternSelector(Random random, int collapseLimit = ArenaGrid.SIZE * 2 - 1, float lineStaySeconds = 3)
+        /// <param name="grabGuaranteeCount">A4 가 아닌 패턴이 이 수만큼 끝까지 이어지면 상황 규칙보다 먼저 A4. 0 이하면 끈다</param>
+        public BossAPatternSelector(
+            Random random,
+            int collapseLimit = ArenaGrid.SIZE * 2 - 1,
+            float lineStaySeconds = 3,
+            int grabGuaranteeCount = 3)
         {
             _random = random;
             _collapseLimit = collapseLimit;
             _lineStaySeconds = lineStaySeconds;
+            _grabGuaranteeCount = grabGuaranteeCount;
         }
         #endregion
 
@@ -74,6 +82,10 @@ namespace AI.Boss.Logic
                 return CreateRest();
             }
 
+            // A4 보장: 상황 규칙이 먼저 걸려 기본 순서가 A4 차례까지 가지 못하는 것을 막는다
+            bool isGrabDue = (_grabGuaranteeCount > 0) && (_finishedSinceGrab >= _grabGuaranteeCount);
+            if (isGrabDue && CanUse(EBossAPattern.A4, stage)) return CreateGrab(targetTile);
+
             if (TryChooseBySituation(in situation, targetTile, out SBossAPatternChoice choice))
             {
                 return ExcludeBlocked(in situation, choice);
@@ -83,21 +95,23 @@ namespace AI.Boss.Logic
         }
 
         /// <summary>
-        /// 단계가 바뀔 때 기본 순서를 처음부터 다시 세고, A4 연속 금지·직전 손 기록을 지운다.
+        /// 단계가 바뀔 때 기본 순서를 처음부터 다시 세고, A4 연속 금지·A4 보장·직전 손 기록을 지운다.
         /// </summary>
         public void ResetForStage()
         {
             _defaultIndex = 0;
             _isLastFinishedGrab = false;
+            _finishedSinceGrab = 0;
             _hasLastSingleHand = false;
         }
 
         /// <summary>
-        /// 패턴이 끝까지 끝났을 때 부른다(A4 연속 금지 기록). 취소된 패턴은 부르지 않는다.
+        /// 패턴이 끝까지 끝났을 때 부른다(A4 연속 금지·A4 보장 기록). 취소된 패턴은 부르지 않는다.
         /// </summary>
         public void NotifyPatternFinished(EBossAPattern pattern)
         {
             _isLastFinishedGrab = pattern == EBossAPattern.A4;
+            _finishedSinceGrab = _isLastFinishedGrab ? 0 : _finishedSinceGrab + 1;
         }
         #endregion
 

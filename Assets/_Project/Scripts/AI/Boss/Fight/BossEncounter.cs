@@ -229,6 +229,24 @@ namespace AI.Boss.Fight
 
             return _player.ApplyEffect(new SEffectContext(_player.EffectTarget, effect));
         }
+
+        /// <inheritdoc />
+        public void SetPlayerMoveLocked(bool isLocked)
+        {
+            if (_player) _player.SetMoveLocked(isLocked);
+        }
+
+        /// <inheritdoc />
+        public void SetPlayerHeld(bool isHeld)
+        {
+            if (_player) _player.SetHeld(isHeld);
+        }
+
+        /// <inheritdoc />
+        public void ShakePlayerCamera(float force)
+        {
+            if (_player) _player.PlayCameraShake(force);
+        }
         #endregion
 
         #region Private Methods
