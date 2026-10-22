@@ -28,7 +28,7 @@
 - **[Skill / Scan / Core]** 스캔 스킬 구현 — 파동이 닿은 대상이 IScannable 반응으로 드러났다가 duration 후 서서히 사라짐 → [문서](../HANDOVER/SungJun/intent/intent-019-scan-system.md)
 - **[Scene Transition]** 씬 이동 시 로딩씬을 거쳐 목적지 씬 켜기 렉(특히 로비)을 로딩 화면 뒤로 숨김 → [문서](../HANDOVER/SungJun/intent/intent-020-loading-scene.md)
 <!-- 파트별로 묶어서 나열. 형식: - **[파트]** 문제 한 줄 요약 → [문서](./intent-NNN-slug.md) -->
-- **[AI / Enemy / Combat]** 적이 맞아도 애니메이션만 나오고 추격·공격을 계속함. 짧은 경직(이동·스킬 요청 정지) + 경직 후 면역 시간, 스킬 사용 중에는 슈퍼아머 → [문서](./intent-026-enemy-hit-stun.md)
+- **[AI / Enemy / Combat]** 적이 맞아도 애니메이션만 나오고 추격·공격을 계속함. 짧은 경직(이동·스킬 요청 정지) + 경직 후 면역 시간, 스킬 사용 중에는 슈퍼아머. 2026-10-21 힛모션을 경직과 묶고(면역 중 미재생) 공격 모션 슈퍼아머·Hit→공격 전이 추가, Play 수치 확인·육안 확인 남음 → [문서](./intent-026-enemy-hit-stun.md)
 - **[AI / Animation / Mediator]** 적·군중에 애니메이션이 없음. 플레이어와 같은 구조로 `EnemyAnimator` ↔ `EnemyAnimationMediator`를 두고 `CharacterMediator`가 연결한다. 스킬별 모션은 매핑 데이터, 객체 전용 로직(보행자 점프)은 별도 컴포넌트, 컨트롤러는 베이스 + Override → [문서](./intent-025-enemy-animation.md)
 - **[AI / Enemy / Skill]** 플레이어 위치를 흔드는 적이 없음. 점점 세지는 바람 + 마지막 넉백으로 밀어내는 특수 몹 `Special`(Melee 골격 + 바람 스킬, 쿨타임은 BT 블랙보드 준비 시각). 설계 확정, 구현 전 → [문서](./intent-024-wind-enemy.md)
 - **[AI / Enemy / Combat]** 적을 어디에 맞혀도 같은 피해. 적마다 후보 5곳 중 무작위 약점을 두고, 맞은 지점과 약점 중심의 거리로 치명타를 판정한다. 1단계는 판정 로그만, 피해 곱은 2단계 → [문서](./intent-023-weak-point-critical.md)

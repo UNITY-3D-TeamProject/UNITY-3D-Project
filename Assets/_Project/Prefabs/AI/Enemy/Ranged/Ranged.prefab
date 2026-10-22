@@ -333,6 +333,7 @@ MonoBehaviour:
   _mediator: {fileID: 0}
   _speedAttributeKey: MoveSpeed
   _hitLookDuration: 1
+  _shouldFaceVisibleTargetOnHit: 0
   _hitStunDuration: 0.4
   _hitStunImmuneDuration: 1.5
 --- !u!114 &5120159287565978398
@@ -357,6 +358,7 @@ MonoBehaviour:
   _playerAnimationMediator: {fileID: 0}
   _enemyAnimationMediator: {fileID: 7573302190820598726}
   _petMediator: {fileID: 0}
+  _spawnEffectDriver: {fileID: 0}
 --- !u!114 &5351093735736510952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -479,6 +481,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.EnemyPoolReturner
   _characterMediator: {fileID: 5120159287565978398}
+  _graphAgent: {fileID: 0}
+  _shrinkDelay: 0
+  _shrinkDuration: 0.4
 --- !u!1 &835412326865447768
 GameObject:
   m_ObjectHideFlags: 0
@@ -1899,6 +1904,7 @@ MonoBehaviour:
   _bulletPrefab: {fileID: 4555850187240467820, guid: d947b178bda2a4d408aa9ce82508159b, type: 3}
   _firePoint: {fileID: 3112246835658099973}
   _hitEffect: {fileID: 11400000, guid: f50419d635f6a7e4694dea4fc131a766, type: 2}
+  _fireDelay: 0.33
 --- !u!114 &8802174989168407350
 MonoBehaviour:
   m_ObjectHideFlags: 0
