@@ -9,6 +9,10 @@ namespace Core.Stage
     [RequireComponent(typeof(BoxCollider))]
     public class CheckpointTrigger : MonoBehaviour
     {
+        private const float ARROW_LENGTH = 1.5f;
+        private const float ARROW_HEAD_LENGTH = 0.4f;
+        private const float ARROW_HEAD_ANGLE = 30f;
+
         [Header("Detection")]
         [Tooltip("체크포인트가 감지할 플레이어 Collider의 레이어")]
         [SerializeField] private LayerMask _playerLayerMask;
@@ -51,6 +55,32 @@ namespace Core.Stage
             }
 
             OnPlayerEntered?.Invoke(this, other);
+        }
+
+        // 씬 뷰에 RespawnPoint의 정면(파란 Z축)을 화살표로 그린다. 플레이어는 이 방향을 보고 생성된다.
+        private void OnDrawGizmos()
+        {
+            if (_respawnPoint == null)
+            {
+                return;
+            }
+
+            Vector3 forward = Vector3.ProjectOnPlane(_respawnPoint.forward, Vector3.up).normalized;
+            if (forward == Vector3.zero)
+            {
+                return;
+            }
+
+            Vector3 start = _respawnPoint.position;
+            Vector3 end = start + (forward * ARROW_LENGTH);
+            Vector3 left = Quaternion.AngleAxis(180f - ARROW_HEAD_ANGLE, Vector3.up) * forward;
+            Vector3 right = Quaternion.AngleAxis(180f + ARROW_HEAD_ANGLE, Vector3.up) * forward;
+
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawWireSphere(start, 0.15f);
+            Gizmos.DrawLine(start, end);
+            Gizmos.DrawLine(end, end + (left * ARROW_HEAD_LENGTH));
+            Gizmos.DrawLine(end, end + (right * ARROW_HEAD_LENGTH));
         }
 
         private bool IsPlayerLayer(int layer)
