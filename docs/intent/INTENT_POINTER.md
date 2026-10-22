@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Stage / Player / Camera]** 낙하 복귀 시 체크포인트 방향이 아니라 떨어지기 전 방향을 바라봄(몸 모델이 카메라 yaw를 따라가는데 카메라 yaw는 그대로). RespawnPoint 방향 화살표 Gizmo 추가, Core만으로 복귀 방향을 맞출 방법 결정 대기 → [문서](./intent-059-checkpoint-respawn-facing.md)
 - **[Stage / SecurityApp / UI]** 보안 앱 라운드 진행: SecurityApp → 라운드 일반 클래스 → CombatZone, 보스 체력바 구현. Map_4_Security 방 4개·특수몹 발판 5개·로비행 탈출문 및 NavMesh 연결 완료, Play 생성·클리어·사망 복구·체력바 단계 확인. 직접 조작 플레이·실제 로비 도착 확인 남음 → [문서](./intent-057-security-app-rounds.md)
 - **[Stage / FileApp / UI]** 미로 1라운드에 로직이 없어 패널이 숨겨져 지금 라운드를 모름, 라운드 번호 추적·진행 알림이 앱마다 따로 있음. `StageBase`에 `CurrentRoundIndex`·`OnRoundChanged`·`OnProgressChanged` 공통화, 패널은 `N라운드` + 2R 먹은 숫자·연산자 / 3R 남은 도둑·남은 시간, TestScene에 1→2→3라운드 공간 → [문서](./intent-056-stage-round-panel.md)
 - **[Stage / FileApp / UI]** FileApp에 2라운드만 있고 라운드 클리어 판정이 없어 3라운드 문이 그냥 열림, 3라운드 제한 시간 없음. `StageRoundBase`로 라운드별 로직 분리(2R 퍼즐, 3R `ThiefChaseRound` 타이머·시간 초과 사망), FileApp은 문 연결만, 2R 패널 괄호 표시 → [문서](./intent-055-file-app-round-split.md). 후속: [Manager·Base·Round 책임 분리 설계](../design/stage-lifecycle-responsibilities.md) 작성, 구현 전.
