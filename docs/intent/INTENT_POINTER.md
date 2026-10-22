@@ -4,6 +4,9 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[AI / Boss / Arena]** 보스 A 그랩·어깨포, 보스 B 돌진·도약 예고를 DTT AOE(`GrapWarnning`·`CircleWarnning`, 예고 시간 동안 채움)로 교체. `ShowLine`/`ShowCircle`·`BossBTelegraph` 가 DTT 예고면 시작점·`Length`/`Width`/`Radius`·`FillProgress`. 구현·Play 확인 완료, 육안 확인 남음 → [문서](./intent-064-bossa-grab-aoe-line.md)
+- **[AI / Boss]** 보스 A 최종 단계 A5 +자·X자가 한꺼번에 무너짐. +자는 플레이어 기준 줄 순서로 양손이 줄 양 끝을 쳐 한 줄씩 두 번, X자는 양손이 보스 쪽 모서리에서 대각선을 쓸며 한 칸씩(가운데 교차, 한 손 늦게 출발). 구현·Play 확인 완료, 육안 확인 남음 → [문서](./intent-063-bossa-chess-line-sweep.md)
+- **[AI / Boss / Animation]** 보스 A 최종 단계 A6 박수가 박수로 보이지 않고, 어깨포는 날아가는 투사체가 없음. A6 1타는 주먹 내려치기, 2타는 주먹을 펴며 바닥 위를 쓸어 모으는 박수(손바닥 마주 보기, 손에 닿으면 피해 + 가운데로 끌려감), 어깨포에 `Boss_Bullet` 포물선 투사체. 구현·Play 확인 완료, 육안 확인 남음 → [문서](./intent-062-bossa-clap-anim-cannon-bullet.md)
 - **[Stage / SecurityApp / UI]** 보안 앱 라운드 진행: SecurityApp → 라운드 일반 클래스 → CombatZone, 보스 체력바 구현. Map_4_Security 방 4개·특수몹 발판 5개·로비행 탈출문 및 NavMesh 연결 완료, Play 생성·클리어·사망 복구·체력바 단계 확인. 직접 조작 플레이·실제 로비 도착 확인 남음 → [문서](./intent-057-security-app-rounds.md)
 - **[Stage / FileApp / UI]** 미로 1라운드에 로직이 없어 패널이 숨겨져 지금 라운드를 모름, 라운드 번호 추적·진행 알림이 앱마다 따로 있음. `StageBase`에 `CurrentRoundIndex`·`OnRoundChanged`·`OnProgressChanged` 공통화, 패널은 `N라운드` + 2R 먹은 숫자·연산자 / 3R 남은 도둑·남은 시간, TestScene에 1→2→3라운드 공간 → [문서](./intent-056-stage-round-panel.md)
 - **[Stage / FileApp / UI]** FileApp에 2라운드만 있고 라운드 클리어 판정이 없어 3라운드 문이 그냥 열림, 3라운드 제한 시간 없음. `StageRoundBase`로 라운드별 로직 분리(2R 퍼즐, 3R `ThiefChaseRound` 타이머·시간 초과 사망), FileApp은 문 연결만, 2R 패널 괄호 표시 → [문서](./intent-055-file-app-round-split.md). 후속: [Manager·Base·Round 책임 분리 설계](../design/stage-lifecycle-responsibilities.md) 작성, 구현 전.
