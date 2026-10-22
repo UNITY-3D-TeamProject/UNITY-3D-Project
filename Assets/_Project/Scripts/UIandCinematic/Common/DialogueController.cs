@@ -1,8 +1,8 @@
-namespace Core.Cinematic
+namespace UIandCinematic
 {
     /// <summary>
     /// 지금 씬에서 대화를 맡는 쪽(IDialogueController)을 등록해 두는 자리. UIManager가 켜질 때 등록하고 꺼질 때 해제한다.
-    /// Core(CinematicManager·StageManager)는 UIManager 대신 여기서 대화를 맡는 쪽을 찾는다.
+    /// CinematicManager·StageManager는 UIManager 대신 여기서 대화를 맡는 쪽을 찾는다.
     /// </summary>
     public static class DialogueController
     {

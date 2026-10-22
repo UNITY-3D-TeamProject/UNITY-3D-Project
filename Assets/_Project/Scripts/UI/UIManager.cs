@@ -1,17 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Core;
-using Core.Cinematic;
 using Core.InputMap;
 using Facade.Player;
-using UI.Dialogue;
-using UI.PetGuide;
 using UI.PlayerHud;
 using UI.Settings;
+using UIandCinematic;
 
 namespace UI
 {
-    // 대화를 맡는 쪽(IDialogueController)으로 등록되어 Core(CinematicManager·StageManager)가 UIManager를 직접 참조하지 않고 대화를 튼다.
+    // 대화를 맡는 쪽(IDialogueController)으로 등록되어 CinematicManager·StageManager가 UIManager를 직접 참조하지 않고 대화를 튼다.
     public class UIManager : MonoBehaviour, IDialogueController
     {
         #region Serialized Fields
@@ -25,7 +23,7 @@ namespace UI
         [SerializeField] private PetGuidePresenter _petGuidePresenter;
         // 대화 진행 (대화 SO를 한 줄씩 펫 안내 패널에 표시)
         [SerializeField] private DialoguePresenter _dialoguePresenter;
-        // 대화 연출 (펫 세우기, 말하는 사람 카메라, Core.Cinematic). 없으면 대화를 재생하지 않는다.
+        // 대화 연출 (펫 세우기, 말하는 사람 카메라, UIandCinematic). 없으면 대화를 재생하지 않는다.
         [SerializeField] private DialogueDirector _dialogueDirector;
         [Tooltip("PlayDialogue(번호)로 재생할 대화 목록")]
         [SerializeField] private SODialogueTable _cutsceneTable;
@@ -50,6 +48,15 @@ namespace UI
         // 펫 안내가 떠 있으면 true. E로 닫을 때까지 게임을 멈춘다.
         private bool _isPetGuideOpen;
 
+        // 컷씬 대사로 펫을 세워 두었으면 true. 컷씬이 끝날 때 돌려놓는다.
+        private bool _isCutsceneStaged;
+
+        // 컷씬 대사가 패널에 떠 있으면 true.
+        private bool _isCutsceneLineVisible;
+
+        // 컷씬 대사가 E로 넘기기를 기다리는 중이면 true.
+        private bool _isCutsceneLineWaiting;
+
         // 인게임 UI를 숨겨 달라고 한 쪽들(대화, 카메라 연출). 하나라도 남아 있으면 숨긴다.
         private readonly HashSet<Object> _inGameUIHiders = new();
         #endregion
@@ -64,6 +71,9 @@ namespace UI
 
         // 펫 안내가 떠 있으면 true.
         public bool IsPetGuideOpen => _isPetGuideOpen;
+
+        // 컷씬 대사 한 줄이 E로 넘기기를 기다리는 중이면 true.
+        public bool IsCutsceneLineWaiting => _isCutsceneLineWaiting;
 
         // 카메라 연출이 재생 중이면 true. 연출 중에는 펫 안내·독백·밖에서 부른 대화를 시작하지 않는다.
         private bool IsCinematicPlaying => (CinematicManager.Instance != null) && CinematicManager.Instance.IsPlaying;
@@ -124,6 +134,7 @@ namespace UI
         {
             CloseSettings();
             StopDialogue();
+            EndCutscene();
             HidePetGuide();
             StopMonologue();
             _input.UnbindPlayer();
@@ -226,14 +237,77 @@ namespace UI
                 _dialoguePresenter.StopDialogue();
         }
 
-        // 번호에 맞는 독백을 띄운다. 번호·대사·한 줄 시간은 SOMonologueTable에서 정한다.
+        // 컷씬(SOCutscene)의 대사 한 줄을 띄운다. CinematicManager가 대사 단계마다 부르고, E를 누르면 IsCutsceneLineWaiting이 false가 된다.
+        // 처음 부를 때 펫을 플레이어 앞에 세운다. 게임 시간·입력 맵·UI 숨김은 연출(CinematicManager)이 맡는다.
+        // shouldUseSpeakerCamera가 false면 카메라 키로 고른 카메라가 보이도록 말하는 사람 카메라를 끈다.
+        public bool ShowCutsceneLine(
+            string speakerName,
+            Sprite portrait,
+            string message,
+            bool isLastLine,
+            bool shouldUseSpeakerCamera)
+        {
+            if ((_dialoguePresenter == null) || (_dialogueDirector == null) || IsDialoguePlaying)
+                return false;
+
+            // 같은 패널을 쓰므로 독백은 끄고 대사를 띄운다.
+            StopMonologue();
+
+            // 첫 대사의 말하는 사람 카메라가 바로 정해지므로 펫과 카메라를 먼저 배치한다.
+            if (!_isCutsceneStaged)
+            {
+                _dialogueDirector.BeginStaging();
+                _isCutsceneStaged = true;
+            }
+
+            if (!_dialoguePresenter.ShowSingleLine(speakerName, portrait, message, isLastLine))
+                return false;
+
+            _isCutsceneLineVisible = true;
+            _isCutsceneLineWaiting = true;
+
+            if (shouldUseSpeakerCamera)
+                _dialogueDirector.ShowLine(speakerName, -1);
+            else
+                _dialogueDirector.HideCameras();
+
+            return true;
+        }
+
+        // 컷씬 대사를 숨기고 말하는 사람 카메라를 끈다. 카메라 단계의 샷 카메라를 말하는 사람 카메라가 덮지 않게 한다.
+        public void HideCutsceneLine()
+        {
+            _isCutsceneLineWaiting = false;
+
+            if (_isCutsceneLineVisible)
+            {
+                _isCutsceneLineVisible = false;
+                _dialoguePresenter.HideSingleLine();
+            }
+
+            if (_isCutsceneStaged)
+                _dialogueDirector.HideCameras();
+        }
+
+        // 컷씬 대사를 숨기고 세워 둔 펫을 돌려놓는다. 컷씬 대사를 띄운 적이 없으면 아무것도 하지 않는다.
+        public void EndCutscene()
+        {
+            HideCutsceneLine();
+
+            if (!_isCutsceneStaged) return;
+
+            _isCutsceneStaged = false;
+            _dialogueDirector.EndStaging();
+        }
+
+        // 번호에 맞는 독백을 띄운다. 번호는 SOMonologueTable, 대사·한 줄 시간은 SOMonologue에서 정한다.
         // 게임 시간·입력·카메라는 그대로 두고, 줄마다 정해진 시간이 지나면 다음 줄로 넘어가 마지막 줄 뒤에 저절로 사라진다.
         // 독백 중에 부르면 새 독백으로 바꾼다. 컷씬·펫 안내가 같은 패널을 쓰는 중이면 무시한다.
         // 발판(TriggerPlate) 같은 UnityEvent에서도 연결할 수 있도록 반환값이 없다.
         public void PlayMonologue(int id)
         {
             if ((_monologueTable == null) ||
-                !_monologueTable.TryGetMonologue(id, out SODialogue sequence, out float lineDuration))
+                !_monologueTable.TryGetMonologue(id, out SOMonologue monologue))
             {
                 Debug.LogWarning($"[UIManager] {id}번 독백이 테이블에 없습니다.", this);
                 return;
@@ -245,7 +319,7 @@ namespace UI
                 IsCinematicPlaying)
                 return;
 
-            _monologuePresenter.Play(sequence, lineDuration);
+            _monologuePresenter.Play(monologue);
         }
 
         // 독백을 바로 끝내고 패널을 숨긴다.
@@ -421,12 +495,19 @@ namespace UI
                 _inGameCanvasGroup.alpha = shouldHide ? 0.0f : 1.0f;
         }
 
-        // 대화 맵 E: 펫 안내 중이면 안내를 닫고, 아니면 다음 대사로 넘긴다.
+        // 대화 맵 E: 펫 안내 중이면 안내를 닫고, 컷씬 대사면 다음 단계로 넘기고, 아니면 다음 대사로 넘긴다.
         private void HandleNextLine()
         {
             if (_isPetGuideOpen)
             {
                 HidePetGuide();
+                return;
+            }
+
+            // 패널은 다음 단계가 새 대사로 바꾸거나 숨길 때까지 그대로 둔다.
+            if (_isCutsceneLineWaiting)
+            {
+                _isCutsceneLineWaiting = false;
                 return;
             }
 

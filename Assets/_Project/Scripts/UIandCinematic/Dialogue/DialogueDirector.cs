@@ -1,9 +1,10 @@
 using UnityEngine;
 using Unity.Cinemachine;
+using Core;
 using Facade.Player;
 using Pet;
 
-namespace Core.Cinematic
+namespace UIandCinematic
 {
     /// <summary>
     /// 대화 연출(펫·카메라)만 맡는 컴포넌트. 대화 진행은 모르고, UIManager가 시작·줄 바뀜·끝에 맞춰 부른다.
@@ -146,6 +147,12 @@ namespace Core.Cinematic
                 target = _petShotCamera;
 
             SetActiveCamera(target);
+        }
+
+        // 연출 카메라를 모두 끈다. 펫은 그대로 둔다. 컷씬에서 카메라 키로 고른 카메라를 쓸 때 부른다.
+        public void HideCameras()
+        {
+            SetActiveCamera(null);
         }
         #endregion
 

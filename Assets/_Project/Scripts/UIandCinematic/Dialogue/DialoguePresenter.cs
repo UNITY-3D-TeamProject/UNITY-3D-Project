@@ -1,9 +1,8 @@
 using System;
 using UnityEngine;
 using UnityEngine.Serialization;
-using UI.PetGuide;
 
-namespace UI.Dialogue
+namespace UIandCinematic
 {
     // 대화 묶음을 한 줄씩 펫 안내 패널에 띄운다. 입력은 모르고, ShowNextLine 호출로만 넘어간다.
     // 입력(E)과 카메라 전환은 UIManager·DialogueDirector가 맡고, 여기서는 "지금 몇 번째 줄인지"만 관리한다.
@@ -85,22 +84,55 @@ namespace UI.Dialogue
             EndDialogue();
         }
 
+        // 대화 묶음 없이 한 줄만 띄운다(컷씬 대사). 넘기기와 다음 줄은 부르는 쪽이 정한다.
+        // 패널이 없거나 대화 중이면 띄우지 않고 false를 돌려준다.
+        public bool ShowSingleLine(
+            string speakerName,
+            Sprite portrait,
+            string message,
+            bool isLastLine)
+        {
+            if ((_petGuideView == null) || IsDialoguePlaying) return false;
+
+            DrawLine(speakerName, portrait, message, isLastLine);
+            return true;
+        }
+
+        // ShowSingleLine으로 띄운 줄을 숨긴다. 대화 중이면 건드리지 않는다.
+        public void HideSingleLine()
+        {
+            if ((_petGuideView == null) || IsDialoguePlaying) return;
+
+            _petGuideView.HideNextLabel();
+            _petGuideView.Hide();
+        }
+
         // 지금 줄을 패널에 띄우고, 바뀐 줄을 알린다 (카메라 전환 등은 받는 쪽에서 처리).
         private void ShowCurrentLine()
         {
             if (!_currentDialogue.TryGetLine(_currentLineIndex, out SDialogueLine line))
                 return;
 
-            // 대사에 초상화를 넣었으면 그 표정, 비워 두었으면 말하는 사람의 기본 얼굴
-            Sprite portrait = (line.Portrait != null) ? line.Portrait : GetSpeakerDefaultPortrait(line.SpeakerName);
-
-            _petGuideView.ShowLine(line.SpeakerName, portrait, line.Message);
-
-            // 마지막 줄이면 E로 대화가 닫힌다는 것을 알려 준다.
             bool isLastLine = (_currentLineIndex >= _currentDialogue.LineCount - 1);
-            _petGuideView.ShowNextLabel(isLastLine ? _lastLineLabel : _nextLineLabel);
+            DrawLine(line.SpeakerName, line.Portrait, line.Message, isLastLine);
 
             OnDialogueLineChanged?.Invoke(line);
+        }
+
+        // 한 줄을 패널에 그린다.
+        private void DrawLine(
+            string speakerName,
+            Sprite portrait,
+            string message,
+            bool isLastLine)
+        {
+            // 대사에 초상화를 넣었으면 그 표정, 비워 두었으면 말하는 사람의 기본 얼굴
+            Sprite shownPortrait = (portrait != null) ? portrait : GetSpeakerDefaultPortrait(speakerName);
+
+            _petGuideView.ShowLine(speakerName, shownPortrait, message);
+
+            // 마지막 줄이면 E로 대화가 닫힌다는 것을 알려 준다.
+            _petGuideView.ShowNextLabel(isLastLine ? _lastLineLabel : _nextLineLabel);
         }
 
         // 기본 얼굴이 없으면 null을 돌려줘 초상화 칸을 숨긴다.

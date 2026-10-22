@@ -1,8 +1,9 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UI;
 
-namespace UI.PetGuide
+namespace UIandCinematic
 {
     public class PetGuideView : BaseView
     {

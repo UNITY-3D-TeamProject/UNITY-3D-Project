@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UI.PetGuide
+namespace UIandCinematic
 {
     // 펫 안내 패널에 띄울 문구 목록. 번호로 문구를 찾는다.
-    [CreateAssetMenu(fileName = "SOPetGuideTable", menuName = "UI/Pet Guide Table")]
+    [CreateAssetMenu(fileName = "SOPetGuideTable", menuName = "UIandCinematic/Pet Guide Table")]
     public class SOPetGuideTable : ScriptableObject
     {
         [Serializable]

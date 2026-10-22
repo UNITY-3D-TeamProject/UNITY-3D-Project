@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Unity.Cinemachine;
 
-namespace Core.Cinematic
+namespace UIandCinematic
 {
     // 연출 단계 종류. 카메라 샷은 씬 카메라를 정해진 시간 동안 보여 주고, 대화는 UIManager 컷씬 대화를 끝까지 재생한다.
     public enum ECinematicStepType

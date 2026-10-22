@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UI.PetGuide
+namespace UIandCinematic
 {
     public class PetGuidePresenter : MonoBehaviour
     {

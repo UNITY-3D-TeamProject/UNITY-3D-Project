@@ -2,12 +2,13 @@ using System;
 using System.Collections;
 using UnityEngine;
 using Unity.Cinemachine;
+using Core;
 using Core.InputMap;
 
-namespace Core.Cinematic
+namespace UIandCinematic
 {
     /// <summary>
-    /// 씬의 카메라 연출(CinematicSequence)을 단계 순서대로 실행한다. 씬마다 하나 둔다.
+    /// 씬의 카메라 연출(CinematicSequence)과 번호 표의 컷씬(SOCutscene)·카메라 연출(SOCameraShot)을 단계 순서대로 실행한다. 씬마다 하나 둔다.
     /// 연출 동안 InputMapController에 Dialogue 맵(조작 막기)을 요청하고, 샷 설정에 따라 게임 시간을 멈추거나 돌린다.
     /// 시작·끝을 이벤트로 알리면 UIManager가 받아 인게임 UI를 숨기고 보인다.
     /// 시간이 멈춰도 카메라 블렌드가 돌도록 CinemachineBrain을 게임 시간과 상관없이 돌린다. 이 설정은 대화(DialogueDirector)도 쓰므로 되돌리지 않고,
@@ -20,11 +21,20 @@ namespace Core.Cinematic
         private const string SEEN_KEY_PREFIX = "Cinematic.Seen.";
         #endregion
 
+        #region Serialized Fields
+        [Tooltip("PlayCutscene(번호)로 재생할 컷씬 목록")]
+        [SerializeField] private SOCutsceneTable _cutsceneTable;
+        [Tooltip("PlayCameraShot(번호)로 재생할 카메라 연출 목록")]
+        [SerializeField] private SOCameraShotTable _cameraShotTable;
+        #endregion
+
         #region Private Fields
-        private CinematicSequence _currentSequence;
+        private bool _isPlaying;
+        // 연출이 끝날 때 플레이어 카메라로 돌아가는 블렌드 시간(초)
+        private float _endBlendSeconds;
         private Coroutine _playRoutine;
         // 발판 트리거(물리 콜백)에서 바로 코루틴을 시작하면 게임 시간을 멈춘 뒤 단계가 진행되지 않아, 다음 Update에서 시작한다.
-        private bool _shouldStartRoutine;
+        private IEnumerator _pendingSteps;
         private Coroutine _restoreBrainRoutine;
         private CinemachineCamera _activeShotCamera;
 
@@ -38,7 +48,7 @@ namespace Core.Cinematic
         public static CinematicManager Instance { get; private set; }
 
         // 연출이 재생 중이면 true.
-        public bool IsPlaying => _currentSequence != null;
+        public bool IsPlaying => _isPlaying;
         #endregion
 
         #region Events
@@ -58,10 +68,11 @@ namespace Core.Cinematic
 
         private void Update()
         {
-            if (!_shouldStartRoutine) return;
+            if (_pendingSteps == null) return;
 
-            _shouldStartRoutine = false;
-            _playRoutine = StartCoroutine(CoPlay(_currentSequence));
+            IEnumerator steps = _pendingSteps;
+            _pendingSteps = null;
+            _playRoutine = StartCoroutine(CoRun(steps));
         }
 
         private void OnDisable()
@@ -91,7 +102,79 @@ namespace Core.Cinematic
         // 한 번만 보는 연출을 이미 봤으면 false.
         public bool Play(CinematicSequence sequence)
         {
-            if ((sequence == null) || IsPlaying) return false;
+            if (sequence == null) return false;
+
+            return TryStart(
+                sequence.Id,
+                sequence.ShouldPlayOnce,
+                sequence.EndBlendSeconds,
+                CoPlay(sequence));
+        }
+
+        // 번호에 맞는 컷씬을 재생한다. 번호와 컷씬은 SOCutsceneTable에서 정한다.
+        // 재생하지 못하는 조건은 Play와 같다. 발판(TriggerPlate) 같은 UnityEvent에서도 연결할 수 있도록 반환값이 없다.
+        public void PlayCutscene(int id)
+        {
+            if ((_cutsceneTable == null) || !_cutsceneTable.TryGetCutscene(id, out SOCutscene cutscene))
+            {
+                Debug.LogWarning($"[CinematicManager] {id}번 컷씬이 테이블에 없습니다.", this);
+                return;
+            }
+
+            TryStart(
+                cutscene.Id,
+                cutscene.ShouldPlayOnce,
+                cutscene.EndBlendSeconds,
+                CoPlayCutscene(cutscene));
+        }
+
+        // 번호에 맞는 카메라 연출을 재생한다. 번호와 카메라 연출은 SOCameraShotTable에서 정한다.
+        // 재생하지 못하는 조건은 Play와 같다. 발판(TriggerPlate) 같은 UnityEvent에서도 연결할 수 있도록 반환값이 없다.
+        public void PlayCameraShot(int id)
+        {
+            if ((_cameraShotTable == null) || !_cameraShotTable.TryGetCameraShot(id, out SOCameraShot cameraShot))
+            {
+                Debug.LogWarning($"[CinematicManager] {id}번 카메라 연출이 테이블에 없습니다.", this);
+                return;
+            }
+
+            TryStart(
+                cameraShot.Id,
+                cameraShot.ShouldPlayOnce,
+                cameraShot.EndBlendSeconds,
+                CoPlayCameraShot(cameraShot));
+        }
+
+        // 연출을 끝까지 보지 않고 정리한다. 시간·입력·UI·카메라도 끝났을 때처럼 돌려놓는다.
+        public void Stop()
+        {
+            if (!IsPlaying) return;
+
+            _pendingSteps = null;
+
+            // yield return으로 이어진 단계 코루틴까지 남지 않도록 모두 멈춘다.
+            // 연출 중에는 Brain 복구 코루틴이 BeginBrainControl에서 이미 멈춰 있어 단계 코루틴만 남아 있다.
+            StopAllCoroutines();
+            _playRoutine = null;
+
+            // 대화 단계 중이면 대화도 끝낸다. 대화는 자기 요청만 풀고, 연출의 시간·입력 요청과 UI 숨김은 Finish가 푼다.
+            DialogueController.Current?.StopDialogue();
+
+            Finish();
+        }
+        #endregion
+
+        #region Private Methods
+        // 연출을 시작한다. 단계(steps)는 다음 Update에서 돌기 시작한다.
+        // 이 매니저가 꺼져 있거나, 이미 연출·대화·펫 안내 중이거나, 설정창이 열려 있거나, 플레이어가 없거나,
+        // 한 번만 보는 연출을 이미 봤으면 false.
+        private bool TryStart(
+            string id,
+            bool shouldPlayOnce,
+            float endBlendSeconds,
+            IEnumerator steps)
+        {
+            if (IsPlaying) return false;
 
             // 꺼져 있으면 Update가 돌지 않아 연출이 시작되지 않은 채 조작만 막히므로 받지 않는다.
             if (!isActiveAndEnabled)
@@ -114,41 +197,21 @@ namespace Core.Cinematic
                 return false;
 
             if (dialogueController.IsDialoguePlaying || dialogueController.IsPetGuideOpen) return false;
-            if (sequence.ShouldPlayOnce && HasSeen(sequence)) return false;
+            if (shouldPlayOnce && HasSeen(id)) return false;
 
             // 중간에 끊겨도 다시 보지 않도록 시작할 때 본 기록을 남긴다.
-            if (sequence.ShouldPlayOnce)
-                MarkSeen(sequence);
+            if (shouldPlayOnce)
+                MarkSeen(id);
 
-            _currentSequence = sequence;
+            _isPlaying = true;
+            _endBlendSeconds = endBlendSeconds;
             InputMapController.Instance?.RequestMap(this, EInputMapType.Dialogue);
             BeginBrainControl();
-            _shouldStartRoutine = true;
+            _pendingSteps = steps;
             OnPlayStarted?.Invoke(this);
             return true;
         }
 
-        // 연출을 끝까지 보지 않고 정리한다. 시간·입력·UI·카메라도 끝났을 때처럼 돌려놓는다.
-        public void Stop()
-        {
-            if (!IsPlaying) return;
-
-            _shouldStartRoutine = false;
-
-            if (_playRoutine != null)
-            {
-                StopCoroutine(_playRoutine);
-                _playRoutine = null;
-            }
-
-            // 대화 단계 중이면 대화도 끝낸다. 대화는 자기 요청만 풀고, 연출의 시간·입력 요청과 UI 숨김은 Finish가 푼다.
-            DialogueController.Current?.StopDialogue();
-
-            Finish();
-        }
-        #endregion
-
-        #region Private Methods
         // 시간이 멈춰도 블렌드가 돌도록 Brain을 게임 시간과 상관없이 돌리고, 원래 기본 블렌드를 저장해 둔다.
         // IgnoreTimeScale은 되돌리지 않는다. 평소에는 게임 시간이 1이라 차이가 없다.
         private void BeginBrainControl()
@@ -205,11 +268,14 @@ namespace Core.Cinematic
         // 연출을 마치고 샷 카메라·시간·입력·UI를 돌려준다. Brain 기본 블렌드는 끝 블렌드가 끝난 뒤 되돌린다.
         private void Finish()
         {
-            float endBlendSeconds = (_currentSequence != null) ? _currentSequence.EndBlendSeconds : 0.0f;
-            _currentSequence = null;
+            float endBlendSeconds = _endBlendSeconds;
+            _isPlaying = false;
 
             SetBlend(endBlendSeconds);
             SetShotCamera(null);
+
+            // 컷씬 대사로 세워 둔 펫과 말하는 사람 카메라를 돌려놓는다. 컷씬이 아니었으면 아무것도 하지 않는다.
+            DialogueController.Current?.EndCutscene();
 
             if (GameManager.Instance != null)
                 GameManager.Instance.ResumeGameTime(this);
@@ -225,25 +291,44 @@ namespace Core.Cinematic
                 RestoreBrain();
         }
 
-        private static bool HasSeen(CinematicSequence sequence)
+        private static bool HasSeen(string id)
         {
-            return !string.IsNullOrEmpty(sequence.Id) && (PlayerPrefs.GetInt(SEEN_KEY_PREFIX + sequence.Id, 0) == 1);
+            return !string.IsNullOrEmpty(id) && (PlayerPrefs.GetInt(SEEN_KEY_PREFIX + id, 0) == 1);
         }
 
-        private void MarkSeen(CinematicSequence sequence)
+        private void MarkSeen(string id)
         {
-            if (string.IsNullOrEmpty(sequence.Id))
+            if (string.IsNullOrEmpty(id))
             {
-                Debug.LogWarning($"[CinematicManager] {sequence.name}의 Id가 비어 있어 본 기록을 남기지 못했습니다.", sequence);
+                Debug.LogWarning("[CinematicManager] 한 번만 재생하는 연출의 Id가 비어 있어 본 기록을 남기지 못했습니다.", this);
                 return;
             }
 
-            PlayerPrefs.SetInt(SEEN_KEY_PREFIX + sequence.Id, 1);
+            PlayerPrefs.SetInt(SEEN_KEY_PREFIX + id, 1);
             PlayerPrefs.Save();
+        }
+
+        // 키에 맞는 씬 카메라를 찾는다. 키가 비었으면 조용히, 씬에 없으면 경고를 남기고 null을 돌려준다.
+        private CinemachineCamera FindCamera(string key)
+        {
+            if (string.IsNullOrEmpty(key)) return null;
+            if (CinematicCamera.TryFind(key, out CinemachineCamera camera)) return camera;
+
+            Debug.LogWarning($"[CinematicManager] 키가 '{key}'인 연출 카메라(CinematicCamera)가 씬에 없습니다.", this);
+            return null;
         }
         #endregion
 
         #region Coroutines
+        // 단계를 끝까지 돌린 뒤 연출을 마친다.
+        private IEnumerator CoRun(IEnumerator steps)
+        {
+            yield return steps;
+
+            _playRoutine = null;
+            Finish();
+        }
+
         private IEnumerator CoPlay(CinematicSequence sequence)
         {
             for (int i = 0; i < sequence.StepCount; i++)
@@ -251,37 +336,86 @@ namespace Core.Cinematic
                 if (!sequence.TryGetStep(i, out SCinematicStep step)) continue;
 
                 if (step.Type == ECinematicStepType.Shot)
-                    yield return CoPlayShot(step);
+                {
+                    yield return CoPlayShot(
+                        step.Camera,
+                        step.Duration,
+                        step.BlendInSeconds,
+                        step.ShouldPauseTime);
+                }
                 else
+                {
                     yield return CoPlayDialogue(step);
+                }
             }
-
-            _playRoutine = null;
-            Finish();
         }
 
-        private IEnumerator CoPlayShot(SCinematicStep step)
+        private IEnumerator CoPlayCutscene(SOCutscene cutscene)
         {
-            if (step.Camera == null)
+            for (int i = 0; i < cutscene.StepCount; i++)
+            {
+                if (!cutscene.TryGetStep(i, out SCutsceneStep step)) continue;
+
+                if (step.Type == ECutsceneStepType.Line)
+                {
+                    bool isLastLine = (i == cutscene.StepCount - 1);
+                    yield return CoPlayCutsceneLine(step, isLastLine);
+                    continue;
+                }
+
+                // 카메라 단계 동안은 대사창과 말하는 사람 카메라를 끈다. 세워 둔 펫은 컷씬이 끝날 때 돌려놓는다.
+                DialogueController.Current?.HideCutsceneLine();
+
+                if (step.CameraShot == null)
+                {
+                    Debug.LogWarning($"[CinematicManager] {cutscene.name}의 {i}번 단계에 카메라 연출이 비어 있어 건너뜁니다.", cutscene);
+                    continue;
+                }
+
+                yield return CoPlayCameraShot(step.CameraShot);
+            }
+        }
+
+        private IEnumerator CoPlayCameraShot(SOCameraShot cameraShot)
+        {
+            for (int i = 0; i < cameraShot.ShotCount; i++)
+            {
+                if (!cameraShot.TryGetShot(i, out SCameraShot shot)) continue;
+
+                yield return CoPlayShot(
+                    FindCamera(shot.CameraKey),
+                    shot.Duration,
+                    shot.BlendInSeconds,
+                    shot.ShouldPauseTime);
+            }
+        }
+
+        private IEnumerator CoPlayShot(
+            CinemachineCamera camera,
+            float duration,
+            float blendInSeconds,
+            bool shouldPauseTime)
+        {
+            if (camera == null)
             {
                 Debug.LogWarning("[CinematicManager] 카메라가 비어 있는 샷 단계를 건너뜁니다.", this);
                 yield break;
             }
 
-            SetBlend(step.BlendInSeconds);
-            SetShotCamera(step.Camera);
+            SetBlend(blendInSeconds);
+            SetShotCamera(camera);
 
             GameManager gameManager = GameManager.Instance;
             if (gameManager != null)
             {
-                if (step.ShouldPauseTime)
+                if (shouldPauseTime)
                     gameManager.PauseGameTime(this);
                 else
                     gameManager.ResumeGameTime(this);
             }
 
             float elapsed = 0.0f;
-            while (elapsed < step.Duration)
+            while (elapsed < duration)
             {
                 yield return null;
 
@@ -312,6 +446,36 @@ namespace Core.Cinematic
 
             // 대화 중에 대화 재생 쪽이 꺼져 등록이 풀리면 기다리지 않는다.
             while ((DialogueController.Current == dialogueController) && dialogueController.IsDialoguePlaying)
+                yield return null;
+        }
+
+        // 컷씬 대사 한 줄을 띄우고 E로 넘길 때까지 기다린다.
+        private IEnumerator CoPlayCutsceneLine(SCutsceneStep step, bool isLastLine)
+        {
+            // 카메라 키가 있으면 그 카메라를, 없으면(또는 씬에 없으면) 말하는 사람 카메라를 쓴다. 블렌드는 원래 기본값으로 둔다.
+            if (_brain != null)
+                _brain.DefaultBlend = _brainDefaultBlend;
+
+            CinemachineCamera camera = FindCamera(step.CameraKey);
+            SetShotCamera(camera);
+
+            // 대사를 읽는 동안에는 게임 시간을 멈춘다.
+            if (GameManager.Instance != null)
+                GameManager.Instance.PauseGameTime(this);
+
+            IDialogueController dialogueController = DialogueController.Current;
+            if (dialogueController == null) yield break;
+
+            bool isShown = dialogueController.ShowCutsceneLine(
+                step.SpeakerName,
+                step.Portrait,
+                step.Message,
+                isLastLine,
+                camera == null);
+            if (!isShown) yield break;
+
+            // 대사 중에 대화 재생 쪽이 꺼져 등록이 풀리면 기다리지 않는다.
+            while ((DialogueController.Current == dialogueController) && dialogueController.IsCutsceneLineWaiting)
                 yield return null;
         }
 

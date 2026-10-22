@@ -3,9 +3,9 @@ using Facade.Player;
 using JetBrains.Annotations;
 using Map.Gimmicks;
 using System;
-using Core.Cinematic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UIandCinematic;
 
 namespace Core.Stage
 {

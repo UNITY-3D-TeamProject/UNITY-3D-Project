@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace UI.Dialogue
+namespace UIandCinematic
 {
     // 대화 한 줄. 말하는 사람, 초상화, 이 줄에서 켤 카메라 번호, 대사를 담는다.
     [Serializable]
@@ -16,7 +16,7 @@ namespace UI.Dialogue
     }
 
     // 대화 한 묶음. 줄 순서대로 재생한다.
-    [CreateAssetMenu(fileName = "SODialogue", menuName = "UI/Dialogue")]
+    [CreateAssetMenu(fileName = "SODialogue", menuName = "UIandCinematic/Dialogue")]
     public class SODialogue : ScriptableObject
     {
         [Tooltip("본 기록 저장 키. 대화마다 겹치지 않게 짓는다")]
