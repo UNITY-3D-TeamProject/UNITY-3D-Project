@@ -6,7 +6,10 @@
 - 1단계로 게임 시간을 GameManager 요청 방식으로 바꿨다. 상세는 intent-064 "진행 기록 1".
   - `GameManager.PauseGameTime(requester)`/`ResumeGameTime(requester)` + `ApplyGameTime()`(설정창 Pause 또는 요청 하나라도 → 0).
   - UIManager·CinematicManager 호출을 요청 방식으로, 서로 다시 멈추던 땜질 두 곳 삭제.
-- 이전 변경(StageManager 시작 연출 호출 제거, 문서) 커밋: `d770cb40`, `3e59ad21`.
+- 이전 변경(StageManager 시작 연출 호출 제거, 문서) 커밋: `d770cb40`, `3e59ad21`. 시간 단계 커밋: `29605df6`, `93c3c87f`.
+- 2단계로 입력 맵 담당 `Core.InputMap.InputMapController`를 만들어 `Canvas_InGame` 프리팹 `UIManager` 오브젝트에 붙였다. 상세는 intent-064 "진행 기록 2".
+  - `RequestMap(requester, EInputMapType)`/`ReleaseMap(requester)`, 우선순위 UI > Dialogue > Player, 플레이어 스폰 때 다시 적용, 꺼지면 Player.
+  - UIInputHandler는 입력 이벤트만, UIManager는 Presenter별로 요청, CinematicManager는 자기 이름으로 Dialogue 요청.
 
 ## 2. 결정 사항
 - 시간 = GameManager(싱글톤, 설정창 Pause와 같은 곳). 씬 로드 때 파괴된 요청자만 지운다.
@@ -17,12 +20,13 @@
 - 작업 범위: `Scripts/Core`, `Scripts/UI`만. GameManager는 본인 작성이라 수정 가능.
 
 ## 3. 현재 상태 및 이슈
-- 시간 단계: 컴파일 0에러, TestScene Play(eval 직접 호출)로 확인. 씬 전환 때 요청 정리·실제 키 입력은 미확인. 커밋 안 함.
+- 시간 단계: 컴파일 0에러, TestScene Play(eval 직접 호출)로 확인. 씬 전환 때 요청 정리·실제 키 입력은 미확인.
+- 입력 맵 단계: 컴파일 0에러, TestScene Play로 대화·펫 안내·설정창·연출 맵 전환과 버그 4(UIManager 껐다 켜기) 해결 확인. 사망 재스폰 때 다시 적용·실제 키 입력은 미확인. 커밋 안 함.
 - 에디터가 백그라운드면 Play 프레임이 멈춘다. Play 중 eval로 `Application.runInBackground = true`를 주면 돈다(Play 종료 시 원래대로).
-- 아직 남은 버그: 2(외부 대화), 3(비활성 매니저), 4(UIManager 비활성화), 1(Brain).
+- TestScene에 UIManager가 3개 잡힌다(`FindObjectsByType` 기준, 비활성 포함 여부 미확인). 이번 작업과 무관하게 그대로 둠.
+- 아직 남은 버그: 2(외부 대화), 3(비활성 매니저), 1(Brain).
 
 ## 4. 다음 할 일
-- 입력 맵 컴포넌트 구현 + `Canvas_InGame` 배치, UIInputHandler·UIManager 정리.
-- UIManager 연출 전용 코드 제거, 외부 대화 거절, `Play` 활성 검사.
+- UIManager 연출 전용 코드(`_isCinematicActive`·Begin/EndCinematic) 제거, 외부 대화 거절, `Play` 활성 검사.
 - Brain 저장·복구 제거, UI 숨기기 이벤트화.
 - 끝나면 TestScene에서 버그 5건 재현 확인 후 intent-064 해결 처리.

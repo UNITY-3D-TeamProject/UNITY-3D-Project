@@ -82,6 +82,24 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   - 연출 대화 단계 중 설정창 열고 닫기 → 0, 대화 끝 직후 0(연출 요청 유지), 시간 흐르는 샷 1, 연출 끝 1
   - 단독 대화·펫 안내: 시작 0 → 설정창 열고 닫기 0 → 끝 1, `AudioListener.pause` false 복구
   - 미확인: 씬 전환 때 파괴된 요청자 정리(TestScene만 사용), 실제 키 입력
+- 커밋: `29605df6`(코드), `93c3c87f`(문서)
+
+### 2. 입력 맵 컴포넌트 (2026-10-22, 커밋 안 함)
+- 새 `Core/InputMap/InputMapController.cs`(`Core.InputMap`)
+  - `EInputMapType { Player, Dialogue, UI }`, 값이 큰 쪽이 우선.
+  - `RequestMap(requester, map)`/`ReleaseMap(requester)`: 요청자별 맵(`Dictionary`). 남은 요청 중 가장 큰 맵을 현재 플레이어에 적용, 없으면 Player.
+  - Player·UI 맵은 `PlayerFacade.SwitchToPlayerInput/SwitchToUIInput`, Dialogue 맵은 `PlayerInput.SwitchCurrentActionMap("Dialogue")`.
+  - `GameManager.OnPlayerSpawned` 구독으로 새 플레이어에 다시 적용. 꺼지면 요청을 비우고 Player 맵.
+  - 씬 안 `Instance`(UIManager·CinematicManager와 같은 방식).
+- `Canvas_InGame` 프리팹 `UIManager` 오브젝트에 컴포넌트 추가(프리팹 13줄). 맵 씬 5개는 프리팹으로 자동 반영, 맵 씬 직접 수정 없음.
+- `UIInputHandler`: `SwitchToPlayerInput/UIInput/DialogueInput`과 대화 맵 이름 상수 삭제. ESC·E 입력 이벤트만 남음.
+- `UIManager`: 요청자는 기능별 Presenter(`_dialoguePresenter`·`_petGuidePresenter`·`_settingsPresenter`). 대화·펫 안내는 Dialogue, 설정창은 UI를 요청·해제. `CloseSettings`·`HandlePlayerSpawned`·`EndCinematic`의 맵 고르기 분기 삭제. `BeginCinematic`은 입력을 바꾸지 않음(UI 숨기기만).
+- `CinematicManager`: `Play`에서 `this`로 Dialogue 요청, `Finish`에서 해제.
+- 확인: 컴파일 0에러. TestScene Play(eval 직접 호출)
+  - 시작 Player → 대화 Dialogue → 설정창 UI → 닫기 Dialogue → 대화 끝 Player. 펫 안내도 같음.
+  - 연출: 시작 Dialogue, 대화 단계 끝나도 Dialogue, 연출 끝 Player.
+  - **버그 4 해결**: 연출 중 UIManager 컴포넌트를 끄고 연출이 끝나면 Player, 다시 켜도 Player.
+  - 미확인: 사망 재스폰 때 맵 다시 적용, 실제 키 입력.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:
