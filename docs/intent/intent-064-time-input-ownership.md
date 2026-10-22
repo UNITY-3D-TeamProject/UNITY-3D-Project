@@ -128,6 +128,15 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   - **버그 1 재현**: 연출 `Stop` 직후(끝 블렌드 1.5초 대기 중) 단독 대화 시작 → 끝 블렌드가 지난 뒤에도 대화 중 `IgnoreTimeScale` true, 기본 블렌드 0.2로 복구. 대화 끝나도 true(결정대로). 전에는 이 시점에 false로 덮였다.
   - 연출 전체(정지 샷 → 대화 → 시간 흐르는 샷 → 끝 블렌드): 끝난 뒤 Player 맵·시간 1·기본 블렌드 0.2·`IgnoreTimeScale` true, 콘솔 에러 없음.
 - 버그 5건 모두 TestScene에서 해결 확인. 실제 키 입력·맵 씬·사망 재스폰·씬 전환 요청 정리는 미확인이라 열어 둔다.
+- 커밋: `1f690a5d`(코드), `29de6a96`(문서)
+
+### 5. 키 입력·사망 재스폰 확인 (2026-10-22, 코드 변경 없음)
+- TestScene Play, 키는 Input System 키 시뮬레이션(`simulate_key`)으로 입력.
+  - 단독 대화: ESC → 설정창(Pause·UI 맵·timeScale 0), ESC → 닫힘(Playing·Dialogue 맵·0), E 4번 → 대화 끝(Player 맵·1).
+  - 연출: 시간 정지 샷 중 ESC → 설정창(UI 맵), ESC → 닫힘(Dialogue 맵·0, 연출 계속), 대화 단계에서 E 4번 → 대화 끝, Dialogue 맵 유지, 연출 끝 Player 맵·1.
+  - 사망 재스폰: 임시 오브젝트로 Dialogue 맵 요청(시간이 흐르는 연출 샷과 같은 상태) → `CurrentHp` 0 → 라운드 복구로 새 플레이어 생성 → 새 플레이어도 Dialogue 맵, 요청 해제 → Player.
+  - 콘솔 에러 없음.
+- 남은 미확인: 맵 씬에서 확인, 씬 전환 때 파괴된 시간 요청 정리(맵 씬을 열지 않아 TestScene만 사용).
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:

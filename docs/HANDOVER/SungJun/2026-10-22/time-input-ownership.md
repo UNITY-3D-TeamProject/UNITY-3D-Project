@@ -32,10 +32,12 @@
 - TestScene에 UIManager가 3개 잡힌다(`FindObjectsByType` 기준, 비활성 포함 여부 미확인). 이번 작업과 무관하게 그대로 둠.
 - 3단계: 컴파일 0에러, TestScene Play로 버그 2·3 해결과 UI 숨김 유지·복구 확인.
 - 4단계: 컴파일 0에러, TestScene Play로 버그 1(끝 블렌드 중 새 대화) 해결과 연출 전체 흐름 확인. 커밋 안 함.
-- 버그 5건 모두 TestScene에서 해결 확인. intent-064는 실제 키 입력·맵 씬·사망 재스폰·씬 전환 요청 정리가 미확인이라 열어 둠.
+- 버그 5건 모두 TestScene에서 해결 확인. 4단계 커밋: `1f690a5d`, `29de6a96`.
+- 키 입력(E·ESC, `simulate_key`)으로 대화·설정창·연출, 사망 재스폰 때 새 플레이어에 Dialogue 맵 다시 적용까지 TestScene에서 확인(intent-064 진행 기록 5). 코드 변경 없음.
+- intent-064는 맵 씬·씬 전환 요청 정리가 미확인이라 열어 둠.
 
 ## 4. 다음 할 일
-- 실제 키 입력(E·ESC)으로 대화·펫 안내·설정창·연출 확인, 사망 재스폰 때 입력 맵 다시 적용 확인.
-- 맵 씬에서 확인되면 intent-064 해결 처리(`clear/`로 이동, INTENT_POINTER 해결됨으로).
+- 맵 씬(맵 담당 확인 또는 허락 후)에서 대화·연출·설정창 확인, 씬 전환 뒤 시간이 멈춘 채 시작하지 않는지 확인.
+- 확인되면 intent-064 해결 처리(`clear/`로 이동, INTENT_POINTER 해결됨으로).
 - (선택) 2단계 구조 정리: DialogueDirector를 Cinematic 쪽으로 옮길지 판단.
 - 끝나면 TestScene에서 버그 5건 재현 확인 후 intent-064 해결 처리.
