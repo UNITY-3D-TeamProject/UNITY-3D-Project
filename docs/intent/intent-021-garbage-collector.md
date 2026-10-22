@@ -19,6 +19,9 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 한 번에 플레이어 **스폰 시작 HP(50) ÷ n**(올림)만큼 피해를 준다. n=3이면 `AttackDamage`가 17이다. 처음엔 최대 HP ÷ n으로 정했으나, Phase 2.5에서 스폰 HP가 50이라는 것이 확인되어 바꿨다.
 - 라운드 2 중 살아서 낙하 복귀하면 GC를 리셋하지 않는다.
 - (2026-10-12 추가, 테스트 피드백) 무작위 순찰만으로는 플레이어가 GC를 한 번도 못 만나고 지나갈 수 있다. 그래서 **압박 가지**를 BT에 넣는다. 플레이어를 N초(기본 20) 동안 못 보면 플레이어에게 가장 가까운 웨이포인트로 이동하고, 그 뒤 `Cooldown`(기본 20초) 동안은 일반 순찰을 한다. 판단은 BT 그래프가 하고, 코드는 조회·이동 API만 제공한다. 참고한 사례는 Alien: Isolation의 Director로, 정확한 위치가 아니라 근처 구역만 알려 주는 방식이다.
+- (2026-10-22 추가, 기획 피드백) 공격 후 복귀 지점이 GC 기준 가장 가까운 웨이포인트(Target = `Self`)라서, 그 지점이 플레이어가 도망가는 쪽이면 같이 가다가 또 때린다. 그래서 공격 가지의 복귀를 기존 범용 노드 `AIFleeAction`(도둑과 같은 노드)으로 바꾼다. 경로가 플레이어 근처를 지나지 않고 멀어지는 지점으로 빠지고, 플레이어가 시야에서 사라지면 대상을 잊고 순찰로 돌아간다. 시작할 때 플레이어가 안 보여 도망이 실패해도 대상 잊기가 실행되도록 `Succeeder`로 감싼다.
+  - 기획 확인: 퍼즐을 푸는 동안에도 압박이 있어야 하고, 퍼즐 UI 중에도 이동·반격이 가능하다. 그래서 압박 가지는 유지하고 `Seconds` 30, `Duration` 45로 늘린다.
+  - 알려진 한계: 플레이어가 도망가는 GC를 계속 따라가면, 시야에서 사라질 때까지 GC가 도망만 한다.
 
 ## 영향 범위 (Affected users and systems)
 - 누가 사용하는가: 플레이어(미로 라운드 2), 기획(곡선·n·멈춤 시간 조절), 맵 담당(웨이포인트 제공)
@@ -31,6 +34,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   - 변경: `WaypointPatrolRoute.TryGetNearestWaypoint`, 스포너가 블랙보드 `Player` 변수를 주입한다(생성 시와 `GameManager.OnPlayerSpawned` 시점).
   - 읽기만: `StageManager` (`CurrentRoundIndex`, `GetSpawnPoint()`, `OnPlayerRespawnRequested`)
   - 에셋(`[USER]`): `GarbageCollector.prefab`, 어트리뷰트 SO, BT 그래프 `GarbageCollectorAI`, 테스트 씬 2개, `Map_3_File`에 스포너 배치
+  - (2026-10-22) 에셋(`[USER]`): BT 그래프 `NPC_GC` 공격 가지 노드 교체, 블랙보드 `Seconds`·`Duration` 값 변경. C# 변경 없음
 
 ## 제약 (Constraints)
 - `character-architecture.md`의 중재자 구조를 따른다. 속도 변경은 `CharacterMediator.SetAttribute`로 한다. 레인 속도를 이렇게 넣은 군중의 선례(`PlayerFacade`)와 같은 예외다.
