@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Stage / FeedApp / Player]** 피드 맵 악성 데이터 여러 개에 닿아도 피격 무적(1초) 중엔 데미지가 막히고 데이터만 사라져 1번만 맞음. 악성 데이터가 있을 때만 `PlayerFacade.SetHitInvincibilityDuration(0)`: `MaliciousFeed.OnCleared`로 생성 감지, 사라짐 감지(A: 있을 때만 null 확인 / B: 파괴 이벤트)·원래 값 출처 결정 대기, 구현 전 → [문서](./intent-061-feed-malicious-data-invincibility.md)
 - **[Stage / Player / Camera]** 낙하 복귀 시 체크포인트 방향이 아니라 떨어지기 전 방향을 바라봄(몸 모델이 카메라 yaw를 따라가는데 카메라 yaw는 그대로). RespawnPoint 방향 화살표 Gizmo 추가, Core만으로 복귀 방향을 맞출 방법 결정 대기 → [문서](./intent-059-checkpoint-respawn-facing.md)
 - **[Stage / SecurityApp / UI]** 보안 앱 라운드 진행: SecurityApp → 라운드 일반 클래스 → CombatZone, 보스 체력바 구현. Map_4_Security 방 4개·특수몹 발판 5개·로비행 탈출문 및 NavMesh 연결 완료, Play 생성·클리어·사망 복구·체력바 단계 확인. 직접 조작 플레이·실제 로비 도착 확인 남음 → [문서](./intent-057-security-app-rounds.md)
 - **[Stage / FileApp / UI]** 미로 1라운드에 로직이 없어 패널이 숨겨져 지금 라운드를 모름, 라운드 번호 추적·진행 알림이 앱마다 따로 있음. `StageBase`에 `CurrentRoundIndex`·`OnRoundChanged`·`OnProgressChanged` 공통화, 패널은 `N라운드` + 2R 먹은 숫자·연산자 / 3R 남은 도둑·남은 시간, TestScene에 1→2→3라운드 공간 → [문서](./intent-056-stage-round-panel.md)
