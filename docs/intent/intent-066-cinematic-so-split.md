@@ -121,6 +121,10 @@ SOCutscene_Tutorial
     - 3. 카메라 샷 → `PlayCameraShot(1)`
     - 4. 독백 → `PlayMonologue(1)`
     - 팻말에 기반 SO 이름을 적었다.
+  - 끝 블렌드 중 조작 수정(사용자 제보): 연출이 끝나면 플레이어 카메라로 돌아오는 블렌드를 시작하자마자 시간·조작을 풀어, 카메라가 돌아오는 동안 움직이거나 탈것(블루투스)이 앞으로 나가 떨어졌다.
+    - `Finish`는 시간 정지를 유지하고, 끝 블렌드가 끝난 뒤 `CoRestoreBrain`에서 `ReleaseControl`(시간 재개·입력 맵 해제)을 부른다.
+    - 매니저가 꺼질 때는 바로 푼다.
+    - TestScene 확인: 3번 카메라 샷은 블렌드 동안 Dialogue 맵·시간 0, 끝난 뒤 Player 맵·시간 1. 2번 컷씬은 끝까지 진행 후 복구.
   - 생성 메뉴도 `UI/…`·`Cinematic/…`(Unity 기본 메뉴의 Cinematic과 헷갈림)을 `UIandCinematic/…` 하나로 모았다. 9개: Camera Shot, Camera Shot Table, Cutscene, Cutscene Table, Dialogue, Dialogue Table, Monologue, Monologue Table, Pet Guide Table.
 - TestScene
   - 테스트 카메라 3대에 키(`Test_IntroOverview`·`Test_PuzzleOverview`·`Test_MonsterFloor`)를 붙였다.
