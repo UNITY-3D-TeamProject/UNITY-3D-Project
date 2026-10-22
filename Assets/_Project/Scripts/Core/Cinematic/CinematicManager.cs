@@ -17,11 +17,6 @@ namespace Core.Cinematic
         private const string SEEN_KEY_PREFIX = "Cinematic.Seen.";
         #endregion
 
-        #region Serialized Fields
-        [Tooltip("스테이지가 시작될 때 StageManager가 재생할 연출. 비우면 스테이지 시작 대화를 그대로 쓴다")]
-        [SerializeField] private CinematicSequence _introSequence;
-        #endregion
-
         #region Private Fields
         private CinematicSequence _currentSequence;
         private Coroutine _playRoutine;
@@ -83,13 +78,6 @@ namespace Core.Cinematic
         #endregion
 
         #region Public Methods
-        // 시작 연출을 재생한다. 시작 연출이 없거나 재생하지 못하면 false.
-        // [호출] StageManager가 스테이지를 시작할 때 시작 대화보다 먼저 부른다.
-        public bool PlayIntro()
-        {
-            return (_introSequence != null) && Play(_introSequence);
-        }
-
         // 연출을 처음부터 재생한다.
         // 이미 연출·대화 중이거나, 한 번만 보는 연출을 이미 봤거나, UIManager가 연출을 시작할 수 없으면 false.
         public bool Play(CinematicSequence sequence)
