@@ -225,7 +225,6 @@ MonoBehaviour:
   _controller: {fileID: 4199479298084343665}
   _hitEffect: {fileID: 11400000, guid: 58bf1a382c472354ebcf31a7e26e92ce, type: 2}
   _telegraphSeconds: 1.2
-  _isDouble: 1
 --- !u!1 &2683330219969083326
 GameObject:
   m_ObjectHideFlags: 0
@@ -394,6 +393,8 @@ MonoBehaviour:
   _bone: {fileID: 5856856404481279077}
   _boneLift: 4.58
   _fingerAxis: {x: -1, y: 0, z: 0}
+  _palmAxis: {x: 0, y: -1, z: 0}
+  _clapLift: 2.43
   _fingersDownLift: 23.87
   _sinkDepth: 7.5
   _hoverHeight: 50
@@ -401,6 +402,14 @@ MonoBehaviour:
   _moveSeconds: 0.4
   _slamSeconds: 0.15
   _stayObstacle: {fileID: 8353206036524613127}
+  _fingerCurls:
+  - Bone: {fileID: 4147180213294381260}
+    FistAngle: 25
+  - Bone: {fileID: 813116989049772527}
+    FistAngle: -25
+  _curlAxis: {x: 0, y: 1, z: 0}
+  _fistDownAxis: {x: 0, y: 0, z: 1}
+  _fistLift: 4.58
 --- !u!114 &6343079012660607808
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -565,6 +574,9 @@ MonoBehaviour:
   _knockbackDistance: 6
   _knockbackSeconds: 0.3
   _hitEffect: {fileID: 11400000, guid: 3675f2df23254b046a66b92a14eb8959, type: 2}
+  _projectilePrefab: {fileID: 837971910623696413, guid: b466888d76fd855499e540608e7dbe85, type: 3}
+  _muzzle: {fileID: 0}
+  _arcHeight: 6
 --- !u!1 &5305024402759871337
 GameObject:
   m_ObjectHideFlags: 0
@@ -763,6 +775,8 @@ MonoBehaviour:
   _bone: {fileID: 8792478412177134632}
   _boneLift: 4.58
   _fingerAxis: {x: -1, y: 0, z: 0}
+  _palmAxis: {x: 0, y: -1, z: 0}
+  _clapLift: 2.43
   _fingersDownLift: 23.87
   _sinkDepth: 7.5
   _hoverHeight: 50
@@ -770,6 +784,14 @@ MonoBehaviour:
   _moveSeconds: 0.4
   _slamSeconds: 0.15
   _stayObstacle: {fileID: 1434178914333045978}
+  _fingerCurls:
+  - Bone: {fileID: 5564955296893831779}
+    FistAngle: -25
+  - Bone: {fileID: 81572559825713440}
+    FistAngle: 25
+  _curlAxis: {x: 0, y: 1, z: 0}
+  _fistDownAxis: {x: 0, y: 0, z: 1}
+  _fistLift: 4.58
 --- !u!114 &8779971165294156100
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -835,6 +857,9 @@ MonoBehaviour:
   _knockbackDistance: 6
   _knockbackSeconds: 0.3
   _hitEffect: {fileID: 11400000, guid: 3675f2df23254b046a66b92a14eb8959, type: 2}
+  _projectilePrefab: {fileID: 837971910623696413, guid: b466888d76fd855499e540608e7dbe85, type: 3}
+  _muzzle: {fileID: 0}
+  _arcHeight: 6
 --- !u!1 &6577363812126789554
 GameObject:
   m_ObjectHideFlags: 0
@@ -915,6 +940,11 @@ MonoBehaviour:
   _hitEffect: {fileID: 11400000, guid: 2c8600821fc33df4dbfe491719e8288a, type: 2}
   _telegraphSeconds: 1.5
   _strikeInterval: 1.4
+  _clapGap: 8
+  _hitRadius: 6
+  _holdSeconds: 0.7
+  _wallPrefab: {fileID: 4435415893122469050, guid: e381ed5568bb82842a9e97ff47418344, type: 3}
+  _wallHeight: 6
 --- !u!1 &6993736094960404198
 GameObject:
   m_ObjectHideFlags: 0
@@ -963,7 +993,6 @@ MonoBehaviour:
   _controller: {fileID: 4199479298084343665}
   _hitEffect: {fileID: 11400000, guid: 58bf1a382c472354ebcf31a7e26e92ce, type: 2}
   _telegraphSeconds: 1.2
-  _isDouble: 0
 --- !u!1 &7159016147329461443
 GameObject:
   m_ObjectHideFlags: 0
@@ -1012,6 +1041,7 @@ MonoBehaviour:
   _controller: {fileID: 4199479298084343665}
   _hitEffect: {fileID: 11400000, guid: 9652ab3fe664b7b47a9d0be3eb729a72, type: 2}
   _telegraphSeconds: 1.5
+  _sweepSecondsPerTile: 0.15
 --- !u!1 &8051028029458657738
 GameObject:
   m_ObjectHideFlags: 0
@@ -1102,8 +1132,9 @@ MonoBehaviour:
   _hookRange: 100
   _hookHeight: 1
   _hookRadius: 2.5
-  _pullSeconds: 0.4
   _slamTelegraphSeconds: 1.5
+  _holdSeconds: 0.7
+  _captureShakeForce: 2
 --- !u!1 &8734686264384130684
 GameObject:
   m_ObjectHideFlags: 0
@@ -1180,6 +1211,8 @@ MonoBehaviour:
   _handStayFinal: 0
   _groggyHpFloorRatio: 0.5
   _restSeconds: 1.6
+  _grabGuaranteeCount: 3
+  _cannonIntervalFinal: 6
 --- !u!114 &7562927144991651820
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1202,6 +1235,7 @@ MonoBehaviour:
   _playerAnimationMediator: {fileID: 0}
   _enemyAnimationMediator: {fileID: 1133024523956360839}
   _petMediator: {fileID: 0}
+  _spawnEffectDriver: {fileID: 0}
 --- !u!114 &1531795067621774753
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1490,6 +1524,16 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 3641269044339755529}
   m_SourcePrefab: {fileID: 100100000, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
+--- !u!4 &81572559825713440 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -7995995127670312261, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
+  m_PrefabInstance: {fileID: 1164542261768244123}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &813116989049772527 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -7250359359089814924, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
+  m_PrefabInstance: {fileID: 1164542261768244123}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1703469487096671344 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
@@ -1518,6 +1562,16 @@ MonoBehaviour:
 --- !u!4 &3849298288724143699 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -6538596215938112056, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
+  m_PrefabInstance: {fileID: 1164542261768244123}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &4147180213294381260 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -6222576749569313961, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
+  m_PrefabInstance: {fileID: 1164542261768244123}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5564955296893831779 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -2516394675822575112, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
   m_PrefabInstance: {fileID: 1164542261768244123}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &5856856404481279077 stripped

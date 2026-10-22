@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
+using DTT.AreaOfEffectRegions;
 using AI.Boss.Logic;
+using Boss.VFX;
 
 namespace AI.Boss.Arena
 {
@@ -22,20 +24,25 @@ namespace AI.Boss.Arena
         [SerializeField, Min(0.0f)] private float _restoreSecondsFinal = 3.0f;
 
         [Header("Circle Telegraph")]
-        [Tooltip("지름 1 m 짜리 원판 프리팹. 크기 조절로 반경을 맞춘다.")]
+        [Tooltip("지름 1 m 짜리 원판 프리팹. 크기 조절로 반경을 맞춘다. DTT CircleRegion 이 있으면 크기 조절 대신 Radius 를 넣는다.")]
         [SerializeField] private GameObject _circlePrefab;
         [SerializeField, Min(0)] private int _circlePoolSize = 4;
 
         [Header("Line Telegraph")]
-        [Tooltip("가로·세로 1 m 짜리 납작한 판 프리팹. 로컬 X 가 폭, Z 가 길이가 되도록 크기 조절로 맞춘다.")]
+        [Tooltip("가로·세로 1 m 짜리 납작한 판 프리팹. 로컬 X 가 폭, Z 가 길이가 되도록 크기 조절로 맞춘다. " +
+                 "DTT LineRegion 이 있으면 크기 조절 대신 시작점에 놓고 Length·Width 를 넣는다.")]
         [SerializeField] private GameObject _linePrefab;
         [SerializeField, Min(0)] private int _linePoolSize = 2;
         #endregion
 
         #region Private Fields
         private GameObject[] _circles;
+        private CircleRegion[] _circleRegions;
+        private AoeVfxPlayer[] _circlePlayers;
         private Vector3 _circleBaseScale;
         private GameObject[] _lines;
+        private LineRegion[] _lineRegions;
+        private AoeVfxPlayer[] _linePlayers;
         private Vector3 _lineBaseScale;
         private float _telegraphFillSeconds;
         private Color? _telegraphColor;
@@ -147,7 +154,7 @@ namespace AI.Boss.Arena
             Grid.Collapse(index);
         }
 
-        public int ShowCircle(Vector3 center, float radius)
+        public int ShowCircle(Vector3 center, float radius, float fillSeconds = 0.0f)
         {
             if (_circles == null) return -1;
 
@@ -155,10 +162,21 @@ namespace AI.Boss.Arena
             {
                 if (_circles[i].activeSelf) continue;
 
-                float diameter = radius * 2.0f;
                 _circles[i].transform.SetPositionAndRotation(center, Quaternion.identity);
-                _circles[i].transform.localScale = new Vector3(diameter, _circleBaseScale.y, diameter);
+                CircleRegion region = _circleRegions[i];
+                if (region)
+                {
+                    // DTT 원은 Radius 로 안쪽 메시 크기를 직접 맞추므로 루트는 늘리지 않는다
+                    region.Radius = radius;
+                }
+                else
+                {
+                    float diameter = radius * 2.0f;
+                    _circles[i].transform.localScale = new Vector3(diameter, _circleBaseScale.y, diameter);
+                }
+
                 _circles[i].SetActive(true);
+                PlayFill(_circlePlayers[i], fillSeconds);
                 return i;
             }
 
@@ -173,7 +191,7 @@ namespace AI.Boss.Arena
             _circles[handle].SetActive(false);
         }
 
-        public int ShowLine(Vector3 from, Vector3 to, float width)
+        public int ShowLine(Vector3 from, Vector3 to, float width, float fillSeconds = 0.0f)
         {
             if (_lines == null) return -1;
 
@@ -186,10 +204,25 @@ namespace AI.Boss.Arena
             {
                 if (_lines[i].activeSelf) continue;
 
-                Vector3 center = from + (delta * 0.5f);
-                _lines[i].transform.SetPositionAndRotation(center, Quaternion.LookRotation(delta / length, Vector3.up));
-                _lines[i].transform.localScale = new Vector3(width, _lineBaseScale.y, length);
+                Quaternion rotation = Quaternion.LookRotation(delta / length, Vector3.up);
+                LineRegion region = _lineRegions[i];
+                if (region)
+                {
+                    // DTT 직선은 기준점이 시작점이고, 몸통·화살촉을 Length·Width 로 따로 맞춘다
+                    _lines[i].transform.SetPositionAndRotation(from, rotation);
+                    region.Angle = 0.0f;
+                    region.Length = length;
+                    region.Width = width;
+                }
+                else
+                {
+                    Vector3 center = from + (delta * 0.5f);
+                    _lines[i].transform.SetPositionAndRotation(center, rotation);
+                    _lines[i].transform.localScale = new Vector3(width, _lineBaseScale.y, length);
+                }
+
                 _lines[i].SetActive(true);
+                PlayFill(_linePlayers[i], fillSeconds);
                 return i;
             }
 
@@ -255,9 +288,13 @@ namespace AI.Boss.Arena
 
             _circleBaseScale = _circlePrefab.transform.localScale;
             _circles = new GameObject[_circlePoolSize];
+            _circleRegions = new CircleRegion[_circlePoolSize];
+            _circlePlayers = new AoeVfxPlayer[_circlePoolSize];
             for (int i = 0; i < _circlePoolSize; i++)
             {
                 _circles[i] = Instantiate(_circlePrefab, transform);
+                _circleRegions[i] = _circles[i].GetComponent<CircleRegion>();
+                _circlePlayers[i] = _circles[i].GetComponent<AoeVfxPlayer>();
                 _circles[i].SetActive(false);
             }
         }
@@ -268,10 +305,31 @@ namespace AI.Boss.Arena
 
             _lineBaseScale = _linePrefab.transform.localScale;
             _lines = new GameObject[_linePoolSize];
+            _lineRegions = new LineRegion[_linePoolSize];
+            _linePlayers = new AoeVfxPlayer[_linePoolSize];
             for (int i = 0; i < _linePoolSize; i++)
             {
                 _lines[i] = Instantiate(_linePrefab, transform);
+                _lineRegions[i] = _lines[i].GetComponent<LineRegion>();
+                _linePlayers[i] = _lines[i].GetComponent<AoeVfxPlayer>();
                 _lines[i].SetActive(false);
+            }
+        }
+
+        /// <summary>채움 연출이 있는 예고면 fillSeconds 동안 채운다. 0 이하면 처음부터 가득 채운다.</summary>
+        private void PlayFill(AoeVfxPlayer player, float fillSeconds)
+        {
+            if (!player) return;
+
+            if (fillSeconds > 0.0f)
+            {
+                player.duration = fillSeconds;
+                player.Play();
+            }
+            else
+            {
+                player.Stop();
+                player.FillProgress = 1.0f;
             }
         }
 

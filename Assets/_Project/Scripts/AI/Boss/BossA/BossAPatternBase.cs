@@ -70,6 +70,9 @@ namespace AI.Boss.BossA
         /// <summary>true 면 예고가 시작될 때 손이 미리 떠오른다. 기본은 예고가 끝난 뒤 움직인다.</summary>
         protected virtual bool IsHoverDuringTelegraph => false;
 
+        /// <summary>true 면 손가락 끝 대신 주먹을 쥐고 망치처럼 내려친다.</summary>
+        protected virtual bool IsFistStrike => false;
+
         /// <summary>손이 내려치는 횟수. 2 이상이면 내려칠 때마다 RetargetHands 로 다음 칸을 정한다.</summary>
         protected virtual int StrikeCount => 1;
 
@@ -295,6 +298,23 @@ namespace AI.Boss.BossA
 
             return Arena.TryGetTile(body.position, out int index) && (index == tile);
         }
+
+        /// <returns>왼손이 오른손보다 point 에 가깝거나 같으면 true. 한쪽 손이 없으면 있는 손</returns>
+        protected bool IsLeftHandCloser(Vector3 point)
+        {
+            BossHand left = _controller.GetHand(true);
+            BossHand right = _controller.GetHand(false);
+            if (!left || !right) return (bool)left;
+
+            return GetSqrDistanceXZ(left.transform.position, point) <= GetSqrDistanceXZ(right.transform.position, point);
+        }
+
+        protected static float GetSqrDistanceXZ(Vector3 a, Vector3 b)
+        {
+            Vector3 offset = a - b;
+            offset.y = 0.0f;
+            return offset.sqrMagnitude;
+        }
         #endregion
 
         #region Private Methods
@@ -325,7 +345,7 @@ namespace AI.Boss.BossA
             _isHoverStarted = true;
             for (int i = 0; i < _handCount; i++)
             {
-                _hands[i].MoveToHover(_points[i]);
+                _hands[i].MoveToHover(_points[i], IsFistStrike);
             }
         }
 

@@ -198,8 +198,8 @@ namespace AI.Boss.BossA
             _direction = toPlayer.normalized;
             _hookDistance = GetHookDistance();
 
-            _lineHandle = Arena.ShowLine(_origin, _origin + (_direction * _hookDistance), _hookRadius * 2.0f);
             _remaining = _aimSeconds * _controller.TelegraphScale;
+            _lineHandle = Arena.ShowLine(_origin, _origin + (_direction * _hookDistance), _hookRadius * 2.0f, _remaining);
             _isGrabHandBusy = false;
             _isCaptured = false;
             _slamTile = -1;

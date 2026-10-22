@@ -144,27 +144,10 @@ namespace AI.Boss.BossA
             return GetSqrDistanceXZ(position, Arena.GetTileCenter(a)) < GetSqrDistanceXZ(position, Arena.GetTileCenter(b));
         }
 
-        /// <returns>왼손이 오른손보다 point 에 가깝거나 같으면 true. 한쪽 손이 없으면 있는 손</returns>
-        private bool IsLeftHandCloser(Vector3 point)
-        {
-            BossHand left = Controller.GetHand(true);
-            BossHand right = Controller.GetHand(false);
-            if (!left || !right) return (bool)left;
-
-            return GetSqrDistanceXZ(left.transform.position, point) <= GetSqrDistanceXZ(right.transform.position, point);
-        }
-
         /// <returns>줄 안에서 칸의 자리. 가로줄이면 col, 세로줄이면 row</returns>
         private static int GetLinePosition(SBossAPatternChoice choice, int tile)
         {
             return choice.IsRowLine ? ArenaGrid.GetCol(tile) : ArenaGrid.GetRow(tile);
-        }
-
-        private static float GetSqrDistanceXZ(Vector3 a, Vector3 b)
-        {
-            Vector3 offset = a - b;
-            offset.y = 0.0f;
-            return offset.sqrMagnitude;
         }
         #endregion
     }

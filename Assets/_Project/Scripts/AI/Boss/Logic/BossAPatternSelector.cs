@@ -77,7 +77,7 @@ namespace AI.Boss.Logic
             if (situation.Grid.CollapsedCount >= _collapseLimit)
             {
                 // A4 는 칸을 하나 무너뜨리므로 폴백으로 쓰지 않는다
-                if (stage == EBossStage.Final) return CreateClap(ArenaGrid.GetRow(targetTile));
+                if (stage == EBossStage.Final) return CreateClap(situation.Grid, ArenaGrid.GetRow(targetTile));
 
                 return CreateRest();
             }
@@ -145,7 +145,7 @@ namespace AI.Boss.Logic
             // 규칙 4: 가운데 칸이면 A5 +자 (최종)
             if (situation.PlayerTile == CENTER && stage == EBossStage.Final)
             {
-                choice = CreateChess(true);
+                choice = CreateChess(true, situation.PlayerTile);
                 return true;
             }
 
@@ -183,9 +183,9 @@ namespace AI.Boss.Logic
                     case EBossAPattern.A4:
                         return CreateGrab(targetTile);
                     case EBossAPattern.A5Plus:
-                        return CreateChess(_random.Next(2) == 0);
+                        return CreateChess(_random.Next(2) == 0, situation.PlayerTile);
                     default:
-                        return CreateClap(ArenaGrid.GetRow(targetTile));
+                        return CreateClap(situation.Grid, ArenaGrid.GetRow(targetTile));
                 }
             }
 
@@ -293,16 +293,27 @@ namespace AI.Boss.Logic
             return CreateSingleHand(EBossAPattern.A4, tile);
         }
 
-        private static SBossAPatternChoice CreateChess(bool isPlus)
+        /// <summary>
+        /// +자는 IsRowLine 이 먼저 무너질 줄(true 면 가운데 가로줄)이고 손 칸은 그 줄의 양 끝이다.
+        /// 플레이어가 가운데 가로줄 위면 가로줄, 가운데 세로줄 위면 세로줄이 먼저다. 가운데 칸이거나 둘 다 아니면 무작위.
+        /// </summary>
+        private SBossAPatternChoice CreateChess(bool isPlus, int playerTile)
         {
             int middle = ArenaGrid.SIZE / 2;
             if (isPlus)
             {
+                bool isOnRow = (playerTile >= 0) && (ArenaGrid.GetRow(playerTile) == middle);
+                bool isOnCol = (playerTile >= 0) && (ArenaGrid.GetCol(playerTile) == middle);
+                bool isRowFirst = (isOnRow == isOnCol) ? (_random.Next(2) == 0) : isOnRow;
+                int[] firstLine = GetLineTiles(isRowFirst, middle);
+
                 return new SBossAPatternChoice(
                     EBossAPattern.A5Plus,
                     (int[])PlusTiles.Clone(),
-                    ArenaGrid.GetIndex(middle, 0),
-                    ArenaGrid.GetIndex(middle, ArenaGrid.SIZE - 1));
+                    firstLine[0],
+                    firstLine[ArenaGrid.SIZE - 1],
+                    isRowFirst,
+                    middle);
             }
 
             return new SBossAPatternChoice(
@@ -312,10 +323,36 @@ namespace AI.Boss.Logic
                 ArenaGrid.GetIndex(0, ArenaGrid.SIZE - 1));
         }
 
-        private static SBossAPatternChoice CreateClap(int row)
+        /// <summary>
+        /// 표적 칸의 가로줄에 박수. 1타가 치는 양 끝 칸 중 하나라도 무너진 줄은 쓰지 않고,
+        /// 양 끝 칸이 남은 가로줄 중 가장 가까운 줄(거리가 같으면 무작위)로 옮긴다. 그런 줄이 없으면 쉰다.
+        /// </summary>
+        private SBossAPatternChoice CreateClap(ArenaGrid grid, int targetRow)
         {
-            int[] tiles = GetLineTiles(true, row);
-            return new SBossAPatternChoice(EBossAPattern.A6, tiles, tiles[0], tiles[ArenaGrid.SIZE - 1], true, row);
+            int nearestDistance = int.MaxValue;
+            _candidates.Clear();
+            for (int row = 0; row < ArenaGrid.SIZE; row++)
+            {
+                bool hasBothEnds = (grid.GetState(ArenaGrid.GetIndex(row, 0)) != ETileState.Collapsed) &&
+                                   (grid.GetState(ArenaGrid.GetIndex(row, ArenaGrid.SIZE - 1)) != ETileState.Collapsed);
+                if (!hasBothEnds) continue;
+
+                int distance = Math.Abs(row - targetRow);
+                if (distance > nearestDistance) continue;
+
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    _candidates.Clear();
+                }
+                _candidates.Add(row);
+            }
+
+            int clapRow = PickCandidate();
+            if (clapRow < 0) return CreateRest();
+
+            int[] tiles = GetLineTiles(true, clapRow);
+            return new SBossAPatternChoice(EBossAPattern.A6, tiles, tiles[0], tiles[ArenaGrid.SIZE - 1], true, clapRow);
         }
 
         private static SBossAPatternChoice CreateRest()
