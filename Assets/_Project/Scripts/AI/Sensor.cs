@@ -51,6 +51,10 @@ namespace AI
         private bool _hasLastKnownPosition;
         private float _detectTimer;
         private float _graceTimer;
+
+        // 비활성화된 동안에도 시간이 흐르도록 남은 시간이 아니라 끝나는 시각을 기억한다
+        private float _limitedSightRange;
+        private float _sightLimitEndTime;
         #endregion
 
         #region Properties
@@ -65,6 +69,10 @@ namespace AI
 
         /// <summary>마지막 목격 위치가 기록되어 있는지 여부.</summary>
         public bool HasLastKnownPosition => _hasLastKnownPosition;
+
+        /// <summary>지금 적용 중인 시야 거리. 제한 중이면 제한 거리, 아니면 시야 거리 설정값.</summary>
+        public float CurrentSightRange =>
+            (Time.time < _sightLimitEndTime) ? Mathf.Min(_limitedSightRange, _sightRange) : _sightRange;
         #endregion
 
         #region Unity Lifecycle
@@ -123,6 +131,18 @@ namespace AI
             _graceTimer = 0.0f;
             _hasLastKnownPosition = false;
         }
+
+        /// <summary>
+        /// 지정한 시간 동안 시야 거리를 range 이하로 줄인다. 시야 거리 설정값보다 넓어지지는 않는다.
+        /// 제한 중에 다시 부르면 덮어쓴다. seconds 가 0 이하면 제한을 바로 푼다.
+        /// </summary>
+        /// <param name="range">제한할 시야 거리(m). 0 이면 그동안 아무것도 감지하지 않는다</param>
+        /// <param name="seconds">제한 시간(초)</param>
+        public void LimitSightRange(float range, float seconds)
+        {
+            _limitedSightRange = Mathf.Max(0.0f, range);
+            _sightLimitEndTime = Time.time + seconds;
+        }
         #endregion
 
         #region Private Methods
@@ -138,7 +158,7 @@ namespace AI
             Vector3 eyePosition = _eye.position;
             int hitCount = Physics.OverlapSphereNonAlloc(
                 eyePosition,
-                _sightRange,
+                CurrentSightRange,
                 _hitBuffer,
                 _targetLayers);
 
