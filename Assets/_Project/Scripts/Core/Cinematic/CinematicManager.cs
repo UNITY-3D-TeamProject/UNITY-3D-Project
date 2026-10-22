@@ -11,7 +11,8 @@ namespace Core.Cinematic
     /// 씬의 카메라 연출(CinematicSequence)을 단계 순서대로 실행한다. 씬마다 하나 둔다.
     /// 연출 동안 InputMapController에 Dialogue 맵(조작 막기)을 요청하고, 샷 설정에 따라 게임 시간을 멈추거나 돌린다.
     /// 시작·끝을 이벤트로 알리면 UIManager가 받아 인게임 UI를 숨기고 보인다.
-    /// 시간이 멈춰도 카메라 블렌드가 돌도록 CinemachineBrain을 게임 시간과 상관없이 돌리고, 끝나면 모두 원래대로 돌린다.
+    /// 시간이 멈춰도 카메라 블렌드가 돌도록 CinemachineBrain을 게임 시간과 상관없이 돌린다. 이 설정은 대화(DialogueDirector)도 쓰므로 되돌리지 않고,
+    /// 샷마다 바꾼 기본 블렌드만 끝나면 원래대로 돌린다.
     /// 연출 중 플레이어는 무적이 아니므로, 시간이 흐르는 샷은 적이 없는 곳에서만 쓴다.
     /// </summary>
     public class CinematicManager : MonoBehaviour
@@ -28,9 +29,8 @@ namespace Core.Cinematic
         private Coroutine _restoreBrainRoutine;
         private CinemachineCamera _activeShotCamera;
 
-        // 연출 동안 바꿔 둔 CinemachineBrain과 원래 값
+        // 연출 동안 기본 블렌드를 바꿔 둔 CinemachineBrain과 원래 값
         private CinemachineBrain _brain;
-        private bool _isBrainIgnoringTimeScale;
         private CinemachineBlendDefinition _brainDefaultBlend;
         #endregion
 
@@ -151,7 +151,8 @@ namespace Core.Cinematic
         #endregion
 
         #region Private Methods
-        // 시간이 멈춰도 블렌드가 돌도록 Brain을 게임 시간과 상관없이 돌린다.
+        // 시간이 멈춰도 블렌드가 돌도록 Brain을 게임 시간과 상관없이 돌리고, 원래 기본 블렌드를 저장해 둔다.
+        // IgnoreTimeScale은 되돌리지 않는다. 평소에는 게임 시간이 1이라 차이가 없다.
         private void BeginBrainControl()
         {
             // 앞 연출의 끝 블렌드를 기다리는 중이면 원래 값은 이미 들고 있으므로 다시 저장하지 않는다.
@@ -165,7 +166,6 @@ namespace Core.Cinematic
                 _brain = (CinemachineBrain.ActiveBrainCount > 0) ? CinemachineBrain.GetActiveBrain(0) : null;
                 if (_brain == null) return;
 
-                _isBrainIgnoringTimeScale = _brain.IgnoreTimeScale;
                 _brainDefaultBlend = _brain.DefaultBlend;
             }
 
@@ -173,13 +173,11 @@ namespace Core.Cinematic
                 _brain.IgnoreTimeScale = true;
         }
 
+        // 샷마다 바꾼 기본 블렌드를 원래대로 돌린다.
         private void RestoreBrain()
         {
             if (_brain != null)
-            {
-                _brain.IgnoreTimeScale = _isBrainIgnoringTimeScale;
                 _brain.DefaultBlend = _brainDefaultBlend;
-            }
 
             _brain = null;
         }
@@ -206,7 +204,7 @@ namespace Core.Cinematic
                 _activeShotCamera.enabled = true;
         }
 
-        // 연출을 마치고 샷 카메라·시간·입력·UI를 돌려준다. Brain 설정은 끝 블렌드가 끝난 뒤 되돌린다.
+        // 연출을 마치고 샷 카메라·시간·입력·UI를 돌려준다. Brain 기본 블렌드는 끝 블렌드가 끝난 뒤 되돌린다.
         private void Finish()
         {
             float endBlendSeconds = (_currentSequence != null) ? _currentSequence.EndBlendSeconds : 0.0f;

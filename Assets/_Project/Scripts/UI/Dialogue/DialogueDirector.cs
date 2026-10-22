@@ -10,7 +10,8 @@ namespace UI.Dialogue
     /// 대화 연출(펫·카메라)만 맡는 컴포넌트. 대화 진행은 모르고, UIManager가 시작·줄 바뀜·끝에 맞춰 부른다.
     /// 대화가 시작된 자리에서 펫을 플레이어 앞에 세워 플레이어를 보게 하고, 말하는 사람을 비추는 카메라로 전환한다.
     /// 대화가 끝나면 펫을 원래 자리로 돌려보내고 연출 카메라를 끈다.
-    /// 대화 중에는 게임 시간이 멈추므로(GameManager.PauseGameTime), 그동안 플레이어·펫 Animator와 CinemachineBrain만 게임 시간과 상관없이 돌게 한다.
+    /// 대화 중에는 게임 시간이 멈추므로(GameManager.PauseGameTime), 그동안 플레이어·펫 Animator만 게임 시간과 상관없이 돌게 한다.
+    /// CinemachineBrain은 게임 시간과 상관없이 돌도록 켜기만 하고 되돌리지 않는다(카메라 연출도 같은 설정을 쓰므로 서로 덮어쓰지 않게).
     /// 고정 카메라는 씬 오브젝트라 대화 SO에 넣을 수 없으므로 이 컴포넌트에 목록으로 두고, 대사의 CameraIndex로 고른다.
     /// </summary>
     public class DialogueDirector : MonoBehaviour
@@ -48,13 +49,11 @@ namespace UI.Dialogue
         private Vector3 _petPivotLocalPosition;
         private Quaternion _petPivotLocalRotation;
 
-        // 대화 동안 게임 시간이 멈춰도 돌도록 바꿔 둔 Animator·Brain과 원래 값
+        // 대화 동안 게임 시간이 멈춰도 돌도록 바꿔 둔 Animator와 원래 값
         private Animator _playerAnimator;
         private AnimatorUpdateMode _playerAnimatorUpdateMode;
         private Animator _petAnimator;
         private AnimatorUpdateMode _petAnimatorUpdateMode;
-        private CinemachineBrain _brain;
-        private bool _isBrainIgnoringTimeScale;
         #endregion
 
         #region Unity Lifecycle
@@ -74,12 +73,10 @@ namespace UI.Dialogue
             if (player == null) return;
 
             // 대화 동안 게임 시간이 멈추므로, 카메라 전환과 플레이어 대기 애니메이션은 게임 시간과 상관없이 돌게 한다.
-            _brain = (CinemachineBrain.ActiveBrainCount > 0) ? CinemachineBrain.GetActiveBrain(0) : null;
-            if (_brain != null)
-            {
-                _isBrainIgnoringTimeScale = _brain.IgnoreTimeScale;
-                _brain.IgnoreTimeScale = true;
-            }
+            // Brain은 되돌리지 않는다. 평소에는 게임 시간이 1이라 차이가 없다.
+            CinemachineBrain brain = (CinemachineBrain.ActiveBrainCount > 0) ? CinemachineBrain.GetActiveBrain(0) : null;
+            if (brain != null)
+                brain.IgnoreTimeScale = true;
 
             _playerAnimator = player.GetComponentInChildren<Animator>();
             if (_playerAnimator != null) _playerAnimatorUpdateMode = SwitchToUnscaledTime(_playerAnimator);
@@ -120,16 +117,14 @@ namespace UI.Dialogue
             PlaceCamera(_petShotCamera, playerPosition + ToWorld(_petShotOffset, right, forward), petPosition);
         }
 
-        // 펫을 원래 자리로 돌려보내고 연출 카메라를 끈다. 바꿔 둔 Animator·Brain도 원래대로 돌린다.
+        // 펫을 원래 자리로 돌려보내고 연출 카메라를 끈다. 바꿔 둔 Animator도 원래대로 돌린다.
         public void EndStaging()
         {
             SetActiveCamera(null);
 
-            if (_brain != null) _brain.IgnoreTimeScale = _isBrainIgnoringTimeScale;
             if (_playerAnimator != null) _playerAnimator.updateMode = _playerAnimatorUpdateMode;
             if (_petAnimator != null) _petAnimator.updateMode = _petAnimatorUpdateMode;
 
-            _brain = null;
             _playerAnimator = null;
             _petAnimator = null;
 
