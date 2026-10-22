@@ -79,11 +79,12 @@ namespace UIandCinematic
         {
             Stop();
 
-            // 꺼진 뒤에는 코루틴이 돌지 않으므로 끝 블렌드를 기다리지 않고 바로 되돌린다.
+            // 꺼진 뒤에는 코루틴이 돌지 않으므로 끝 블렌드를 기다리지 않고 바로 되돌리고 조작도 돌려준다.
             if (_restoreBrainRoutine != null)
             {
                 StopCoroutine(_restoreBrainRoutine);
                 _restoreBrainRoutine = null;
+                ReleaseControl();
             }
 
             RestoreBrain();
@@ -217,6 +218,7 @@ namespace UIandCinematic
         private void BeginBrainControl()
         {
             // 앞 연출의 끝 블렌드를 기다리는 중이면 원래 값은 이미 들고 있으므로 다시 저장하지 않는다.
+            // 그 연출이 걸어 둔 시간 정지·조작 막기는 같은 요청자(this)라 새 연출이 이어받고, 새 연출이 끝날 때 푼다.
             if (_restoreBrainRoutine != null)
             {
                 StopCoroutine(_restoreBrainRoutine);
@@ -265,7 +267,7 @@ namespace UIandCinematic
                 _activeShotCamera.enabled = true;
         }
 
-        // 연출을 마치고 샷 카메라·시간·입력·UI를 돌려준다. Brain 기본 블렌드는 끝 블렌드가 끝난 뒤 되돌린다.
+        // 연출을 마치고 샷 카메라·UI를 돌려준다. Brain 기본 블렌드와 게임 시간·입력은 끝 블렌드가 끝난 뒤 돌려준다.
         private void Finish()
         {
             float endBlendSeconds = _endBlendSeconds;
@@ -277,18 +279,32 @@ namespace UIandCinematic
             // 컷씬 대사로 세워 둔 펫과 말하는 사람 카메라를 돌려놓는다. 컷씬이 아니었으면 아무것도 하지 않는다.
             DialogueController.Current?.EndCutscene();
 
+            // 플레이어 카메라로 돌아오는 동안 움직이면 화면이 다 돌아오기 전에 떨어질 수 있으므로,
+            // 게임 시간 정지와 조작 막기는 끝 블렌드가 끝난 뒤에 푼다. 시간이 흐르는 샷으로 끝났어도 블렌드 동안은 멈춘다.
+            if (GameManager.Instance != null)
+                GameManager.Instance.PauseGameTime(this);
+
+            OnPlayFinished?.Invoke(this);
+
+            // Brain은 다음 프레임에 블렌드를 시작하므로, 블렌드 시간이 지난 뒤에 원래 기본 블렌드로 돌리고 조작을 돌려준다.
+            if (isActiveAndEnabled)
+            {
+                _restoreBrainRoutine = StartCoroutine(CoRestoreBrain(endBlendSeconds));
+            }
+            else
+            {
+                RestoreBrain();
+                ReleaseControl();
+            }
+        }
+
+        // 연출이 걸어 둔 게임 시간 정지와 조작 막기를 푼다.
+        private void ReleaseControl()
+        {
             if (GameManager.Instance != null)
                 GameManager.Instance.ResumeGameTime(this);
 
             InputMapController.Instance?.ReleaseMap(this);
-
-            OnPlayFinished?.Invoke(this);
-
-            // Brain은 다음 프레임에 블렌드를 시작하므로, 블렌드 시간이 지난 뒤에 원래 기본 블렌드로 돌린다.
-            if (isActiveAndEnabled)
-                _restoreBrainRoutine = StartCoroutine(CoRestoreBrain(endBlendSeconds));
-            else
-                RestoreBrain();
         }
 
         private static bool HasSeen(string id)
@@ -492,6 +508,7 @@ namespace UIandCinematic
 
             _restoreBrainRoutine = null;
             RestoreBrain();
+            ReleaseControl();
         }
         #endregion
     }
