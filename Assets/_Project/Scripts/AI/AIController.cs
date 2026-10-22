@@ -638,6 +638,16 @@ namespace AI
         }
 
         /// <summary>
+        /// 지정한 시간 동안 시야 거리를 range 이하로 줄인다. 교전을 끝낸 직후 바로 다시 붙지 않게 할 때 호출한다.
+        /// </summary>
+        /// <param name="range">제한할 시야 거리(m)</param>
+        /// <param name="seconds">제한 시간(초)</param>
+        public void LimitSightRange(float range, float seconds)
+        {
+            if (_sensor) _sensor.LimitSightRange(range, seconds);
+        }
+
+        /// <summary>
         /// 반경 안 동료들에게서 멀어지는 수평 방향을 구한다. 가까운 동료일수록 크게 반영한다.
         /// 붙은 두 적이 동시에 서로를 피해 자리만 맞바꾸지 않도록, 나보다 InstanceID 가 작은 동료만 피한다.
         /// 그래서 뭉친 무리에서 ID 가 가장 작은 적은 제자리에 있고 나머지가 비킨다.

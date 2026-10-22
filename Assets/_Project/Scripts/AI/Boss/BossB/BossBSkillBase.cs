@@ -105,6 +105,7 @@ namespace AI.Boss.BossB
         #region Protected Methods
         /// <summary>
         /// 스킬이 시작될 때 Execute 에서 부른다. 아레나·모터가 준비되지 않았거나 대상이 필요한데 없으면 시작하지 않는다.
+        /// B 의 다른 스킬이 진행 중이어도 시작하지 않는다. 겹쳐 시작하면 먼저 끝난 스킬이 남의 붙잡힘까지 풀어 BT 가 다음 스킬을 또 시작한다.
         /// </summary>
         /// <param name="isTargetRequired">보이는 대상(플레이어)이 있어야 시작하는지</param>
         /// <param name="holdSeconds">붙잡아 둘 최대 시간(초). 정상 종료는 EndRun 이 풀어 준다</param>
@@ -113,6 +114,7 @@ namespace AI.Boss.BossB
         {
             if (IsRunning) return false;
             if (!_controller || !_selfMotor || (Arena == null)) return false;
+            if (_boss.IsSkillRunning) return false;
 
             _isTargetRequired = isTargetRequired;
             _target = _controller.VisibleTarget;

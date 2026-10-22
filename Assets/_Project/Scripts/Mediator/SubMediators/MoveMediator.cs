@@ -56,6 +56,7 @@ namespace Mediator.SubMediators
         private float _lastGroundedTime = float.NegativeInfinity;
         private float _lastJumpPressedTime = float.NegativeInfinity;
         private bool _hasJumpedSinceGrounded;
+        private bool _isMoveLocked;
         #endregion
 
         #region Properties
@@ -179,6 +180,7 @@ namespace Mediator.SubMediators
         /// <param name="duration">이동에 걸리는 시간(초)</param>
         public void CommandRoll(float distance, float duration)
         {
+            if (_isMoveLocked) return;
             if (!_rollMover || !_moveDirectionCalculator) return;
             if (_rollMover.IsRolling) return;
             
@@ -197,10 +199,32 @@ namespace Mediator.SubMediators
         /// <param name="powerRatio">지상 점프 대비 높이 비율. 높이는 속도의 제곱에 비례하므로 속도에는 제곱근을 곱한다.</param>
         public void CommandAirJump(float powerRatio)
         {
+            if (_isMoveLocked) return;
             if (!_motor) return;
             if (_rollMover && _rollMover.IsRolling) return;
 
             _motor.Jump(_jumpPower * _jumpPowerRatio * Mathf.Sqrt(powerRatio));
+        }
+
+        /// <summary>
+        /// 이동·점프·구르기 입력을 잠그거나 푼다. 잠긴 동안에도 입력 방향은 기억해 두었다가 풀릴 때 적용한다.
+        /// 중재자를 끄면 다시 켰을 때 누르고 있던 이동 입력이 사라지므로(입력은 값이 바뀔 때만 온다) 끄지 않고 잠근다.
+        /// 외부 변위(넉백 등)와 중력은 그대로 적용되고, 이미 시작한 구르기는 끝까지 간다.
+        /// </summary>
+        /// <param name="isLocked">잠그려면 true</param>
+        public void SetMoveLocked(bool isLocked)
+        {
+            if (_isMoveLocked == isLocked) return;
+
+            _isMoveLocked = isLocked;
+            // 잠기기 직전에 눌린 점프가 풀리자마자 나가지 않도록 버퍼를 비운다
+            _lastJumpPressedTime = float.NegativeInfinity;
+
+            Vector3 direction = isLocked ? Vector3.zero : _lastDirection;
+            OnMoveDirectionChanged?.Invoke(direction);
+            if (!_motor || (_rollMover && _rollMover.IsRolling)) return;
+
+            _motor.Direction = direction;
         }
 
         /// <summary>
@@ -311,6 +335,9 @@ namespace Mediator.SubMediators
         private void ApplyDirection(Vector3 direction)
         {
             _lastDirection = direction;
+            // 잠긴 동안에는 방향만 기억하고 멈춰 선 상태를 유지한다
+            if (_isMoveLocked) return;
+
             OnMoveDirectionChanged?.Invoke(direction);
             //모터가 없거나 구르는 중일경우 return
             if (!_motor || (_rollMover && _rollMover.IsRolling)) return;
@@ -325,6 +352,7 @@ namespace Mediator.SubMediators
         /// </summary>
         private void CommandJump()
         {
+            if (_isMoveLocked) return;
             if (!_motor) return;
             if (_rollMover && _rollMover.IsRolling) return;
             if (!_motor.IsGrounded && !IsInCoyoteTime())
@@ -342,6 +370,7 @@ namespace Mediator.SubMediators
         /// </summary>
         private void TryBufferedJump()
         {
+            if (_isMoveLocked) return;
             if (!_motor || !_motor.IsGrounded) return;
             if (_rollMover && _rollMover.IsRolling) return;
             if (Time.time - _lastJumpPressedTime > _jumpBufferTime) return;
@@ -392,7 +421,7 @@ namespace Mediator.SubMediators
         /// </summary>
         private void HandleRollEnded()
         {
-            if (_motor) _motor.Direction = _lastDirection;
+            if (_motor) _motor.Direction = _isMoveLocked ? Vector3.zero : _lastDirection;
             OnRollEnded?.Invoke();
         }
 

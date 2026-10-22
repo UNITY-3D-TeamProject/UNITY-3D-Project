@@ -10,6 +10,7 @@ namespace AI.Boss.BossA
 {
     /// <summary>
     /// A 의 컨트롤러. 패턴을 고르고(BossAPatternSelector) 스킬 이름으로 실행을 요청하며, 손·어깨 포·피격 범위를 묶는다.
+    /// 어깨 포는 패턴과 따로, 최종 단계에서 일정 간격마다 좌·우 번갈아 플레이어 위치로 쏜다.
     /// AIController 와 달리 이동이 없고, BT 노드는 이 클래스의 공개 API 에만 의존한다.
     /// </summary>
     public class BossController : MonoBehaviour, ISkillRequestController
@@ -43,6 +44,10 @@ namespace AI.Boss.BossA
         [Tooltip("그로기 중 HP 가 내려가지 않는 최대 HP 대비 비율")]
         [SerializeField, Range(0.0f, 1.0f)] private float _groggyHpFloorRatio = 0.5f;
         [SerializeField, Min(0.0f)] private float _restSeconds = 1.0f;
+        [Tooltip("임시값. A4 가 아닌 패턴이 이 수만큼 끝까지 이어지면 상황 규칙보다 먼저 A4(1-2·최종). 0 이면 끈다")]
+        [SerializeField, Min(0)] private int _grabGuaranteeCount = 3;
+        [Tooltip("임시값. 최종 단계에서 어깨 포를 플레이어 위치로 쏘는 간격(초). 첫 발도 최종 진입 후 이만큼 지나서 쏜다")]
+        [SerializeField, Min(0.1f)] private float _cannonIntervalFinal = 6.0f;
         #endregion
 
         #region Private Fields
@@ -53,6 +58,9 @@ namespace AI.Boss.BossA
         private bool _isSelectedPattern;
         private bool _isResting;
         private float _restRemaining;
+        private bool _isCannonActive;
+        private float _cannonRemaining;
+        private bool _isNextCannonLeft = true;
         #endregion
 
         #region Properties
@@ -87,10 +95,13 @@ namespace AI.Boss.BossA
         {
             if (_mediator) _mediator.OnDeath -= OnDeath;
             CancelPattern();
+            CancelCannons();
         }
 
         private void Update()
         {
+            TickCannon(Time.deltaTime);
+
             if (!_isResting) return;
 
             _restRemaining -= Time.deltaTime;
@@ -136,11 +147,12 @@ namespace AI.Boss.BossA
 
             Situation = situation;
             Arena = arena;
-            _selector = new BossAPatternSelector(new System.Random(randomSeed));
+            _selector = new BossAPatternSelector(new System.Random(randomSeed), grabGuaranteeCount: _grabGuaranteeCount);
         }
 
         /// <summary>
-        /// 단계가 바뀔 때 부른다. 진행 중인 패턴을 취소하고 예고 배율·머묾 시간·선택기 기록을 갱신한다.
+        /// 단계가 바뀔 때 부른다. 진행 중인 패턴·포격을 취소하고 예고 배율·머묾 시간·선택기 기록을 갱신한다.
+        /// 최종 단계면 어깨 포 주기 발사를 처음부터 시작하고, 아니면 끈다.
         /// </summary>
         public void SetStage(EBossStage stage)
         {
@@ -149,6 +161,10 @@ namespace AI.Boss.BossA
             HandStayDuration = isFinal ? _handStayFinal : _handStayPhase1;
 
             CancelPattern();
+            CancelCannons();
+            _isCannonActive = isFinal;
+            _cannonRemaining = _cannonIntervalFinal;
+            _isNextCannonLeft = true;
             _selector?.ResetForStage();
         }
 
@@ -211,7 +227,7 @@ namespace AI.Boss.BossA
         }
 
         /// <summary>
-        /// 진행 중인 패턴(또는 쉼)을 취소한다. 예고를 끄고 손을 회수한다.
+        /// 진행 중인 패턴(또는 쉼)을 취소한다. 예고를 끄고 손을 회수한다. 어깨 포격은 패턴과 따로 돌아 끊지 않는다.
         /// </summary>
         public void CancelPattern()
         {
@@ -221,7 +237,6 @@ namespace AI.Boss.BossA
             _runningSkill = null;
             if (skill) _requestStopSkill?.Invoke(skill.SkillName);
 
-            CancelCannons();
             if (_leftHand) _leftHand.CancelAndRecall();
             if (_rightHand) _rightHand.CancelAndRecall();
         }
@@ -260,27 +275,42 @@ namespace AI.Boss.BossA
             _runningSkill = null;
             if (isFinished && _isSelectedPattern) _selector?.NotifyPatternFinished(CurrentChoice.Pattern);
         }
-
-        /// <summary>
-        /// 어깨 포를 쏜다. 포가 없으면 바로 onDone 을 부른다.
-        /// </summary>
-        public void FireCannon(bool isLeft, Vector3 point, Action onDone)
-        {
-            BossShoulderCannon cannon = isLeft ? _leftCannon : _rightCannon;
-            if (!cannon)
-            {
-                onDone?.Invoke();
-                return;
-            }
-
-            cannon.Fire(point, onDone);
-        }
         #endregion
 
         #region Private Methods
         private void OnDeath()
         {
             CancelPattern();
+            CancelCannons();
+            _isCannonActive = false;
+        }
+
+        private void TickCannon(float deltaTime)
+        {
+            if (!_isCannonActive) return;
+
+            _cannonRemaining -= deltaTime;
+            if (_cannonRemaining > 0.0f) return;
+
+            _cannonRemaining = _cannonIntervalFinal;
+            FireNextCannon();
+        }
+
+        private void FireNextCannon()
+        {
+            if ((Situation == null) || (Arena == null)) return;
+
+            Transform body = Situation.PlayerBody;
+            if (!body) return;
+
+            BossShoulderCannon cannon = _isNextCannonLeft ? _leftCannon : _rightCannon;
+            _isNextCannonLeft = !_isNextCannonLeft;
+            if (!cannon) return;
+
+            // 플레이어가 공중에 있어도 예고 원은 바닥 높이에 띄운다
+            Vector3 point = body.position;
+            point.y = Arena.GetTileCenter(0).y;
+            cannon.Fire(point, null);
         }
 
         private static bool IsAllowed(EBossDamageMode mode, EBossHitPart part)

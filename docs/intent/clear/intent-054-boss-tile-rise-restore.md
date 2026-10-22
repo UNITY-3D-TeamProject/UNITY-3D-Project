@@ -2,9 +2,9 @@
 id: intent-054
 title: 보스 아레나 칸이 복구될 때 아래에서 덜컥 솟아오르게
 part: AI / Boss / Arena
-status: open   # open | resolved
+status: resolved   # open | resolved
 created: 2026-10-21
-resolved: null # 해결 시 YYYY-MM-DD 로 변경
+resolved: 2026-10-21
 ---
 
 ## 문제 (Problem)
@@ -26,5 +26,5 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 테스트 씬(`Assets/Test/Boss`) 타일은 Git 밖이라 정적 플래그를 확인·수정하지 않았다.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
-- 최종 결정:
-- 관련 커밋/PR:
+- 최종 결정: 복구 칸이 아래에서 덜컥 솟아오름(EaseOutBack, 깊이 4 m·0.35초·넘침 2 유지). 사용자 육안 확인 통과(2026-10-21).
+- 관련 커밋/PR: 커밋 전 → [기록](../../HANDOVER/BF_Leers/2026-10-21/boss-tile-rise-restore.md)

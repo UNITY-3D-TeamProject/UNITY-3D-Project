@@ -68,9 +68,13 @@ GameObject:
   m_Component:
   - component: {fileID: 5795853195559355426}
   - component: {fileID: 4011264287856101845}
+  - component: {fileID: 1127859533247734081}
+  - component: {fileID: 2808913613429200827}
+  - component: {fileID: 3249364201929588109}
+  - component: {fileID: 7297469229891013509}
   m_Layer: 8
   m_Name: HeadWeakPoint
-  m_TagString: Untagged
+  m_TagString: Scan
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -88,7 +92,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5427361183995249357}
+  m_Father: {fileID: 2513832229711700755}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &4011264287856101845
 SphereCollider:
@@ -111,6 +115,64 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.4
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1127859533247734081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1213030037475453757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19318f87a581d0408f054d5de0cef90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.ScanTarget
+  _fadeInTime: 0.2
+  _fadeOutTime: 1
+  _reactions: []
+  _scanColliders:
+  - {fileID: 8801986771680523936}
+--- !u!114 &2808913613429200827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1213030037475453757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4f53d2a172f4ec9acb4b346fba4b519, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.SilhouetteReaction
+  _silhouetteRenderers: []
+  _autoShellMaterial: {fileID: 2100000, guid: 05975dd390a8b584db811058b74b4fdb, type: 2}
+  _shellSourceRoot: {fileID: 6829823872737605967}
+--- !u!114 &3249364201929588109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1213030037475453757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f04c8b694561ad646a373c957118ca4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.WeakPointShellMask
+  _silhouette: {fileID: 0}
+  _weakPoints: []
+--- !u!114 &7297469229891013509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1213030037475453757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a9d42fd781322439fef9ab97fd1c65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.WeakPointReaction
 --- !u!1 &1721816013029976024
 GameObject:
   m_ObjectHideFlags: 0
@@ -158,7 +220,7 @@ MonoBehaviour:
   _skillName: Charge
   _hitEffect: {fileID: 11400000, guid: 488c3ca65c1ecf94baef86af9a332880, type: 2}
   _telegraphSeconds: 1.5
-  _speed: 18
+  _speed: 36
   _maxDistance: 60
   _bodyRadius: 2
   _hitRadius: 3
@@ -167,7 +229,7 @@ MonoBehaviour:
   _knockbackSeconds: 0.4
   _runMotionSkillName: ChargeRun
   _stopMotionSkillName: ChargeStop
-  _linePrefab: {fileID: 4435415893122469050, guid: c4847f7ac2abd1f44a86ec8286593ff1, type: 3}
+  _linePrefab: {fileID: 6860600241438202050, guid: df2dfcfc341a4b6419b05769f7c6fa2f, type: 3}
   _lineHeight: 0.05
 --- !u!1 &2124054780660964707
 GameObject:
@@ -219,6 +281,7 @@ GameObject:
   - component: {fileID: 617126785755515221}
   - component: {fileID: 1629192346299153996}
   - component: {fileID: 3583230931132079046}
+  - component: {fileID: 2794957769892381437}
   m_Layer: 8
   m_Name: BossB
   m_TagString: Untagged
@@ -336,6 +399,7 @@ MonoBehaviour:
   _playerAnimationMediator: {fileID: 0}
   _enemyAnimationMediator: {fileID: 4293860922213368321}
   _petMediator: {fileID: 0}
+  _spawnEffectDriver: {fileID: 0}
 --- !u!114 &7616960562340131530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -459,6 +523,21 @@ MonoBehaviour:
   _enemyAnimator: {fileID: 3455200372619860770}
   _graphAgent: {fileID: 742138176948817436}
   _evadeSkillName: Evade
+--- !u!114 &2794957769892381437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2851063550565306939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d48d3fae004b614ca8871a86aae4be4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Combat.WeakPointSelector
+  _weakPoint: {fileID: 5795853195559355426}
+  _candidates:
+  - {fileID: 2513832229711700755}
 --- !u!1 &2893440626600557970
 GameObject:
   m_ObjectHideFlags: 0
@@ -733,7 +812,7 @@ MonoBehaviour:
   _shockwaveTiles: 0.5
   _knockbackDistance: 6
   _knockbackSeconds: 0.4
-  _circlePrefab: {fileID: 2597783182611431928, guid: 8726c56ce3795be45ad40a95c01535aa, type: 3}
+  _circlePrefab: {fileID: 2722304414745882798, guid: a48c7e5b9fbd6e446b9572fb36423461, type: 3}
   _circleHeight: 0.05
 --- !u!1 &7725075831591419310
 GameObject:
@@ -787,6 +866,38 @@ MonoBehaviour:
   _range: 4
   _lastKnockbackDistance: 2
   _lastKnockbackSeconds: 0.2
+--- !u!1 &8083238422790711448
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2513832229711700755}
+  m_Layer: 0
+  m_Name: WeakPointCandidate_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2513832229711700755
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8083238422790711448}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5795853195559355426}
+  m_Father: {fileID: 5427361183995249357}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8670930940532036775
 GameObject:
   m_ObjectHideFlags: 0
@@ -1463,7 +1574,7 @@ PrefabInstance:
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 3894922517606907895, guid: 1fac8f4b67d773c43b00f21b075f6fd9, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5795853195559355426}
+      addedObject: {fileID: 2513832229711700755}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1fac8f4b67d773c43b00f21b075f6fd9, type: 3}
       insertIndex: -1
