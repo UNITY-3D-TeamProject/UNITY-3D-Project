@@ -71,9 +71,20 @@ namespace Mediator.SubMediators
             base.Awake();
             ResolveComponent(ref _targetCamera);
             _cameraController = GetComponentInParent<ICameraController>();
-            BindRequest();
         }
-        
+
+        protected override void OnEnable()
+        {
+            // 꺼져 있는 동안(생성 연출 등)에는 시점·조준 입력을 받지 않는다
+            BindRequest();
+            base.OnEnable();
+        }
+
+        private void OnDisable()
+        {
+            UnBindRequest();
+        }
+
         #endregion
 
         #region Public Methods

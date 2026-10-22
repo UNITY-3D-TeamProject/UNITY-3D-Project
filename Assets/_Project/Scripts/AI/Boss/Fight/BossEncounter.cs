@@ -65,6 +65,15 @@ namespace AI.Boss.Fight
 
         public EBossStage Stage => _model != null ? _model.Stage : EBossStage.Stage1_1;
 
+        /// <summary>그로기 중인가. 그로기 동안은 A 의 손을 때릴 수 있다. (단계는 1-1 그대로)</summary>
+        public bool IsGroggy => (_model != null) && _model.IsGroggy;
+
+        /// <summary>A 의 Mediator. 보스전 전이면 null. 체력바가 HP 를 읽는다.</summary>
+        public CharacterMediator BossAMediator => _mediatorA;
+
+        /// <summary>B 의 Mediator. 보스전 전이면 null. 체력바가 HP 를 읽는다.</summary>
+        public CharacterMediator BossBMediator => _mediatorB;
+
         /// <inheritdoc />
         public Transform PlayerBody => _player ? _player.transform : null;
 

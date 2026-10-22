@@ -213,12 +213,13 @@ namespace AI
 
         private void OnEnable()
         {
+            // 풀에서 다시 꺼낼 때도 그 자리를 순찰 중심으로 삼는다 (풀은 위치를 옮긴 뒤 켠다)
+            _spawnPosition = _body.position;
             if (_mediator) _mediator.OnHitFrom += OnHitFromCallback;
         }
 
         private void Start()
         {
-            _spawnPosition = _body.position;
             _lastTargetSeenTime = Time.time;
             // 방어 코드
             if (_agent) _agent.nextPosition = _body.position;
@@ -626,6 +627,14 @@ namespace AI
         public void ClearLastKnownPosition()
         {
             if (_sensor) _sensor.ClearLastKnownPosition();
+        }
+
+        /// <summary>
+        /// 추적 중인 대상과 마지막 목격 위치를 잊는다. 교전을 끝내고 순찰로 돌아갈 때 호출한다.
+        /// </summary>
+        public void ForgetTarget()
+        {
+            if (_sensor) _sensor.ForgetTarget();
         }
 
         /// <summary>

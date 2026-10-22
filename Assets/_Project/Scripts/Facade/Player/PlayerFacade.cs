@@ -60,6 +60,11 @@ namespace Facade.Player
         /// true 를 받으면 false 를 받을 때까지 FireChargeRatio 를 읽어 게이지를 갱신한다.
         /// </summary>
         public event Action<bool> OnFireChargeChanged;
+        /// <summary>
+        /// 스폰 이펙트가 끝나 이동·스킬·시점 조작이 다시 켜진 직후 한 번 발생한다.
+        /// 이펙트가 정상적으로 끝나지 않으면(준비 실패·도중 비활성화) 건너뛰고 발생한다.
+        /// </summary>
+        public event Action OnSpawnEffectEnded;
         /// <summary>설정창 열기 입력이 들어왔을 때 발생한다.</summary>
         public event Action OnOpenSettingsRequested;
         /// <summary>설정창 닫기 입력이 들어왔을 때 발생한다.</summary>
@@ -255,6 +260,7 @@ namespace Facade.Player
                 _characterMediator.OnSkillUsed += RelaySkillUsed;
                 _characterMediator.OnInteractableChanged += RelayInteractableChanged;
                 _characterMediator.OnFireChargeChanged += RelayFireChargeChanged;
+                _characterMediator.OnSpawnEffectEnded += RelaySpawnEffectEnded;
             }
 
             if (!_playerInput || _playerInput.actions == null) return;
@@ -280,6 +286,7 @@ namespace Facade.Player
                 _characterMediator.OnSkillUsed -= RelaySkillUsed;
                 _characterMediator.OnInteractableChanged -= RelayInteractableChanged;
                 _characterMediator.OnFireChargeChanged -= RelayFireChargeChanged;
+                _characterMediator.OnSpawnEffectEnded -= RelaySpawnEffectEnded;
             }
 
             if (_openSettingsAction != null) _openSettingsAction.performed -= HandleOpenSettings;
@@ -323,6 +330,11 @@ namespace Facade.Player
         private void RelayFireChargeChanged(bool isCharging)
         {
             OnFireChargeChanged?.Invoke(isCharging);
+        }
+
+        private void RelaySpawnEffectEnded()
+        {
+            OnSpawnEffectEnded?.Invoke();
         }
 
         private void HandleOpenSettings(InputAction.CallbackContext context)
