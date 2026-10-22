@@ -1,4 +1,5 @@
 using Attribute.Effect;
+using Core.Cinematic;
 using Facade.Player;
 using JetBrains.Annotations;
 using Map.Gimmicks;
@@ -278,6 +279,10 @@ namespace Core.Stage
         // [호출] StartStage에서 스테이지 시작 직후 호출된다.
         private void PlayIntroDialogue()
         {
+            // 이 씬에 시작 연출이 있으면 연출이 대화까지 맡는다.
+            if ((CinematicManager.Instance != null) && CinematicManager.Instance.PlayIntro())
+                return;
+
             // 지금은 모든 스테이지에서 시작 대화를 끈다. 켤 스테이지는 여기에 추가한다. (예: EStageType.Tutorial => 1,)
             int dialogueId = CurrentStage switch
             {
