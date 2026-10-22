@@ -25,6 +25,10 @@ namespace UI
         [SerializeField] private DialogueDirector _dialogueDirector;
         [Tooltip("PlayDialogue(번호)로 재생할 대화 목록")]
         [SerializeField] private SODialogueTable _cutsceneTable;
+        // 독백 진행 (게임을 멈추지 않고 대사를 펫 안내 패널에 띄운 뒤, 게이지가 다 줄면 숨긴다)
+        [SerializeField] private MonologuePresenter _monologuePresenter;
+        [Tooltip("PlayMonologue(번호)로 재생할 독백 목록. 독백마다 한 줄을 보여 주는 시간을 정할 수 있다")]
+        [SerializeField] private SOMonologueTable _monologueTable;
         [Tooltip("대화 중 alpha를 0으로 내려 인게임 UI를 숨길 캔버스 루트의 CanvasGroup. 대화창·설정창은 Ignore Parent Groups로 계속 보인다.")]
         [SerializeField] private CanvasGroup _inGameCanvasGroup;
         #endregion
@@ -100,6 +104,7 @@ namespace UI
             CloseSettings();
             StopDialogue();
             HidePetGuide();
+            StopMonologue();
             _input.UnbindPlayer();
             _input.OnOpenSettingsRequested -= OpenSettings;
             _input.OnCloseSettingsRequested -= CloseSettings;
@@ -143,6 +148,9 @@ namespace UI
                 _isPetGuideOpen ||
                 (!_input.HasPlayer))
                 return;
+
+            // 같은 패널을 쓰므로 독백은 끄고 안내를 띄운다.
+            StopMonologue();
 
             if (!_petGuidePresenter.Show(id)) return;
 
@@ -188,6 +196,30 @@ namespace UI
             if (IsDialoguePlaying)
                 _dialoguePresenter.StopDialogue();
         }
+
+        // 번호에 맞는 독백을 띄운다. 번호·대사·한 줄 시간은 SOMonologueTable에서 정한다.
+        // 게임 시간·입력·카메라는 그대로 두고, 줄마다 정해진 시간이 지나면 다음 줄로 넘어가 마지막 줄 뒤에 저절로 사라진다.
+        // 독백 중에 부르면 새 독백으로 바꾼다. 컷씬·펫 안내가 같은 패널을 쓰는 중이면 무시한다.
+        // 발판(TriggerPlate) 같은 UnityEvent에서도 연결할 수 있도록 반환값이 없다.
+        public void PlayMonologue(int id)
+        {
+            if ((_monologueTable == null) ||
+                !_monologueTable.TryGetMonologue(id, out SODialogue sequence, out float lineDuration))
+            {
+                Debug.LogWarning($"[UIManager] {id}번 독백이 테이블에 없습니다.", this);
+                return;
+            }
+
+            if ((_monologuePresenter == null) ||
+                IsDialoguePlaying ||
+                _isPetGuideOpen)
+                return;
+
+            _monologuePresenter.Play(sequence, lineDuration);
+        }
+
+        // 독백을 바로 끝내고 패널을 숨긴다.
+        public void StopMonologue() => _monologuePresenter?.Stop();
 
         // 설정창을 열고 게임을 일시정지한다. 입력은 UI 맵으로 바꾼다.
         // 이미 열려 있거나, 플레이어가 없거나, 게임이 Playing 상태가 아니면 무시한다.
@@ -268,6 +300,9 @@ namespace UI
                 _isPetGuideOpen ||
                 (!_input.HasPlayer))
                 return;
+
+            // 같은 패널을 쓰므로 독백은 끄고 대화를 띄운다.
+            StopMonologue();
 
             _dialoguePresenter.OnDialogueLineChanged += HandleDialogueLineChanged;
             _dialoguePresenter.OnDialogueEnded += HandleDialogueEnded;
