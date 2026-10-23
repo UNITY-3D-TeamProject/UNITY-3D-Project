@@ -17,11 +17,12 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 
 ## 기대 결과 (Proposed outcome)
 - 맵에서 체크포인트마다 플레이어가 바라볼 방향을 화살표로 보고 정할 수 있다.
+- 로비 `PlayerSpawner`의 기본 위치·스테이지별 복귀 위치도 화살표로 보고 정할 수 있다.
 - 낙하 복귀 시 카메라와 몸이 그 방향을 바로 바라본다.
 
 ## 영향 범위 (Affected users and systems)
 - 누가 사용하는가: 플레이어(낙하 복귀), 체크포인트를 배치하는 맵 담당
-- 어떤 시스템/모듈이 건드려지는가: `Core/Stage/CheckpointTrigger`, `Core/Stage/StageManager`
+- 어떤 시스템/모듈이 건드려지는가: `Core/Stage/CheckpointTrigger`, `Core/Stage/StageManager`, `Core/PlayerSpawner`
 
 ## 제약 (Constraints)
 - 지켜야 할 정책: 작업자(김성준)는 `Core` 폴더 코드만 수정한다. `PlayerFacade`·Mediator·`PlayerBaseCamera`·`CharacterRotator`는 수정하지 않는다.
@@ -32,8 +33,14 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   - 낙하 복귀도 사망처럼 새로 생성(체력·배터리는 유지) — Core만으로 가능, 생성 연출·펫·쿨타임이 매번 초기화됨
   - 플레이어 담당에게 방향 설정 API(`PlayerFacade.SetLookRotation` 같은 것) 추가를 요청
 - 1차 시도(Facade~카메라·회전 코드에 `SetLookRotation` 추가)는 TestScene에서 동작을 확인했으나, Core 밖 수정이라 되돌렸다.
+- (2026-10-23) 플레이어 담당(이세훈)이 `PlayerFacade.SetLookDirection(Vector3)`을 추가했다(`673044e9`). 단, 몸 방향을 **고정**하고 생성 연출이 끝날 때만 푼다.
+  - TestScene 확인: 최초 스폰은 코드 수정 없이도 스폰 지점 방향(49.7°)으로 몸·카메라가 맞는다(`Instantiate` 회전 + 카메라 피벗 초기 yaw).
+  - 낙하 복귀에서 `MovePlayerTo` 뒤에 `SetLookDirection`을 부르면 방향은 맞지만, 이후 시점을 돌려도 몸이 고정된 채 풀리지 않는다(`_isLookDirectionLocked` = true 유지). 그래서 낙하 복귀에는 쓸 수 없다.
+  - 낙하 복귀용으로는 고정하지 않는 방향 설정(또는 고정 해제) API가 플레이어 쪽에 필요하다 — 사용자 결정 대기.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 진행: `CheckpointTrigger.OnDrawGizmos`로 RespawnPoint 정면을 씬 뷰에 하늘색 화살표로 표시(컴파일 확인, 씬 뷰 육안 미확인).
+- 진행(2026-10-23): 화살표 그리기를 `Core.SpawnFacingGizmo.Draw`로 옮기고, 로비 `PlayerSpawner`(`Is Lobby Spawner` 켜짐)가 자기 위치·`Lobby Spawn Points`의 정면을 초록 화살표로 그린다. 컴파일 0에러, 씬 뷰 육안 미확인.
+- 진행(2026-10-23): 사용자 요청으로 `StageManager.MovePlayerTo` 끝에 `_playerFacade.SetLookDirection(destination.forward)` 추가. 방향은 맞지만 낙하 복귀 뒤 몸 방향 고정이 풀리지 않는 문제가 남아 플레이어 쪽 수정 대기.
 - 최종 결정:
 - 관련 커밋/PR:

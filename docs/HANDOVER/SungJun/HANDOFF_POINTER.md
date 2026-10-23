@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-23** — intent-059 진행: 최초 스폰·사망 재스폰은 수정 없이 RespawnPoint 방향을 따름 확인(TestScene RespawnPoint 대부분 0°라 맵에서 돌려 둬야 함). `MovePlayerTo`에 `SetLookDirection` 연결 — 방향은 맞지만 생성 연출 끝에만 풀리는 고정이 남아 플레이어 쪽 수정 대기. 화살표를 `Core.SpawnFacingGizmo`로 공용화, 로비 `PlayerSpawner`가 기본·복귀 지점 정면을 초록 화살표로 그림. 컴파일 0에러, 씬 뷰 육안 미확인: [작업 기록](./2026-10-23/spawn-facing-gizmo.md)
 - **2026-10-23** — intent-071: AudioManager 3D 효과음 소스가 모자라면 `_maxSfxSourceCount`(64)까지 하나씩 더 만들고(`AddSfxSource`), 상한이면 생략 + 매니저당 경고 한 번. 컴파일 0에러, TestScene Play에서 70개 요청 → 64개·경고 1회·재사용·늘어난 소스 페이드/따라가기 확인, 청취 안 함, 커밋 안 함: [작업 기록](./2026-10-23/audio-sfx-source-grow.md)
 - **2026-10-23** — TestScene 시작 지점 서쪽에 `RefillTest`(체력·배터리 채우기 발판 2개) + Test `TestRefillCaller`(`CurrentPlayerFacade`의 Current를 Max로). Play에서 체력 20→100·배터리 15→100 확인, 표지판 글자 겹침 피하려 발판을 남북·표지판 동쪽 방향으로 옮김(옮긴 뒤 Play는 안 함). `_Project` 변경 없음: [작업 기록](./2026-10-23/testscene-refill-plates.md)
 - **2026-10-23** — TestScene: `EffectManagerTest`를 통로 북쪽(x -54~-36, z 9~22.75)으로 회전 이동해 통로 서쪽 끝을 비우고 다리로 연결, 그 서쪽에 `AudioManagerTest`(발판 4개: 단발음·1초 뒤 StopSfx·반복음 1초 페이드·플레이어 따라가기) + 씬 루트 `AudioManager`, FallZone x -80까지 확장. Test `TestAudioCaller`·시험 SO 3개. Play에서 4개 발판·옮긴 이펙트 구역 동작 확인, 청취·실제 조작 미확인, `_Project` 변경·커밋 없음: [작업 기록](./2026-10-23/audio-effect-testscene-zones.md)
