@@ -23,7 +23,9 @@ namespace Core.Audio
     //    - UI 1개: PlayOneShot으로 짧은 소리를 겹쳐 낸다.
     //    - 3D N개: 발생 위치로 옮겨 단발음을 낸다. 끝나는 시각만 적어 두고, 새 요청 때 끝난 소스를 고른다.
     //      반복음(차지음 등)은 PlaySfxLoop로 같은 소스를 빌려 대상 Transform을 따라가고, StopSfx할 때까지 점유한다.
-    //      PlaySfx·PlaySfxLoop가 돌려준 번호를 StopSfx에 넘기면 그 소리를 중간에 끊는다.
+    //      PlaySfx·PlaySfxLoop가 돌려준 핸들(SAudioHandle)을 StopSfx에 넘기면 그 소리를 중간에 끊는다.
+    //      _chargeHandle = AudioManager.Instance.PlaySfxLoop(_chargeSound, transform);
+    //      AudioManager.Instance?.StopSfx(_chargeHandle); _chargeHandle = default;
     // 4. 다른 씬으로 갈 때 로딩씬이 Additive로 열리면 BGM을 줄인다. 그 뒤 이 씬과 함께 매니저도 사라지고,
     //    새 씬의 매니저가 자기 곡을 페이드인한다. (로딩 중에는 무음)
     // 5. 일시정지는 GameManager가 AudioListener.pause로 건다.
@@ -86,6 +88,9 @@ namespace Core.Audio
         // _sfxSources[i]로 마지막에 낸 소리의 번호(0 = 없음·이미 끊음). StopSfx가 끊을 소스를 찾을 때 쓴다.
         private int[] _sfxPlayIds;
         private int _nextSfxId = 1;
+
+        // 이 매니저가 발급한 핸들인지 구분하는 토큰. 이전 씬 매니저의 핸들로 이 씬의 소리를 끊지 않게 한다.
+        private readonly object _handleOwner = new();
 
         // _sfxSources[i]가 반복음일 때 따라갈 대상
         private Transform[] _sfxFollowTargets;
@@ -194,15 +199,15 @@ namespace Core.Audio
 
         // 3D 효과음을 지정 위치에서 한 번 낸다.
         // 3D 소스가 모두 재생 중이면 생략한다.
-        // 돌려주는 번호는 중간에 끊을 때만 StopSfx에 넘긴다. 끊을 일이 없으면 무시해도 된다. 생략되면 0
-        public int PlaySfx(SOAudioData audioData, Vector3 position, float volumeScale = 1f, float pitchScale = 1f)
+        // 돌려주는 핸들은 중간에 끊을 때만 StopSfx에 넘긴다. 끊을 일이 없으면 무시해도 된다. 생략되면 default
+        public SAudioHandle PlaySfx(SOAudioData audioData, Vector3 position, float volumeScale = 1f, float pitchScale = 1f)
         {
             if (!TryPickClip(audioData, out AudioClip clip))
-                return 0;
+                return default;
 
             int index = FindFreeSfxSource();
             if (index < 0)
-                return 0;
+                return default;
 
             AudioSource source = _sfxSources[index];
             float pitch = Mathf.Max(audioData.PickPitch() * pitchScale, MIN_PITCH);
@@ -219,24 +224,24 @@ namespace Core.Audio
 
             int id = _nextSfxId++;
             _sfxPlayIds[index] = id;
-            return id;
+            return new SAudioHandle(id, _handleOwner);
         }
 
         // 3D 효과음을 target 위치에서 반복한다. StopSfx를 부를 때까지 3D 소스 하나를 점유한다.
-        // [호출] 차지 시작 등. 같은 클립 중복 차단은 하지 않는다. 3D 소스가 모두 재생 중이면 0을 돌려준다.
+        // [호출] 차지 시작 등. 같은 클립 중복 차단은 하지 않는다. 3D 소스가 모두 재생 중이면 default를 돌려준다.
         //        target이 파괴되면 마지막 위치에서 계속 나므로, 부르는 쪽이 OnDisable 등에서 꼭 멈춘다.
-        public int PlaySfxLoop(SOAudioData audioData, Transform target, float volumeScale = 1f, float pitchScale = 1f)
+        public SAudioHandle PlaySfxLoop(SOAudioData audioData, Transform target, float volumeScale = 1f, float pitchScale = 1f)
         {
             AudioClip clip = (audioData != null) ? audioData.PickClip() : null;
             if ((clip == null) || (target == null))
             {
                 Debug.LogWarning($"[AudioManager] 반복할 클립 또는 대상이 없습니다: '{(audioData != null ? audioData.name : "null")}'", this);
-                return 0;
+                return default;
             }
 
             int index = FindFreeSfxSource();
             if (index < 0)
-                return 0;
+                return default;
 
             AudioSource source = _sfxSources[index];
             source.transform.position = target.position;
@@ -252,18 +257,18 @@ namespace Core.Audio
             _sfxEndTimes[index] = float.MaxValue;
             _sfxPlayIds[index] = id;
             _sfxFollowTargets[index] = target;
-            return id;
+            return new SAudioHandle(id, _handleOwner);
         }
 
-        // PlaySfx·PlaySfxLoop가 돌려준 번호의 소리를 끊는다. fadeDuration(초)을 주면 그동안 줄인 뒤 끊는다.
-        // [호출] 발사·취소·소유자 OnDisable. 0·이미 끝난 소리·이미 끊은 번호는 무시한다.
+        // PlaySfx·PlaySfxLoop가 돌려준 핸들의 소리를 끊는다. fadeDuration(초)을 주면 그동안 줄인 뒤 끊는다.
+        // [호출] 발사·취소·소유자 OnDisable. default·이미 끝난 소리·이미 끊은 핸들·다른 매니저의 핸들은 무시한다.
         //        끝난 소리의 소스를 다른 소리가 다시 쓰고 있어도 그 소리는 끊지 않는다.
-        public void StopSfx(int sfxId, float fadeDuration = 0f)
+        public void StopSfx(SAudioHandle handle, float fadeDuration = 0f)
         {
-            if (sfxId == 0)
+            if ((!handle.IsValid) || (!handle.IsOwnedBy(_handleOwner)))
                 return;
 
-            int index = Array.IndexOf(_sfxPlayIds, sfxId);
+            int index = Array.IndexOf(_sfxPlayIds, handle.Id);
             if (index < 0)
                 return;
 

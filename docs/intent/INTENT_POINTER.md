@@ -55,6 +55,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[Audio / Core]** 효과음 번호가 int라 이전 씬 번호로 새 씬 소리를 끊거나 다른 숫자를 넘겨도 못 막음 → `SEffectHandle`과 같은 모양의 `SAudioHandle`(번호 + 매니저 토큰), `PlaySfx`·`PlaySfxLoop` 반환·`StopSfx` 인자 교체, 다른 매니저 핸들 무시 → [문서](./clear/intent-070-audio-sfx-handle.md) (resolved: 2026-10-23)
 - **[Core / ObjectPool]** 풀 개수가 카테고리마다 하나라 Car 20·Pedestrian 50처럼 따로 못 정함 → 항목별 `Initial Count`(이전 Prewarm Count)·`Max Size`, `Default Capacity`는 코드에서 Initial Count를 넘김, 프리팹 값 이전. 로비 씬 값은 담당자가 다시 입력 → [문서](./clear/intent-069-object-pool-per-entry-count.md) (resolved: 2026-10-23)
 - **[UIandCinematic / UI / InputMap]** 컷씬 대사 공용 부품·입력 맵 이름이 Dialogue라 옛 대화 SO와 헷갈림 → `ICutsceneController`·`CutsceneController`·`CutscenePresenter`·`CutsceneDirector`, 입력 맵 `Cutscene`으로 이름만 변경(GUID 유지), 옛 대화 코드는 폴더 삭제 때까지 유지 → [문서](./clear/intent-067-dialogue-to-cutscene-naming.md) (resolved: 2026-10-22)
 - **[UI / Dialogue]** 대사를 띄우면 항상 게임이 멈춤(컷씬·펫 안내). 시간을 멈추지 않는 독백 `UIManager.PlayMonologue(id)`: `PetGuidePanel`을 같이 쓰고 아래 게이지가 다 줄면 다음 줄·마지막 줄 뒤 숨김, 끄는 키 없음(E = Interact). 대사는 `SODialogue`, 번호·한 줄 시간은 `SOMonologueTable`(0이면 기본 3초), 컷씬·펫 안내가 시작되면 독백 끔 → [문서](./clear/intent-062-monologue-auto-hide.md) (resolved: 2026-10-22)
