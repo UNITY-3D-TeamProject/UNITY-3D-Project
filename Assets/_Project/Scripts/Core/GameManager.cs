@@ -12,7 +12,10 @@ namespace Core
 {
     public class GameManager : Singleton<GameManager>
     {
-        // 게임 상태 관리 
+        // 설정창의 "메인 화면으로"가 불러올 메인 메뉴 씬. Build Settings 맨 끝에 등록되어 있어야 한다.
+        private const string MAIN_MENU_SCENE_NAME = "MainScene";
+
+        // 게임 상태 관리
         public enum GameState
         {
             Title,
@@ -120,6 +123,35 @@ namespace Core
             CurrentState = GameState.Playing;
             ApplyGameTime();
             SetCursorLocked(true);
+        }
+
+        // 설정창의 "메인 화면으로" 버튼. 멈춘 시간과 커서를 풀고 메인 메뉴 씬을 바로 불러온다.
+        // 다음 시작은 새 게임이므로 스폰 사유를 NewGame으로 되돌린다. 씬을 불러오는 중이면 무시한다.
+        public void ReturnToMainMenu()
+        {
+            if (SceneLoader.IsLoading) return;
+
+            _timePauseRequesters.Clear();
+            CurrentState = GameState.Playing;
+            ApplyGameTime();
+            SetCursorLocked(false);
+
+            PrepareSpawn(EPlayerSpawnReason.NewGame);
+            SpawnStage = null;
+
+            SceneManager.LoadScene(MAIN_MENU_SCENE_NAME);
+        }
+
+        // 설정창의 "게임 종료" 버튼. 에디터에서는 Play를 멈춘다. 씬을 불러오는 중이면 무시한다.
+        public void QuitGame()
+        {
+            if (SceneLoader.IsLoading) return;
+
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
 
         // 대화·펫 가이드·연출 동안 requester 이름으로 게임 시간과 3D 효과음을 멈춰 달라고 요청한다. BGM·UI 소리는 계속 들린다.
@@ -254,6 +286,9 @@ namespace Core
             {
                 return;
             }
+
+            // 메인 메뉴에서 풀어 둔 커서를 맵 씬에 들어오면 다시 잠근다.
+            SetCursorLocked(true);
 
             StageBase stage = FindAnyObjectByType<StageBase>();
 
