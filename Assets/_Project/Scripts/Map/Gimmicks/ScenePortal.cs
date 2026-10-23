@@ -1,12 +1,14 @@
 using UnityEngine;
 using Interaction;
 using SceneTransition;
+using UIandCinematic;
 
 namespace Map.Gimmicks
 {
     /// <summary>
     /// 플레이어가 닿거나 상호작용(E)하면 지정한 씬으로 전환 요청 순서상 갈 수 없는 씬이면 아무 일도 일어나지 않는다.
     /// 닿기 전환은 콜라이더의 Is Trigger를 켜야 하고, 상호작용 전환은 콜라이더를 Interact 레이어로 둔다.
+    /// 입장 전 컷씬 번호를 넣으면 상호작용 시 그 컷씬을 먼저 재생하고, 끝나면 전환한다.
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public class ScenePortal : MonoBehaviour, IInteractable
@@ -28,6 +30,13 @@ namespace Map.Gimmicks
 
         [Tooltip("돌아왔을 때 플레이어가 놓일 위치. 포탈 트리거 밖에 둔다. 비워 두면 포탈 위치를 쓴다.")]
         [SerializeField] private Transform _arrivalPoint;
+
+        [Header("Cutscene Before Enter")]
+        [Tooltip("0보다 크면 상호작용(E) 시 이 번호의 컷씬을 먼저 재생하고, 끝나면 전환한다. 재생하지 못하면 바로 전환한다. (로비 앱 포탈의 입장 전 대화)")]
+        [SerializeField] private int _cutsceneIdBeforeEnter;
+
+        [Tooltip("입장 전 컷씬이 시작될 때 끌 오브젝트. 대화 카메라를 가리지 않게 한다. (빛기둥 NextMarker, 이 포탈 자신)")]
+        [SerializeField] private GameObject[] _hideDuringCutscene;
         #endregion
 
         #region Properties
@@ -44,6 +53,11 @@ namespace Map.Gimmicks
         #endregion
 
         #region Unity Lifecycle
+        private void OnDestroy()
+        {
+            CinematicManager.OnPlayFinished -= HandleCutsceneFinished;
+        }
+
         private void OnTriggerEnter(Collider other)
         {
             if (!_shouldEnterOnTouch || !GimmickUtility.TryGetPlayer(other, out _)) return;
@@ -56,6 +70,9 @@ namespace Map.Gimmicks
         /// <inheritdoc />
         public void Interact(GameObject interactor)
         {
+            if (_isLocked) return;
+            if (TryPlayCutsceneBeforeEnter()) return;
+
             TryEnter();
         }
 
@@ -72,6 +89,35 @@ namespace Map.Gimmicks
             if (_isLocked) return;
 
             SceneLoader.TryLoad(_destination);
+        }
+
+        // 입장 전 컷씬을 재생하고 끝나면 전환하도록 기다린다. 재생을 시작하지 못했으면 false.
+        private bool TryPlayCutsceneBeforeEnter()
+        {
+            CinematicManager cinematicManager = CinematicManager.Instance;
+            if ((_cutsceneIdBeforeEnter <= 0) || (cinematicManager == null)) return false;
+
+            // 한 번만 보는 대화를 이미 봤거나 다른 연출 중이면 재생되지 않는다.
+            cinematicManager.PlayCutscene(_cutsceneIdBeforeEnter);
+            if (!cinematicManager.IsPlaying) return false;
+
+            // 이 포탈 자신을 꺼도 static 이벤트 구독은 남아 있어 끝나면 전환된다.
+            CinematicManager.OnPlayFinished += HandleCutsceneFinished;
+
+            foreach (GameObject hideObject in _hideDuringCutscene)
+            {
+                if (hideObject == null) continue;
+
+                hideObject.SetActive(false);
+            }
+
+            return true;
+        }
+
+        private void HandleCutsceneFinished(CinematicManager cinematicManager)
+        {
+            CinematicManager.OnPlayFinished -= HandleCutsceneFinished;
+            TryEnter();
         }
         #endregion
     }
