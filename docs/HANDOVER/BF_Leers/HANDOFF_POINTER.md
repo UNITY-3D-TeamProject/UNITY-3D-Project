@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-23** — AI 밸런스 수치 표 에디터 창 추가(`Tools > AI > 밸런스 수치 표`, `AI/Editor/AIBalanceWindow.cs`): SOMonsterData 6종을 열로, SO 어트리뷰트·프리팹 컴포넌트 숫자 필드·BT 블랙보드/노드 값을 행으로 자동 수집해 바로 수정·저장. 리컴파일 통과, eval 로 4종 쓰기·런타임 BT 반영 확인 후 복원. 보스 A·B SO 프리팹이 Melee 로 잘못 연결돼 있어 BossA/B 로 수정(게임 동작 영향 없음), Thief 는 비어 있음. **육안 확인·게이트 루프 미실행, 커밋 전**: [AI 밸런스 창](./2026-10-23/ai-balance-window.md)
 - **2026-10-22** — 근접 잡몹 스폰 시 팔이 떨어져 보이던 원인: Metal Robot 모델에 Tanker Robot 클립(위치 커브 포함)을 써서 뼈가 벌어짐. `Melee_Override` 5개를 Metal 클립으로 교체, 달리기는 루프 켠 복사본 `Clips/Melee_Run.anim`. 재측정 결과 `_referenceMoveSpeed` 8·`_hitDelay` 0.3 유지. 프리뷰 렌더로 팔 연결 확인. **Play 육안 확인·게이트 루프 미완료, 커밋 전**: [Metal 클립 교체](./2026-10-22/melee-metal-clips.md)
 - **2026-10-22** — 근접 잡몹 수정 적용·Play 검증: `Melee.prefab` 기준 이동속도 3 → 8·회전 180 → 720, `EnemyAI_Melee` 공격 `ExitRange` 2.5. 발 속도 13.3 → 5.0 m/s(몸 5.0), 방향 어긋남 평균 39~58° → 9~12°. ExitRange 는 효과 없음(붙잡기 1.2초 > 쿨타임 1초라 경계 깜빡임이 원래 없음, 진단 3번 정정). **육안 확인·게이트 루프 미실행, 커밋 전**: [근접 이동 진단(5절)](./2026-10-22/melee-locomotion-diagnosis.md)
 - **2026-10-22** — 근접 잡몹 이동 어색함 진단(수정 없음): 주원인은 모션 쪽. ① `_referenceMoveSpeed` 3 vs 실제 5 m/s, 클립 1배속 보폭 ≈ 8 m/s → 다리 2.7배 빠름 ② 회전 180°/s 인데 이동은 즉시 꺾여 옆·뒤로 미끄러짐 ③ BT 는 공격 `ExitRange` 미설정으로 2 m 경계 깜빡임. Play 관찰 미실행(Lobby 미저장 변경): [근접 이동 진단](./2026-10-22/melee-locomotion-diagnosis.md)
