@@ -55,6 +55,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[Audio / Core]** 3D 효과음 소스 16개가 모두 재생 중이면 새 요청을 버려 중요한 소리가 빠질 수 있음 → 모자라면 `_maxSfxSourceCount`(64)까지 하나씩 더 만들고, 상한에서는 생략 + 매니저당 경고 한 번 → [문서](./clear/intent-071-audio-sfx-source-grow.md) (resolved: 2026-10-23)
 - **[Audio / Core]** 효과음 번호가 int라 이전 씬 번호로 새 씬 소리를 끊거나 다른 숫자를 넘겨도 못 막음 → `SEffectHandle`과 같은 모양의 `SAudioHandle`(번호 + 매니저 토큰), `PlaySfx`·`PlaySfxLoop` 반환·`StopSfx` 인자 교체, 다른 매니저 핸들 무시 → [문서](./clear/intent-070-audio-sfx-handle.md) (resolved: 2026-10-23)
 - **[Core / ObjectPool]** 풀 개수가 카테고리마다 하나라 Car 20·Pedestrian 50처럼 따로 못 정함 → 항목별 `Initial Count`(이전 Prewarm Count)·`Max Size`, `Default Capacity`는 코드에서 Initial Count를 넘김, 프리팹 값 이전. 로비 씬 값은 담당자가 다시 입력 → [문서](./clear/intent-069-object-pool-per-entry-count.md) (resolved: 2026-10-23)
 - **[UIandCinematic / UI / InputMap]** 컷씬 대사 공용 부품·입력 맵 이름이 Dialogue라 옛 대화 SO와 헷갈림 → `ICutsceneController`·`CutsceneController`·`CutscenePresenter`·`CutsceneDirector`, 입력 맵 `Cutscene`으로 이름만 변경(GUID 유지), 옛 대화 코드는 폴더 삭제 때까지 유지 → [문서](./clear/intent-067-dialogue-to-cutscene-naming.md) (resolved: 2026-10-22)

@@ -22,6 +22,7 @@ namespace Core.Audio
     //    - BGM 1개: Start에서 페이드인으로 튼다. 플레이리스트는 곡이 끝나기 페이드아웃 시간 전부터 줄이고 다음 곡을 0에서 키운다.
     //    - UI 1개: PlayOneShot으로 짧은 소리를 겹쳐 낸다.
     //    - 3D N개: 발생 위치로 옮겨 단발음을 낸다. 끝나는 시각만 적어 두고, 새 요청 때 끝난 소스를 고른다.
+    //      끝난 소스가 없으면 상한(_maxSfxSourceCount)까지 하나씩 더 만든다.
     //      반복음(차지음 등)은 PlaySfxLoop로 같은 소스를 빌려 대상 Transform을 따라가고, StopSfx할 때까지 점유한다.
     //      PlaySfx·PlaySfxLoop가 돌려준 핸들(SAudioHandle)을 StopSfx에 넘기면 그 소리를 중간에 끊는다.
     //      _chargeHandle = AudioManager.Instance.PlaySfxLoop(_chargeSound, transform);
@@ -68,9 +69,14 @@ namespace Core.Audio
         [SerializeField] private float _sceneExitFadeDuration = 0.3f;
 
         [Header("3D SFX")]
-        [Tooltip("동시에 낼 수 있는 3D 효과음 수. 모두 재생 중이면 새 요청은 생략한다")]
+        [Tooltip("미리 만들어 둘 3D 효과음 소스 수. 모두 재생 중이면 Max Sfx Source Count까지 하나씩 더 만든다")]
         [FormerlySerializedAs("_worldSourceCount")]
         [SerializeField] private int _sfxSourceCount = 16;
+
+        // 실제로 동시에 들리는 수는 프로젝트 설정 Max Real Voices(32)까지이고, 넘으면 Unity가 priority·크기로 고른다.
+        [Tooltip("3D 효과음 소스를 늘릴 수 있는 최대 수. 이만큼 모두 재생 중이면 새 요청은 생략하고 경고를 한 번 남긴다")]
+        [Min(1)]
+        [SerializeField] private int _maxSfxSourceCount = 64;
 
         [Header("Throttle")]
         [Tooltip("같은 클립을 이 시간(초) 안에 다시 요청하면 건너뛴다")]
@@ -94,6 +100,9 @@ namespace Core.Audio
 
         // _sfxSources[i]가 반복음일 때 따라갈 대상
         private Transform[] _sfxFollowTargets;
+
+        // 소스 상한 경고를 이미 남겼는지. 요청마다 찍으면 로그가 넘치므로 한 번만 남긴다.
+        private bool _hasWarnedSfxLimit;
 
         // 클립 → 마지막으로 재생한 Time.unscaledTime
         private readonly Dictionary<AudioClip, float> _lastPlayTimes = new();
@@ -198,7 +207,7 @@ namespace Core.Audio
         }
 
         // 3D 효과음을 지정 위치에서 한 번 낸다.
-        // 3D 소스가 모두 재생 중이면 생략한다.
+        // 3D 소스가 상한까지 모두 재생 중이면 생략한다.
         // 돌려주는 핸들은 중간에 끊을 때만 StopSfx에 넘긴다. 끊을 일이 없으면 무시해도 된다. 생략되면 default
         public SAudioHandle PlaySfx(SOAudioData audioData, Vector3 position, float volumeScale = 1f, float pitchScale = 1f)
         {
@@ -228,7 +237,7 @@ namespace Core.Audio
         }
 
         // 3D 효과음을 target 위치에서 반복한다. StopSfx를 부를 때까지 3D 소스 하나를 점유한다.
-        // [호출] 차지 시작 등. 같은 클립 중복 차단은 하지 않는다. 3D 소스가 모두 재생 중이면 default를 돌려준다.
+        // [호출] 차지 시작 등. 같은 클립 중복 차단은 하지 않는다. 3D 소스가 상한까지 모두 재생 중이면 default를 돌려준다.
         //        target이 파괴되면 마지막 위치에서 계속 나므로, 부르는 쪽이 OnDisable 등에서 꼭 멈춘다.
         public SAudioHandle PlaySfxLoop(SOAudioData audioData, Transform target, float volumeScale = 1f, float pitchScale = 1f)
         {
@@ -330,12 +339,31 @@ namespace Core.Audio
             _sfxFollowTargets = new Transform[_sfxSourceCount];
 
             for (int i = 0; i < _sfxSourceCount; i++)
-            {
-                // 들리는 거리(min/max)는 재생할 때 SO 값으로 정한다.
-                AudioSource source = CreateSource($"SfxSource_{i:00}", _sfxGroup);
-                source.spatialBlend = 1f;
-                _sfxSources[i] = source;
-            }
+                _sfxSources[i] = CreateSfxSource(i);
+        }
+
+        // 들리는 거리(min/max)는 재생할 때 SO 값으로 정한다.
+        private AudioSource CreateSfxSource(int index)
+        {
+            AudioSource source = CreateSource($"SfxSource_{index:00}", _sfxGroup);
+            source.spatialBlend = 1f;
+            return source;
+        }
+
+        // 3D 소스를 하나 더 만들어 배열 끝에 붙이고 그 번호를 돌려준다.
+        // [호출] FindFreeSfxSource에서 빈 소스가 없을 때. 늘린 소스는 씬이 내려갈 때까지 남아 다시 쓴다.
+        private int AddSfxSource()
+        {
+            int index = _sfxSources.Length;
+            int count = index + 1;
+
+            Array.Resize(ref _sfxSources, count);
+            Array.Resize(ref _sfxEndTimes, count);
+            Array.Resize(ref _sfxPlayIds, count);
+            Array.Resize(ref _sfxFollowTargets, count);
+
+            _sfxSources[index] = CreateSfxSource(index);
+            return index;
         }
 
         private AudioSource CreateSource(string sourceName, AudioMixerGroup group)
@@ -349,13 +377,23 @@ namespace Core.Audio
             return source;
         }
 
-        // 끝나는 시각이 지난 3D 소스를 찾는다. 모두 재생 중이면 -1
+        // 끝나는 시각이 지난 3D 소스를 찾는다. 모두 재생 중이면 상한까지 하나 더 만들고, 상한이면 -1
         private int FindFreeSfxSource()
         {
             for (int i = 0; i < _sfxEndTimes.Length; i++)
             {
                 if (_sfxEndTimes[i] <= Time.time)
                     return i;
+            }
+
+            if (_sfxSources.Length < _maxSfxSourceCount)
+                return AddSfxSource();
+
+            // 상한에 닿는 건 대개 StopSfx를 빠뜨린 반복음이 쌓인 경우다.
+            if (!_hasWarnedSfxLimit)
+            {
+                _hasWarnedSfxLimit = true;
+                Debug.LogWarning($"[AudioManager] 3D 효과음 소스가 상한({_maxSfxSourceCount}개)까지 모두 재생 중이라 새 요청을 생략합니다. 멈추지 않은 반복음이 있는지 확인하세요.", this);
             }
 
             return -1;
