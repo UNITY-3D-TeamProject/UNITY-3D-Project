@@ -55,6 +55,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[Core / ObjectPool]** 풀 개수가 카테고리마다 하나라 Car 20·Pedestrian 50처럼 따로 못 정함 → 항목별 `Initial Count`(이전 Prewarm Count)·`Max Size`, `Default Capacity`는 코드에서 Initial Count를 넘김, 프리팹 값 이전. 로비 씬 값은 담당자가 다시 입력 → [문서](./clear/intent-069-object-pool-per-entry-count.md) (resolved: 2026-10-23)
 - **[UIandCinematic / UI / InputMap]** 컷씬 대사 공용 부품·입력 맵 이름이 Dialogue라 옛 대화 SO와 헷갈림 → `ICutsceneController`·`CutsceneController`·`CutscenePresenter`·`CutsceneDirector`, 입력 맵 `Cutscene`으로 이름만 변경(GUID 유지), 옛 대화 코드는 폴더 삭제 때까지 유지 → [문서](./clear/intent-067-dialogue-to-cutscene-naming.md) (resolved: 2026-10-22)
 - **[UI / Dialogue]** 대사를 띄우면 항상 게임이 멈춤(컷씬·펫 안내). 시간을 멈추지 않는 독백 `UIManager.PlayMonologue(id)`: `PetGuidePanel`을 같이 쓰고 아래 게이지가 다 줄면 다음 줄·마지막 줄 뒤 숨김, 끄는 키 없음(E = Interact). 대사는 `SODialogue`, 번호·한 줄 시간은 `SOMonologueTable`(0이면 기본 3초), 컷씬·펫 안내가 시작되면 독백 끔 → [문서](./clear/intent-062-monologue-auto-hide.md) (resolved: 2026-10-22)
 - **[UI / Stage]** 체크포인트에 닿아도 화면에 표시가 없고, 라운드 체크포인트(사망 복귀)와 일반 체크포인트(낙하 복귀)를 구분할 수 없음. `StageManager.OnCheckpointReached(bool)` + 화면 왼쪽 `CheckpointNotice` 패널(라운드 주황·일반 하늘색, 2.5초), 지난 체크포인트 재접촉은 미표시 → [문서](./clear/intent-060-checkpoint-notice-ui.md) (resolved: 2026-10-22)

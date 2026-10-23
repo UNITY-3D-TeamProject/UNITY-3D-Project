@@ -13,7 +13,7 @@ namespace Core.ObjectPool
     // 사용 흐름
     // 1. 풀이 필요한 씬에 이 컴포넌트를 배치하고, 인스펙터의 카테고리(PrefabPool)마다 "키 → 프리팹"을 등록한다.
     //    풀이 필요 없는 씬(로비·피드 등)에는 배치하지 않는다. 그 씬에서는 Instance가 null이다.
-    // 2. Awake에서 각 PrefabPool이 키마다 풀을 만들어 Prewarm Count만큼 미리 채우고, 매니저는 "키 → 카테고리" 표(_poolByKey)를 만든다.
+    // 2. Awake에서 각 PrefabPool이 키마다 풀을 만들어 그 항목의 Initial Count만큼 미리 채우고, 매니저는 "키 → 카테고리" 표(_poolByKey)를 만든다.
     // 3. 사용하는 쪽은 ObjectPoolManager.Instance.Get("MeleeEnemy", 위치, 회전)으로 꺼낸다.
     //    Instance는 Awake에서 채워지므로 다른 컴포넌트의 Start 이후에 사용한다.
     // 4. 다 쓴 오브젝트는 ObjectPoolManager.Instance.Release(gameObject)로 자기 풀에 돌아간다.
@@ -59,7 +59,7 @@ namespace Core.ObjectPool
         #endregion
 
         #region Unity Lifecycle
-        // 씬이 로드되면 호출된다. 키마다 풀을 만들고 Prewarm Count만큼 꺼진 오브젝트를 미리 만들어 둔다.
+        // 씬이 로드되면 호출된다. 키마다 풀을 만들고 그 항목의 Initial Count만큼 꺼진 오브젝트를 미리 만들어 둔다.
         // (미리 만든 것을 다 쓰면 그 뒤로는 Get할 때 필요한 만큼 추가로 생성된다.)
         private void Awake()
         {

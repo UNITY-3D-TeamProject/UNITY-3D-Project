@@ -48,40 +48,41 @@ MonoBehaviour:
     _entries:
     - _key: Melee
       _prefab: {fileID: 2851063550565306939, guid: dc244ee48deba544a9d6314c6acf0bd8, type: 3}
+      _initialCount: 10
+      _maxSize: 50
     - _key: Ranged
       _prefab: {fileID: 681821616047237814, guid: 59b4d0c178c16d44db058b08fd0a3dc4, type: 3}
+      _initialCount: 10
+      _maxSize: 50
     - _key: Special
       _prefab: {fileID: 264135962324108990, guid: a415b1a8b07364a468aadb34043d46b7, type: 3}
-    _defaultCapacity: 10
-    _prewarmCount: 10
-    _maxSize: 50
+      _initialCount: 10
+      _maxSize: 50
   _playerBullets:
     _entries:
     - _key: Bullet
       _prefab: {fileID: 7935857951603384714, guid: e9c7c98f57efe734c8cfe056d3122412, type: 3}
-    _defaultCapacity: 10
-    _prewarmCount: 10
-    _maxSize: 50
+      _initialCount: 10
+      _maxSize: 50
   _playerChargedBullets:
     _entries:
     - _key: ChargedBullet
       _prefab: {fileID: 1573659177138836158, guid: 142fb822af43d844f8b9350d058622d4, type: 3}
-    _defaultCapacity: 10
-    _prewarmCount: 10
-    _maxSize: 50
+      _initialCount: 10
+      _maxSize: 50
   _enemyBullets:
     _entries:
     - _key: EnemyBullet
       _prefab: {fileID: 7935857951603384714, guid: d947b178bda2a4d408aa9ce82508159b, type: 3}
-    _defaultCapacity: 10
-    _prewarmCount: 10
-    _maxSize: 50
+      _initialCount: 10
+      _maxSize: 50
   _crowd:
     _entries:
     - _key: Car
       _prefab: {fileID: 3277443633729080383, guid: 5e30265544911b34f9b05ae6c6f58962, type: 3}
+      _initialCount: 10
+      _maxSize: 100
     - _key: Pedestrian
       _prefab: {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
-    _defaultCapacity: 10
-    _prewarmCount: 10
-    _maxSize: 100
+      _initialCount: 10
+      _maxSize: 100
