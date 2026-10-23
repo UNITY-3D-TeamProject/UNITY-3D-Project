@@ -39,18 +39,12 @@ namespace UIandCinematic
     public class CinematicSequence : MonoBehaviour
     {
         #region Serialized Fields
-        [Tooltip("본 기록 저장 키. 연출마다 겹치지 않게 짓는다")]
-        [SerializeField] private string _id;
-        [Tooltip("켜면 한 번 본 뒤로는 다시 재생하지 않는다")]
-        [SerializeField] private bool _shouldPlayOnce;
         [Tooltip("연출이 끝날 때 플레이어 카메라로 돌아가는 블렌드 시간(초)")]
         [SerializeField] private float _endBlendSeconds = 1.0f;
         [SerializeField] private SCinematicStep[] _steps;
         #endregion
 
         #region Properties
-        public string Id => _id;
-        public bool ShouldPlayOnce => _shouldPlayOnce;
         public float EndBlendSeconds => _endBlendSeconds;
         public int StepCount => (_steps != null) ? _steps.Length : 0;
         #endregion

@@ -12,9 +12,6 @@ namespace Core
 {
     public class GameManager : Singleton<GameManager>
     {
-        // 설정창의 "메인 화면으로"가 불러올 메인 메뉴 씬. Build Settings 맨 끝에 등록되어 있어야 한다.
-        private const string MAIN_MENU_SCENE_NAME = "MainScene";
-
         // 게임 상태 관리
         public enum GameState
         {
@@ -125,27 +122,32 @@ namespace Core
             SetCursorLocked(true);
         }
 
-        // 설정창의 "메인 화면으로" 버튼. 멈춘 시간과 커서를 풀고 메인 메뉴 씬을 바로 불러온다.
-        // 다음 시작은 새 게임이므로 스폰 사유를 NewGame으로 되돌린다. 씬을 불러오는 중이면 무시한다.
+        // 설정창의 "메인 화면으로" 버튼. 진행 순번과 현재 체력·배터리를 저장하고 런타임 상태를 비운다.
         public void ReturnToMainMenu()
         {
             if (SceneLoader.IsLoading) return;
+
+            playerState?.SaveProgressAttributes();
+            if (!SceneLoader.TryLoadMainMenu()) return;
 
             _timePauseRequesters.Clear();
             CurrentState = GameState.Playing;
             ApplyGameTime();
             SetCursorLocked(false);
 
-            PrepareSpawn(EPlayerSpawnReason.NewGame);
+            SpawnReason = EPlayerSpawnReason.NewGame;
             SpawnStage = null;
-
-            SceneManager.LoadScene(MAIN_MENU_SCENE_NAME);
+            _stageManager = null;
+            playerState?.ResetSession();
         }
 
         // 설정창의 "게임 종료" 버튼. 에디터에서는 Play를 멈춘다. 씬을 불러오는 중이면 무시한다.
         public void QuitGame()
         {
             if (SceneLoader.IsLoading) return;
+
+            playerState?.SaveProgressAttributes();
+            SceneLoader.SaveCurrentProgress();
 
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
@@ -230,11 +232,17 @@ namespace Core
             // 스포너에서 초기 Effect 적용은 이미 끝난 상태다.
             // 씬 이동이라면 여기서 이전 씬의 능력치를 복원한다.
             // 씬 재시작이면 씬 입장 때 저장해 둔 능력치를 다시 복원한다.
+            bool shouldContinue = SceneLoader.ConsumeContinueRequest();
             bool shouldRestore =
                 (SpawnReason == EPlayerSpawnReason.SceneTransition) ||
                 (SpawnReason == EPlayerSpawnReason.StageRestart);
 
-            if (shouldRestore)
+            if (shouldContinue)
+            {
+                playerState.ClearSavedAttributes();
+                playerState.RestoreProgressAttributes();
+            }
+            else if (shouldRestore)
             {
                 playerState.RestoreSavedAttributes();
             }
@@ -247,6 +255,12 @@ namespace Core
             if (_stageManager != null)
             {
                 _stageManager.InitializeFirstRound(playerState);
+            }
+
+            // 초기 Effect와 이어하기 복원이 끝난 최종 체력·배터리를 저장한다.
+            if (SpawnReason != EPlayerSpawnReason.RoundRecovery)
+            {
+                playerState.SaveProgressAttributes();
             }
 
             // HUD 연결과 StageManager의 기존 사망 이벤트 구독을 실행한다.
