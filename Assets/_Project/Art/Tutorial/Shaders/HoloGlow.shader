@@ -1,6 +1,6 @@
 // 튜토리얼 홀로그램의 빛 선·소용돌이·입자용 Unlit 셰이더 (HDR 색 × 텍스처 × 버텍스 색).
 // 블렌드는 머티리얼 값으로 정한다: 불투명 빛 선 = One / Zero / ZWrite 1, 투명 = SrcAlpha / OneMinusSrcAlpha, 가산 입자 = SrcAlpha / One.
-// 전역 어둠(_HoloDarkness)이면 칸 단위로 조각조각 사라지고, 경보(_HoloAlarm)면 붉어진다. 안개를 따른다.
+// 전역 어둠(_HoloDarkness)이면 칸 단위로 조각조각 사라지고, 경보(_HoloAlarm)면 붉어진다(_AlarmImmune 이면 원래 색). 안개를 따른다.
 Shader "Project/HoloGlow"
 {
     Properties
@@ -8,6 +8,7 @@ Shader "Project/HoloGlow"
         _BaseMap ("Texture", 2D) = "white" {}
         [HDR] _BaseColor ("Color", Color) = (1, 1, 1, 1)
         [Toggle] _DarkImmune ("Dark Immune (어둠에서도 보임)", Float) = 0
+        [Toggle] _AlarmImmune ("Alarm Immune (경보에도 원래 색)", Float) = 0
         _DissolveCell ("Dissolve Cell (m)", Float) = 0.6
 
         [Header(Blend)]
@@ -50,6 +51,7 @@ Shader "Project/HoloGlow"
                 float4 _BaseMap_ST;
                 half4 _BaseColor;
                 float _DarkImmune;
+                float _AlarmImmune;
                 float _DissolveCell;
                 float _SrcBlend;
                 float _DstBlend;
@@ -92,7 +94,7 @@ Shader "Project/HoloGlow"
                 float visibility = HoloVisibility(_DarkImmune);
                 clip(HoloCellNoise(input.positionWS, _DissolveCell) - (1.0 - visibility) - 0.0001);
 
-                color.rgb = HoloAlarmTint(color.rgb);
+                color.rgb = lerp(HoloAlarmTint(color.rgb), color.rgb, _AlarmImmune);
 
                 // 불투명이면 안개 색과 섞고, 투명이면 안개만큼 옅어진다
                 float fogIntensity = HoloFogVisibility(input.fogFactor);
