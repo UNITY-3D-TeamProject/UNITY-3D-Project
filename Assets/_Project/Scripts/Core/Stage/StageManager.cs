@@ -512,9 +512,6 @@ namespace Core.Stage
             _playerController.enabled = false;
             _playerController.transform.SetPositionAndRotation(destination.position, destination.rotation);
             _playerController.enabled = true;
-
-            // 카메라와 몸이 destination의 정면을 바라보게 한다.
-            _playerFacade.SetLookDirection(destination.forward);
         }
 
         // [호출] OnDisable과 BindPlayer(새 플레이어로 교체 전)에서 호출된다.
