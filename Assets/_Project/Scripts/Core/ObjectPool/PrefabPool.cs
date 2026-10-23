@@ -15,32 +15,10 @@ namespace Core.ObjectPool
     [Serializable]
     public class PrefabPool
     {
-        #region Constants
-        // 처음 준비할 칸 수, 넘으면 자동으로 늘어남
-        private const int DEFAULT_CAPACITY = 10;
-        // 넘치면 Destroy함
-        private const int MAX_SIZE         = 50;
-        // 씬 시작 시 키마다 미리 만들어 둘 개수
-        private const int PREWARM_COUNT    = 10;
-        #endregion
-
         #region Serialized Fields
         // 키는 모든 카테고리를 통틀어 겹치면 안 된다. (꺼낼 때 키만 넘기기 때문)
+        // 개수(Initial Count·Max Size)는 항목마다 따로 정한다.
         [SerializeField] private List<SPoolEntry> _entries = new();
-
-        [Tooltip("풀을 만들 때 미리 잡아 둘 목록 크기. 오브젝트를 미리 만들지는 않는다.")]
-        [SerializeField, Min(0)] private int _defaultCapacity = DEFAULT_CAPACITY;
-
-        // 등록된 키 하나하나에 적용된다. 첫 스폰 순간의 Instantiate 끊김을 막기 위해 씬 시작 시 미리 만든다.
-        // 다 쓰면 그때부터는 Get할 때 하나씩 추가로 만든다. Max Size보다 크면 Max Size까지만 만든다.
-        [Tooltip("키 하나당 씬 시작 시 미리 만들어 둘 개수. 부족하면 Get할 때 추가로 만든다.")]
-        [SerializeField, Min(0)] private int _prewarmCount = PREWARM_COUNT;
-
-        // 등록된 키 하나하나에 적용된다.
-        // 예: Melee, Ranged가 있고 값이 20이면 Melee 풀 20개, Ranged 풀 20개까지 보관한다.
-        // 넘치는 반납분은 보관하지 않고 Destroy된다.
-        [Tooltip("키 하나당 보관 최대 개수. 넘치는 반납분은 Destroy된다.")]
-        [SerializeField, Min(1)] private int _maxSize = MAX_SIZE;
         #endregion
 
         #region Private Fields
@@ -64,7 +42,7 @@ namespace Core.ObjectPool
         #endregion
 
         #region Nested Types
-        // 인스펙터에서 키와 프리팹을 한 쌍씩 입력받기 위한 칸.
+        // 인스펙터에서 키·프리팹과 그 풀의 개수를 한 항목씩 입력받기 위한 칸.
         // 유니티 인스펙터는 Dictionary를 보여 주지 못하므로 List로 입력받고 Initialize에서 _pools로 옮긴다.
         [Serializable]
         private struct SPoolEntry
@@ -72,13 +50,24 @@ namespace Core.ObjectPool
             [SerializeField] private string     _key;
             [SerializeField] private GameObject _prefab;
 
-            public string     Key    => _key;
-            public GameObject Prefab => _prefab;
+            // 첫 스폰 순간의 Instantiate 끊김을 막기 위해 씬 시작 때 미리 만든다.
+            // 다 쓰면 그때부터는 Get할 때 하나씩 추가로 만든다. Max Size보다 크면 Max Size까지만 만든다.
+            [Tooltip("씬 시작 때 미리 만들어 둘 개수. 부족하면 Get할 때 추가로 만든다.")]
+            [SerializeField, Min(0)] private int _initialCount;
+
+            // 넘치는 반납분은 보관하지 않고 Destroy된다. 동시에 꺼내 쓰는 개수를 막지는 않는다.
+            [Tooltip("보관 최대 개수. 넘치는 반납분은 Destroy된다.")]
+            [SerializeField, Min(1)] private int _maxSize;
+
+            public string     Key          => _key;
+            public GameObject Prefab       => _prefab;
+            public int        InitialCount => _initialCount;
+            public int        MaxSize      => _maxSize;
         }
         #endregion
 
         #region Public Methods
-        /// <summary>등록된 항목마다 풀을 하나씩 만들고, Prewarm Count만큼 미리 만들어 둔다.</summary>
+        /// <summary>등록된 항목마다 풀을 하나씩 만들고, 항목의 Initial Count만큼 미리 만들어 둔다.</summary>
         // [호출] ObjectPoolManager.Awake에서 카테고리마다 한 번 호출된다.
         public void Initialize(Transform root, Object logContext)
         {
@@ -104,19 +93,29 @@ namespace Core.ObjectPool
                 string     key    = entry.Key;
                 GameObject prefab = entry.Prefab;
 
+                // 빈 목록에 처음 추가한 항목은 개수가 0으로 들어올 수 있다. 풀은 maxSize가 1 이상이어야 하므로 보정한다.
+                if (entry.MaxSize < 1)
+                    Debug.LogWarning($"[PrefabPool] 키 '{key}'의 Max Size가 0입니다. 1로 보정합니다.", logContext);
+
+                int maxSize = Mathf.Max(1, entry.MaxSize);
+
+                // maxSize를 넘게 만들면 반납 때 넘친 만큼 바로 파괴되므로 maxSize까지만 만든다.
+                int initialCount = Mathf.Min(entry.InitialCount, maxSize);
+
                 // 유니티 내장 풀. 꺼낼 게 없으면 createFunc로 만들고, 반납 시 actionOnRelease를 부른다.
+                // 목록 칸(defaultCapacity)은 미리 만들 개수만큼 잡는다. 모자라면 풀이 알아서 늘린다.
                 ObjectPool<GameObject> pool = new ObjectPool<GameObject>(
                     createFunc:      () => CreateObject(key, prefab),
                     actionOnGet:     null,
                     actionOnRelease: OnReleaseObject,
                     actionOnDestroy: OnDestroyObject,
                     collectionCheck: true,
-                    defaultCapacity: _defaultCapacity,
-                    maxSize:         _maxSize);
+                    defaultCapacity: initialCount,
+                    maxSize:         maxSize);
 
                 _pools.Add(key, pool);
                 _prefabByKey.Add(key, prefab);
-                Prewarm(pool);
+                Prewarm(pool, initialCount);
             }
         }
 
@@ -152,14 +151,11 @@ namespace Core.ObjectPool
         #endregion
 
         #region Private Methods
-        // 풀에서 _prewarmCount개를 꺼냈다가 바로 반납해, 꺼진 상태로 보관해 둔다.
+        // 풀에서 count개를 꺼냈다가 바로 반납해, 꺼진 상태로 보관해 둔다.
         // 매니저 Get과 달리 켜지 않으므로 OnEnable이 추가로 불리지 않고, 풀의 개수 집계(CountAll 등)도 맞게 유지된다.
         // [호출] Initialize에서 키마다 풀을 만든 직후 한 번 호출된다.
-        private void Prewarm(ObjectPool<GameObject> pool)
+        private void Prewarm(ObjectPool<GameObject> pool, int count)
         {
-            // maxSize를 넘게 만들면 반납 때 넘친 만큼 바로 파괴되므로 maxSize까지만 만든다.
-            int count = Mathf.Min(_prewarmCount, _maxSize);
-
             List<GameObject> created = new List<GameObject>(count);
             for (int i = 0; i < count; i++)
                 created.Add(pool.Get());

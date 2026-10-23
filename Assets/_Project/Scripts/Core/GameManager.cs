@@ -1,4 +1,5 @@
 using Attribute.Core;
+using Core.Scanning;
 using Core.Stage;
 using Facade.Player;
 using SceneTransition;
@@ -190,6 +191,9 @@ namespace Core
             }
 
             playerState.SetCurrentPlayer(spawnedPlayerFacade);
+
+            // 벽 뒤 아이템 스캔 실루엣이 플레이어 몸 위에 그려지지 않도록 플레이어 렌더러에 스텐실용 렌더링 레이어를 더한다.
+            PlayerStencilRendererFeature.MarkRenderers(spawnedPlayerFacade.gameObject);
 
             // 스포너에서 초기 Effect 적용은 이미 끝난 상태다.
             // 씬 이동이라면 여기서 이전 씬의 능력치를 복원한다.

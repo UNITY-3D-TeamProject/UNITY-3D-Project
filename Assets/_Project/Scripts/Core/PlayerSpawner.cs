@@ -70,6 +70,28 @@ public class PlayerSpawner : SpawnerBase
         }
     }
 
+    // 로비 스포너는 기본 위치(자기 자신)와 스테이지별 복귀 위치의 정면을 씬 뷰에 화살표로 그린다. 플레이어는 이 방향을 보고 생성된다.
+    // 스테이지 스포너는 체크포인트의 RespawnPoint에서 생성하므로 CheckpointTrigger가 화살표를 그린다.
+    private void OnDrawGizmos()
+    {
+        if (!_isLobbySpawner)
+        {
+            return;
+        }
+
+        SpawnFacingGizmo.Draw(transform, Color.green);
+
+        if (_lobbySpawnPoints == null)
+        {
+            return;
+        }
+
+        foreach (SLobbySpawnPoint entry in _lobbySpawnPoints)
+        {
+            SpawnFacingGizmo.Draw(entry.Point, Color.green);
+        }
+    }
+
     // [이벤트] StageManager.OnPlayerRespawnRequested(사망 후 재스폰 요청)가 발생하면 호출된다. (Start에서 구독)
     private void HandleRespawnRequested()
     {
