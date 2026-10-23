@@ -302,18 +302,27 @@ namespace Mediator
         }
 
         /// <summary>
-        /// 바라볼 방향을 고정하고 즉시 그 방향으로 돌린다. 카메라 피벗도 같은 방향으로 맞춰,
-        /// 생성 연출처럼 카메라(Look 프리팹)가 꺼져 있는 동안에도 방향을 정할 수 있게 한다.
-        /// 고정은 생성 연출이 끝나면 자동으로 풀린다(OnSpawnEffectEndedCallback). 생성 연출과 무관하게 걸면 풀리지 않으니
-        /// 생성 연출 중 방향을 정하는 용도로만 쓴다.
+        /// 바라볼 방향으로 몸을 즉시 돌리고 카메라 피벗도 같은 방향으로 맞춘다.
+        /// 생성 연출 중이면 연출이 끝날 때까지 방향을 고정하고, 끝나면 자동으로 풀린다(OnSpawnEffectEndedCallback).
+        /// 연출이 이미 끝났거나 생성 연출 드라이버가 없으면 정렬 직후 고정을 풀어 정상 카메라 추종으로 복귀한다.
+        /// 수평 성분이 없는 방향은 무시한다.
         /// </summary>
         /// <param name="direction">바라볼 월드 방향</param>
         public void SetLookDirection(Vector3 direction)
         {
             if (!_rotateMediator || !_cameraMediator) return;
 
+            // 하위 중재자의 무시 규칙과 맞춘다. 잘못된 방향으로 기존 고정까지 풀지 않는다
+            if (Vector3.ProjectOnPlane(direction, Vector3.up).sqrMagnitude <= Mathf.Epsilon) return;
+
             _rotateMediator.LockLookDirection(direction);
             _cameraMediator.AlignYaw(direction);
+
+            // 연출 대기 중이면 종료 이벤트(OnSpawnEffectEndedCallback)가 풀 때까지 고정을 유지한다
+            if (_spawnEffectDriver && !_spawnEffectDriver.IsEnded) return;
+
+            _cameraMediator.PublishViewForward();
+            _rotateMediator.UnlockLookDirection();
         }
 
         /// <summary>
