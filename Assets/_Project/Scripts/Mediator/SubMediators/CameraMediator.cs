@@ -244,6 +244,17 @@ namespace Mediator.SubMediators
 
             _targetCamera.PlayImpulse(force);
         }
+
+        /// <summary>
+        /// 카메라 피벗의 yaw 를 지정한 월드 방향에 맞춘다. 이 컴포넌트가 꺼져 있는 동안(생성 연출 등)에도 호출할 수 있다.
+        /// </summary>
+        /// <param name="worldDirection">맞출 월드 방향</param>
+        public void AlignYaw(Vector3 worldDirection)
+        {
+            if (_targetCamera == null) return;
+
+            _targetCamera.AlignYaw(worldDirection);
+        }
         #endregion
 
         #region Protected Methods

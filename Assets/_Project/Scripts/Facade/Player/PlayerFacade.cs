@@ -229,6 +229,18 @@ namespace Facade.Player
         }
 
         /// <summary>
+        /// 캐릭터가 바라볼 방향을 고정하고 즉시 그 방향으로 돌린다. 카메라도 같은 방향으로 맞춘다.
+        /// 생성 연출 중처럼 시점 프리팹이 꺼져 있는 동안 회전을 정하는 용도이며, 고정은 생성 연출이 끝나면 자동으로 풀린다.
+        /// </summary>
+        /// <param name="direction">바라볼 월드 방향</param>
+        public void SetLookDirection(Vector3 direction)
+        {
+            if (!_characterMediator) return;
+
+            _characterMediator.SetLookDirection(direction);
+        }
+
+        /// <summary>
         /// 입력 맵을 UI 용으로 전환한다.
         /// </summary>
         public void SwitchToUIInput()
