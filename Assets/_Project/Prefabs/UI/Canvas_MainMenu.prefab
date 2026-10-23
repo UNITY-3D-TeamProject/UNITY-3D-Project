@@ -1018,8 +1018,11 @@ MonoBehaviour:
   _root: {fileID: 0}
   _closeButton: {fileID: 0}
   _masterSlider: {fileID: 0}
-  _musicSlider: {fileID: 0}
+  _bgmSlider: {fileID: 0}
   _sfxSlider: {fileID: 0}
+  _sensitivitySlider: {fileID: 0}
+  _mainMenuButton: {fileID: 0}
+  _quitButton: {fileID: 0}
 --- !u!223 &5177723874431658183
 Canvas:
   m_ObjectHideFlags: 0
@@ -1232,7 +1235,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -8, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2023675072998549739
 GameObject:
@@ -1757,7 +1760,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -8, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &3087701682087978458
 GameObject:
@@ -6959,7 +6962,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -8, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &7993740569517446659
 GameObject:
@@ -7348,7 +7351,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -8, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &8207616284099106265
 GameObject:
@@ -7701,7 +7704,7 @@ Transform:
   m_GameObject: {fileID: 8582269982109846078}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -23.971863, y: -225, z: -154.93117}
+  m_LocalPosition: {x: -23.971863, y: -225, z: 0}
   m_LocalScale: {x: 0.41666666, y: 0.41666666, z: 0.41666666}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -7723,8 +7726,11 @@ MonoBehaviour:
   _root: {fileID: 1753887322475793481}
   _closeButton: {fileID: 3459000844477047933}
   _masterSlider: {fileID: 6596244379043912732}
-  _musicSlider: {fileID: 6765720287880833957}
+  _bgmSlider: {fileID: 6765720287880833957}
   _sfxSlider: {fileID: 1569414040132041558}
+  _sensitivitySlider: {fileID: 7147005514269183769}
+  _mainMenuButton: {fileID: 0}
+  _quitButton: {fileID: 0}
 --- !u!1 &8649784006759017991
 GameObject:
   m_ObjectHideFlags: 0

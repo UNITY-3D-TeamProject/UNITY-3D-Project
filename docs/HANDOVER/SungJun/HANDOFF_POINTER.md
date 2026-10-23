@@ -5,6 +5,8 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-23** — intent-073 구현: 설정창 슬라이더가 안 움직이던 원인(맵에 EventSystem 없음 + `SettingsView` z -154.93) 수정, 감도는 `Core.InputMap.MouseSensitivity`가 Look 바인딩 배율로 적용, 세로 스크롤 아래 MAIN MENU·QUIT GAME(`GameManager.ReturnToMainMenu`·`QuitGame`), `MainScene` Build Settings 7번. TestScene에서 볼륨·감도·두 버튼 확인, 맵 씬·손 체감 미확인, 커밋 안 함: [작업 기록](./2026-10-23/settings-sliders-exit-buttons.md)
+- **2026-10-23** — intent-073 설계: ESC 설정창 내용을 세로 스크롤로 감싸 아래에 `메인 화면으로`·`게임 종료` 버튼, `SettingsView → Presenter → UIManager → GameManager.ReturnToMainMenu/QuitGame`, `MainScene`은 Build Settings 맨 끝에 추가. 감도 슬라이더 미연결(카메라 API 필요)·손잡이 여백 없음·중복 `SettingsView` 발견. 열린 질문 5건, 코드 변경 없음: [작업 기록](./2026-10-23/settings-exit-buttons-design.md)
 - **2026-10-23** — intent-059: 낙하 복귀 뒤 몸 방향이 잠기던 `StageManager.MovePlayerTo`의 `SetLookDirection` 호출을 사용자 요청으로 되돌림. 낙하 복귀 방향은 플레이어 쪽 API 나올 때까지 보류, 컴파일 확인·Play 미확인, 커밋 안 함: [작업 기록](./2026-10-23/fall-respawn-look-revert.md)
 - **2026-10-23** — intent-072: 벽 뒤 아이템 스캔 실루엣(`ZTest Greater`)이 플레이어 몸 위에도 그려지던 문제. Player.prefab은 그대로 두고, 스폰 때 `GameManager`가 플레이어 렌더러에 렌더링 레이어 `PlayerStencil`을 더함 → `PlayerStencilRendererFeature`(PC_Renderer)가 그 자리에 스텐실 128 → 실루엣 셰이더가 건너뜀. TestScene 캡처로 기능 끔/켬 비교 확인, 실제 Q 스캔·맵 씬·모바일 렌더러 미적용, 커밋 안 함: [작업 기록](./2026-10-23/scan-silhouette-player-stencil.md)
 - **2026-10-23** — intent-059 진행: 최초 스폰·사망 재스폰은 수정 없이 RespawnPoint 방향을 따름 확인(TestScene RespawnPoint 대부분 0°라 맵에서 돌려 둬야 함). `MovePlayerTo`에 `SetLookDirection` 연결 — 방향은 맞지만 생성 연출 끝에만 풀리는 고정이 남아 플레이어 쪽 수정 대기. 화살표를 `Core.SpawnFacingGizmo`로 공용화, 로비 `PlayerSpawner`가 기본·복귀 지점 정면을 초록 화살표로 그림. 컴파일 0에러, 씬 뷰 육안 미확인: [작업 기록](./2026-10-23/spawn-facing-gizmo.md)

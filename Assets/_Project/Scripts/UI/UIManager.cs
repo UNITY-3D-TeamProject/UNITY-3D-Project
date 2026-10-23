@@ -341,6 +341,8 @@ namespace UI
             // 현재 UI 지정 및 닫기 요청 연결.
             _isSettingsOpen = true;
             _settingsPresenter.CloseRequested += CloseSettings;
+            _settingsPresenter.MainMenuRequested += HandleMainMenuRequested;
+            _settingsPresenter.QuitRequested += HandleQuitRequested;
 
             // 게임 상태와 입력 전환.
             _gameManager.PauseGame();
@@ -358,6 +360,8 @@ namespace UI
 
             // 닫기 요청 해제 후 설정창 닫기.
             _settingsPresenter.CloseRequested -= CloseSettings;
+            _settingsPresenter.MainMenuRequested -= HandleMainMenuRequested;
+            _settingsPresenter.QuitRequested -= HandleQuitRequested;
             _settingsPresenter.Close();
 
             InputMapController.Instance?.ReleaseMap(_settingsPresenter);
@@ -370,6 +374,22 @@ namespace UI
         #endregion
 
         #region Private Methods
+        // 설정창의 "메인 화면으로". 설정창을 닫은 뒤 GameManager가 메인 메뉴 씬을 불러온다.
+        private void HandleMainMenuRequested()
+        {
+            GameManager gameManager = _gameManager;
+            CloseSettings();
+            gameManager?.ReturnToMainMenu();
+        }
+
+        // 설정창의 "게임 종료". 설정창을 닫은 뒤 GameManager가 게임을 끝낸다.
+        private void HandleQuitRequested()
+        {
+            GameManager gameManager = _gameManager;
+            CloseSettings();
+            gameManager?.QuitGame();
+        }
+
         // 플레이어가 스폰되거나 바뀌면 HUD와 입력을 새 플레이어에 연결한다. null이면 연결만 해제한다.
         // 새 플레이어의 입력 맵은 InputMapController가 지금 요청대로 다시 적용한다.
         private void HandlePlayerSpawned(PlayerFacade playerFacade)

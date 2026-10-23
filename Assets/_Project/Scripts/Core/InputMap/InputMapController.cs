@@ -17,6 +17,7 @@ namespace Core.InputMap
     /// 조작을 막거나 설정창을 여는 쪽이 자기 이름으로 맵을 요청·해제하면, 남은 요청 중 가장 우선하는 맵을 쓴다(UI > Cutscene > Player).
     /// 요청이 없으면 Player 맵이다. 플레이어가 새로 스폰되면 지금 맵을 다시 적용한다.
     /// 꺼진 동안은 Player 맵으로 돌려 두되 요청은 남겨 두고, 다시 켜지면 남은 요청(진행 중인 연출 등)대로 다시 적용한다.
+    /// 마우스 감도(MouseSensitivity)도 스폰될 때와 감도가 바뀔 때 현재 플레이어에 적용한다.
     /// </summary>
     public class InputMapController : MonoBehaviour
     {
@@ -51,6 +52,8 @@ namespace Core.InputMap
 
         private void OnEnable()
         {
+            MouseSensitivity.OnChanged += HandleSensitivityChanged;
+
             _gameManager = GameManager.Instance;
             if (_gameManager == null) return;
 
@@ -64,6 +67,8 @@ namespace Core.InputMap
             // 요청은 지우지 않는다. 요청한 쪽(연출 등)은 다시 요청하지 않으므로, 다시 켜질 때 OnEnable에서 그대로 다시 적용한다.
             if (_playerFacade != null)
                 _playerFacade.SwitchToPlayerInput();
+
+            MouseSensitivity.OnChanged -= HandleSensitivityChanged;
 
             if (_gameManager != null)
                 _gameManager.OnPlayerSpawned -= HandlePlayerSpawned;
@@ -109,7 +114,14 @@ namespace Core.InputMap
             if (_playerFacade != null)
                 _playerFacade.TryGetComponent(out _playerInput);
 
+            MouseSensitivity.Apply(_playerInput);
             ApplyMap();
+        }
+
+        // 설정창에서 감도를 바꾸면 현재 플레이어에 바로 적용한다.
+        private void HandleSensitivityChanged()
+        {
+            MouseSensitivity.Apply(_playerInput);
         }
 
         // 남은 요청 중 가장 우선하는 맵을 현재 플레이어에 적용한다.
