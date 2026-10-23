@@ -1,7 +1,8 @@
 namespace SceneTransition
 {
     /// <summary>
-    /// 게임에 쓰이는 씬 목록. 값은 Build Settings의 씬 번호와 같아야 한다.
+    /// 게임에 쓰이는 씬 목록. 씬 이름은 SceneLoader의 SceneNames 표에서 찾는다.
+    /// 포탈·컷씬 데이터에 숫자로 저장되므로 기존 값은 바꾸지 않는다.
     /// </summary>
     public enum ESceneType
     {

@@ -31,8 +31,10 @@ namespace UI.MainMenu
             }
 
             _view.StartClicked += HandleStartClicked;
+            _view.ContinueClicked += HandleContinueClicked;
             _view.SettingsClicked += OpenSettings;
             _view.ExitClicked += HandleExitClicked;
+            _view.SetContinueInteractable(SceneLoader.HasSavedProgress);
 
             // 스플래시부터 보여주고, 아무 버튼(키보드·마우스·게임패드)을 한 번 누르면 메뉴로 넘어간다.
             // 액션 맵과 상관없이 장치 입력을 직접 받는다.
@@ -62,6 +64,7 @@ namespace UI.MainMenu
             if (_view != null)
             {
                 _view.StartClicked -= HandleStartClicked;
+                _view.ContinueClicked -= HandleContinueClicked;
                 _view.SettingsClicked -= OpenSettings;
                 _view.ExitClicked -= HandleExitClicked;
             }
@@ -101,8 +104,12 @@ namespace UI.MainMenu
 
         private void HandleStartClicked()
         {
-            // 저장 기능이 없으므로 항상 새 게임(튜토리얼)부터 시작한다.
             SceneLoader.TryStartNewGame();
+        }
+
+        private void HandleContinueClicked()
+        {
+            SceneLoader.TryContinueGame();
         }
 
         private void HandleExitClicked()
