@@ -27,7 +27,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
   - {fileID: 9205503191491635358}
-  m_RendererFeatureMap: ad6b866f10d7b46c9e68953b6184c07f
+  - {fileID: 3643324529482992033}
+  m_RendererFeatureMap: ad6b866f10d7b46c9e68953b6184c07fa1094d3d5bb08f32
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -56,6 +57,21 @@ MonoBehaviour:
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 0
+--- !u!114 &3643324529482992033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcc013eda8ec5da40beba5fb4e8050cb, type: 3}
+  m_Name: PlayerStencil
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.PlayerStencilRendererFeature
+  m_Active: 1
+  _shader: {fileID: 4800000, guid: 5db68652c7c80f6498dba9f366a5b06e, type: 3}
+  _renderPassEvent: 300
 --- !u!114 &7833122117494664109
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-23** — intent-072: 벽 뒤 아이템 스캔 실루엣(`ZTest Greater`)이 플레이어 몸 위에도 그려지던 문제. Player.prefab은 그대로 두고, 스폰 때 `GameManager`가 플레이어 렌더러에 렌더링 레이어 `PlayerStencil`을 더함 → `PlayerStencilRendererFeature`(PC_Renderer)가 그 자리에 스텐실 128 → 실루엣 셰이더가 건너뜀. TestScene 캡처로 기능 끔/켬 비교 확인, 실제 Q 스캔·맵 씬·모바일 렌더러 미적용, 커밋 안 함: [작업 기록](./2026-10-23/scan-silhouette-player-stencil.md)
 - **2026-10-23** — intent-059 진행: 최초 스폰·사망 재스폰은 수정 없이 RespawnPoint 방향을 따름 확인(TestScene RespawnPoint 대부분 0°라 맵에서 돌려 둬야 함). `MovePlayerTo`에 `SetLookDirection` 연결 — 방향은 맞지만 생성 연출 끝에만 풀리는 고정이 남아 플레이어 쪽 수정 대기. 화살표를 `Core.SpawnFacingGizmo`로 공용화, 로비 `PlayerSpawner`가 기본·복귀 지점 정면을 초록 화살표로 그림. 컴파일 0에러, 씬 뷰 육안 미확인: [작업 기록](./2026-10-23/spawn-facing-gizmo.md)
 - **2026-10-23** — intent-071: AudioManager 3D 효과음 소스가 모자라면 `_maxSfxSourceCount`(64)까지 하나씩 더 만들고(`AddSfxSource`), 상한이면 생략 + 매니저당 경고 한 번. 컴파일 0에러, TestScene Play에서 70개 요청 → 64개·경고 1회·재사용·늘어난 소스 페이드/따라가기 확인, 청취 안 함, 커밋 안 함: [작업 기록](./2026-10-23/audio-sfx-source-grow.md)
 - **2026-10-23** — TestScene 시작 지점 서쪽에 `RefillTest`(체력·배터리 채우기 발판 2개) + Test `TestRefillCaller`(`CurrentPlayerFacade`의 Current를 Max로). Play에서 체력 20→100·배터리 15→100 확인, 표지판 글자 겹침 피하려 발판을 남북·표지판 동쪽 방향으로 옮김(옮긴 뒤 Play는 안 함). `_Project` 변경 없음: [작업 기록](./2026-10-23/testscene-refill-plates.md)

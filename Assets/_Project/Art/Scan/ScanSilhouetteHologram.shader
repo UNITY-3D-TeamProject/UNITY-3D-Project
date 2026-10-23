@@ -45,6 +45,14 @@ Shader "Project/ScanSilhouetteHologram"
             ZTest Greater
             Cull Back
 
+            // ZTest Greater 는 앞을 가린 것이 플레이어여도 그리므로, PlayerStencilMask 가 찍은 플레이어 픽셀(비트 128)은 건너뛴다
+            Stencil
+            {
+                Ref 128
+                ReadMask 128
+                Comp NotEqual
+            }
+
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
