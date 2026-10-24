@@ -8,8 +8,9 @@ namespace CharacterSound
     /// <summary>
     /// 캐릭터 한 명의 소리 설정과 재생 상태를 가진다. 공통 소리(발소리·점프·착지·피격)는 직렬화 칸으로,
     /// 스킬 소리는 (실제 스킬 이름, 단계) 키로 SO 를 찾는다. 스킬 종류나 이름 문자열로 분기하지 않는다.
-    /// 단발음은 AudioManager.PlaySfx 로 재생하고, 반복음(발소리·보드 이동음·차지음)은 "재생을 원하는 상태"만 관리한다.
-    /// 반복음의 실제 시작·정지는 AudioManager 담당자의 SFX 루프 API 가 정해지면 StartLoop/StopLoop 에서 연결한다.
+    /// 단발음은 AudioManager.PlaySfx 로 재생하고, 반복음(발소리·보드 이동음·차지음)은 "재생을 원하는 상태"와 실제 시작 기록을 관리한다.
+    /// 반복음은 AudioManager.PlaySfxLoop 로 시작해 받은 핸들을 시작한 매니저와 함께 기록하고, StopSfx(핸들)로 즉시 정지한다.
+    /// 시작하지 못한 원하는 반복음은 LateUpdate 에서 다시 시도한다.
     /// 키 비교(설정 조회·중복 요청·이동음 대체)는 모두 SSoundKey 의 같은 규칙(이름 대소문자 무시 + 단계 값)을 쓴다.
     /// </summary>
     public class SoundController : MonoBehaviour
@@ -36,7 +37,21 @@ namespace CharacterSound
         #endregion
 
         #region Private Fields
+        // 시작에 성공한 반복음의 기록. 정지는 시작한 매니저에게 핸들로 요청한다
+        private readonly struct SActiveLoop
+        {
+            public AudioManager Manager { get; }
+            public SAudioHandle Handle { get; }
+
+            public SActiveLoop(AudioManager manager, SAudioHandle handle)
+            {
+                Manager = manager;
+                Handle = handle;
+            }
+        }
+
         private readonly HashSet<SSoundKey> _desiredLoops = new();
+        private readonly Dictionary<SSoundKey, SActiveLoop> _activeLoops = new();
         private readonly List<SSoundKey> _releaseBuffer = new();
         private Dictionary<SSoundKey, SOAudioData> _skillSoundMap;
         // 지금 이동음으로 재생을 원하는 키. 발소리와 보드 이동음 중 하나만 가진다
@@ -75,13 +90,16 @@ namespace CharacterSound
         {
             bool hasMoveState = (_getHasMoveIntent != null) && (_getHorizontalSpeed != null) &&
                                 (_getGrounded != null) && (_getRolling != null);
-            if (!hasMoveState) return;
+            if (hasMoveState)
+            {
+                UpdateLocomotion(
+                    _getHasMoveIntent(),
+                    _getHorizontalSpeed() > _minMoveSpeed,
+                    _getGrounded(),
+                    _getRolling());
+            }
 
-            UpdateLocomotion(
-                _getHasMoveIntent(),
-                _getHorizontalSpeed() > _minMoveSpeed,
-                _getGrounded(),
-                _getRolling());
+            SyncDesiredLoops();
         }
 
         private void OnDisable()
@@ -317,21 +335,63 @@ namespace CharacterSound
             if (_desiredLoops.Remove(key)) StopLoop(key);
         }
 
-        // TODO(AudioManager 담당자): SFX 반복 재생 시작 API 가 정해지면 여기서 연결한다.
-        // 의사 코드:
-        //   AudioManager.Instance 가 없으면 반환
-        //   이 캐릭터 소유로 (key, sfx) 반복음을 transform 을 따라가며 시작하도록 요청
-        //   시작 성공이 확인된 경우에만 실제 재생 상태를 기록 (API 와 식별 정보 타입이 정해지기 전에는 기록하지 않는다)
-        private void StartLoop(SSoundKey key, SOAudioData sfx)
+        /// <summary>
+        /// 원하는 반복음 중 실제 재생 기록이 없는 키의 시작을 다시 시도한다. 매니저가 늦게 생기거나 시작이 실패한 경우를 보완한다.
+        /// 살아 있는 매니저의 기록은 유지하며, 파괴된 매니저의 기록만 제거한다.
+        /// </summary>
+        private void SyncDesiredLoops()
         {
+            if (!CanPlay) return;
+
+            foreach (SSoundKey key in _desiredLoops)
+            {
+                if (_activeLoops.TryGetValue(key, out SActiveLoop activeLoop))
+                {
+                    if (activeLoop.Manager != null) continue;
+
+                    _activeLoops.Remove(key);
+                }
+
+                if (TryGetSound(key, out SOAudioData sfx)) StartLoop(key, sfx);
+            }
         }
 
-        // TODO(AudioManager 담당자): SFX 반복 재생 정지 API 가 정해지면 여기서 연결한다.
-        // 의사 코드:
-        //   이 캐릭터 소유의 key 반복음에 대해 진행 중인 시작 요청 취소 + 실제 재생 정지
-        //   AudioManager.Instance 나 SO 조회 결과와 무관하게 정리하고, 정지 책임이 끝나기 전에 식별 정보를 잃지 않는다
+        /// <summary>
+        /// key 의 반복음을 transform 을 따라가며 시작하고, 발급된 핸들을 시작한 매니저와 함께 기록한다.
+        /// 매니저나 클립이 없어 시작하지 못하면 기록하지 않으며 원하는 상태는 유지되어 SyncDesiredLoops 가 다시 시도한다.
+        /// </summary>
+        /// <param name="key">반복음 키</param>
+        /// <param name="sfx">재생할 소리</param>
+        private void StartLoop(SSoundKey key, SOAudioData sfx)
+        {
+            if (!CanPlay) return;
+
+            if (_activeLoops.TryGetValue(key, out SActiveLoop activeLoop))
+            {
+                if (activeLoop.Manager != null) return;
+
+                _activeLoops.Remove(key);
+            }
+
+            AudioManager manager = AudioManager.Instance;
+            if (manager == null) return;
+            if ((sfx == null) || (sfx.ClipCount == 0)) return;
+
+            SAudioHandle handle = manager.PlaySfxLoop(sfx, transform);
+            if (handle.IsValid) _activeLoops[key] = new SActiveLoop(manager, handle);
+        }
+
+        /// <summary>
+        /// key 의 반복음을 시작했던 매니저에 즉시 정지를 요청하고 기록을 지운다.
+        /// 현재 AudioManager.Instance 나 SO 조회에 의존하지 않는다. 매니저가 파괴되었으면 기록만 지운다.
+        /// </summary>
+        /// <param name="key">반복음 키</param>
         private void StopLoop(SSoundKey key)
         {
+            if (!_activeLoops.TryGetValue(key, out SActiveLoop activeLoop)) return;
+
+            if (activeLoop.Manager != null) activeLoop.Manager.StopSfx(activeLoop.Handle);
+            _activeLoops.Remove(key);
         }
 
         /// <summary>
