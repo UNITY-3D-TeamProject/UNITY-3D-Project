@@ -17,6 +17,8 @@ namespace Map.Maze
         #region Constants
         private const float START_HEIGHT_OFFSET = 0.1f;   // 플레이어가 바닥에 파묻히지 않도록 시작 위치를 띄우는 높이
         private const float FLOOR_THICKNESS     = 0.5f;   // 바닥 두께. 윗면이 y = 0 이 되도록 아래로 내려 놓는다
+        private const string BOUNDARY_WALLS_ROOT_NAME = "BoundaryWalls";
+        private const string INNER_WALLS_ROOT_NAME    = "InnerWalls";
         #endregion
 
         #region Serialized Fields
@@ -175,6 +177,10 @@ namespace Map.Maze
         {
             BuildFloor(mazeRoot);
 
+            Transform boundaryWallsRoot = CreateContainer(mazeRoot, BOUNDARY_WALLS_ROOT_NAME);
+            Transform innerWallsRoot = CreateContainer(mazeRoot, INNER_WALLS_ROOT_NAME);
+            mazeRoot.gameObject.AddComponent<MazeInnerWallLowering>().Setup(innerWallsRoot);
+
             float halfTile = _settings.TileSize * 0.5f;
             Quaternion alongX = Quaternion.identity;
             Quaternion alongZ = Quaternion.Euler(0.0f, 90.0f, 0.0f);
@@ -200,7 +206,8 @@ namespace Map.Maze
                         }
                         else
                         {
-                            PlaceObject(PickPrefab(theme.WallPrefabs, decorRandom), mazeRoot, center + (Vector3.forward * halfTile), alongX, $"Wall_N_{x}_{y}");
+                            Transform parent = (y == _settings.Size - 1) ? boundaryWallsRoot : innerWallsRoot;
+                            PlaceObject(PickPrefab(theme.WallPrefabs, decorRandom), parent, center + (Vector3.forward * halfTile), alongX, $"Wall_N_{x}_{y}");
                         }
 
                         wallCorners.Add(new Vector2Int(x, y + 1));
@@ -209,7 +216,8 @@ namespace Map.Maze
 
                     if (!cell.OpenEast)
                     {
-                        PlaceObject(PickPrefab(theme.WallPrefabs, decorRandom), mazeRoot, center + (Vector3.right * halfTile), alongZ, $"Wall_E_{x}_{y}");
+                        Transform parent = (x == _settings.Size - 1) ? boundaryWallsRoot : innerWallsRoot;
+                        PlaceObject(PickPrefab(theme.WallPrefabs, decorRandom), parent, center + (Vector3.right * halfTile), alongZ, $"Wall_E_{x}_{y}");
                         wallCorners.Add(new Vector2Int(x + 1, y));
                         wallCorners.Add(new Vector2Int(x + 1, y + 1));
                     }
@@ -217,7 +225,7 @@ namespace Map.Maze
                     // 바깥 테두리의 서쪽·남쪽 벽
                     if (x == 0)
                     {
-                        PlaceObject(PickPrefab(theme.WallPrefabs, decorRandom), mazeRoot, center + (Vector3.left * halfTile), alongZ, $"Wall_W_{x}_{y}");
+                        PlaceObject(PickPrefab(theme.WallPrefabs, decorRandom), boundaryWallsRoot, center + (Vector3.left * halfTile), alongZ, $"Wall_W_{x}_{y}");
                         wallCorners.Add(new Vector2Int(x, y));
                         wallCorners.Add(new Vector2Int(x, y + 1));
                     }
@@ -226,14 +234,14 @@ namespace Map.Maze
                     bool isOpenEntrance = !isFirstMaze && (cellPosition == entranceCell);
                     if ((y == 0) && !isOpenEntrance)
                     {
-                        PlaceObject(PickPrefab(theme.WallPrefabs, decorRandom), mazeRoot, center + (Vector3.back * halfTile), alongX, $"Wall_S_{x}_{y}");
+                        PlaceObject(PickPrefab(theme.WallPrefabs, decorRandom), boundaryWallsRoot, center + (Vector3.back * halfTile), alongX, $"Wall_S_{x}_{y}");
                         wallCorners.Add(new Vector2Int(x, y));
                         wallCorners.Add(new Vector2Int(x + 1, y));
                     }
                 }
             }
 
-            BuildPillars(mazeRoot, theme.PillarPrefabs, wallCorners, decorRandom);
+            BuildPillars(boundaryWallsRoot, innerWallsRoot, theme.PillarPrefabs, wallCorners, decorRandom);
 
             if (_settings.StartMarkerPrefab != null)
             {
@@ -243,7 +251,12 @@ namespace Map.Maze
         }
 
         // 벽이 하나라도 닿는 꼭짓점마다 기둥을 세운다. 기둥 목록이 비어 있으면 세우지 않는다.
-        private void BuildPillars(Transform mazeRoot, GameObject[] pillarPrefabs, HashSet<Vector2Int> wallCorners, System.Random decorRandom)
+        private void BuildPillars(
+            Transform boundaryWallsRoot,
+            Transform innerWallsRoot,
+            GameObject[] pillarPrefabs,
+            HashSet<Vector2Int> wallCorners,
+            System.Random decorRandom)
         {
             if ((pillarPrefabs == null) || (pillarPrefabs.Length == 0)) return;
 
@@ -255,7 +268,9 @@ namespace Map.Maze
                     if (!wallCorners.Contains(new Vector2Int(i, j))) continue;
 
                     var position = new Vector3((i - 0.5f) * _settings.TileSize, 0.0f, (j - 0.5f) * _settings.TileSize);
-                    PlaceObject(PickPrefab(pillarPrefabs, decorRandom), mazeRoot, position, Quaternion.identity, $"Pillar_{i}_{j}");
+                    bool isBoundary = (i == 0) || (i == _settings.Size) || (j == 0) || (j == _settings.Size);
+                    Transform parent = isBoundary ? boundaryWallsRoot : innerWallsRoot;
+                    PlaceObject(PickPrefab(pillarPrefabs, decorRandom), parent, position, Quaternion.identity, $"Pillar_{i}_{j}");
                 }
             }
         }
@@ -506,6 +521,13 @@ namespace Map.Maze
                     cells.RemoveAt(index);
                 }
             }
+        }
+
+        private static Transform CreateContainer(Transform parent, string objectName)
+        {
+            var container = new GameObject(objectName).transform;
+            container.SetParent(parent, false);
+            return container;
         }
 
         // 프리팹을 parent 아래 지정한 로컬 위치·회전으로 놓는다.
