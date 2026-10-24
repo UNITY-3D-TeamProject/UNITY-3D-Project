@@ -512,6 +512,9 @@ namespace Core.Stage
             _playerController.enabled = false;
             _playerController.transform.SetPositionAndRotation(destination.position, destination.rotation);
             _playerController.enabled = true;
+
+            // 몸·카메라가 복귀 지점의 정면(화살표)을 보게 한다. 생성 연출이 끝난 뒤라 바로 고정이 풀려 시점을 따라 돈다.
+            _playerFacade.SetLookDirection(destination.forward);
         }
 
         // [호출] OnDisable과 BindPlayer(새 플레이어로 교체 전)에서 호출된다.
