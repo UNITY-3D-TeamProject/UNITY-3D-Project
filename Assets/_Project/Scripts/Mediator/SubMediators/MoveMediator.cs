@@ -25,6 +25,7 @@ namespace Mediator.SubMediators
     /// <summary>
     /// 이동 입력을 MoveDirectionCalculator 로 넘기고, 계산된 이동 방향과 점프 입력·속도 어트리뷰트를 CharacterMotor 로 전달하는 접착 컴포넌트.
     /// </summary>
+    [DefaultExecutionOrder(10)]   // CharacterMotor(0)가 이동한 뒤의 접지 결과를 읽는다. CharacterMediator(100)보다 먼저 실행한다
     public class MoveMediator : MediatorBase
     {
         #region Serialized Fields
