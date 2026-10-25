@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6479499087489269387
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4626110551910950705}
+  - component: {fileID: 7911213874210823054}
+  - component: {fileID: 3704468801398029516}
+  m_Layer: 0
+  m_Name: SoundPrefab
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4626110551910950705
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6479499087489269387}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7911213874210823054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6479499087489269387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09af6d021fba36c4896e0978e5645c34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterSound.SoundController
+  _footstep: {fileID: 11400000, guid: e72469b02d22c5c40a062ecb8ac16f15, type: 2}
+  _jump: {fileID: 11400000, guid: 1e611433268c51d47af504faca09a835, type: 2}
+  _land: {fileID: 11400000, guid: 5bb086db93e3bc545acc07b7e535e5eb, type: 2}
+  _hit: {fileID: 11400000, guid: 7f8b9ef57681fa14cbb62c75d3b9ac98, type: 2}
+  _minAirTime: 0.1
+  _minMoveSpeed: 0.05
+  _skillSounds:
+  - _skillName: Attack
+    _phase: 2
+    _audioData: {fileID: 11400000, guid: a9b2d940cc65a8d428ddd3554f18c0f2, type: 2}
+  - _skillName: Attack
+    _phase: 3
+    _audioData: {fileID: 11400000, guid: d7f6045ee0214c842afb2c51383df539, type: 2}
+  - _skillName: Scan
+    _phase: 6
+    _audioData: {fileID: 11400000, guid: b40d1ef36dc5b0242aa535150f506bff, type: 2}
+  - _skillName: Roll
+    _phase: 1
+    _audioData: {fileID: 11400000, guid: 2d3bebe077a61c04988050076a86fe9b, type: 2}
+  - _skillName: SpawnVehicle
+    _phase: 4
+    _audioData: {fileID: 11400000, guid: ed63f428b42cce14aac2bf2c2b985574, type: 2}
+  - _skillName: SpawnVehicle
+    _phase: 5
+    _audioData: {fileID: 11400000, guid: f4d093351e07c344591ff094f0d19f9c, type: 2}
+--- !u!114 &3704468801398029516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6479499087489269387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02410ebda4ed8cf449805d41d769160a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.SoundMediator
+  _soundController: {fileID: 7911213874210823054}

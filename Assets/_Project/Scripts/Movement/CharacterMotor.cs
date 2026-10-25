@@ -64,6 +64,18 @@ namespace Movement
 
         /// <summary>지면에 닿아 있는지 여부.</summary>
         public bool IsGrounded => _controller.isGrounded;
+
+        /// <summary>마지막 이동에서 CharacterController 가 실제로 움직인 수평 속도(m/s). 벽에 막히면 0 에 가깝다.</summary>
+        public float HorizontalSpeed
+        {
+            get
+            {
+                if (!_controller) return 0.0f;
+
+                Vector3 velocity = _controller.velocity;
+                return new Vector2(velocity.x, velocity.z).magnitude;
+            }
+        }
         #endregion
 
         #region Events

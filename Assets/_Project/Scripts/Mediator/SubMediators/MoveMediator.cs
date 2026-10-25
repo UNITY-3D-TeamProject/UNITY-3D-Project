@@ -164,6 +164,24 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 이동 입력(의도)으로 계산된 이동 방향이 있는지 반환한다. 구르는 중에도 최신 입력을 반영한다.
+        /// </summary>
+        /// <returns>이동 방향이 있으면 true</returns>
+        public bool HasMoveIntent()
+        {
+            return _lastDirection.sqrMagnitude > 0.0001f;
+        }
+
+        /// <summary>
+        /// CharacterController 가 마지막 이동에서 실제로 움직인 수평 속도를 반환한다.
+        /// </summary>
+        /// <returns>수평 속도(m/s). CharacterMotor 가 없으면 0</returns>
+        public float GetHorizontalSpeed()
+        {
+            return _motor ? _motor.HorizontalSpeed : 0.0f;
+        }
+
+        /// <summary>
         /// 구르는 중인지 반환한다. 이 중재자가 꺼져 있으면 RollMover 이벤트를 받지 못하므로 구르는 중이 아닌 것으로 본다.
         /// </summary>
         /// <returns>구르는 중이면 true. RollMover 가 없거나 이 중재자가 비활성이면 false</returns>
