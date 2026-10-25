@@ -23,16 +23,10 @@ namespace UIandCinematic
     [CreateAssetMenu(fileName = "SOCameraShot", menuName = "UIandCinematic/Camera Shot")]
     public class SOCameraShot : ScriptableObject
     {
-        [Tooltip("본 기록 저장 키. 연출·컷씬·카메라 연출끼리 겹치지 않게 짓는다. 컷씬 안에서 재생할 때는 컷씬의 값을 쓴다")]
-        [SerializeField] private string _id;
-        [Tooltip("켜면 한 번 본 뒤로는 다시 재생하지 않는다. 컷씬 안에서 재생할 때는 컷씬의 값을 쓴다")]
-        [SerializeField] private bool _shouldPlayOnce;
         [Tooltip("연출이 끝날 때 플레이어 카메라로 돌아가는 블렌드 시간(초). 컷씬 안에서 재생할 때는 컷씬의 값을 쓴다")]
         [SerializeField] private float _endBlendSeconds = 1.0f;
         [SerializeField] private SCameraShot[] _shots;
 
-        public string Id => _id;
-        public bool ShouldPlayOnce => _shouldPlayOnce;
         public float EndBlendSeconds => _endBlendSeconds;
         public int ShotCount => (_shots != null) ? _shots.Length : 0;
 

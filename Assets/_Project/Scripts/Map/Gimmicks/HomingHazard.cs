@@ -46,6 +46,11 @@ namespace Map.Gimmicks
         private float _elapsedTime;
         #endregion
 
+        #region Events
+        /// <summary>닿거나 공격받아 사라질 때 호출된다. 씬을 나갈 때도 호출된다.</summary>
+        public event Action<HomingHazard> OnDestroyed;
+        #endregion
+
         #region Unity Lifecycle
         private void Awake()
         {
@@ -81,6 +86,22 @@ namespace Map.Gimmicks
 
             GimmickUtility.ApplyEffects(_contactEffects, _playerFacade.EffectTarget);
             Destroy(gameObject);
+        }
+
+        private void OnDestroy()
+        {
+            OnDestroyed?.Invoke(this);
+        }
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// 쫓아가는 속도에 배율을 곱한다. 생성 직후 한 번 부른다.
+        /// </summary>
+        /// <param name="multiplier">속도 배율. 음수는 0 으로 처리한다</param>
+        public void ScaleSpeed(float multiplier)
+        {
+            _speed *= Mathf.Max(0.0f, multiplier);
         }
         #endregion
 

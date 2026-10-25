@@ -17,10 +17,6 @@ namespace UIandCinematic
     /// </summary>
     public class CinematicManager : MonoBehaviour
     {
-        #region Constants
-        private const string SEEN_KEY_PREFIX = "Cinematic.Seen.";
-        #endregion
-
         #region Serialized Fields
         [Tooltip("PlayCutscene(번호)로 재생할 컷씬 목록")]
         [SerializeField] private SOCutsceneTable _cutsceneTable;
@@ -99,15 +95,12 @@ namespace UIandCinematic
 
         #region Public Methods
         // 연출을 처음부터 재생한다.
-        // 이 매니저가 꺼져 있거나, 이미 연출·대화·펫 안내 중이거나, 설정창이 열려 있거나, 플레이어가 없거나,
-        // 한 번만 보는 연출을 이미 봤으면 false.
+        // 이 매니저가 꺼져 있거나, 이미 연출·대화·펫 안내 중이거나, 설정창이 열려 있거나, 플레이어가 없으면 false.
         public bool Play(CinematicSequence sequence)
         {
             if (sequence == null) return false;
 
             return TryStart(
-                sequence.Id,
-                sequence.ShouldPlayOnce,
                 sequence.EndBlendSeconds,
                 CoPlay(sequence));
         }
@@ -123,8 +116,6 @@ namespace UIandCinematic
             }
 
             TryStart(
-                cutscene.Id,
-                cutscene.ShouldPlayOnce,
                 cutscene.EndBlendSeconds,
                 CoPlayCutscene(cutscene));
         }
@@ -140,8 +131,6 @@ namespace UIandCinematic
             }
 
             TryStart(
-                cameraShot.Id,
-                cameraShot.ShouldPlayOnce,
                 cameraShot.EndBlendSeconds,
                 CoPlayCameraShot(cameraShot));
         }
@@ -167,11 +156,8 @@ namespace UIandCinematic
 
         #region Private Methods
         // 연출을 시작한다. 단계(steps)는 다음 Update에서 돌기 시작한다.
-        // 이 매니저가 꺼져 있거나, 이미 연출·대화·펫 안내 중이거나, 설정창이 열려 있거나, 플레이어가 없거나,
-        // 한 번만 보는 연출을 이미 봤으면 false.
+        // 이 매니저가 꺼져 있거나, 이미 연출·대화·펫 안내 중이거나, 설정창이 열려 있거나, 플레이어가 없으면 false.
         private bool TryStart(
-            string id,
-            bool shouldPlayOnce,
             float endBlendSeconds,
             IEnumerator steps)
         {
@@ -198,11 +184,6 @@ namespace UIandCinematic
                 return false;
 
             if (cutsceneController.IsDialoguePlaying || cutsceneController.IsPetGuideOpen) return false;
-            if (shouldPlayOnce && HasSeen(id)) return false;
-
-            // 중간에 끊겨도 다시 보지 않도록 시작할 때 본 기록을 남긴다.
-            if (shouldPlayOnce)
-                MarkSeen(id);
 
             _isPlaying = true;
             _endBlendSeconds = endBlendSeconds;
@@ -279,11 +260,8 @@ namespace UIandCinematic
             // 컷씬 대사로 세워 둔 펫과 말하는 사람 카메라를 돌려놓는다. 컷씬이 아니었으면 아무것도 하지 않는다.
             CutsceneController.Current?.EndCutscene();
 
-            // 플레이어 카메라로 돌아오는 동안 움직이면 화면이 다 돌아오기 전에 떨어질 수 있으므로,
-            // 게임 시간 정지와 조작 막기는 끝 블렌드가 끝난 뒤에 푼다. 시간이 흐르는 샷으로 끝났어도 블렌드 동안은 멈춘다.
-            if (GameManager.Instance != null)
-                GameManager.Instance.PauseGameTime(this);
-
+            // 플레이어 카메라로 돌아오는 동안은 마지막 단계의 게임 시간 설정과 조작 막기를 그대로 둔다.
+            // 시간이 흐르는 샷으로 끝났으면 블렌드 동안에도 시간이 흐르고, 끝 블렌드가 끝나면 ReleaseControl에서 둘 다 푼다.
             OnPlayFinished?.Invoke(this);
 
             // Brain은 다음 프레임에 블렌드를 시작하므로, 블렌드 시간이 지난 뒤에 원래 기본 블렌드로 돌리고 조작을 돌려준다.
@@ -305,23 +283,6 @@ namespace UIandCinematic
                 GameManager.Instance.ResumeGameTime(this);
 
             InputMapController.Instance?.ReleaseMap(this);
-        }
-
-        private static bool HasSeen(string id)
-        {
-            return !string.IsNullOrEmpty(id) && (PlayerPrefs.GetInt(SEEN_KEY_PREFIX + id, 0) == 1);
-        }
-
-        private void MarkSeen(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                Debug.LogWarning("[CinematicManager] 한 번만 재생하는 연출의 Id가 비어 있어 본 기록을 남기지 못했습니다.", this);
-                return;
-            }
-
-            PlayerPrefs.SetInt(SEEN_KEY_PREFIX + id, 1);
-            PlayerPrefs.Save();
         }
 
         // 키에 맞는 씬 카메라를 찾는다. 키가 비었으면 조용히, 씬에 없으면 경고를 남기고 null을 돌려준다.

@@ -1,4 +1,5 @@
 using Attribute.Core;
+using Core.Scanning;
 using Core.Stage;
 using Facade.Player;
 using SceneTransition;
@@ -11,7 +12,7 @@ namespace Core
 {
     public class GameManager : Singleton<GameManager>
     {
-        // 게임 상태 관리 
+        // 게임 상태 관리
         public enum GameState
         {
             Title,
@@ -121,6 +122,40 @@ namespace Core
             SetCursorLocked(true);
         }
 
+        // 설정창의 "메인 화면으로" 버튼. 진행 순번과 현재 체력·배터리를 저장하고 런타임 상태를 비운다.
+        public void ReturnToMainMenu()
+        {
+            if (SceneLoader.IsLoading) return;
+
+            playerState?.SaveProgressAttributes();
+            if (!SceneLoader.TryLoadMainMenu()) return;
+
+            _timePauseRequesters.Clear();
+            CurrentState = GameState.Playing;
+            ApplyGameTime();
+            SetCursorLocked(false);
+
+            SpawnReason = EPlayerSpawnReason.NewGame;
+            SpawnStage = null;
+            _stageManager = null;
+            playerState?.ResetSession();
+        }
+
+        // 설정창의 "게임 종료" 버튼. 에디터에서는 Play를 멈춘다. 씬을 불러오는 중이면 무시한다.
+        public void QuitGame()
+        {
+            if (SceneLoader.IsLoading) return;
+
+            playerState?.SaveProgressAttributes();
+            SceneLoader.SaveCurrentProgress();
+
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+
         // 대화·펫 가이드·연출 동안 requester 이름으로 게임 시간과 3D 효과음을 멈춰 달라고 요청한다. BGM·UI 소리는 계속 들린다.
         // 상태는 Playing 그대로라 그동안에도 설정창을 열 수 있고, 커서는 잠근 채로 둔다. 같은 requester가 여러 번 불러도 요청은 하나다.
         public void PauseGameTime(UnityEngine.Object requester)
@@ -191,14 +226,23 @@ namespace Core
 
             playerState.SetCurrentPlayer(spawnedPlayerFacade);
 
+            // 벽 뒤 아이템 스캔 실루엣이 플레이어 몸 위에 그려지지 않도록 플레이어 렌더러에 스텐실용 렌더링 레이어를 더한다.
+            PlayerStencilRendererFeature.MarkRenderers(spawnedPlayerFacade.gameObject);
+
             // 스포너에서 초기 Effect 적용은 이미 끝난 상태다.
             // 씬 이동이라면 여기서 이전 씬의 능력치를 복원한다.
             // 씬 재시작이면 씬 입장 때 저장해 둔 능력치를 다시 복원한다.
+            bool shouldContinue = SceneLoader.ConsumeContinueRequest();
             bool shouldRestore =
                 (SpawnReason == EPlayerSpawnReason.SceneTransition) ||
                 (SpawnReason == EPlayerSpawnReason.StageRestart);
 
-            if (shouldRestore)
+            if (shouldContinue)
+            {
+                playerState.ClearSavedAttributes();
+                playerState.RestoreProgressAttributes();
+            }
+            else if (shouldRestore)
             {
                 playerState.RestoreSavedAttributes();
             }
@@ -211,6 +255,12 @@ namespace Core
             if (_stageManager != null)
             {
                 _stageManager.InitializeFirstRound(playerState);
+            }
+
+            // 초기 Effect와 이어하기 복원이 끝난 최종 체력·배터리를 저장한다.
+            if (SpawnReason != EPlayerSpawnReason.RoundRecovery)
+            {
+                playerState.SaveProgressAttributes();
             }
 
             // HUD 연결과 StageManager의 기존 사망 이벤트 구독을 실행한다.
@@ -250,6 +300,9 @@ namespace Core
             {
                 return;
             }
+
+            // 메인 메뉴에서 풀어 둔 커서를 맵 씬에 들어오면 다시 잠근다.
+            SetCursorLocked(true);
 
             StageBase stage = FindAnyObjectByType<StageBase>();
 

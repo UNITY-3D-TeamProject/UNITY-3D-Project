@@ -175,6 +175,20 @@ namespace CameraControl
         }
 
         /// <summary>
+        /// 피벗의 yaw 를 지정한 월드 방향에 맞춘다. pitch 는 그대로 둔다.
+        /// 생성 연출 등으로 이 컴포넌트가 꺼져 있는 동안에도 직접 호출해 반영할 수 있다.
+        /// </summary>
+        /// <param name="worldDirection">맞출 월드 방향</param>
+        public void AlignYaw(Vector3 worldDirection)
+        {
+            Vector3 flatDirection = Vector3.ProjectOnPlane(worldDirection, Vector3.up);
+            if (flatDirection.sqrMagnitude <= Mathf.Epsilon) return;
+
+            _yaw = Mathf.Atan2(flatDirection.x, flatDirection.z) * Mathf.Rad2Deg;
+            ApplyPivotRotation();
+        }
+
+        /// <summary>
         /// 사격 피드백(카메라 쉐이크 + 반동)을 재생한다. 일반 사격과 조준 중에는 각 배율만큼 약하게 한다.
         /// </summary>
         /// <param name="isCharged">차지샷이면 true</param>

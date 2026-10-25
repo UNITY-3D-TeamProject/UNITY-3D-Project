@@ -35,9 +35,21 @@ namespace Skill.Skills
         /// <param name="origin">파동의 중심(월드 좌표)</param>
         public void BeginWave(Vector3 origin)
         {
-            if (!_scanWave) return;
+            TryBeginWave(origin);
+        }
+
+        /// <summary>
+        /// BeginWave 와 같이 파동을 시작하고, 실제로 시작했는지 알린다.
+        /// </summary>
+        /// <param name="origin">파동의 중심(월드 좌표)</param>
+        /// <returns>파동을 시작했으면 true. 파동이 없거나 시작하지 못했으면 false</returns>
+        public bool TryBeginWave(Vector3 origin)
+        {
+            if (!_scanWave) return false;
 
             _scanWave.Begin(origin, _duration, _maxDiameter);
+            // 파티클이 없거나 재생되지 않으면 파동 판정도 진행되지 않으므로 시작하지 못한 것으로 본다
+            return _scanWave.IsPlaying;
         }
         #endregion
 

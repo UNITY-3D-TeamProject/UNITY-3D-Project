@@ -1,5 +1,6 @@
 using Attribute.Core;
 using Facade.Player;
+using SceneTransition;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -99,6 +100,8 @@ namespace Core
                 // 현재 플레이어의 어트리뷰트 값들을 다 복사한다.
                 _playerAttributesForSaving[entry.AttributeName] = _playerCurrentFacade.GetAttribute(entry.AttributeName);
             }
+
+            SaveProgressAttributes();
         }
 
         // 저장된 능력치를 현재 플레이어에게 복원한다.
@@ -196,6 +199,40 @@ namespace Core
         // [호출] StageManager.InitializeFirstRound에서 새 스테이지 시작 시 호출된다.
         public void ClearRoundSnapshots()
         {
+            _roundSnapshots.Clear();
+        }
+
+        // 이어하기용으로 현재 체력과 배터리만 영구 저장한다.
+        public void SaveProgressAttributes()
+        {
+            if (!HasRoundAttributes()) return;
+
+            float currentHp = _playerCurrentFacade.GetAttribute(CURRENT_HP_KEY);
+            if (currentHp <= 0f) return;
+
+            float currentBattery = _playerCurrentFacade.GetAttribute(CURRENT_BATTERY_KEY);
+            SceneLoader.SavePlayerAttributes(currentHp, currentBattery);
+        }
+
+        // 이어하기로 생성된 새 플레이어에게 영구 저장된 체력과 배터리를 복원한다.
+        public bool RestoreProgressAttributes()
+        {
+            if (!HasRoundAttributes() ||
+                !SceneLoader.TryLoadPlayerAttributes(out float currentHp, out float currentBattery))
+            {
+                return false;
+            }
+
+            _playerCurrentFacade.SetAttribute(CURRENT_HP_KEY, currentHp);
+            _playerCurrentFacade.SetAttribute(CURRENT_BATTERY_KEY, currentBattery);
+            return true;
+        }
+
+        // 메인 메뉴로 돌아갈 때 플레이어 참조와 이번 플레이에서만 쓰는 임시 저장값을 모두 비운다.
+        public void ResetSession()
+        {
+            _playerCurrentFacade = null;
+            _playerAttributesForSaving.Clear();
             _roundSnapshots.Clear();
         }
 

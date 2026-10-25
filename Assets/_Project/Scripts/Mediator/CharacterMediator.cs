@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Attribute.Core;
 using Attribute.Effect;
+using CharacterSound;
 using Mediator.SubMediators;
 using Skill.Buff;
 using UnityEngine;
@@ -31,6 +32,8 @@ namespace Mediator
         [SerializeField] private PetMediator _petMediator;
         [Tooltip("생성 연출. 끝날 때까지 이동·스킬·시점 프리팹을 꺼 둔다. AI(적·군중)는 비워 둔다.")]
         [SerializeField] private SpawnEffectDriver _spawnEffectDriver;
+        [Tooltip("소리 중재자. 비워 두면 자식에서 찾는다.")]
+        [SerializeField] private SoundMediator _soundMediator;
         #endregion
 
         #region Private Fields
@@ -42,6 +45,7 @@ namespace Mediator
         private bool _isAutoForward;
         // 생성 연출 때문에 이동·스킬·시점 프리팹을 꺼 둔 상태인지 여부
         private bool _isSpawnLocked;
+        private bool _isSyncingSound;
         // 가장 최근 어트리뷰트 변경의 출처 정보. 피격은 Health 변경 알림 도중 동기로 오므로 피격 방향 계산에 쓴다
         private SEffectContext _lastChangeContext;
         // 피격 시 조종부(AI)에 경직을 요청하는 콜백. 경직이 걸렸으면 true 를 돌려준다
@@ -94,6 +98,7 @@ namespace Mediator
         {
             _mediators = GetComponentsInChildren<MediatorBase>();
             if (!_attributeMediator) _attributeSet = GetComponentInChildren<AttributeSet>();
+            if (!_soundMediator) _soundMediator = GetComponentInChildren<SoundMediator>();
         }
 
         private void OnEnable()
@@ -106,6 +111,9 @@ namespace Mediator
 
             // 비활성 중 놓친 구르기·탑승 종료와 초기 탑승 상태를 카메라에 맞춘다
             SyncCameraSpeedFeedback();
+
+            // 구독 전에 시작된 차지·탑승과 사망 상태를 소리에 맞춘다
+            SyncSoundState();
         }
 
         private void Start()
@@ -128,6 +136,9 @@ namespace Mediator
         {
             UnbindCallbacks();
             Unsubscribe();
+
+            // 이벤트 경로가 끊기므로 반복음과 이동음 대체를 정리한다
+            if (_soundMediator) _soundMediator.StopAllSounds();
 
             // 이벤트 경로가 끊기므로 카메라 속도감 효과를 해제한다
             if (_cameraMediator) _cameraMediator.SyncSpeedFeedback(false, false);
@@ -302,6 +313,30 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 바라볼 방향으로 몸을 즉시 돌리고 카메라 피벗도 같은 방향으로 맞춘다.
+        /// 생성 연출 중이면 연출이 끝날 때까지 방향을 고정하고, 끝나면 자동으로 풀린다(OnSpawnEffectEndedCallback).
+        /// 연출이 이미 끝났거나 생성 연출 드라이버가 없으면 정렬 직후 고정을 풀어 정상 카메라 추종으로 복귀한다.
+        /// 수평 성분이 없는 방향은 무시한다.
+        /// </summary>
+        /// <param name="direction">바라볼 월드 방향</param>
+        public void SetLookDirection(Vector3 direction)
+        {
+            if (!_rotateMediator || !_cameraMediator) return;
+
+            // 하위 중재자의 무시 규칙과 맞춘다. 잘못된 방향으로 기존 고정까지 풀지 않는다
+            if (Vector3.ProjectOnPlane(direction, Vector3.up).sqrMagnitude <= Mathf.Epsilon) return;
+
+            _rotateMediator.LockLookDirection(direction);
+            _cameraMediator.AlignYaw(direction);
+
+            // 연출 대기 중이면 종료 이벤트(OnSpawnEffectEndedCallback)가 풀 때까지 고정을 유지한다
+            if (_spawnEffectDriver && !_spawnEffectDriver.IsEnded) return;
+
+            _cameraMediator.PublishViewForward();
+            _rotateMediator.UnlockLookDirection();
+        }
+
+        /// <summary>
         /// 사망 처리로 바뀐 상태를 되돌린다. 오브젝트 풀에서 다시 꺼낸 캐릭터가 재사용될 때 호출한다.
         /// </summary>
         public void ResetForReuse()
@@ -311,6 +346,10 @@ namespace Mediator
             if (_skillMediator) _skillMediator.enabled = true;
             if (_rotateMediator) _rotateMediator.enabled = true;
             SyncCameraSpeedFeedback();
+            // 이전 반복음과 착지 판정 기준을 비우고, 활성 상태면 현재 상태로 다시 연결한다
+            if (_soundMediator) _soundMediator.StopAllSounds();
+            if (isActiveAndEnabled) BindSoundMoveState();
+            SyncSoundState();
         }
         #endregion
 
@@ -350,6 +389,20 @@ namespace Mediator
             if (_skillMediator && _cameraMediator) _skillMediator.SetGetAimRay(_cameraMediator.GetAimRay);
             if (_attributeMediator && _combatMediator) _attributeMediator.SetIsDamageBlocked(_combatMediator.IsDamageBlocked);
             if (_attributeMediator && _combatMediator) _attributeMediator.SetDamageModifier(_combatMediator.ModifyDamage);
+            BindSoundMoveState();
+        }
+        /// <summary>
+        /// 이동 상태 조회 델리게이트를 소리 중재자로 전달한다. 사망 상태에서는 전달하지 않는다.
+        /// </summary>
+        private void BindSoundMoveState()
+        {
+            if (_isDead || !_moveMediator || !_soundMediator) return;
+
+            _soundMediator.SetGetMoveState(
+                _moveMediator.HasMoveIntent,
+                _moveMediator.GetHorizontalSpeed,
+                _moveMediator.IsGrounded,
+                _moveMediator.IsRolling);
         }
         /// <summary>
         /// 등록된 바인딩 해제
@@ -375,6 +428,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.ClearGetAimRay();
             if (_attributeMediator) _attributeMediator.ClearIsDamageBlocked();
             if (_attributeMediator) _attributeMediator.ClearDamageModifier();
+            if (_soundMediator) _soundMediator.ClearGetMoveState();
         }
         /// <summary>
         /// 중재자들이 원하는 값 변경시 알림 발송
@@ -503,6 +557,11 @@ namespace Mediator
 
             _isSpawnLocked = false;
             SetSpawnLockedObjectsActive(true);
+
+            // SetLookDirection 으로 고정해 둔 방향이 있으면, 카메라가 이미 그 방향을 보고 있는 상태로 전달한 뒤 풀어 스냅 없이 넘긴다
+            if (_cameraMediator) _cameraMediator.PublishViewForward();
+            if (_rotateMediator) _rotateMediator.UnlockLookDirection();
+
             OnSpawnEffectEnded?.Invoke();
         }
 
@@ -527,6 +586,59 @@ namespace Mediator
             bool isRolling = !_isDead && _moveMediator && _moveMediator.IsRolling();
             bool isRiding = !_isDead && _skillMediator && _skillMediator.IsRiding();
             _cameraMediator.SyncSpeedFeedback(isRolling, isRiding);
+        }
+
+        /// <summary>
+        /// 소리 중재자를 현재 상태에 맞춘다. 사망 상태면 아무것도 전달하지 않고, 아니면 차지 중 여부와 실제 탈것 부착 여부를 다시 전달한다.
+        /// </summary>
+        private void SyncSoundState()
+        {
+            // 동기화 중 되돌아온 요청은 무시한다
+            if (!_soundMediator || _isSyncingSound || _isDead) return;
+
+            _isSyncingSound = true;
+            if (_skillMediator) _skillMediator.SyncSoundState();
+            _isSyncingSound = false;
+        }
+
+        /// <summary>
+        /// 점프 시작을 소리 중재자로 전달한다. 사망 후에는 전달하지 않는다.
+        /// </summary>
+        private void OnJumpStartedSoundCallback()
+        {
+            if (_isDead) return;
+
+            _soundMediator.NotifyJumpStarted();
+        }
+
+        /// <summary>
+        /// 스킬 단발음을 소리 중재자로 전달한다. 사망 후에는 전달하지 않는다.
+        /// </summary>
+        private void OnSkillSoundCallback(string skillName, ESoundPhase phase, Vector3? position)
+        {
+            if (_isDead) return;
+
+            _soundMediator.NotifySkillSound(skillName, phase, position);
+        }
+
+        /// <summary>
+        /// 스킬 반복음 시작·종료를 소리 중재자로 전달한다. 사망 후 시작은 전달하지 않고 종료는 항상 전달한다.
+        /// </summary>
+        private void OnSkillSoundLoopCallback(string skillName, ESoundPhase phase, bool isOn)
+        {
+            if (_isDead && isOn) return;
+
+            _soundMediator.NotifySkillSoundLoop(skillName, phase, isOn);
+        }
+
+        /// <summary>
+        /// 탈것 부착·해제를 소리 중재자로 전달한다. 사망 후 부착은 전달하지 않고 해제는 항상 전달한다.
+        /// </summary>
+        private void OnVehicleSoundChangedCallback(string skillName, bool isAttached)
+        {
+            if (_isDead && isAttached) return;
+
+            _soundMediator.NotifyVehicleSound(skillName, isAttached);
         }
 
         /// <summary>
@@ -596,6 +708,7 @@ namespace Mediator
                 if (_petMediator) _petMediator.NotifyHit(_playerAnimationMediator ? _playerAnimationMediator.GetHitDirection(hitSource) : 0);
                 if (hitSource.HasValue) OnHitFrom?.Invoke(hitSource.Value);
             }
+            if (_soundMediator) _soundMediator.NotifyHit();
             OnHit?.Invoke();
         }
 
@@ -620,6 +733,12 @@ namespace Mediator
             if (_isDead) return;
 
             _isDead = true;
+            // 아래에서 스킬 중재자가 꺼지며 Fire.Stop 이 발사할 수 있으므로, 그 전에 이동 표본 연결과 기존 반복음을 정리한다
+            if (_soundMediator)
+            {
+                _soundMediator.ClearGetMoveState();
+                _soundMediator.StopAllSounds();
+            }
             Debug.Log($"{name} is Death!");
             OnDeath?.Invoke();
             DisableControl();
@@ -728,6 +847,11 @@ namespace Mediator
             if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillUsed += _enemyAnimationMediator.NotifySkillUsed;
             if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillStopped += _enemyAnimationMediator.NotifySkillStopped;
             if (_spawnEffectDriver) _spawnEffectDriver.OnSpawnEffectEnded += OnSpawnEffectEndedCallback;
+            if (_moveMediator && _soundMediator) _moveMediator.OnJumpStarted += OnJumpStartedSoundCallback;
+            if (_skillMediator && _soundMediator) _skillMediator.OnSkillSound += OnSkillSoundCallback;
+            if (_skillMediator && _soundMediator) _skillMediator.OnSkillSoundLoop += OnSkillSoundLoopCallback;
+            if (_skillMediator && _soundMediator) _skillMediator.OnVehicleSoundChanged += OnVehicleSoundChangedCallback;
+            if (_soundMediator) _soundMediator.OnSyncRequested += SyncSoundState;
         }
         /// <summary>
         /// 중재자 이벤트 구독 해지
@@ -789,6 +913,11 @@ namespace Mediator
             if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillUsed -= _enemyAnimationMediator.NotifySkillUsed;
             if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillStopped -= _enemyAnimationMediator.NotifySkillStopped;
             if (_spawnEffectDriver) _spawnEffectDriver.OnSpawnEffectEnded -= OnSpawnEffectEndedCallback;
+            if (_moveMediator && _soundMediator) _moveMediator.OnJumpStarted -= OnJumpStartedSoundCallback;
+            if (_skillMediator && _soundMediator) _skillMediator.OnSkillSound -= OnSkillSoundCallback;
+            if (_skillMediator && _soundMediator) _skillMediator.OnSkillSoundLoop -= OnSkillSoundLoopCallback;
+            if (_skillMediator && _soundMediator) _skillMediator.OnVehicleSoundChanged -= OnVehicleSoundChangedCallback;
+            if (_soundMediator) _soundMediator.OnSyncRequested -= SyncSoundState;
         }
         #endregion
     }

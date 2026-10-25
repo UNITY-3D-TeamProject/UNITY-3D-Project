@@ -32,6 +32,7 @@ namespace Facade.Player
         #region Private Fields
         private InputAction _openSettingsAction;
         private InputAction _closeSettingsAction;
+        private bool _isSpawnEnded = false;
         #endregion
 
         #region Properties
@@ -40,6 +41,8 @@ namespace Facade.Player
 
         /// <summary>사격 차지 진행도(0~1). 차지 중이 아니면(발사·취소 후, 재차지 대기 중) 0.</summary>
         public float FireChargeRatio => _characterMediator ? _characterMediator.FireChargeRatio : 0.0f;
+        
+        public bool IsSpawnEnded => _isSpawnEnded;
         #endregion
 
         #region Events
@@ -229,6 +232,20 @@ namespace Facade.Player
         }
 
         /// <summary>
+        /// 캐릭터가 바라볼 방향으로 즉시 돌리고 카메라도 같은 방향으로 맞춘다.
+        /// 생성 연출 중이면 연출이 끝날 때까지 방향을 고정하고, 끝나면 자동으로 풀린다.
+        /// 연출이 이미 끝났거나 생성 연출이 없으면 정렬 직후 고정을 풀어 정상 카메라 추종으로 복귀한다.
+        /// 수평 성분이 없는 방향은 무시한다.
+        /// </summary>
+        /// <param name="direction">바라볼 월드 방향</param>
+        public void SetLookDirection(Vector3 direction)
+        {
+            if (!_characterMediator) return;
+
+            _characterMediator.SetLookDirection(direction);
+        }
+
+        /// <summary>
         /// 입력 맵을 UI 용으로 전환한다.
         /// </summary>
         public void SwitchToUIInput()
@@ -334,6 +351,7 @@ namespace Facade.Player
 
         private void RelaySpawnEffectEnded()
         {
+            _isSpawnEnded = true;
             OnSpawnEffectEnded?.Invoke();
         }
 

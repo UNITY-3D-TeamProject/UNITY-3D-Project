@@ -31,6 +31,7 @@ Shader "Project/Hologram"
 
         [Header(Tutorial Atmosphere)]
         [Toggle] _DarkImmune ("Dark Immune (어둠에서도 보임)", Float) = 0
+        [Toggle] _AlarmImmune ("Alarm Immune (경보에도 원래 색)", Float) = 0
     }
 
     SubShader
@@ -77,6 +78,7 @@ Shader "Project/Hologram"
                 float _GlitchStrength;
                 float _FlickerSpeed;
                 float _DarkImmune;
+                float _AlarmImmune;
             CBUFFER_END
 
             struct Attributes
@@ -150,7 +152,7 @@ Shader "Project/Hologram"
                 half alpha = saturate(((_BaseColor.a * scan) + (rim * 0.85) + (band * 0.35) + (grid * 0.5)) * flicker);
 
                 // 경보 색, 안개만큼 옅어짐
-                rgb = HoloAlarmTint(rgb * flicker);
+                rgb = lerp(HoloAlarmTint(rgb * flicker), rgb * flicker, _AlarmImmune);
                 alpha *= HoloFogVisibility(input.fogFactor);
                 return half4(rgb, alpha);
             }
