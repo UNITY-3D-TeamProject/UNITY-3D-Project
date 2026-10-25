@@ -52,6 +52,14 @@ namespace Core.Stage
         #endregion
 
         #region Unity Lifecycle
+        // 라운드 변경 감지는 부모가 하고, 보스 라운드 동안 다 내려간 발판을 숨긴다.
+        protected override void Update()
+        {
+            base.Update();
+
+            if (CurrentRoundIndex == BOSS_ROUND_INDEX) _bossRound.HideLoweredPlatforms();
+        }
+
         private void OnDestroy()
         {
             // StartStage 에서 준비하지 않았으면 구독도 없다
@@ -109,8 +117,19 @@ namespace Core.Stage
         }
         #endregion
 
+        #region Protected Methods
+        // 보스 라운드로 바뀌면(3라운드 체크포인트 도착) 2라운드 발판을 내리고 앞 구간을 숨긴다.
+        protected override void OnRoundChanged()
+        {
+            if (CurrentRoundIndex != BOSS_ROUND_INDEX) return;
+
+            _bossRound.LowerPlatforms();
+            _bossRound.HideAreas();
+        }
+        #endregion
+
         #region Private Methods
-        // 라운드 중 죽으면 그 라운드의 못 깬 구역만 처음 상태로 돌린다.
+        // 라운드 중 죽으면 그 라운드의 못 깬 구역만 처음 상태로 돌린다. 보스 라운드는 리스폰 자리 발판만 올린다.
         // [이벤트] StageManager.OnPlayerRespawnRequested (StartStage 에서 구독)
         private void HandlePlayerRespawnRequested()
         {
@@ -122,6 +141,10 @@ namespace Core.Stage
 
                 case SPECIAL_MOB_ROUND_INDEX:
                     _specialMobRound.ResetUnclearedSteps();
+                    break;
+
+                case BOSS_ROUND_INDEX:
+                    _bossRound.RestoreRespawnPlatform();
                     break;
             }
         }

@@ -42,6 +42,9 @@ namespace Map.Gimmicks
         #region Properties
         /// <summary>작동 상태(또는 그쪽으로 가는 중)인지 여부.</summary>
         public bool IsActivated => _targetProgress > 0.5f;
+
+        /// <summary>한쪽 상태에서 다른 쪽 상태로 가는 중인지 여부. 도착해 멈춰 있으면 false.</summary>
+        public bool IsMoving => !Mathf.Approximately(_progress, _targetProgress);
         #endregion
 
         #region Unity Lifecycle
@@ -106,6 +109,16 @@ namespace Map.Gimmicks
         public void Toggle()
         {
             _targetProgress = IsActivated ? 0.0f : 1.0f;
+        }
+
+        /// <summary>기본 상태로 즉시 되돌린다. 움직이는 시간 없이 바로 원위치에 놓는다.</summary>
+        public void ResetImmediately()
+        {
+            _progress = 0.0f;
+            _targetProgress = 0.0f;
+
+            // ApplyPose 는 Time.deltaTime 으로 이동량을 정해 시간이 멈춰 있으면 움직이지 않으므로 위치를 직접 넣는다
+            transform.SetPositionAndRotation(_basePosition, _baseRotation);
         }
         #endregion
 
