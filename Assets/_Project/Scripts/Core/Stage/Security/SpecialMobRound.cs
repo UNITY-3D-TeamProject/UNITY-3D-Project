@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Map.Gimmicks;
 
 namespace Core.Stage.Security
 {
@@ -7,7 +8,9 @@ namespace Core.Stage.Security
     /// 2라운드 특수몹 발판. 발판은 순서대로 하나씩 진행한다.
     /// - 지금 발판(아직 못 깬 첫 발판)의 특수몹은 미리 만들어 제자리에 묶어 두고, 플레이어가 발판 구역에 들어오면 움직인다.
     /// - 특수몹을 다 잡으면 꺼 두었던 다음 발판이 나타나고, 그 발판의 특수몹을 만들어 둔다.
+    /// - 이 라운드 동안 켜져 있는 발판 위로 위험물이 떨어진다. (FallingHazardSpawner)
     /// SecurityApp 이 필드로 들고, 스테이지 시작 때 Begin, 끝날 때 End, 이 라운드 중 죽으면 ResetUnclearedSteps 를 부른다.
+    /// 이 라운드가 되면 StartHazards, 다른 라운드가 되면 StopHazards 를 부른다.
     /// </summary>
     [Serializable]
     public class SpecialMobRound
@@ -27,6 +30,9 @@ namespace Core.Stage.Security
         #region Serialized Fields
         [Tooltip("진행 순서대로 발판마다 특수몹 구역·다음 발판")]
         [SerializeField] private SPlatformStep[] _steps;
+
+        [Tooltip("이 라운드 동안 켜져 있는 발판 위로 위험물을 떨어뜨리는 생성기 (04_Platforms/FallingHazardSpawner)")]
+        [SerializeField] private FallingHazardSpawner _hazardSpawner;
         #endregion
 
         #region Properties
@@ -94,9 +100,23 @@ namespace Core.Stage.Security
             }
         }
 
-        /// <summary>아직 못 깬 발판만 처음 상태로 돌리고 지금 발판 특수몹을 다시 만들어 둔다. 이미 나타난 발판은 그대로 둔다.</summary>
+        /// <summary>이 라운드가 되면 호출된다. 발판 위로 위험물을 떨어뜨리기 시작한다.</summary>
+        public void StartHazards()
+        {
+            if (_hazardSpawner != null) _hazardSpawner.StartSpawning();
+        }
+
+        /// <summary>다른 라운드가 되면 호출된다. 위험물 생성을 멈추고 떨어지는 중인 위험물을 지운다.</summary>
+        public void StopHazards()
+        {
+            if (_hazardSpawner != null) _hazardSpawner.StopSpawning();
+        }
+
+        /// <summary>아직 못 깬 발판만 처음 상태로 돌리고 지금 발판 특수몹을 다시 만들어 둔다. 이미 나타난 발판은 그대로 둔다.
+        /// 떨어지는 중인 위험물은 지우고(리스폰 직후 맞지 않게) 생성은 계속한다.</summary>
         public void ResetUnclearedSteps()
         {
+            if (_hazardSpawner != null) _hazardSpawner.ClearHazards();
             if (_steps == null) return;
 
             foreach (SPlatformStep step in _steps)

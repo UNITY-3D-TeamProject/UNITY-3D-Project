@@ -6,7 +6,7 @@ namespace AI.Boss.BossB
     /// <summary>
     /// B 스킬이 쓰는 바닥 예고 판 하나. 프리팹을 만들어 두고 위치·크기를 맞추며, 알파를 0 에서 머터리얼 알파까지 올려 나타나게 한다.
     /// 판 크기는 프리팹 루트의 로컬 X(폭)·Z(길이) 스케일로 맞춘다. 알파는 MaterialPropertyBlock 의 _BaseColor 로 바꿔 공유 머터리얼을 건드리지 않는다.
-    /// 프리팹에 DTT LineRegion·CircleRegion 이 있으면 크기 조절 대신 Length·Width·Radius 를 넣고, 알파 대신 FillProgress 로 채운다.
+    /// 프리팹에 DTT LineRegion·CircleRegion·ArcRegion 이 있으면 크기 조절 대신 Length·Width·Radius 를 넣고, 알파 대신 FillProgress 로 채운다.
     /// DTT 는 공유 머터리얼에 채움 값을 쓰므로 그런 프리팹에는 머터리얼을 복제하는 AoeVfxPlayer 를 함께 붙여 둔다.
     /// </summary>
     public class BossBTelegraph
@@ -17,6 +17,7 @@ namespace AI.Boss.BossB
         private GameObject _instance;
         private LineRegion _line;
         private CircleRegion _circle;
+        private ArcRegion _arc;
         private Renderer _renderer;
         private MaterialPropertyBlock _block;
         private Color _baseColor;
@@ -35,6 +36,7 @@ namespace AI.Boss.BossB
             _instance = Object.Instantiate(prefab);
             _line = _instance.GetComponent<LineRegion>();
             _circle = _instance.GetComponent<CircleRegion>();
+            _arc = _instance.GetComponent<ArcRegion>();
             _baseScale = _instance.transform.localScale;
             _renderer = _instance.GetComponentInChildren<Renderer>();
             _block = null;
@@ -75,6 +77,12 @@ namespace AI.Boss.BossB
                 return;
             }
 
+            if (_arc)
+            {
+                _arc.Radius = width * 0.5f;
+                return;
+            }
+
             _instance.transform.localScale = new Vector3(width, _baseScale.y, length);
         }
 
@@ -93,6 +101,12 @@ namespace AI.Boss.BossB
             if (_circle)
             {
                 _circle.FillProgress = progress;
+                return;
+            }
+
+            if (_arc)
+            {
+                _arc.FillProgress = progress;
                 return;
             }
 
@@ -115,6 +129,7 @@ namespace AI.Boss.BossB
             _instance = null;
             _line = null;
             _circle = null;
+            _arc = null;
             _renderer = null;
         }
         #endregion

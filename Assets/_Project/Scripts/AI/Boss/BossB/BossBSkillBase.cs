@@ -109,11 +109,12 @@ namespace AI.Boss.BossB
         /// </summary>
         /// <param name="isTargetRequired">보이는 대상(플레이어)이 있어야 시작하는지</param>
         /// <param name="holdSeconds">붙잡아 둘 최대 시간(초). 정상 종료는 EndRun 이 풀어 준다</param>
+        /// <param name="isArenaRequired">아레나가 연결돼 있어야 시작하는지. 보스전 시작 전에 쓰는 스킬(등장 연출)만 false 로 부른다</param>
         /// <returns>시작했으면 true</returns>
-        protected bool BeginRun(bool isTargetRequired, float holdSeconds)
+        protected bool BeginRun(bool isTargetRequired, float holdSeconds, bool isArenaRequired = true)
         {
             if (IsRunning) return false;
-            if (!_controller || !_selfMotor || (Arena == null)) return false;
+            if (!_controller || !_selfMotor || (isArenaRequired && (Arena == null))) return false;
             if (_boss.IsSkillRunning) return false;
 
             _isTargetRequired = isTargetRequired;
