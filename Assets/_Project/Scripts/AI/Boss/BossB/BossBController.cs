@@ -38,6 +38,7 @@ namespace AI.Boss.BossB
 
         #region Private Fields
         private BossBSkillBase[] _skills;
+        private BossBEntrance _entrance;
         private CharacterMotor _motor;
         private IArenaQuery _arena;
         private bool _isEvadePending;
@@ -66,6 +67,9 @@ namespace AI.Boss.BossB
             }
         }
 
+        /// <summary>등장 연출이 진행 중인지.</summary>
+        public bool IsEntrancePlaying => _entrance && _entrance.IsRunning;
+
         /// <summary>
         /// B 의 스킬 중 하나라도 진행 중인지. 붙잡힘(Hold)은 AIController 에 하나뿐이라 스킬은 한 번에 하나만 진행해야 한다.
         /// </summary>
@@ -90,6 +94,9 @@ namespace AI.Boss.BossB
         public event Action<Vector3, Vector3> OnChargePrepared;
 
         public event Action OnChargeEnded;
+
+        /// <summary>등장 연출에서 B 가 땅에 내려앉는 순간.</summary>
+        public event Action OnEntranceLanded;
         #endregion
 
         #region Unity Lifecycle
@@ -99,6 +106,7 @@ namespace AI.Boss.BossB
             if (!_aiController) _aiController = GetComponent<AIController>();
             if (!_graphAgent) _graphAgent = GetComponent<BehaviorGraphAgent>();
             _skills = GetComponentsInChildren<BossBSkillBase>(true);
+            _entrance = GetComponentInChildren<BossBEntrance>(true);
             _motor = GetComponentInChildren<CharacterMotor>();
         }
 
@@ -139,6 +147,20 @@ namespace AI.Boss.BossB
 
             _arena = arena;
             if (_arena != null) _arena.OnTileCollapsed += OnTileCollapsedCallback;
+        }
+
+        /// <summary>
+        /// 진행이 부른다. 보스전을 시작하기 전에 등장 연출을 시작한다. 공중 위치에서 Spell 을 재생한 뒤 착지 위치로 내려온다.
+        /// 끝나는 때는 IsEntrancePlaying 으로 안다.
+        /// </summary>
+        /// <returns>연출을 시작했으면 true. 등장 스킬이 없거나 시작하지 못하면 false</returns>
+        public bool PlayEntrance(Vector3 hoverPosition, Vector3 landingPosition)
+        {
+            if (!_entrance || !_aiController) return false;
+
+            _entrance.SetPositions(hoverPosition, landingPosition);
+            _aiController.ExecuteSkill(_entrance.SkillName);
+            return _entrance.IsRunning;
         }
 
         /// <summary>
@@ -186,6 +208,12 @@ namespace AI.Boss.BossB
         public void NotifyChargeEnded()
         {
             OnChargeEnded?.Invoke();
+        }
+
+        /// <summary>등장 스킬이 땅에 내려앉을 때 부른다.</summary>
+        public void NotifyEntranceLanded()
+        {
+            OnEntranceLanded?.Invoke();
         }
         #endregion
 

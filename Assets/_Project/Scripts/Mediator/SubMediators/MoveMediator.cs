@@ -25,6 +25,7 @@ namespace Mediator.SubMediators
     /// <summary>
     /// 이동 입력을 MoveDirectionCalculator 로 넘기고, 계산된 이동 방향과 점프 입력·속도 어트리뷰트를 CharacterMotor 로 전달하는 접착 컴포넌트.
     /// </summary>
+    [DefaultExecutionOrder(10)]   // CharacterMotor(0)가 이동한 뒤의 접지 결과를 읽는다. CharacterMediator(100)보다 먼저 실행한다
     public class MoveMediator : MediatorBase
     {
         #region Serialized Fields
@@ -56,6 +57,7 @@ namespace Mediator.SubMediators
         private float _lastGroundedTime = float.NegativeInfinity;
         private float _lastJumpPressedTime = float.NegativeInfinity;
         private bool _hasJumpedSinceGrounded;
+        private bool _isFalling;
         private bool _isMoveLocked;
         #endregion
 
@@ -80,6 +82,10 @@ namespace Mediator.SubMediators
         public event Action OnJumpStarted;
         /// <summary>점프 후 착지했을 때 발생한다.</summary>
         public event Action OnJumpEnded;
+        /// <summary>점프 없이 지면을 벗어나 코요테 타임까지 지나 낙하가 시작되었을 때 발생한다.</summary>
+        public event Action OnFallStarted;
+        /// <summary>점프 없이 낙하하다 착지했을 때 발생한다. 낙하 중 점프하면 발생하지 않는다.</summary>
+        public event Action OnFallEnded;
         /// <summary>공중에서 점프 입력이 들어왔을 때 발생한다. 점프 여부는 구독하는 쪽이 판단해 CommandAirJump 로 요청한다.</summary>
         public event Action OnAirJumpRequested;
         /// <summary>점프 입력을 뗐을 때 발생한다.</summary>
@@ -114,6 +120,7 @@ namespace Mediator.SubMediators
         {
             // 코요테 타임 판정을 위해 마지막으로 접지한 시각을 기록
             if (_motor && _motor.IsGrounded) _lastGroundedTime = Time.time;
+            UpdateFall();
             TryBufferedJump();
         }
 
@@ -124,6 +131,7 @@ namespace Mediator.SubMediators
             if (_motor) _motor.Direction = Vector3.zero;
             // 모터도 비활성화되면 착지 알림 없이 점프 상태가 풀리므로 함께 초기화
             _hasJumpedSinceGrounded = false;
+            _isFalling = false;
             _lastGroundedTime = float.NegativeInfinity;
             _lastJumpPressedTime = float.NegativeInfinity;
             Unsubscribe();
@@ -397,6 +405,30 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 점프 없이 지면을 벗어나 코요테 타임까지 지나면 낙하 시작을, 낙하 중 접지하면 낙하 종료를 알린다.
+        /// 첫 접지 전의 공중(스폰 직후 등)은 낙하로 보지 않는다.
+        /// </summary>
+        private void UpdateFall()
+        {
+            if (!_motor) return;
+
+            if (_isFalling)
+            {
+                if (!_motor.IsGrounded) return;
+
+                _isFalling = false;
+                OnFallEnded?.Invoke();
+                return;
+            }
+
+            bool hasBeenGrounded = _lastGroundedTime > float.NegativeInfinity;
+            if (_motor.IsGrounded || _hasJumpedSinceGrounded || !hasBeenGrounded || IsInCoyoteTime()) return;
+
+            _isFalling = true;
+            OnFallStarted?.Invoke();
+        }
+
+        /// <summary>
         /// 점프 없이 지면을 벗어난 뒤 코요테 타임 안인지 반환한다.
         /// </summary>
         /// <returns>마지막 착지 이후 점프한 적이 없고, 마지막 접지로부터 _coyoteTime 이 지나지 않았으면 true</returns>
@@ -450,6 +482,8 @@ namespace Mediator.SubMediators
         {
             // 점프 직후 유예 시간 안에 지상 점프가 다시 나가지 않도록 막는다
             _hasJumpedSinceGrounded = true;
+            // 낙하 중 점프하면 착지는 점프 경로(OnJumpEnded)가 처리한다
+            _isFalling = false;
             // 지상·공중·버퍼 점프 모두 입력이 쓰였으므로 버퍼를 비운다
             _lastJumpPressedTime = float.NegativeInfinity;
             OnJumpStarted?.Invoke();

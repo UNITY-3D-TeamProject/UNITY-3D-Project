@@ -74,6 +74,23 @@ namespace AI.Boss.BossA
         /// <summary>손이 내려친 자리에 머무는 시간(초). 현재 단계 값.</summary>
         public float HandStayDuration { get; private set; }
 
+        /// <summary>머리 부위 피격 중계의 Transform. 없으면 A 루트. B 등장 연출이 머리 위 위치를 잡는 데 쓴다.</summary>
+        public Transform HeadTransform
+        {
+            get
+            {
+                if (_relays != null)
+                {
+                    foreach (BossHitRelay relay in _relays)
+                    {
+                        if (relay && (relay.Part == EBossHitPart.Head)) return relay.transform;
+                    }
+                }
+
+                return transform;
+            }
+        }
+
         /// <summary>패턴(또는 쉼)이 진행 중인지.</summary>
         public bool IsPatternRunning => _runningSkill || _isResting;
         #endregion

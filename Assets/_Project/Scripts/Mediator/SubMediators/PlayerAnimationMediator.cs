@@ -143,6 +143,16 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 점프 없는 낙하 시작을 PlayerAnimator 로 전달한다.
+        /// </summary>
+        public void NotifyFallStarted()
+        {
+            if (!_playerAnimator) return;
+
+            _playerAnimator.PlayFall();
+        }
+
+        /// <summary>
         /// 착지를 PlayerAnimator 로 전달한다.
         /// </summary>
         public void NotifyJumpEnded()

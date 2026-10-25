@@ -359,6 +359,7 @@ MonoBehaviour:
   _enemyAnimationMediator: {fileID: 7573302190820598726}
   _petMediator: {fileID: 0}
   _spawnEffectDriver: {fileID: 0}
+  _soundMediator: {fileID: 0}
 --- !u!114 &5351093735736510952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -374,6 +375,7 @@ MonoBehaviour:
   _eye: {fileID: 8903707711899121783}
   _sightRange: 30
   _sightAngle: 150
+  _proximityRange: 0
   _loseGraceTime: 2
   _targetLayers:
     serializedVersion: 2
@@ -565,9 +567,6 @@ MonoBehaviour:
   - SkillName: Attack
     Parameter: Attack
     IsHold: 0
-  - SkillName: AttackWindup
-    Parameter: IsWindup
-    IsHold: 1
   _deathPlayCount: 1
 --- !u!1 &894696820916936218
 GameObject:
