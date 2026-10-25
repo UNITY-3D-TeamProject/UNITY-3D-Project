@@ -7,6 +7,9 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-25** — 원거리 몹 조준선이 꺼진 뒤 0.33초 뒤에 총알이 나가던 끊김 수정: 사격 모션을 조준선이 꺼지기 `FireDelay` 전에 시작(`AIRangedAttackAction`), 팔이 와리가리 하던 원인인 `Ranged.prefab` 의 AttackWindup→IsWindup 애니메이션 매핑 제거. 리컴파일 통과, **Play 육안 확인 미실행, 커밋 전**: [원거리 조준-사격 연결](./2026-10-25/ranged-windup-fire-sync.md)
+- **2026-10-25** — 보안 맵 0·1 낙하 예고를 보스와 같은 DTT `CircleWarnning` 원형 채움으로 교체. 기존 테스트 5/5 및 Play 바닥 고정·착지/반납 정리·풀 재사용 초기화·머티리얼 독립 확인. 커밋 전: [DTT 낙하 예고](./2026-10-25/security-falling-dtt-warning.md)
+- **2026-10-25** — intent-074: 2라운드 동안 `0_Unity_Optimized`·`DigitalVirus_Unity_Optimized` 위험물이 켜진 발판 위 무작위 위치로 떨어짐(예고 1초·피해 10·닿으면 사라짐, 3라운드에서 멈춤). `FallingHazardSpawner` 신규, `FallingObstacle._isDestroyOnLand`, 프리팹 `Security_FallingZero/Virus`, 씬 연결. PlayMode 4/4, Play 생성·피해·멈춤 확인. **`ThirdParty/Projectile` SVN 미업로드, 육안 확인·게이트 루프 미실행, 커밋 전**: [낙하 위험물](./2026-10-25/security-falling-hazards.md)
 - **2026-10-25** — 특수몹이 스폰 시 플레이어 오른쪽(-Z)을 보던 문제: 스폰 포인트는 이미 -X(플레이어 쪽)였고, 원인은 `Special.prefab` `AIController._body` 가 눕혀진 메쉬 자식 `Nexus Robot`(X 270°)을 가리켜 Hold 방향이 (0,0)이 되던 것. `_body` 를 Animator 쪽 `Nexus Robot` 으로 교체(코드 변경 없음). Play 에서 yaw 270° 유지 확인. **육안 확인·게이트 루프 미실행, 커밋 전**: [특수몹 스폰 방향](./2026-10-25/special-spawn-facing.md)
 - **2026-10-24** — 보스-14 후속(사용자 지적): 보스전 중 남아 보이던 시작 방·통로·1라운드 체크포인트 큐브·커버 생성기 2·폭발 통 9 를 `_hiddenAreas` 에 추가(총 15, 씬 연결만). `HideAreas` 직접 호출로 1라운드 쪽 구조물 0 확인. **육안 확인·게이트 루프 미실행, 커밋 전**: [스테이지2 발판 내리기(7절)](./2026-10-24/boss-arena-stage2-sink.md)
 - **2026-10-24** — 보스-14 후속(사용자 요청): 보스 라운드 시작 시 `03_Round1_Battle` 도 `SetActive(false)`(`BossRound._hiddenAreas`·`HideAreas`). PlayMode 21/21, Play 꺼짐·사망 후 유지 확인. **육안 확인·게이트 루프 미실행, 커밋 전**: [스테이지2 발판 내리기(6절)](./2026-10-24/boss-arena-stage2-sink.md)
