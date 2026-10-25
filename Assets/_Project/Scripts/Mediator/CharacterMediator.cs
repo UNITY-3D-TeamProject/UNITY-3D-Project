@@ -810,6 +810,8 @@ namespace Mediator
             if (_skillMediator && _playerAnimationMediator) _skillMediator.OnFireChargeChanged += _playerAnimationMediator.NotifyFireCharge;
             if (_moveMediator && _playerAnimationMediator) _moveMediator.OnJumpStarted += _playerAnimationMediator.NotifyJumpStarted;
             if (_moveMediator && _playerAnimationMediator) _moveMediator.OnJumpEnded += _playerAnimationMediator.NotifyJumpEnded;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnFallStarted += _playerAnimationMediator.NotifyFallStarted;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnFallEnded += _playerAnimationMediator.NotifyJumpEnded;
             if (_moveMediator && _playerAnimationMediator) _moveMediator.OnRollStarted += OnRollStartedCallback;
             if (_moveMediator && _playerAnimationMediator) _moveMediator.OnRollEnded += _playerAnimationMediator.NotifyRollEnded;
             if (_moveMediator && _rotateMediator) _moveMediator.OnRollStarted += OnRollLookCallback;
@@ -876,6 +878,8 @@ namespace Mediator
             if (_skillMediator && _playerAnimationMediator) _skillMediator.OnFireChargeChanged -= _playerAnimationMediator.NotifyFireCharge;
             if (_moveMediator && _playerAnimationMediator) _moveMediator.OnJumpStarted -= _playerAnimationMediator.NotifyJumpStarted;
             if (_moveMediator && _playerAnimationMediator) _moveMediator.OnJumpEnded -= _playerAnimationMediator.NotifyJumpEnded;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnFallStarted -= _playerAnimationMediator.NotifyFallStarted;
+            if (_moveMediator && _playerAnimationMediator) _moveMediator.OnFallEnded -= _playerAnimationMediator.NotifyJumpEnded;
             if (_moveMediator && _playerAnimationMediator) _moveMediator.OnRollStarted -= OnRollStartedCallback;
             if (_moveMediator && _playerAnimationMediator) _moveMediator.OnRollEnded -= _playerAnimationMediator.NotifyRollEnded;
             if (_moveMediator && _rotateMediator) _moveMediator.OnRollStarted -= OnRollLookCallback;
