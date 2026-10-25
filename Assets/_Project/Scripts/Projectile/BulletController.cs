@@ -8,8 +8,8 @@ namespace Projectile
 {
     /// <summary>
     /// 총알의 직진 이동과 피격 처리를 담당한다.
-    /// 매 프레임 SphereCollider 반지름으로 이동 구간을 SphereCast 해 피격을 감지하고,
-    /// 맞힌 대상의 IEffectTarget 에 SOAttributeEffect 를 적용한 뒤 소멸한다.
+    /// 매 프레임 SphereCollider 반지름으로 이동 구간을 SphereCast 해 빠른 속도에서도 중간 콜라이더를 건너뛰지 않고,
+    /// OnTriggerEnter 는 보조로 둔다. 맞힌 대상의 IEffectTarget 에 SOAttributeEffect 를 적용한 뒤 소멸한다.
     /// 풀에서 꺼낸 총알은 소멸 시 풀에 반납하고, 그 외(Instantiate)는 파괴한다.
     /// </summary>
     public class BulletController : MonoBehaviour
@@ -32,6 +32,7 @@ namespace Projectile
         private Vector3 _direction = Vector3.forward;
         private IEffectTarget _cursor;
         private float _elapsedTime;
+        private bool _isFinished;
         #endregion
 
         #region Unity Lifecycle
@@ -48,24 +49,48 @@ namespace Projectile
         {
             // 풀에서 재사용될 때 수명을 처음부터 다시 잰다
             _elapsedTime = 0.0f;
+            _isFinished = false;
         }
 
         private void Update()
         {
+            if (_isFinished) return;
+
             _elapsedTime += Time.deltaTime;
             if (_elapsedTime >= _lifeSpan)
             {
-                Despawn();
+                Finish();
                 return;
             }
 
             float stepDistance = Mathf.Max(0.0f, _speed) * Time.deltaTime;
+            if (stepDistance > 0.0f)
+            {
+                // 이번 프레임 이동 구간을 먼저 훑어 중간에 있는 콜라이더를 놓치지 않는다
+                Vector3 scale = transform.lossyScale;
+                float radius = _sphereCollider.radius *
+                    Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
+
+                if (Physics.SphereCast(
+                    transform.TransformPoint(_sphereCollider.center),
+                    radius,
+                    _direction,
+                    out RaycastHit hit,
+                    stepDistance,
+                    _hitLayers,
+                    QueryTriggerInteraction.Collide))
+                {
+                    TryHit(hit.collider, transform.position + _direction * hit.distance);
+                    return;
+                }
+            }
+
             _motor.MoveTo(transform.position + _direction * stepDistance, _speed);
         }
 
         /// <summary>
         /// 다른 콜라이더와 겹치면 호출된다.
-        /// 피격 레이어에 속한 대상이면 효과를 적용하고 총알을 소멸시킨다.
+        /// 피격 레이어에 속한 대상이면 효과를 적용하고 총알을 소멸시킨다. (SphereCast 가 놓친 경우의 보조)
         /// </summary>
         private void OnTriggerEnter(Collider other)
         {
@@ -73,8 +98,7 @@ namespace Projectile
             if ((_hitLayers.value & (1 << other.gameObject.layer)) == 0)
                 return;
 
-            ApplyHitEffect(other);
-            Despawn();
+            TryHit(other, transform.position);
         }
         #endregion
 
@@ -109,13 +133,35 @@ namespace Projectile
         /// 피격 대상에 효과를 적용한다.
         /// 대상이 없거나 효과의 대상 어트리뷰트를 갖지 않으면 적용하지 않는다.
         /// </summary>
-        private void ApplyHitEffect(Collider other)
+        private void ApplyHitEffect(Collider other, Vector3 hitPoint)
         {
             if (_hitEffect == null) return;
 
-            // TODO: 테스트용으로 우선 사용. 트리거에 처음 겹친 순간의 총알 중심을 맞은 지점으로 쓴다
-            //       (탄도 방향 최대 약 0.33m 오차, 정밀한 표면 진입점 계산은 추후 검토)
-            _hitEffect.Apply(other.gameObject, new SEffectContext(_cursor, hitPoint: transform.position, direction: _direction));
+            // hitPoint 는 맞는 순간의 총알 중심이다 (SphereCast 는 충돌 직전 지점, 트리거 보조는 겹친 순간의 위치)
+            _hitEffect.Apply(other.gameObject, new SEffectContext(_cursor, hitPoint: hitPoint, direction: _direction));
+        }
+
+        /// <summary>
+        /// 피격을 한 번만 처리한다. 효과 적용 전에 완료 상태를 선점해 재진입·Destroy 지연으로 인한 중복 처리를 막는다.
+        /// </summary>
+        private void TryHit(Collider other, Vector3 hitPoint)
+        {
+            if (_isFinished) return;
+
+            _isFinished = true;
+            ApplyHitEffect(other, hitPoint);
+            Despawn();
+        }
+
+        /// <summary>
+        /// 수명 만료 등 피격 없이 총알을 끝낸다. 중복 호출은 무시한다.
+        /// </summary>
+        private void Finish()
+        {
+            if (_isFinished) return;
+
+            _isFinished = true;
+            Despawn();
         }
 
         /// <summary>
