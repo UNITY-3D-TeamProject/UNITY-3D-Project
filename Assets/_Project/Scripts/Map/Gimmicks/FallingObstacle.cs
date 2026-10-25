@@ -1,12 +1,15 @@
 using System.Collections;
 using UnityEngine;
+using Core.ObjectPool;
+using DTT.AreaOfEffectRegions;
 
 namespace Map.Gimmicks
 {
     /// <summary>
     /// 위에서 떨어졌다가 다시 올라가는 장애물의 움직임.
     /// 놓인 자리가 꼭대기이며, 대기 → 낙하 → 바닥에서 정지 → 상승을 한 번 또는 반복한다.
-    /// 대기하는 동안 떨어질 자리의 예고 표시가 점점 짙은 빨간색으로 변한다.
+    /// 풀에서 꺼낸 위험물은 DropOnto(착지점)으로 시작하고, 바닥에 닿으면 풀에 반납된다.
+    /// 대기하는 동안 떨어질 자리의 DTT 원형 예고가 채워지거나 기존 표시가 점점 짙은 빨간색으로 변한다.
     /// 데미지는 같은 오브젝트에 EffectZone(Enter Effects)과 Trigger 콜라이더를 붙여서 준다.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
@@ -24,7 +27,7 @@ namespace Map.Gimmicks
         [Tooltip("낙하 가속도")]
         [SerializeField, Min(0.1f)] private float _gravity = 20.0f;
 
-        [Tooltip("떨어지기 전 대기 시간(초). 이 시간 동안 예고 표시가 짙어진다.")]
+        [Tooltip("떨어지기 전 대기 시간(초). 이 시간 동안 DTT 예고가 채워지거나 기존 예고 표시가 짙어진다.")]
         [SerializeField, Min(0.0f)] private float _waitBeforeFall = 1.0f;
 
         [Header("Return")]
@@ -38,6 +41,9 @@ namespace Map.Gimmicks
         [Tooltip("떨어질 자리에 깔리는 예고 표시 (선택). 시작할 때 바닥 위치로 옮겨지고, 대기~낙하 동안에만 보인다.")]
         [SerializeField] private Renderer _warningMarker;
 
+        [Tooltip("보스와 같은 DTT 원형 예고 (선택). AoeVfxPlayer가 붙은 원형 예고를 연결하면 대기 시간 동안 채워진다.")]
+        [SerializeField] private CircleRegion _warningCircle;
+
         [Tooltip("예고가 시작될 때의 색")]
         [SerializeField] private Color _warningStartColor = new Color(1.0f, 0.6f, 0.6f, 0.15f);
 
@@ -50,6 +56,9 @@ namespace Map.Gimmicks
 
         [Tooltip("켜면 꼭대기로 돌아온 뒤 다시 떨어진다.")]
         [SerializeField] private bool _isLoop = true;
+
+        [Tooltip("켜면 바닥에 닿는 순간 사라진다. 다시 올라가지 않는다. 풀에서 꺼낸 것이면 풀에 반납된다. (FallingHazardSpawner 로 만드는 위험물)")]
+        [SerializeField] private bool _isDestroyOnLand;
         #endregion
 
         #region Private Fields
@@ -58,6 +67,11 @@ namespace Map.Gimmicks
         private Vector3 _topPosition;
         private bool _isRunning;
         private MaterialPropertyBlock _warningBlock;
+        #endregion
+
+        #region Properties
+        /// <summary>꼭대기에서 바닥까지 떨어지는 거리.</summary>
+        public float FallDistance => _fallDistance;
         #endregion
 
         #region Unity Lifecycle
@@ -69,6 +83,9 @@ namespace Map.Gimmicks
 
         private void Start()
         {
+            // DropOnto 로 이미 시작했으면 꼭대기와 예고 표시를 다시 잡지 않는다
+            if (_isRunning) return;
+
             _topPosition = transform.position;
             SetUpWarningMarker();
 
@@ -82,10 +99,7 @@ namespace Map.Gimmicks
         {
             _isRunning = false;
 
-            if (_warningMarker != null)
-            {
-                _warningMarker.enabled = false;
-            }
+            SetWarningVisible(false);
         }
 
         private void OnDestroy()
@@ -94,6 +108,11 @@ namespace Map.Gimmicks
             if (_warningMarker != null)
             {
                 Destroy(_warningMarker.gameObject);
+            }
+
+            if (_warningCircle != null)
+            {
+                Destroy(_warningCircle.gameObject);
             }
         }
 
@@ -117,6 +136,36 @@ namespace Map.Gimmicks
 
             StartCoroutine(CoFallCycle());
         }
+
+        /// <summary>
+        /// 다 떨어졌을 때 아랫면이 착지점에 닿도록 꼭대기를 정하고 낙하를 시작한다.
+        /// 풀에서 꺼낸 위험물은 켜질 때마다 이 메서드로 시작한다.
+        /// </summary>
+        /// <param name="landingPoint">떨어질 바닥 위 지점 (콜라이더 아랫면이 닿을 높이)</param>
+        public void DropOnto(Vector3 landingPoint)
+        {
+            float halfHeight = TryGetComponent(out Collider ownCollider) ? ownCollider.bounds.extents.y : 0.0f;
+            _topPosition = landingPoint + (Vector3.up * (_fallDistance + halfHeight));
+            transform.position = _topPosition;
+
+            SetUpWarningMarker();
+            Drop();
+        }
+
+        /// <summary>
+        /// 장애물을 없앤다. 풀에서 꺼낸 것이면 풀에 반납하고, 아니면 파괴한다.
+        /// </summary>
+        public void Despawn()
+        {
+            if (ObjectPoolManager.Instance != null)
+            {
+                ObjectPoolManager.Instance.Release(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
         #endregion
 
         #region Private Methods
@@ -125,23 +174,39 @@ namespace Map.Gimmicks
         /// </summary>
         private void SetUpWarningMarker()
         {
-            if (_warningMarker == null) return;
+            if ((_warningMarker == null) && (_warningCircle == null)) return;
 
             // 바닥 높이 = 다 떨어졌을 때의 중심 높이 - 콜라이더 절반 높이
             float halfHeight = TryGetComponent(out Collider ownCollider) ? ownCollider.bounds.extents.y : 0.0f;
             Vector3 groundPosition = _topPosition + (Vector3.down * (_fallDistance + halfHeight - WARNING_GROUND_OFFSET));
 
             // 자식으로 두면 장애물과 함께 떨어지므로 분리한다
-            Transform marker = _warningMarker.transform;
-            marker.SetParent(transform.parent, true);
-            marker.position = groundPosition;
+            if (_warningCircle != null)
+            {
+                Transform circle = _warningCircle.transform;
+                circle.SetParent(transform.parent, true);
+                circle.position = groundPosition;
+                _warningCircle.FillProgress = 0.0f;
+            }
 
-            _warningBlock = new MaterialPropertyBlock();
-            _warningMarker.enabled = false;
+            if (_warningMarker != null)
+            {
+                Transform marker = _warningMarker.transform;
+                marker.SetParent(transform.parent, true);
+                marker.position = groundPosition;
+                _warningBlock ??= new MaterialPropertyBlock();
+            }
+
+            SetWarningVisible(false);
         }
 
         private void SetWarningColor(float progress)
         {
+            if (_warningCircle != null)
+            {
+                _warningCircle.FillProgress = progress;
+            }
+
             if (_warningMarker == null) return;
 
             _warningBlock.SetColor(BaseColorId, Color.Lerp(_warningStartColor, _warningEndColor, progress));
@@ -150,6 +215,11 @@ namespace Map.Gimmicks
 
         private void SetWarningVisible(bool isVisible)
         {
+            if (_warningCircle != null)
+            {
+                _warningCircle.gameObject.SetActive(isVisible);
+            }
+
             if (_warningMarker != null)
             {
                 _warningMarker.enabled = isVisible;
@@ -164,7 +234,7 @@ namespace Map.Gimmicks
 
             do
             {
-                // 대기: 예고 표시가 점점 짙어진다
+                // 대기: DTT 예고가 채워지거나 기존 예고 표시가 점점 짙어진다
                 SetWarningColor(0.0f);
                 SetWarningVisible(true);
 
@@ -189,6 +259,12 @@ namespace Map.Gimmicks
                 }
 
                 SetWarningVisible(false);
+
+                if (_isDestroyOnLand)
+                {
+                    Despawn();
+                    yield break;
+                }
 
                 yield return new WaitForSeconds(_restTime);
 

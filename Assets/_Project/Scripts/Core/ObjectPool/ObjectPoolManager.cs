@@ -39,6 +39,9 @@ namespace Core.ObjectPool
 
         [Header("Crowd (차량·보행자)")]
         [SerializeField] private PrefabPool _crowd         = new();
+
+        [Header("Map Hazards (낙하 위험물)")]
+        [SerializeField] private PrefabPool _mapHazards    = new();
         #endregion
 
         #region Private Fields
@@ -79,6 +82,7 @@ namespace Core.ObjectPool
             RegisterPool(_playerChargedBullets);
             RegisterPool(_enemyBullets);
             RegisterPool(_crowd);
+            RegisterPool(_mapHazards);
         }
 
         // 씬이 내려가 매니저가 파괴될 때 Instance를 비운다.

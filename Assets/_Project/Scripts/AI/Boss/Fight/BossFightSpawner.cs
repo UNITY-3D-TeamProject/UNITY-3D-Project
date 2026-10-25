@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Unity.Behavior;
 using Action = System.Action;
 using UnityEngine;
@@ -14,7 +15,9 @@ namespace AI.Boss.Fight
     /// <summary>
     /// 지정한 라운드에 보스 A·B 를 만들고 BossEncounter 에 넘겨 보스전을 시작한다.
     /// 라운드가 끝나거나 플레이어가 재스폰되면 전부 제거 후 다시 만든다.
-    /// Prespawn Round Index 를 정하면 그 라운드에 보스를 미리 만들어 BT 를 멈춘 채 세워 두고, 보스전 라운드가 되면 그 보스로 시작한다.
+    /// Prespawn Round Index 를 정하면 그 라운드에 A 만 미리 만들어 BT 를 멈춘 채 세워 두고, 보스전 라운드가 되면 그 A 로 시작한다.
+    /// B 는 보스전 라운드가 되어서야 A 머리 위에 나타나 Spell 을 재생하고 땅에 내려앉은 뒤, 그때 BT 를 켜고 보스전을 시작한다.
+    /// 등장 연출 동안 플레이어는 움직이지 못한다. 연출 중 플레이어가 재스폰되면 보스를 다시 만들어 연출도 처음부터 다시 한다.
     /// </summary>
     public class BossFightSpawner : RoundSpawnerBase
     {
@@ -31,8 +34,14 @@ namespace AI.Boss.Fight
         [SerializeField] private BossEncounter _encounter;
 
         [Header("Prespawn")]
-        [Tooltip("이 라운드가 되면 보스를 미리 만들어 BT 를 멈춘 채 세워 둔다. 보스전 라운드(Active Round Index)가 되면 그 보스로 보스전을 시작한다. -1 이면 미리 만들지 않는다.")]
+        [Tooltip("이 라운드가 되면 A 를 미리 만들어 BT 를 멈춘 채 세워 둔다. 보스전 라운드(Active Round Index)가 되면 그 A 로 보스전을 시작한다. -1 이면 미리 만들지 않는다.")]
         [SerializeField] private int _prespawnRoundIndex = -1;
+
+        [Header("Entrance")]
+        [Tooltip("B 가 나타나는 공중 위치. A 머리에서 이만큼(m) 위다.")]
+        [SerializeField, Min(0.0f)] private float _entranceHeightAboveHead = 6.0f;
+        [Tooltip("B 가 땅에 내려앉는 순간 플레이어 카메라를 흔드는 세기. 차지샷 쉐이크가 1 이다. 0 이면 흔들지 않는다.")]
+        [SerializeField, Min(0.0f)] private float _landingShakeForce = 1.0f;
         #endregion
 
         #region Private Fields
@@ -41,6 +50,8 @@ namespace AI.Boss.Fight
         private bool _hasSpawned;
         private bool _isPrespawned;
         private bool _isBeginFailed;
+        private Coroutine _entranceRoutine;
+        private PlayerFacade _lockedPlayer;
         #endregion
 
         #region Properties
@@ -62,7 +73,7 @@ namespace AI.Boss.Fight
             base.OnDisable();
         }
 
-        /// <summary>보스전 라운드 처리는 부모가 하고, 미리 생성 라운드가 되면 보스를 세워 둔다.</summary>
+        /// <summary>보스전 라운드 처리는 부모가 하고, 미리 생성 라운드가 되면 A 를 세워 둔다.</summary>
         protected override void Update()
         {
             base.Update();
@@ -85,30 +96,33 @@ namespace AI.Boss.Fight
                 return;
             }
 
-            // 미리 만들어 둔 보스가 있으면 그 보스로 시작한다
-            if (!_isPrespawned && !TryCreateBosses()) return;
+            // 미리 만들어 둔 A 가 없으면 지금 만든다. 어느 쪽이든 B 의 등장 연출이 끝날 때까지 BT 는 멈춰 둔다
+            if (!_isPrespawned && !TryCreateBossA()) return;
 
             _isPrespawned = false;
-            SetBossLogicEnabled(true);
+            SetBossLogicEnabled(_bossA, false);
 
-            BossController controllerA = _bossA.GetComponent<BossController>();
-            BossBController controllerB = _bossB.GetComponent<BossBController>();
+            // B 는 NavMesh 위(생성 위치)에서 만들어야 에이전트가 생긴다. 공중으로는 같은 프레임에 등장 연출이 옮기므로 땅에 보이지 않는다
+            Vector3 hoverPosition = GetEntranceHoverPosition();
+            _bossB = Instantiate(_bossBPrefab, _bossBPoint.position, _bossBPoint.rotation);
+            ApplyMonsterData(_bossB.GetComponentInChildren<AttributeSet>(true), _bossBData);
+            SetBossLogicEnabled(_bossB, false);
 
-            _encounter.Begin(controllerA, controllerB, player);
-            if (!_encounter.IsBegun)
-            {
-                LogSpawnFailureOnce("BossEncounter 가 보스전을 시작하지 못했다.");
-                _isBeginFailed = true;
-                DestroyBosses();
-                return;
-            }
-
-            _encounter.OnBossDefeated += HandleBossDefeated;
             _hasSpawned = true;
+            _entranceRoutine = StartCoroutine(CoEnterAndBegin(player, hoverPosition));
         }
 
         protected override void Despawn()
         {
+            if (_entranceRoutine != null)
+            {
+                StopCoroutine(_entranceRoutine);
+                _entranceRoutine = null;
+            }
+
+            UnlockPlayer();
+            UnsubscribeEntrance();
+
             if (_encounter)
             {
                 _encounter.OnBossDefeated -= HandleBossDefeated;
@@ -123,21 +137,24 @@ namespace AI.Boss.Fight
         protected override void OnPlayerSpawned(PlayerFacade playerFacade)
         {
             if (_hasSpawned && _encounter) _encounter.SetPlayer(playerFacade);
+
+            // 연출 중에 플레이어가 새로 만들어졌으면 새 플레이어도 잠근다
+            if (_entranceRoutine != null) LockPlayer(playerFacade);
         }
         #endregion
 
         #region Private Methods
-        // 보스를 만들되 BT 를 멈춰 제자리에 세워 둔다. 보스전은 시작하지 않는다.
+        // A 만 만들되 BT 를 멈춰 제자리에 세워 둔다. B 는 보스전 라운드에 등장하고, 보스전은 시작하지 않는다.
         private void Prespawn()
         {
-            if (!TryCreateBosses()) return;
+            if (!TryCreateBossA()) return;
 
-            SetBossLogicEnabled(false);
+            SetBossLogicEnabled(_bossA, false);
             _isPrespawned = true;
         }
 
-        // 보스 A·B 를 만들고 몬스터 데이터를 넣는다. 연결·프리팹이 잘못되면 만들지 않고 false 를 돌려준다.
-        private bool TryCreateBosses()
+        // A 를 만들고 몬스터 데이터를 넣는다. 연결·프리팹이 잘못되면 만들지 않고 false 를 돌려준다.
+        private bool TryCreateBossA()
         {
             if (!_bossAPrefab || !_bossBPrefab || !_bossAPoint || !_bossBPoint ||
                 !_bossAData || !_bossBData || !_encounter)
@@ -158,25 +175,56 @@ namespace AI.Boss.Fight
             }
 
             _bossA = Instantiate(_bossAPrefab, _bossAPoint.position, _bossAPoint.rotation);
-            _bossB = Instantiate(_bossBPrefab, _bossBPoint.position, _bossBPoint.rotation);
-
             ApplyMonsterData(_bossA.GetComponentInChildren<AttributeSet>(true), _bossAData);
-            ApplyMonsterData(_bossB.GetComponentInChildren<AttributeSet>(true), _bossBData);
             return true;
         }
 
-        // 보스 BT 를 켜고 끈다. 꺼진 BT 는 노드를 돌리지 않아 보스가 제자리에 서 있는다
-        private void SetBossLogicEnabled(bool isEnabled)
+        // A 머리 위. B 가 나타나는 공중 위치다.
+        private Vector3 GetEntranceHoverPosition()
         {
-            foreach (GameObject boss in new[] { _bossA, _bossB })
-            {
-                if (!boss) continue;
+            Transform head = _bossA.GetComponent<BossController>().HeadTransform;
+            return head.position + (Vector3.up * _entranceHeightAboveHead);
+        }
 
-                foreach (BehaviorGraphAgent graph in boss.GetComponentsInChildren<BehaviorGraphAgent>(true))
-                {
-                    graph.enabled = isEnabled;
-                }
+        // 보스 BT 를 켜고 끈다. 꺼진 BT 는 노드를 돌리지 않아 보스가 제자리에 서 있는다
+        private static void SetBossLogicEnabled(GameObject boss, bool isEnabled)
+        {
+            if (!boss) return;
+
+            foreach (BehaviorGraphAgent graph in boss.GetComponentsInChildren<BehaviorGraphAgent>(true))
+            {
+                graph.enabled = isEnabled;
             }
+        }
+
+        private void LockPlayer(PlayerFacade player)
+        {
+            UnlockPlayer();
+
+            _lockedPlayer = player;
+            if (_lockedPlayer) _lockedPlayer.SetMoveLocked(true);
+        }
+
+        private void UnlockPlayer()
+        {
+            if (_lockedPlayer) _lockedPlayer.SetMoveLocked(false);
+            _lockedPlayer = null;
+        }
+
+        private void UnsubscribeEntrance()
+        {
+            if (!_bossB) return;
+
+            BossBController controllerB = _bossB.GetComponent<BossBController>();
+            if (controllerB) controllerB.OnEntranceLanded -= HandleEntranceLanded;
+        }
+
+        // 내려앉는 순간 카메라를 흔든다
+        // [이벤트] BossBController.OnEntranceLanded (CoEnterAndBegin 에서 구독)
+        private void HandleEntranceLanded()
+        {
+            PlayerFacade player = CurrentPlayerFacade;
+            if (player && (_landingShakeForce > 0.0f)) player.PlayCameraShake(_landingShakeForce);
         }
 
         private void HandleBossDefeated()
@@ -205,6 +253,46 @@ namespace AI.Boss.Fight
 
                 attributes.SetValue(entry.AttributeName, entry.Value);
             }
+        }
+        #endregion
+
+        #region Coroutines
+        // B 의 등장 연출이 끝나면 A·B 의 BT 를 켜고 보스전을 시작한다. 연출 동안 플레이어는 움직이지 못한다.
+        private IEnumerator CoEnterAndBegin(PlayerFacade player, Vector3 hoverPosition)
+        {
+            LockPlayer(player);
+
+            BossBController controllerB = _bossB.GetComponent<BossBController>();
+            controllerB.OnEntranceLanded += HandleEntranceLanded;
+
+            // 땅에 내려앉을 자리는 B 생성 위치(_bossBPoint) 다
+            bool isPlaying = controllerB.PlayEntrance(hoverPosition, _bossBPoint.position);
+            if (!isPlaying)
+            {
+                Debug.LogWarning($"[{name}] B 등장 연출을 시작하지 못해 연출 없이 보스전을 시작한다.", this);
+                _bossB.transform.SetPositionAndRotation(_bossBPoint.position, _bossBPoint.rotation);
+            }
+
+            while (controllerB && controllerB.IsEntrancePlaying) yield return null;
+
+            controllerB.OnEntranceLanded -= HandleEntranceLanded;
+            UnlockPlayer();
+            _entranceRoutine = null;
+
+            SetBossLogicEnabled(_bossA, true);
+            SetBossLogicEnabled(_bossB, true);
+
+            _encounter.Begin(_bossA.GetComponent<BossController>(), controllerB, CurrentPlayerFacade);
+            if (!_encounter.IsBegun)
+            {
+                LogSpawnFailureOnce("BossEncounter 가 보스전을 시작하지 못했다.");
+                _isBeginFailed = true;
+                DestroyBosses();
+                _hasSpawned = false;
+                yield break;
+            }
+
+            _encounter.OnBossDefeated += HandleBossDefeated;
         }
         #endregion
     }
