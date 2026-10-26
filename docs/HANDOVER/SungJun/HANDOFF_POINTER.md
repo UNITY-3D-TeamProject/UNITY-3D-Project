@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-26** — intent-080: 왼쪽 위 라운드 패널 제목 동그라미 제거, 숫자 퍼즐 3줄(`목표 : N` / `숫자 : …  연산자 : …`), 패널 400×121 고정 + 2줄 문구는 줄 높이·글자 키움, 도둑 잡기 남은 시간은 위 가운데 `Round Timer`로 분리, 피드·보안 진행 문구도 3줄, 빈 칸 간격 넓힘, 제목 가운데 정렬. `Map_3_File` Play에서 라운드 번호를 바꿔 2·3라운드·타이머 확인, 직접 플레이 미확인, 커밋 안 함: [작업 기록](./2026-10-26/info-panel-layout.md)
 - **2026-10-26** — intent-076: 테스트 씬 `test_mainscene`으로 이름 변경, `UIButtonSound`(마우스 올림 Click_16·클릭 Click_18)를 MainScene 메뉴 버튼 4개 + 설정창 CloseButton에 연결, 스플래시 입력 소리(`MainMenuPresenter._splashPressSound`). 인게임 `Canvas_InGame` 설정창 버튼 3개도 연결(맵 씬엔 AudioManager 없어 무음), MainScene에 GameManager 배치 + `Awake` 커서 잠금 제거. Play에서 메뉴 소리·메인 커서 풀림 확인, 맵 진입 잠금·귀로 듣기·SVN 업로드 미확인, 커밋 안 함: [작업 기록](./2026-10-26/mainmenu-button-sound.md)
 - **2026-10-24** — intent-059: 수정된 `PlayerFacade.SetLookDirection`으로 `PlayerSpawner.SpawnPlayer`(최초·사망 재스폰·로비)와 `StageManager.MovePlayerTo`(낙하 복귀)가 지점 정면(화살표)을 보게 함. TestScene Play에서 세 경우 모두 49.7°·고정 해제·복귀 뒤 시점 추종 확인, 맵 씬 미확인, 커밋 안 함: [작업 기록](./2026-10-24/spawn-look-direction.md)
 - **2026-10-24** — intent-074: `EffectManager.PlayLoop` 추가(자식 파티클 Looping을 켜고, `Play`는 프리팹 원래 값으로 되돌림), `SOEffectData.IsLoop` 삭제. 컴파일 0에러·미리보기 씬 eval로 Loop 전환·복구·반납 확인, 시험 코드 루프 호출 `PlayLoop`로, TestScene Play 미확인, 커밋 안 함: [작업 기록](./2026-10-24/effect-play-loop.md)

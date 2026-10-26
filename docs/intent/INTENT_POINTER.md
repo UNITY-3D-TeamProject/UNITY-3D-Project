@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[UI / InfoPanel]** 왼쪽 위 라운드 패널 제목 줄에도 동그라미가 있고, 숫자 퍼즐 문구가 한 줄에 몰리며, 도둑 잡기 문구가 패널 밖으로 넘침. 제목 동그라미 제거, 숫자 퍼즐 3줄(`목표 : 12` / `숫자 : …  연산자 : …`), 패널을 3줄 크기로 키우고 2줄 문구는 글자를 키워 채움, 남은 시간은 위 가운데 새 패널 → [문서](./intent-080-info-panel-layout.md)
 - **[Stage / SecurityApp / Map]** 2라운드 동안 0·1 위험물이 켜진 발판 위 무작위 위치로 떨어지고 보스 라운드에서 멈춤. `FallingHazardSpawner` + `FallingObstacle` + 풀링 구현. 후속: 보스와 같은 DTT `CircleWarnning` 원형 채움 연결 완료(예고 1초, 착지·반납 숨김, 재사용 초기화·머티리얼 독립 확인), PlayMode 5/5. 육안·손맛 및 `ThirdParty/Projectile` SVN 업로드 남음 → [문서](./intent-074-security-falling-hazards.md)
 - **[Stage / SecurityApp / Map]** 보스전에 들어가도 2라운드 발판(`04_Platforms/Platform_1~6`)이 남아 있음. 3라운드 시작 때 1~5 를 `StateMover` 로 내리고, 6(리스폰 자리)은 보스 바닥 `TriggerPlate` 에 닿으면 내리며 3라운드 리스폰 때만 `StateMover.ResetImmediately` 로 즉시 올림 → [문서](./intent-069-boss-arena-stage2-sink.md)
 - **[UI / Settings / Core]** 인게임 설정창 슬라이더를 움직여도 값이 안 바뀜(맵에 EventSystem 없음 + `SettingsView` z -154.93로 클릭 좌표 계산 실패), 감도 미연결, 게임 종료·메인 이동 없음. `Canvas_InGame`에 EventSystem, z 0, 손잡이 여백, 감도는 Look 바인딩 배율(`Core.InputMap.MouseSensitivity`), 세로 스크롤 아래 MAIN MENU·QUIT GAME(`GameManager.ReturnToMainMenu`·`QuitGame`), `MainScene` Build Settings 7번. TestScene에서 볼륨·감도·두 버튼 확인, 실제 마우스 체감·맵 씬 확인 남음 → [문서](./intent-073-settings-scroll-exit-buttons.md)
