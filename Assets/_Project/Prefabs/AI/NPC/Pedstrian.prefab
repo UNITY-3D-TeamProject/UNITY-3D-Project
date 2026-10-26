@@ -137,6 +137,7 @@ MonoBehaviour:
   _playerLayers:
     serializedVersion: 2
     m_Bits: 64
+  _restartDelay: 0.4
   _speedVariation: 0.2
   _canJumpOver: 1
   _jumpOverSpeedMultiplier: 3
@@ -164,9 +165,9 @@ MonoBehaviour:
   _playerAnimationMediator: {fileID: 0}
   _enemyAnimationMediator: {fileID: 453065576457260501}
   _petMediator: {fileID: 0}
---- !u!114 &2484129671692693122
   _spawnEffectDriver: {fileID: 0}
   _soundMediator: {fileID: 4400417786950544315}
+--- !u!114 &2484129671692693122
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -993,7 +994,6 @@ SkinnedMeshRenderer:
     m_Center: {x: -4.656613e-10, y: 0.0013885223, z: 0}
     m_Extent: {x: 0.0053267903, y: 0.0058483905, z: 0.0033219478}
   m_DirtyAABB: 0
---- !u!1001 &5574931578551317995
 --- !u!1001 &1043012221026162551
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1087,6 +1087,7 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4626110551910950705, guid: 414e1a063597b2049a70921375af86cd, type: 3}
   m_PrefabInstance: {fileID: 1043012221026162551}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &5574931578551317995
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2

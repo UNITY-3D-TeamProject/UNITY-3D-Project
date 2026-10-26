@@ -141,6 +141,7 @@ MonoBehaviour:
   _mediator: {fileID: 0}
   _speedAttributeKey: MoveSpeed
   _hitLookDuration: 1
+  _shouldFaceVisibleTargetOnHit: 0
   _hitStunDuration: 1.33
   _hitStunImmuneDuration: 0
 --- !u!114 &7711118245858961342
@@ -165,9 +166,9 @@ MonoBehaviour:
   _playerAnimationMediator: {fileID: 0}
   _enemyAnimationMediator: {fileID: 4293860922213368321}
   _petMediator: {fileID: 0}
---- !u!114 &7616960562340131530
   _spawnEffectDriver: {fileID: 0}
   _soundMediator: {fileID: 8313327103069053849}
+--- !u!114 &7616960562340131530
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -182,6 +183,7 @@ MonoBehaviour:
   _eye: {fileID: 6090531665329726020}
   _sightRange: 5
   _sightAngle: 90
+  _proximityRange: 0
   _loseGraceTime: 3
   _targetLayers:
     serializedVersion: 2
@@ -1572,8 +1574,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1392782793216760739, guid: ce8d051de0f44db4283fe6bef26c513b, type: 3}
   m_PrefabInstance: {fileID: 4155135922481108292}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &5012455917340089985
-PrefabInstance:
 --- !u!1001 &4626943164917636949
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1667,6 +1667,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02410ebda4ed8cf449805d41d769160a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Mediator.SubMediators.SoundMediator
+--- !u!1001 &5012455917340089985
+PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
