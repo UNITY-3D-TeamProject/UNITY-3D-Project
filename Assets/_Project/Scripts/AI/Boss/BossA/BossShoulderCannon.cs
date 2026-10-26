@@ -16,10 +16,13 @@ namespace AI.Boss.BossA
     {
         #region Serialized Fields
         [SerializeField] private BossController _controller;
+        [Tooltip("터질 지점 예고 시간(초). 끝나면 터진다")]
         [SerializeField, Min(0.0f)] private float _telegraphSeconds = 1.0f;
         [Tooltip("임시값")]
         [SerializeField, Min(0.0f)] private float _radius = 2.5f;
+        [Tooltip("맞은 대상을 폭발 중심에서 바깥으로 밀어내는 거리(m)")]
         [SerializeField, Min(0.0f)] private float _knockbackDistance = 6.0f;
+        [Tooltip("밀려나는 데 걸리는 시간(초)")]
         [SerializeField, Min(0.0f)] private float _knockbackSeconds = 0.3f;
         [SerializeField] private SOAttributeEffect _hitEffect;
 

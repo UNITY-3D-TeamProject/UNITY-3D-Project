@@ -53,10 +53,13 @@ namespace AI.Boss.BossA
         [SerializeField, Min(0.0f)] private float _fingersDownLift = 0.0f;
         [Tooltip("내려친 순간부터 머무는 동안 손끝을 지면 아래로 박아 넣는 깊이(m). 클수록 손 전체가 낮아진다(콜라이더는 그대로). 손바닥 아래쪽을 지면에 맞추려면 손끝에서 손바닥 아래까지 길이만큼 준다")]
         [SerializeField, Min(0.0f)] private float _sinkDepth = 0.0f;
+        [Tooltip("예고 동안 내려칠 지점 위로 떠 있는 높이(m)")]
         [SerializeField, Min(0.0f)] private float _hoverHeight = 4.0f;
         [Tooltip("내려칠 지점에서 평소 위치 쪽으로 물러나 떠 있는 거리(m). 예고 동안 손이 대각선 위로 올라가 있다가 대각선으로 내려찍는다. 0이면 바로 위")]
         [SerializeField, Min(0.0f)] private float _hoverBackDistance = 4.0f;
+        [Tooltip("떠 있을 자리로 가는 시간이자 평소 위치로 돌아오는 시간(초)")]
         [SerializeField, Min(0.0f)] private float _moveSeconds = 0.4f;
+        [Tooltip("떠 있던 자리에서 지면까지 내려찍는 데 걸리는 시간(초)")]
         [SerializeField, Min(0.0f)] private float _slamSeconds = 0.15f;
         [Tooltip("머무는 동안만 켠다 (carve)")]
         [SerializeField] private NavMeshObstacle _stayObstacle;

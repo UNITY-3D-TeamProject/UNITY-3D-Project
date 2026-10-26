@@ -41,7 +41,9 @@ namespace AI.Boss.BossB
         [SerializeField, Min(0.0f)] private float _staggerSeconds = 2.0f;
 
         [Header("Knockback")]
+        [Tooltip("돌진에 맞은 대상을 돌진 방향으로 밀어내는 거리(m)")]
         [SerializeField, Min(0.0f)] private float _knockbackDistance = 12.0f;
+        [Tooltip("밀려나는 데 걸리는 시간(초)")]
         [SerializeField, Min(0.05f)] private float _knockbackSeconds = 0.4f;
 
         [Header("Motion")]
