@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-26** — intent-077: 보안 맵 0·1 낙하물이 착지하면 빨간 0·1 글자(계속 바뀜·줄 글리치·스캔라인)가 바이러스처럼 번졌다가 무작위로 깨지며 사라지는 바닥 연출 추가. 신규 `Project/VirusPixelSpread` 셰이더·`PixelSpreadEffect`·`Security_VirusSpreadFX`, `FallingObstacle._landEffect`. 테스트 6/6, 프리뷰 렌더·Play 생성 위치·자동 소멸 확인. **육안 확인 미실행, 커밋 전**: [착지 바닥 감염 연출](./2026-10-26/security-falling-land-virus-fx.md)
 - **2026-10-26** — 보스 아레나 낙사 후 허공 복귀·무한 낙하 원인 진단(수정 없음): `BossArenaFallZone` 박스가 -X(입구 쪽) 여유 0 m라 그쪽 낙하는 스테이지 `FallZone` 에 걸리고, 3라운드 RespawnPoint 아래 `Platform_6` 은 보스 바닥 진입 때 내려가 꺼져 있어 허공으로 되돌려져 반복 낙하. +X 끝 너머는 두 낙사 구역 모두 밖. **Play 재현 미실행**: [낙사 복귀 진단](./2026-10-26/boss-arena-fall-respawn-diagnosis.md)
 - **2026-10-26** — intent-076: 보스 A A6 박수가 양손 내려찍기와 구분되도록 예고 시작부터 손이 주먹 쥐고 떠오르게(`IsHoverDuringTelegraph`), 사이 칸 상자 예고를 1타 예고부터 표시, 상자를 주황·검정 흐르는 경고 줄무늬로 교체(신규 `BossWarningStripe` 셰이더·`M_BossClapWarning`). 리컴파일·셰이더 통과. **Play·육안 확인 미실행, 커밋 전**: [박수 예고 구분](./2026-10-26/boss-a-clap-telegraph.md)
 - **2026-10-26** — AI 밸런스 창 행 이름에 마우스를 올리면 설명 툴팁이 뜨도록 함: 컴포넌트 값은 필드 `[Tooltip]`, 어트리뷰트·블랙보드·BT 노드 값은 `AIBalanceWindow.Descriptions` 코드 사전. 리컴파일 통과. 후속으로 `[Tooltip]` 없던 보스 필드 16개(27행)에도 추가해 190/190행에 설명이 붙음. **육안 확인 미실행, 커밋 전**: [밸런스 창 툴팁](./2026-10-26/ai-balance-tooltip.md)

@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Map / Gimmicks / VFX]** 보안 맵 0·1 낙하물이 착지하면 아무 연출 없이 사라짐. 착지점에 빨간 픽셀이 바이러스처럼 번졌다가 깨지듯 사라지는 바닥 연출(`Project/VirusPixelSpread`, `PixelSpreadEffect`, `Security_VirusSpreadFX`, `FallingObstacle._landEffect`) 추가. 시각 연출만. 테스트 6/6·Play 확인 완료, 육안 확인 남음 → [문서](./intent-077-security-falling-land-virus-fx.md)
 - **[AI / Boss]** 보스 A 최종 단계 A6 박수 예고가 양손 내려찍기(A1Double)와 똑같아 구분이 안 됨. 예고 시작부터 손이 주먹을 쥐고 떠오르고(`IsHoverDuringTelegraph`), 사이 칸 위 상자 예고를 1타 예고부터 박수 순간까지 세우며, 상자를 주황·검정 흐르는 경고 줄무늬(`Project/BossWarningStripe`, `M_BossClapWarning`)로 교체. 리컴파일·셰이더 컴파일 통과, 미리보기 렌더 확인, Play·육안 확인 남음 → [문서](./intent-076-boss-a-clap-telegraph.md)
 - **[Stage / SecurityApp / Map]** 2라운드 동안 0·1 위험물이 켜진 발판 위 무작위 위치로 떨어지고 보스 라운드에서 멈춤. `FallingHazardSpawner` + `FallingObstacle` + 풀링 구현. 후속: 보스와 같은 DTT `CircleWarnning` 원형 채움 연결 완료(예고 1초, 착지·반납 숨김, 재사용 초기화·머티리얼 독립 확인), PlayMode 5/5. 육안·손맛 및 `ThirdParty/Projectile` SVN 업로드 남음 → [문서](./intent-074-security-falling-hazards.md)
 - **[Stage / SecurityApp / Map]** 보스전에 들어가도 2라운드 발판(`04_Platforms/Platform_1~6`)이 남아 있음. 3라운드 시작 때 1~5 를 `StateMover` 로 내리고, 6(리스폰 자리)은 보스 바닥 `TriggerPlate` 에 닿으면 내리며 3라운드 리스폰 때만 `StateMover.ResetImmediately` 로 즉시 올림 → [문서](./intent-069-boss-arena-stage2-sink.md)
