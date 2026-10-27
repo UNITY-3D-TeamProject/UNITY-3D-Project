@@ -14,6 +14,7 @@ namespace AI.Crowd
     /// 이동 속도는 CharacterMediator 의 속도 어트리뷰트가 정한다. 레인이 꺼낼 때마다 ApplySpeed 로 개체별 순항 속도를 넣는다.
     /// 앞을 막은 것이 같은 방향으로 가는 더 느린 개체이면 점프 중에만 속도를 올려 넘어간다. 점프 금지 구간(CrowdNoJumpZone)과 열린 레인의 시작·끝 근처에서는 멈춰 기다린다.
     /// 플레이어에게 막혔는지는 IsBlockedByPlayer 로 알린다 (CrowdExpression 이 읽어 표정을 바꾼다).
+    /// 경로 계산(진행 거리·갈림길·끝 판정·목표 방향)은 매 프레임이 아니라 _pathUpdateDistance 만큼 이동할 때마다 하고, 그 사이에는 직전 진행 방향을 재사용한다.
     /// 중재자가 Awake 에서 GetComponentInParent 로 찾으므로 프리팹 루트에 붙인다.
     /// </summary>
     public class CrowdController : MonoBehaviour, IMoveController, IBodyRotateController
@@ -33,6 +34,10 @@ namespace AI.Crowd
 
         /// <summary>점프 요청 직후에는 모터가 아직 떠오르기 전이라 접지로 보이므로, 이 시간(초)이 지나야 착지로 본다.</summary>
         private const float JUMP_OVER_LANDING_GRACE = 0.2f;
+
+        /// <summary>다음 경로 계산까지의 이동 거리를 기본값에 곱해 뽑는 배율의 범위. 같은 프레임에 생성된 개체들이 같은 프레임에 몰리지 않게 한다.</summary>
+        private const float MIN_PATH_UPDATE_RATIO = 0.5f;
+        private const float MAX_PATH_UPDATE_RATIO = 1.5f;
         #endregion
 
         #region Serialized Fields
@@ -41,6 +46,8 @@ namespace AI.Crowd
         [SerializeField] private float _lookAheadDistance = 1.0f;
         [Tooltip("스폰마다 -값~+값(m) 안에서 옆 오프셋을 뽑아 반납될 때까지 스플라인과 평행하게 걷는다. 0 이면 스플라인 위로 걷는다. 보행자 0.3 / 차량 0 권장.")]
         [SerializeField] private float _lateralOffsetRange = 0.0f;
+        [Tooltip("이 거리(m)만큼 이동할 때마다 진행 거리와 목표 방향을 다시 계산하고, 그 사이에는 직전 방향을 쓴다. 다음 계산까지의 거리는 매번 0.5~1.5배로 뽑는다. 클수록 가볍지만 코너에서 방향이 늦게 꺾인다. 0 이하이면 매 프레임 계산한다.")]
+        [SerializeField] private float _pathUpdateDistance = 0.1f;
 
         [Header("Blocking Detection")]
         [Tooltip("진행 방향으로 이만큼(m) 앞까지 막힘을 검사한다. 보행자 1.5 / 차량 4 권장.")]
@@ -95,6 +102,10 @@ namespace AI.Crowd
         private float _lateralOffset;
         private bool _hasBaseSpeed;
         private float _baseSpeed;
+
+        private bool _hasPathSample;
+        private Vector3 _pathSamplePosition;
+        private float _pathUpdateSqrDistance;
         #endregion
 
         #region Properties
@@ -147,27 +158,33 @@ namespace AI.Crowd
                 return;
             }
 
-            AdvanceProgress();
-
-            // 앞쪽 목표점이 갈림길을 넘기 전에 길을 골라야 직진 쪽으로 쏠리지 않고, 마지막 Knot 갈림길에서 끝 판정보다 먼저 갈래로 넘어간다
-            if (HasReachedFork()) ChooseForkPath();
-
-            if (HasReachedLaneEnd())
+            // 스플라인 계산이 군중 비용의 대부분이라 일정 거리 이동할 때만 다시 하고, 그 사이에는 직전 방향을 재사용한다
+            if (ShouldUpdatePath())
             {
-                RequestMove(Vector2.zero);
-                OnLaneEndReached?.Invoke(this);
-                return;
+                AdvanceProgress();
+
+                // 앞쪽 목표점이 갈림길을 넘기 전에 길을 골라야 직진 쪽으로 쏠리지 않고, 마지막 Knot 갈림길에서 끝 판정보다 먼저 갈래로 넘어간다
+                if (HasReachedFork()) ChooseForkPath();
+
+                if (HasReachedLaneEnd())
+                {
+                    RequestMove(Vector2.zero);
+                    OnLaneEndReached?.Invoke(this);
+                    return;
+                }
+
+                Vector3 targetDirection = GetDirectionToTarget();
+                if (targetDirection.sqrMagnitude <= MIN_DIRECTION_SQR_MAGNITUDE)
+                {
+                    RequestMove(Vector2.zero);
+                    return;
+                }
+
+                _moveDirection = targetDirection.normalized;
+                RecordPathSample();
             }
 
-            Vector3 direction = GetDirectionToTarget();
-            if (direction.sqrMagnitude <= MIN_DIRECTION_SQR_MAGNITUDE)
-            {
-                RequestMove(Vector2.zero);
-                return;
-            }
-
-            direction.Normalize();
-            _moveDirection = direction;
+            Vector3 direction = _moveDirection;
 
             // 점프로 넘어가는 중에는 앞 개체 위를 지나가므로 막힘 검사를 하지 않는다
             if (_isJumpingOver)
@@ -206,6 +223,7 @@ namespace AI.Crowd
             // 풀에서 다시 꺼낼 때 이전 진행 방향과 재출발 대기가 남지 않게 한다
             _moveDirection = Vector3.zero;
             _restartTime = 0.0f;
+            _hasPathSample = false;
         }
         #endregion
 
@@ -274,6 +292,7 @@ namespace AI.Crowd
 
             _isLaneClosed = lane.Splines.Count > 0 && lane.Splines[0].Closed;
             _progress = WrapDistance(startDistance);
+            _hasPathSample = false;
             FindNextFork(0);
 
             // 레인 중간에 놓인 개체는 이미 지나온 갈림길을 건너뛴다
@@ -338,6 +357,31 @@ namespace AI.Crowd
         private void RequestRotate(Vector2 direction)
         {
             _onBodyRotateRequested?.Invoke(direction);
+        }
+
+        /// <summary>
+        /// 경로(진행 거리·목표 방향)를 지금 다시 계산해야 하는지 확인한다.
+        /// 아직 계산한 적이 없거나, 마지막 계산 위치에서 정해 둔 거리 이상 움직였을 때 true 다. 멈춰 있으면 계산하지 않는다.
+        /// </summary>
+        /// <returns>다시 계산해야 하면 true</returns>
+        private bool ShouldUpdatePath()
+        {
+            if (!_hasPathSample || (_pathUpdateDistance <= 0.0f)) return true;
+
+            return (transform.position - _pathSamplePosition).sqrMagnitude >= _pathUpdateSqrDistance;
+        }
+
+        /// <summary>
+        /// 지금 위치를 경로 계산 기준으로 기록하고, 다음 계산까지의 이동 거리를 뽑는다.
+        /// 거리를 매번 기본값의 일정 배율 범위에서 뽑아 같은 프레임에 생성된 개체들이 같은 프레임에 계산하지 않게 한다.
+        /// </summary>
+        private void RecordPathSample()
+        {
+            float nextDistance = _pathUpdateDistance * UnityEngine.Random.Range(MIN_PATH_UPDATE_RATIO, MAX_PATH_UPDATE_RATIO);
+
+            _pathSamplePosition = transform.position;
+            _pathUpdateSqrDistance = nextDistance * nextDistance;
+            _hasPathSample = true;
         }
 
         /// <summary>
