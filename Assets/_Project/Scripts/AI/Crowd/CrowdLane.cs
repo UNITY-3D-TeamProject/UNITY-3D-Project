@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Splines;
+using Core;
 using Core.ObjectPool;
+using Facade.Player;
 using Mediator;
 
 namespace AI.Crowd
@@ -46,6 +48,8 @@ namespace AI.Crowd
         [Tooltip("씬 시작 시 0번 스플라인 위에 미리 깔아 둘 개체 비율(개수 대비). 나머지는 시작점에서 차례대로 꺼낸다. 0 이면 미리 깔지 않는다.")]
         [Range(0.0f, 1.0f)]
         [SerializeField] private float _initialFillRatio = 0.3f;
+        [Tooltip("플레이어가 레인(모든 스플라인)의 어느 점에서도 이 거리(m)보다 멀면 개체를 새로 꺼내지 않는다. 이미 나온 개체는 끝까지 걸어가 반납되므로 먼 레인은 서서히 비워진다. 0 이하이거나 플레이어가 없으면 거리와 상관없이 꺼낸다.")]
+        [SerializeField] private float _playerSpawnDistance = 25.0f;
 
         [Header("Speed")]
         [SerializeField] private string _speedAttributeKey = "MoveSpeed";
@@ -117,10 +121,17 @@ namespace AI.Crowd
 
             _spawnTimer += Time.deltaTime;
 
-            bool canSpawn = (_activeCount < _spawnCount) &&
-                            (_spawnTimer >= _nextSpawnInterval) &&
-                            IsSpawnPointClear();
-            if (!canSpawn) return;
+            bool isSpawnDue = (_activeCount < _spawnCount) && (_spawnTimer >= _nextSpawnInterval);
+            if (!isSpawnDue) return;
+
+            // 플레이어에게서 먼 레인은 꺼내지 않는다. 거리 계산은 간격마다 한 번만 하려고 타이머를 되돌린다
+            if (!IsPlayerNearLane())
+            {
+                _spawnTimer = 0.0f;
+                return;
+            }
+
+            if (!IsSpawnPointClear()) return;
 
             _spawnTimer = 0.0f;
             _nextSpawnInterval = Random.Range(_minSpawnInterval, _maxSpawnInterval);
@@ -184,6 +195,32 @@ namespace AI.Crowd
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// 플레이어가 레인의 어느 스플라인에서든 <see cref="_playerSpawnDistance"/> 이내에 있는지 확인한다.
+        /// 기능을 껐거나 플레이어를 찾지 못하면 true 를 돌려줘 평소처럼 꺼내게 한다.
+        /// </summary>
+        /// <returns>개체를 꺼내도 되면 true</returns>
+        private bool IsPlayerNearLane()
+        {
+            if (_playerSpawnDistance <= 0.0f) return true;
+
+            GameManager gameManager = GameManager.Instance;
+            if (!gameManager) return true;
+
+            PlayerFacade player = gameManager.CurrentPlayerFacade;
+            if (!player) return true;
+
+            // 스플라인은 컨테이너 로컬 좌표이므로 플레이어 위치를 로컬로 바꿔 비교한다
+            Vector3 localPlayerPosition = _lane.transform.InverseTransformPoint(player.transform.position);
+            for (int i = 0; i < _lane.Splines.Count; i++)
+            {
+                float distance = SplineUtility.GetNearestPoint(_lane.Splines[i], localPlayerPosition, out _, out _);
+                if (distance <= _playerSpawnDistance) return true;
+            }
+
+            return false;
         }
 
         /// <summary>

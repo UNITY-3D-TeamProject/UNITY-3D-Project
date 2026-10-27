@@ -28946,7 +28946,7 @@ Transform:
   m_GameObject: {fileID: 461144547}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.9257011, y: 1.5859, z: -1.2097015}
+  m_LocalPosition: {x: -2.75, y: 1.75, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -28965,12 +28965,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdLane
   _lane: {fileID: 461144550}
-  _prefab: {fileID: 3277443633729080383, guid: 5e30265544911b34f9b05ae6c6f58962, type: 3}
-  _count: 11
+  _prefabs:
+  - {fileID: 3277443633729080383, guid: 5e30265544911b34f9b05ae6c6f58962, type: 3}
+  - {fileID: 3903622254847511568, guid: dd59efdab320fa942b6a15e6e26212c9, type: 3}
+  - {fileID: 1184556339078398705, guid: 7ffcccc69114ffd43a6076d20ec3b3bf, type: 3}
+  _count: 6
   _minSpacing: 9
   _minSpawnInterval: 1.5
   _maxSpawnInterval: 3.5
   _initialFillRatio: 0.3
+  _playerSpawnDistance: 25
   _speedAttributeKey: MoveSpeed
   _speedMultiplier: 1.5
 --- !u!114 &461144550
@@ -39659,12 +39663,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdLane
   _lane: {fileID: 629670182}
-  _prefab: {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
-  _count: 9
+  _prefabs:
+  - {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
+  _count: 5
   _minSpacing: 2.5
   _minSpawnInterval: 1.5
   _maxSpawnInterval: 3.5
   _initialFillRatio: 0.3
+  _playerSpawnDistance: 25
   _speedAttributeKey: MoveSpeed
   _speedMultiplier: 1
 --- !u!114 &629670182
@@ -55012,12 +55018,56 @@ PrefabInstance:
       value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
+      propertyPath: _crowd._entries.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
       propertyPath: _enemies._entries.Array.size
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
       propertyPath: _playerBullets._defaultCapacity
       value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
+      propertyPath: _crowd._entries.Array.data[1]._key
+      value: Car2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
+      propertyPath: _crowd._entries.Array.data[2]._key
+      value: Car_3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
+      propertyPath: _crowd._entries.Array.data[3]._key
+      value: Pedestrian
+      objectReference: {fileID: 0}
+    - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
+      propertyPath: _crowd._entries.Array.data[1]._prefab
+      value: 
+      objectReference: {fileID: 3903622254847511568, guid: dd59efdab320fa942b6a15e6e26212c9, type: 3}
+    - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
+      propertyPath: _crowd._entries.Array.data[2]._prefab
+      value: 
+      objectReference: {fileID: 1184556339078398705, guid: 7ffcccc69114ffd43a6076d20ec3b3bf, type: 3}
+    - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
+      propertyPath: _crowd._entries.Array.data[3]._prefab
+      value: 
+      objectReference: {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
+    - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
+      propertyPath: _crowd._entries.Array.data[2]._maxSize
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
+      propertyPath: _crowd._entries.Array.data[3]._maxSize
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
+      propertyPath: _crowd._entries.Array.data[2]._initialCount
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8490929010268924605, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
+      propertyPath: _crowd._entries.Array.data[3]._initialCount
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8608483306439308204, guid: 485fb4b1a5f80cd42a0786c9b578378d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -79348,12 +79398,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdLane
   _lane: {fileID: 1251557173}
-  _prefab: {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
-  _count: 26
+  _prefabs:
+  - {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
+  _count: 15
   _minSpacing: 2.5
   _minSpawnInterval: 1.5
   _maxSpawnInterval: 3.5
   _initialFillRatio: 0.3
+  _playerSpawnDistance: 25
   _speedAttributeKey: MoveSpeed
   _speedMultiplier: 1
 --- !u!114 &1251557173
@@ -81260,12 +81312,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdLane
   _lane: {fileID: 1264759628}
-  _prefab: {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
-  _count: 18
+  _prefabs:
+  - {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
+  _count: 11
   _minSpacing: 2.5
   _minSpawnInterval: 1.5
   _maxSpawnInterval: 3.5
   _initialFillRatio: 0.3
+  _playerSpawnDistance: 25
   _speedAttributeKey: MoveSpeed
   _speedMultiplier: 1
 --- !u!114 &1264759628
@@ -96045,12 +96099,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdLane
   _lane: {fileID: 1534486665}
-  _prefab: {fileID: 3277443633729080383, guid: 5e30265544911b34f9b05ae6c6f58962, type: 3}
+  _prefabs:
+  - {fileID: 3277443633729080383, guid: 5e30265544911b34f9b05ae6c6f58962, type: 3}
+  - {fileID: 3903622254847511568, guid: dd59efdab320fa942b6a15e6e26212c9, type: 3}
+  - {fileID: 1184556339078398705, guid: 7ffcccc69114ffd43a6076d20ec3b3bf, type: 3}
   _count: 3
   _minSpacing: 9
   _minSpawnInterval: 1.5
   _maxSpawnInterval: 3.5
   _initialFillRatio: 0.3
+  _playerSpawnDistance: 25
   _speedAttributeKey: MoveSpeed
   _speedMultiplier: 1
 --- !u!114 &1534486665
@@ -107020,12 +107078,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdLane
   _lane: {fileID: 1706764196}
-  _prefab: {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
-  _count: 7
+  _prefabs:
+  - {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
+  _count: 5
   _minSpacing: 2.5
   _minSpawnInterval: 1.5
   _maxSpawnInterval: 3.5
   _initialFillRatio: 0.3
+  _playerSpawnDistance: 25
   _speedAttributeKey: MoveSpeed
   _speedMultiplier: 1
 --- !u!114 &1706764196
@@ -109982,12 +110042,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdLane
   _lane: {fileID: 1754950245}
-  _prefab: {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
-  _count: 27
+  _prefabs:
+  - {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
+  _count: 15
   _minSpacing: 2.5
   _minSpawnInterval: 1.5
   _maxSpawnInterval: 3.5
   _initialFillRatio: 0.3
+  _playerSpawnDistance: 25
   _speedAttributeKey: MoveSpeed
   _speedMultiplier: 1
 --- !u!114 &1754950245
@@ -120661,12 +120723,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdLane
   _lane: {fileID: 1930192050}
-  _prefab: {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
-  _count: 13
+  _prefabs:
+  - {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
+  _count: 8
   _minSpacing: 2.5
   _minSpawnInterval: 1.5
   _maxSpawnInterval: 3.5
   _initialFillRatio: 0.3
+  _playerSpawnDistance: 25
   _speedAttributeKey: MoveSpeed
   _speedMultiplier: 1
 --- !u!114 &1930192050
@@ -128547,12 +128611,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdLane
   _lane: {fileID: 2048567549}
-  _prefab: {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
-  _count: 18
+  _prefabs:
+  - {fileID: 213700412472898322, guid: d6bfd88049639734ab033456761ced9c, type: 3}
+  _count: 11
   _minSpacing: 2.5
   _minSpawnInterval: 1.5
   _maxSpawnInterval: 3.5
   _initialFillRatio: 0.3
+  _playerSpawnDistance: 25
   _speedAttributeKey: MoveSpeed
   _speedMultiplier: 1
 --- !u!114 &2048567549
