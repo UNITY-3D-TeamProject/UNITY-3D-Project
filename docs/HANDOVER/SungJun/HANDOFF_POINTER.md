@@ -5,6 +5,8 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-24** — intent-059: 수정된 `PlayerFacade.SetLookDirection`으로 `PlayerSpawner.SpawnPlayer`(최초·사망 재스폰·로비)와 `StageManager.MovePlayerTo`(낙하 복귀)가 지점 정면(화살표)을 보게 함. TestScene Play에서 세 경우 모두 49.7°·고정 해제·복귀 뒤 시점 추종 확인, 맵 씬 미확인, 커밋 안 함: [작업 기록](./2026-10-24/spawn-look-direction.md)
+- **2026-10-24** — intent-074: `EffectManager.PlayLoop` 추가(자식 파티클 Looping을 켜고, `Play`는 프리팹 원래 값으로 되돌림), `SOEffectData.IsLoop` 삭제. 컴파일 0에러·미리보기 씬 eval로 Loop 전환·복구·반납 확인, 시험 코드 루프 호출 `PlayLoop`로, TestScene Play 미확인, 커밋 안 함: [작업 기록](./2026-10-24/effect-play-loop.md)
 - **2026-10-23** — intent-073 구현: 설정창 슬라이더가 안 움직이던 원인(맵에 EventSystem 없음 + `SettingsView` z -154.93) 수정, 감도는 `Core.InputMap.MouseSensitivity`가 Look 바인딩 배율로 적용, 세로 스크롤 아래 MAIN MENU·QUIT GAME(`GameManager.ReturnToMainMenu`·`QuitGame`), `MainScene` Build Settings 7번. TestScene에서 볼륨·감도·두 버튼 확인, 맵 씬·손 체감 미확인, 커밋 안 함: [작업 기록](./2026-10-23/settings-sliders-exit-buttons.md)
 - **2026-10-23** — intent-073 설계: ESC 설정창 내용을 세로 스크롤로 감싸 아래에 `메인 화면으로`·`게임 종료` 버튼, `SettingsView → Presenter → UIManager → GameManager.ReturnToMainMenu/QuitGame`, `MainScene`은 Build Settings 맨 끝에 추가. 감도 슬라이더 미연결(카메라 API 필요)·손잡이 여백 없음·중복 `SettingsView` 발견. 열린 질문 5건, 코드 변경 없음: [작업 기록](./2026-10-23/settings-exit-buttons-design.md)
 - **2026-10-23** — intent-059: 낙하 복귀 뒤 몸 방향이 잠기던 `StageManager.MovePlayerTo`의 `SetLookDirection` 호출을 사용자 요청으로 되돌림. 낙하 복귀 방향은 플레이어 쪽 API 나올 때까지 보류, 컴파일 확인·Play 미확인, 커밋 안 함: [작업 기록](./2026-10-23/fall-respawn-look-revert.md)
