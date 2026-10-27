@@ -43,6 +43,7 @@ namespace AI.Boss.BossA
         [SerializeField, Min(0.0f)] private float _handStayFinal = 0.0f;
         [Tooltip("그로기 중 HP 가 내려가지 않는 최대 HP 대비 비율")]
         [SerializeField, Range(0.0f, 1.0f)] private float _groggyHpFloorRatio = 0.5f;
+        [Tooltip("Rest(휴식) 패턴을 골랐을 때 쉬는 시간(초)")]
         [SerializeField, Min(0.0f)] private float _restSeconds = 1.0f;
         [Tooltip("임시값. A4 가 아닌 패턴이 이 수만큼 끝까지 이어지면 상황 규칙보다 먼저 A4(1-2·최종). 0 이면 끈다")]
         [SerializeField, Min(0)] private int _grabGuaranteeCount = 3;

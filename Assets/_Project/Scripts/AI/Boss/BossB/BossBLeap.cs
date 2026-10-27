@@ -33,6 +33,7 @@ namespace AI.Boss.BossB
         #endregion
 
         #region Serialized Fields
+        [Tooltip("켜면 회피용 도약. 예고 없이 가장 가까운 멀쩡한 칸으로 건너뛰며 피해·충격파·경직이 없다")]
         [SerializeField] private bool _isEvade;
 
         [Header("Leap")]
@@ -54,7 +55,9 @@ namespace AI.Boss.BossB
         [SerializeField, Min(0.0f)] private float _landingRadius = 4.0f;
         [Tooltip("충격파 반경(칸 수). 이 안의 대상이 착지점에서 바깥으로 밀린다")]
         [SerializeField, Min(0.0f)] private float _shockwaveTiles = 1.0f;
+        [Tooltip("충격파에 맞은 대상을 착지점에서 바깥으로 밀어내는 거리(m)")]
         [SerializeField, Min(0.0f)] private float _knockbackDistance = 8.0f;
+        [Tooltip("밀려나는 데 걸리는 시간(초)")]
         [SerializeField, Min(0.05f)] private float _knockbackSeconds = 0.4f;
 
         [Header("References")]

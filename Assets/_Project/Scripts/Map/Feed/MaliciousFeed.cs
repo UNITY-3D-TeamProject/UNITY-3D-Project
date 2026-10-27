@@ -6,7 +6,7 @@ namespace Map.Feed
 {
     /// <summary>
     /// 태그 끝에서 길을 막고 있는 악성 피드. 길을 막는 벽 콜라이더는 이 오브젝트의 자식으로 둔다.
-    /// 같은 오브젝트의 미니게임 컴포넌트가 Clear 를 부르면 주변에 악성 데이터를 만들고 자신(벽 포함)을 제거한다.
+    /// 미니게임 성공 시 길을 열고 악성 데이터를 방출한다. 연결된 일반 피드가 있으면 정화한 뒤 옆으로 보낸다.
     /// </summary>
     public class MaliciousFeed : MonoBehaviour
     {
@@ -26,6 +26,20 @@ namespace Map.Feed
 
         [Tooltip("악성 데이터를 놓는 높이 (이 오브젝트 기준)")]
         [SerializeField] private float _spawnHeight = 1.5f;
+
+        [Header("Purification")]
+        [Tooltip("악성 카드의 외형만 담은 루트. 미니게임 장식과 분리한다.")]
+        [SerializeField] private Transform _cardVisual;
+
+        [Tooltip("카드 중심과 크기를 맞출 몸체")]
+        [SerializeField] private Transform _cardBody;
+
+        [SerializeField] private Material _purificationMaterial;
+        [SerializeField, Min(0.01f)] private float _purificationDuration = 3.0f;
+        [SerializeField, Range(1.0f, 1.5f)] private float _purifiedTravelDuration = 1.25f;
+
+        [Tooltip("생성기가 안쪽 자리에 준비한 일반 피드")]
+        [SerializeField] private FeedPost _purifiedPost;
         #endregion
 
         #region Properties
@@ -39,24 +53,62 @@ namespace Map.Feed
         #endregion
 
         #region Public Methods
+        /// <summary>안쪽 목적지에 준비된 피드를 연결한다. 성공하기 전에는 비활성 상태로 둔다.</summary>
+        public void SetPurifiedPost(FeedPost post)
+        {
+            _purifiedPost = post;
+        }
+
         /// <summary>
-        /// 악성 피드를 제거한다. 악성 데이터를 만들고 이 오브젝트를 없앤다. 두 번째 호출부터는 무시한다.
+        /// 성공 즉시 길을 열고 데이터를 만든다. 연결된 일반 피드가 있으면 정화 연출을 시작한다.
         /// </summary>
         public void Clear()
         {
             if (IsCleared) return;
             IsCleared = true;
 
-            SpawnData();
+            bool canPurify = (_purifiedPost != null) && (_cardVisual != null) &&
+                (_cardBody != null) && (_purificationMaterial != null);
+
+            FeedPurification purification = null;
+            if (canPurify)
+            {
+                DisableMinigame();
+                _purifiedPost.gameObject.SetActive(true);
+                purification = _purifiedPost.BeginPurification(this, _cardVisual, _cardBody,
+                    _purificationMaterial, _purificationDuration, _purifiedTravelDuration);
+            }
+
+            SpawnData(purification);
             OnCleared?.Invoke();
-            Destroy(gameObject);
+            if (!canPurify) Destroy(gameObject);
         }
         #endregion
 
         #region Private Methods
+        private void DisableMinigame()
+        {
+            foreach (Collider collider in GetComponentsInChildren<Collider>(true))
+            {
+                collider.enabled = false;
+            }
+
+            foreach (MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
+            {
+                if (behaviour == this) continue;
+                behaviour.StopAllCoroutines();
+                behaviour.enabled = false;
+            }
+
+            foreach (Transform child in transform)
+            {
+                if (child != _cardVisual) child.gameObject.SetActive(false);
+            }
+        }
+
         // 악성 데이터를 이 오브젝트의 뒤쪽(forward 쪽) 반원에 같은 간격으로 놓는다. 앞쪽에 서 있는 플레이어의 몸 위에 바로 생기지 않게 하기 위해서다.
         // 맵을 다시 생성하면 함께 지워지도록 이 오브젝트의 부모 아래에 둔다.
-        private void SpawnData()
+        private void SpawnData(FeedPurification purification)
         {
             if (_dataPrefab == null) return;
 
@@ -69,6 +121,15 @@ namespace Map.Feed
 
                 GameObject data = Instantiate(_dataPrefab, position, Quaternion.identity, transform.parent);
                 ApplySpeedMultiplier(data, i);
+
+                // 추적 본체는 기존 안전한 생성 위치에 두고, 외형만 카드 표면에서 방출한다.
+                if ((_purifiedPost != null) && (_cardBody != null) && (data.transform.childCount > 0))
+                {
+                    float side = ((i + 0.5f) / _dataCount) - 0.5f;
+                    Vector3 surface = _cardBody.position - (transform.forward * 0.3f) +
+                        (transform.right * side * 1.6f) + (Vector3.up * side * 0.8f);
+                    data.AddComponent<FeedDataEmission>().Begin(data.transform.GetChild(0), surface, purification);
+                }
             }
         }
 

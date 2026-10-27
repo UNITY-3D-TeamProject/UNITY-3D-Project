@@ -20,14 +20,26 @@ namespace Map.Feed
 
         [Tooltip("사진과 같은 순서의 틀 머티리얼")]
         [SerializeField] private Material[] _frames;
+
+        [Tooltip("콘텐츠 순서. -1이면 기존처럼 부모 안의 순서로 고른다.")]
+        [SerializeField] private int _contentIndex = -1;
         #endregion
 
         #region Unity Lifecycle
         private void Awake()
         {
+            SetContent(_contentIndex >= 0 ? _contentIndex : GetOrderInParent());
+        }
+        #endregion
+
+        #region Public Methods
+        /// <summary>사진과 대응하는 계정·본문을 같은 순서로 선택한다.</summary>
+        public void SetContent(int contentIndex)
+        {
+            _contentIndex = contentIndex;
             if ((_photos == null) || (_photos.Length == 0)) return;
 
-            int index = GetOrderInParent() % _photos.Length;
+            int index = Mathf.Max(0, contentIndex) % _photos.Length;
             GetComponent<Renderer>().sharedMaterial = _photos[index];
 
             if ((_frame != null) && (_frames != null) && (index < _frames.Length))

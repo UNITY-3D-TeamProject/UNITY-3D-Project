@@ -436,9 +436,14 @@ namespace UIandCinematic
             CinemachineCamera camera = FindCamera(step.CameraKey);
             SetShotCamera(camera);
 
-            // 대사를 읽는 동안에는 게임 시간을 멈춘다.
+            // 기본은 시간 정지다. 움직이는 발판 등을 보여 주는 대사는 시간을 흐르게 할 수 있다.
             if (GameManager.Instance != null)
-                GameManager.Instance.PauseGameTime(this);
+            {
+                if (step.ShouldRunTime)
+                    GameManager.Instance.ResumeGameTime(this);
+                else
+                    GameManager.Instance.PauseGameTime(this);
+            }
 
             ICutsceneController cutsceneController = CutsceneController.Current;
             if (cutsceneController == null) yield break;

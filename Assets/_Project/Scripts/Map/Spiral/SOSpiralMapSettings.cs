@@ -63,6 +63,9 @@ namespace Map.Spiral
         [SerializeField, Min(0f)] private float _itemDistance = 9.0f;
 
         [Header("Ambient Feeds (태그 주위에 떠다니는 피드. 프리팹은 태그마다 지정한다)")]
+        [Tooltip("안쪽 피드는 처음에 숨기고 악성 피드를 정화하면 나타나게 한다. 태그마다 안쪽 피드 1개를 사용한다.")]
+        [SerializeField] private bool _shouldPurifyInnerFeed;
+
         [Tooltip("태그 하나에서 나선의 바깥쪽에 띄우는 피드 수")]
         [SerializeField, Min(0)] private int _outerFeedCount = 2;
 
@@ -146,6 +149,8 @@ namespace Map.Spiral
 
         /// <summary>태그 하나에서 나선의 안쪽에 띄우는 주위 피드 수.</summary>
         public int InnerFeedCount => _innerFeedCount;
+
+        public bool ShouldPurifyInnerFeed => _shouldPurifyInnerFeed;
 
         /// <summary>바깥쪽 주위 피드를 나선에서 떨어뜨리는 거리의 범위 (최소, 최대).</summary>
         public Vector2 OuterFeedDistance => _outerFeedDistance;

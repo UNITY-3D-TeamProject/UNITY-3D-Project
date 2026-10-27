@@ -8,7 +8,8 @@ namespace AI.Boss.BossA
     /// <summary>
     /// A6 박수치기. 한 줄의 양 끝 칸을 양 주먹으로 쾅 내려친 뒤(1타) 주먹을 펴고 바닥 위로 줄을 따라 쓸어 가운데로 모아 박수친다(2타).
     /// 칸은 무너뜨리지 않고 손도 머물지 않으며 어깨 포격도 없다. 최종 단계 전용이다.
-    /// 예고는 맞는 칸에만 띄운다. 1타는 양 끝 칸, 1타 직후 그 사이 칸으로 바꿔 2타 간격 동안 채우고, 사이 칸 위에 상자 예고를 세운다.
+    /// 예고는 맞는 칸에만 띄운다. 1타는 양 끝 칸, 1타 직후 그 사이 칸으로 바꿔 2타 간격 동안 채운다.
+    /// 다른 내려치기와 구분되게 예고 시작부터 손이 주먹을 쥐고 떠오르고, 사이 칸 위에 상자 예고를 박수 순간까지 세운다.
     /// 1타는 양 끝 칸 위에 있으면 맞는다. 2타는 B 돌진처럼 쓸어 오는 손에 닿으면 맞고(한 패턴에 한 번),
     /// 그랩처럼 붙잡혀 손바닥 앞에 붙은 채 가운데까지 끌려간다. 박수 순간 놓고 이동 잠금은 _holdSeconds 뒤에 풀린다.
     /// </summary>
@@ -27,7 +28,7 @@ namespace AI.Boss.BossA
         [SerializeField, Min(0.0f)] private float _holdSeconds = 0.7f;
 
         [Header("Wall Telegraph")]
-        [Tooltip("2타 동안 사이 칸 위에 세우는 상자 예고(가운데 기준 큐브). 비워 두면 바닥 예고만 띄운다")]
+        [Tooltip("1타 예고부터 박수 순간까지 사이 칸 위에 세우는 상자 예고(가운데 기준 큐브). 비워 두면 바닥 예고만 띄운다")]
         [SerializeField] private GameObject _wallPrefab;
         [Tooltip("임시값. 상자 예고 높이(m). 바닥에서부터 이만큼 세운다")]
         [SerializeField, Min(0.0f)] private float _wallHeight = 6.0f;
@@ -55,6 +56,9 @@ namespace AI.Boss.BossA
         protected override float TelegraphSeconds => _telegraphSeconds;
         protected override float StaySeconds => 0.0f;
         protected override bool IsFistStrike => true;
+
+        // 예고가 시작될 때 주먹을 쥐고 미리 떠올라 다른 내려치기 패턴과 구분되게 한다
+        protected override bool IsHoverDuringTelegraph => true;
         #endregion
 
         #region Unity Lifecycle
@@ -81,6 +85,22 @@ namespace AI.Boss.BossA
         #endregion
 
         #region Protected Methods
+        protected override void BuildTargets()
+        {
+            base.BuildTargets();
+
+            int[] tiles = Controller.CurrentChoice.Tiles;
+            _innerTiles = new int[ArenaGrid.SIZE - 2];
+            for (int i = 0; i < _innerTiles.Length; i++)
+            {
+                _innerTiles[i] = tiles[i + 1];
+            }
+
+            // 상자 예고는 1타 예고부터 박수 순간까지 사이 칸 위에 세워 둔다
+            GetRowLayout(tiles, out Vector3 middle, out Vector3 rowDirection, out float tileStep);
+            ShowWall(middle, rowDirection, tileStep);
+        }
+
         protected override int[] GetTargetTiles()
         {
             // 1타는 줄의 양 끝 칸만 맞는다
@@ -97,26 +117,11 @@ namespace AI.Boss.BossA
 
         protected override bool StartFollowUp()
         {
-            int[] tiles = Controller.CurrentChoice.Tiles;
-            _innerTiles = new int[ArenaGrid.SIZE - 2];
-            for (int i = 0; i < _innerTiles.Length; i++)
-            {
-                _innerTiles[i] = tiles[i + 1];
-            }
-
             // 손이 가운데에서 맞부딪칠 때까지 사이 칸 예고를 채운다
             ReplaceTelegraph(_innerTiles, _strikeInterval);
 
             // 줄 방향(왼손 쪽 끝 → 오른손 쪽 끝)을 따라 바닥 위로 쓸어 가운데 양옆으로 모은다
-            Vector3 leftEnd = Arena.GetTileCenter(tiles[0]);
-            Vector3 rightEnd = Arena.GetTileCenter(tiles[ArenaGrid.SIZE - 1]);
-            Vector3 middle = Arena.GetTileCenter(tiles[ArenaGrid.SIZE / 2]);
-            Vector3 rowDirection = rightEnd - leftEnd;
-            rowDirection.y = 0.0f;
-            float tileStep = rowDirection.magnitude / (ArenaGrid.SIZE - 1);
-            rowDirection.Normalize();
-
-            ShowWall(middle, rowDirection, tileStep);
+            GetRowLayout(Controller.CurrentChoice.Tiles, out Vector3 middle, out Vector3 rowDirection, out _);
 
             Vector3 halfGap = rowDirection * (_clapGap * 0.5f);
 
@@ -160,6 +165,20 @@ namespace AI.Boss.BossA
         #endregion
 
         #region Private Methods
+        /// <summary>
+        /// 박수 줄의 가운데 칸 중심, 줄 방향(왼손 쪽 끝 → 오른손 쪽 끝, 수평 단위 벡터), 이웃 칸 중심 사이 거리를 구한다.
+        /// </summary>
+        private void GetRowLayout(int[] tiles, out Vector3 middle, out Vector3 rowDirection, out float tileStep)
+        {
+            Vector3 leftEnd = Arena.GetTileCenter(tiles[0]);
+            Vector3 rightEnd = Arena.GetTileCenter(tiles[ArenaGrid.SIZE - 1]);
+            middle = Arena.GetTileCenter(tiles[ArenaGrid.SIZE / 2]);
+            rowDirection = rightEnd - leftEnd;
+            rowDirection.y = 0.0f;
+            tileStep = rowDirection.magnitude / (ArenaGrid.SIZE - 1);
+            rowDirection.Normalize();
+        }
+
         private void StartClap(BossHand hand, Vector3 position, Vector3 palmDirection)
         {
             if (!hand) return;
