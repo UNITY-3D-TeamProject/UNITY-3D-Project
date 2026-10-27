@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Core.Audio;
+using Map.Gimmicks;
 using Movement;
 
 namespace Map.Platforms
@@ -34,6 +36,10 @@ namespace Map.Platforms
         [Header("Waypoints")]
         [Tooltip("플랫폼이 이동할 경로가 되는 Transform들")]
         [SerializeField] private List<Transform> _waypoints;
+
+        [Header("Sound")]
+        [Tooltip("MoveToNextPoint로 이동을 시작할 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _moveSound;
         #endregion
 
         #region Private Fields
@@ -118,6 +124,7 @@ namespace Map.Platforms
             if (_isWaiting || _waypoints.Count < 2) return;
 
             _isMoving = true;
+            GimmickUtility.PlaySfx(_moveSound, transform.position);
             
             // Once 타입인데 이미 마지막 지점이라면 초기 위치로 리셋 후 다시 이동 가능하게 처리
             if (_platformType == EMovingPlatformType.Once && _currentWaypointIndex >= _waypoints.Count - 1)

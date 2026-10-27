@@ -1,6 +1,7 @@
 using UnityEngine;
 using Attribute.Effect;
 using Core;
+using Core.Audio;
 using Facade.Player;
 using Map.Gimmicks;
 using UI;
@@ -39,6 +40,10 @@ namespace Tutorial
         [SerializeField] private int _lowBatteryGuideId = 13;
         [Tooltip("임시로 충전해 준다고 알리는 펫 안내 번호. 이 안내를 띄울 때 배터리를 채운다")]
         [SerializeField] private int _rechargeGuideId = 14;
+
+        [Header("Sound")]
+        [Tooltip("공이 굴러가는 동안 공을 따라가며 반복할 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _rollLoopSound;
         #endregion
 
         #region Private Fields
@@ -52,6 +57,7 @@ namespace Tutorial
         private bool _musicPlatformsUnlocked;
         private bool _hasUsedRecharge;
         private bool _isWaitingRechargeGuide;
+        private SAudioHandle _rollLoopHandle;
         #endregion
 
         #region Properties
@@ -135,6 +141,24 @@ namespace Tutorial
             {
                 Kill();
             }
+        }
+
+        // 추격이 멈추는 곳이 여러 군데라, 프레임 끝에 굴러가는 중인지 보고 소리를 맞춘다
+        private void LateUpdate()
+        {
+            if (IsRunning)
+            {
+                GimmickUtility.PlaySfxLoop(_rollLoopSound, _boulder, ref _rollLoopHandle);
+            }
+            else
+            {
+                GimmickUtility.StopSfxLoop(ref _rollLoopHandle);
+            }
+        }
+
+        private void OnDisable()
+        {
+            GimmickUtility.StopSfxLoop(ref _rollLoopHandle);
         }
         #endregion
 

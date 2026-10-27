@@ -1,5 +1,7 @@
 using UnityEngine;
+using Core.Audio;
 using Map.Common;
+using Map.Gimmicks;
 
 namespace Tutorial
 {
@@ -31,6 +33,10 @@ namespace Tutorial
 
         [Tooltip("최대 반응 시점의 파쇄 링 회전 속도 배율")]
         [SerializeField, Min(1.0f)] private float _spinBoostMultiplier = 3.0f;
+
+        [Header("Sound")]
+        [Tooltip("발판이 분쇄되는 순간 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _burstSound;
         #endregion
 
         #region Private Fields
@@ -86,6 +92,8 @@ namespace Tutorial
 
         private void EmitBurst(Vector3 worldPosition)
         {
+            GimmickUtility.PlaySfx(_burstSound, worldPosition);
+
             if (_arrivalBits != null)
             {
                 _arrivalBits.transform.position = worldPosition;

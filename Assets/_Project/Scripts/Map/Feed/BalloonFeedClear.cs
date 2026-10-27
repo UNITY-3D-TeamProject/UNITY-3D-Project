@@ -1,4 +1,5 @@
 using UnityEngine;
+using Core.Audio;
 using Map.Gimmicks;
 
 namespace Map.Feed
@@ -14,6 +15,10 @@ namespace Map.Feed
         [Header("Balloons")]
         [Tooltip("터뜨려야 하는 풍선들")]
         [SerializeField] private DamageButton[] _balloons;
+
+        [Header("Sound")]
+        [Tooltip("풍선 하나가 터질 때마다 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _popSound;
         #endregion
 
         #region Private Fields
@@ -42,6 +47,7 @@ namespace Map.Feed
         #region Private Methods
         private void HandleBalloonPopped(DamageButton balloon)
         {
+            GimmickUtility.PlaySfx(_popSound, balloon.transform.position);
             Destroy(balloon.gameObject);
 
             _remainingCount--;

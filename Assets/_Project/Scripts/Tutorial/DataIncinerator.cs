@@ -1,6 +1,8 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using Core.Audio;
+using Map.Gimmicks;
 
 namespace Tutorial
 {
@@ -34,6 +36,10 @@ namespace Tutorial
         [Header("Effects")]
         [Tooltip("발판 1개가 소각될 때 튀는 데이터 조각 파티클 수")]
         [SerializeField, Min(0)] private int _bitsPerPlatform = 12;
+
+        [Header("Sound")]
+        [Tooltip("발판이 소각(분쇄)될 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _burstSound;
         #endregion
 
         #region Private Fields
@@ -89,6 +95,8 @@ namespace Tutorial
 
         private void EmitBurst(Vector3 worldPosition)
         {
+            GimmickUtility.PlaySfx(_burstSound, worldPosition);
+
             if (_bitsEffect != null)
             {
                 _bitsEffect.transform.position = worldPosition;

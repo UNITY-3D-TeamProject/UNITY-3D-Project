@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using Core.Audio;
 
 namespace Map.Gimmicks
 {
@@ -52,6 +53,10 @@ namespace Map.Gimmicks
 
         [SerializeField] private Color _onColor = new Color(0.2f, 1.0f, 0.4f);
         [SerializeField] private Color _offColor = new Color(1.0f, 0.25f, 0.2f);
+
+        [Header("Sound")]
+        [Tooltip("켜져 있는 동안 반복할 소리 (예: 바람, 전기). 비우면 무음")]
+        [SerializeField] private SOAudioData _whileOnLoopSound;
         #endregion
 
         #region Private Fields
@@ -59,6 +64,7 @@ namespace Map.Gimmicks
 
         private MaterialPropertyBlock _indicatorBlock;
         private float _revertRemaining;
+        private SAudioHandle _loopHandle;
         #endregion
 
         #region Properties
@@ -80,11 +86,22 @@ namespace Map.Gimmicks
         #endregion
 
         #region Unity Lifecycle
+        private void OnEnable()
+        {
+            RefreshLoopSound();
+        }
+
         private void Start()
         {
             IsOn = _isOnAtStart;
             ApplyTargets();
             SetIndicatorColor(IsOn);
+            RefreshLoopSound();
+        }
+
+        private void OnDisable()
+        {
+            GimmickUtility.StopSfxLoop(ref _loopHandle);
         }
 
         private void Update()
@@ -143,6 +160,7 @@ namespace Map.Gimmicks
             IsOn = isOn;
             ApplyTargets();
             SetIndicatorColor(IsOn);
+            RefreshLoopSound();
 
             if (IsOn)
             {
@@ -164,6 +182,19 @@ namespace Map.Gimmicks
             foreach (Behaviour behaviour in _enabledWhileOn)
             {
                 if (behaviour != null) behaviour.enabled = IsOn;
+            }
+        }
+
+        // 켜져 있으면 반복음을 시작하고, 꺼져 있으면 끊는다
+        private void RefreshLoopSound()
+        {
+            if (IsOn)
+            {
+                GimmickUtility.PlaySfxLoop(_whileOnLoopSound, transform, ref _loopHandle);
+            }
+            else
+            {
+                GimmickUtility.StopSfxLoop(ref _loopHandle);
             }
         }
 

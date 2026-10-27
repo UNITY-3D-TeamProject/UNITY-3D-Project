@@ -1,6 +1,7 @@
 using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
+using Core.Audio;
 using Interaction;
 using PlayerInput;
 
@@ -27,6 +28,10 @@ namespace Map.Gimmicks
         [Header("Effects")]
         [Tooltip("획득 시 위에서부터 순서대로 적용할 Effect (ValueSource는 Float)")]
         [SerializeField] private SOAttributeEffect[] _effects;
+
+        [Header("Sound")]
+        [Tooltip("획득했을 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _pickupSound;
         #endregion
 
         #region Unity Lifecycle
@@ -56,6 +61,7 @@ namespace Map.Gimmicks
             if (target == null) return;
 
             GimmickUtility.ApplyEffects(_effects, target);
+            GimmickUtility.PlaySfx(_pickupSound, transform.position);
             Destroy(gameObject);
         }
         #endregion

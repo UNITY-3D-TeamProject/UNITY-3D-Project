@@ -93,8 +93,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _indicator: {fileID: 2843345634273547710}
+  _extraIndicators: []
   _onColor: {r: 0.3, g: 0.5, b: 1, a: 1}
   _offColor: {r: 1, g: 0.25, b: 0.2, a: 1}
+  _whileOnLoopSound: {fileID: 0}
 --- !u!1 &5265126308453865285
 GameObject:
   m_ObjectHideFlags: 0
@@ -476,6 +478,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Switch_Shoot
       objectReference: {fileID: 0}
+    - target: {fileID: 6949904365123938595, guid: 16f36bda4d0601c439aca0129c9cf7db, type: 3}
+      propertyPath: _pressedSound
+      value: 
+      objectReference: {fileID: 11400000, guid: 91219a10086341c490c81cc755c5b51d, type: 2}
     - target: {fileID: 6949904365123938595, guid: 16f36bda4d0601c439aca0129c9cf7db, type: 3}
       propertyPath: _onPressed.m_PersistentCalls.m_Calls.Array.size
       value: 1

@@ -1,4 +1,5 @@
 using UnityEngine;
+using Core.Audio;
 
 namespace Map.Gimmicks
 {
@@ -24,6 +25,10 @@ namespace Map.Gimmicks
 
         [Tooltip("예고 구간에서 초당 깜빡이는 횟수. 0이면 깜빡이지 않는다.")]
         [SerializeField, Min(0.0f)] private float _warningBlinkRate = 6.0f;
+
+        [Header("Sound")]
+        [Tooltip("예고 구간에 들어설 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _warningSound;
         #endregion
 
         #region Private Fields
@@ -33,6 +38,7 @@ namespace Map.Gimmicks
         private MaterialPropertyBlock _propertyBlock;
         private Color _lastColor;
         private bool _hasLastColor;
+        private bool _isWarning;
         #endregion
 
         #region Unity Lifecycle
@@ -48,6 +54,8 @@ namespace Map.Gimmicks
         private void LateUpdate()
         {
             if (_timer == null) return;
+
+            UpdateWarningSound();
 
             Color color = GetCurrentColor();
             if (_hasLastColor && (color == _lastColor)) return;
@@ -67,6 +75,18 @@ namespace Map.Gimmicks
 
             bool isWarningVisible = (Mathf.FloorToInt(Time.time * _warningBlinkRate * 2.0f) % 2) == 0;
             return isWarningVisible ? _warningColor : _safeColor;
+        }
+
+        // 예고 구간에 들어서는 순간 한 번만 소리를 낸다
+        private void UpdateWarningSound()
+        {
+            bool isWarning = (!_timer.IsOn) && (_warningTime > 0.0f) && (_timer.Remaining <= _warningTime);
+            if (isWarning && !_isWarning)
+            {
+                GimmickUtility.PlaySfx(_warningSound, transform.position);
+            }
+
+            _isWarning = isWarning;
         }
 
         private void ApplyColor(Color color)
