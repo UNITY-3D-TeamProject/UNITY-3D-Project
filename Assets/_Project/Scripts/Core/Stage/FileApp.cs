@@ -32,6 +32,12 @@ namespace Core.Stage
 
         [Header("3라운드 · 경찰과 도둑")]
         [SerializeField] private ThiefChaseRound _thiefChaseRound = new ThiefChaseRound();
+
+        [Tooltip("클리어할 때 3번째 미로의 내부 벽과 내부 기둥을 아래로 내리는 거리 (m)")]
+        [SerializeField, Min(0.0f)] private float _innerWallLowerDistance = 12.0f;
+
+        [Tooltip("3번째 미로의 내부 벽과 내부 기둥이 내려가는 시간 (초)")]
+        [SerializeField, Min(0.0f)] private float _innerWallLowerDuration = 1.25f;
         #endregion
 
         #region Private Fields
@@ -40,6 +46,7 @@ namespace Core.Stage
         // 라운드를 깨면 여는 미로 출구 문. 미로가 없는 씬(테스트 씬 등)에서는 null.
         private MazeExitGate _numberPuzzleGate;
         private MazeExitGate _thiefChaseGate;
+        private MazeInnerWallLowering _thiefMazeWallLowering;
         #endregion
 
         #region Properties
@@ -141,6 +148,7 @@ namespace Core.Stage
 
             _numberPuzzleGate = LockMazeGate(generator.GeneratedRoot, NUMBER_PUZZLE_ROUND_INDEX);
             _thiefChaseGate = LockMazeGate(generator.GeneratedRoot, THIEF_CHASE_ROUND_INDEX);
+            _thiefMazeWallLowering = FindMazeWallLowering(generator.GeneratedRoot, THIEF_CHASE_ROUND_INDEX);
             PlacePuzzleBoard();
         }
 
@@ -173,6 +181,18 @@ namespace Core.Stage
             }
 
             return gate;
+        }
+
+        private MazeInnerWallLowering FindMazeWallLowering(Transform generatedRoot, int roundIndex)
+        {
+            Transform mazeRoot = generatedRoot.Find(MAZE_NAME_PREFIX + roundIndex);
+            MazeInnerWallLowering wallLowering = (mazeRoot != null) ? mazeRoot.GetComponent<MazeInnerWallLowering>() : null;
+            if (wallLowering == null)
+            {
+                Debug.LogWarning($"[{name}] {roundIndex + 1}라운드 미로 내부 벽 하강 장치를 찾지 못했습니다.", this);
+            }
+
+            return wallLowering;
         }
 
         // 라운드 중 죽으면 그 라운드만 처음부터 다시 한다. 적은 각 스포너가 다시 만든다.
@@ -209,6 +229,8 @@ namespace Core.Stage
             {
                 _thiefChaseGate.Open();
             }
+
+            _thiefMazeWallLowering?.Lower(_innerWallLowerDistance, _innerWallLowerDuration);
         }
         #endregion
     }

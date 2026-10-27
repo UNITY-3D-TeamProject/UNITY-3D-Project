@@ -53,6 +53,8 @@ namespace Map.Feed
         private float _moveDuration;
         private float _moveElapsed;
         private Action _onArrived;
+        private FeedPurification _purification;
+        private bool _shouldBob = true;
         #endregion
 
         #region Properties
@@ -102,6 +104,8 @@ namespace Map.Feed
                 return;
             }
 
+            if (!_shouldBob) return;
+
             _bobTime += Time.deltaTime;
             float offset = Mathf.Sin((_bobTime / _bobPeriod) * Mathf.PI * 2.0f) * _bobHeight;
             transform.position = _restPosition + (Vector3.up * offset);
@@ -109,11 +113,28 @@ namespace Map.Feed
         #endregion
 
         #region Public Methods
+        /// <summary>정화 중에는 부유를 멈추고 악성 카드의 자리에서 정상 이미지로 바꾼다.</summary>
+        public FeedPurification BeginPurification(
+            MaliciousFeed source,
+            Transform cardVisual,
+            Transform cardBody,
+            Material wipeMaterial,
+            float duration,
+            float travelDuration)
+        {
+            _shouldBob = false;
+            _purification = gameObject.AddComponent<FeedPurification>();
+            _purification.Begin(this, source, cardVisual, cardBody, wipeMaterial, duration, travelDuration);
+            return _purification;
+        }
+
         /// <summary>
         /// 겉모습을 홀로그램으로 바꾼다.
         /// </summary>
         public void BecomeHologram()
         {
+            // 이전 정화 콜백이 홀로그램을 덮어쓰거나 측면 이동을 다시 시작하지 못하게 한다.
+            if (_purification != null) _purification.FinishForRound2();
             if ((_hologramMaterial == null) || (_renderers == null)) return;
 
             foreach (Renderer targetRenderer in _renderers)
@@ -144,6 +165,7 @@ namespace Map.Feed
         /// <param name="onArrived">도착했을 때 한 번 실행할 동작 (선택)</param>
         public void MoveTo(Vector3 target, float duration, Action onArrived = null)
         {
+            _shouldBob = true;
             _isMoving = true;
             _moveStart = transform.position;
             _moveTarget = target;

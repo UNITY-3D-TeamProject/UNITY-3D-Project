@@ -888,6 +888,7 @@ Transform:
   - {fileID: 7603037509853090921}
   - {fileID: 5974794294099027443}
   - {fileID: 5253715881431239628}
+  - {fileID: 3690477129777448658}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6622212091962868304
@@ -904,8 +905,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Feed.MaliciousFeed
   _dataPrefab: {fileID: 4774747976756846044, guid: 24a0177ee57462545a5a3383252f8b19, type: 3}
   _dataCount: 5
+  _speedMultipliers:
+  - 0.9
+  - 1
+  - 1.1
   _spawnRadius: 4
   _spawnHeight: 1.5
+  _cardVisual: {fileID: 5253715881431239628}
+  _cardBody: {fileID: 3588221139247235104}
+  _purificationMaterial: {fileID: 2100000, guid: 1962609f5accc0a43b877c4ddd588bbf, type: 2}
+  _purificationDuration: 3
+  _purifiedTravelDuration: 1.25
+  _purifiedPost: {fileID: 0}
 --- !u!114 &819865171664947515
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1562,6 +1573,102 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &8247873993638833840
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3690477129777448658}
+  - component: {fileID: 4939754068462145000}
+  - component: {fileID: 5398835873808431878}
+  - component: {fileID: 5951727695768160824}
+  m_Layer: 0
+  m_Name: Monologue_4_Guide
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3690477129777448658
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8247873993638833840}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2, z: -2.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4796388277291546913}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &4939754068462145000
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8247873993638833840}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 16, y: 4, z: 3}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5398835873808431878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8247873993638833840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac185571cf6bd0e40aaac6244c6a9e19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIandCinematic.MonologuePlayer
+  _monologueId: 4
+--- !u!114 &5951727695768160824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8247873993638833840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4555d5fbfdd8b34e87a0b0df1abe9df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Gimmicks.TriggerPlate
+  _onPlayerEntered:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5398835873808431878}
+        m_TargetAssemblyTypeName: UIandCinematic.MonologuePlayer, Assembly-CSharp
+        m_MethodName: Play
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  _isOneShot: 1
 --- !u!1 &8278486292046662706
 GameObject:
   m_ObjectHideFlags: 0

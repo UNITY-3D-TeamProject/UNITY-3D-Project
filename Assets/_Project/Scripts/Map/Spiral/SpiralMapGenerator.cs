@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Map.Common;
+using Map.Feed;
 using Map.Gimmicks;
 using Map.Platforms;
 
@@ -102,8 +103,8 @@ namespace Map.Spiral
         private readonly Dictionary<GameObject, Bounds> _prefabBounds = new Dictionary<GameObject, Bounds>();
 
         // 주위 피드는 라운드 발판과 겹치지 않는 자리를 정한 뒤에 만들도록, Build 동안 놓을 자리만 모아 둔다
-        private readonly List<(GameObject Prefab, Vector3 Position, Transform Parent)> _ambientFeeds =
-            new List<(GameObject Prefab, Vector3 Position, Transform Parent)>();
+        private readonly List<(GameObject Prefab, Vector3 Position, Transform Parent, MaliciousFeed Owner)> _ambientFeeds =
+            new List<(GameObject Prefab, Vector3 Position, Transform Parent, MaliciousFeed Owner)>();
 
         // 고를 패턴이 하나도 없을 때 쓰는 기본 패턴(고정 발판). 처음 필요할 때 만든다.
         private SOSpiralSectionPattern _fallbackPattern;
@@ -241,12 +242,14 @@ namespace Map.Spiral
                 }
 
                 PlaceTagItems(tag, itemSpots, tagRoot, random);
-                PlaceTagEnd(tag, t, lastPlatform, endPrefab, tagRoot);
+                MaliciousFeed maliciousFeed = PlaceTagEnd(tag, t, lastPlatform, endPrefab, tagRoot);
 
                 if (tag.ambientFeedPrefab != null)
                 {
                     PlaceAmbientFeeds(tag.ambientFeedPrefab, tagRoot, tagStartAngle, tagStartHeight, _settings.OuterFeedCount, _settings.OuterFeedDistance, 1f, random);
-                    PlaceAmbientFeeds(tag.ambientFeedPrefab, tagRoot, tagStartAngle, tagStartHeight, _settings.InnerFeedCount, _settings.InnerFeedDistance, -1f, random);
+                    PlaceAmbientFeeds(tag.ambientFeedPrefab, tagRoot, tagStartAngle, tagStartHeight,
+                        _settings.InnerFeedCount, _settings.InnerFeedDistance, -1f, random,
+                        _settings.ShouldPurifyInnerFeed ? maliciousFeed : null);
                 }
             }
 
@@ -287,8 +290,9 @@ namespace Map.Spiral
         }
 
         // 태그 끝 발판 위에 들어오는 쪽부터 체크포인트, 악성 피드, 아이템을 차례로 놓는다.
-        private void PlaceTagEnd(SpiralTagConfig tag, int tagIndex, GameObject endPlatform, GameObject endPrefab, Transform tagRoot)
+        private MaliciousFeed PlaceTagEnd(SpiralTagConfig tag, int tagIndex, GameObject endPlatform, GameObject endPrefab, Transform tagRoot)
         {
+            MaliciousFeed maliciousFeed = null;
             Transform platform = endPlatform.transform;
             Vector3 forward = platform.forward;
             Vector3 entry = GetSurfacePoint(endPlatform) - (forward * (GetPrefabSize(endPrefab).z * 0.5f));
@@ -297,13 +301,16 @@ namespace Map.Spiral
 
             if (tag.maliciousFeedPrefab != null)
             {
-                Instantiate(tag.maliciousFeedPrefab, entry + (forward * _settings.FeedDistance), platform.rotation, tagRoot);
+                GameObject instance = Instantiate(tag.maliciousFeedPrefab, entry + (forward * _settings.FeedDistance), platform.rotation, tagRoot);
+                maliciousFeed = instance.GetComponent<MaliciousFeed>();
             }
 
             if (tag.itemPrefab != null)
             {
                 Instantiate(tag.itemPrefab, entry + (forward * _settings.ItemDistance), platform.rotation, tagRoot);
             }
+
+            return maliciousFeed;
         }
 
         // 태그가 지나온 길(시작 각도·높이 ~ 지금 각도·높이)을 따라 주위 피드를 count 개 띄운다.
@@ -316,7 +323,8 @@ namespace Map.Spiral
             int count,
             Vector2 distanceRange,
             float side,
-            System.Random random)
+            System.Random random,
+            MaliciousFeed owner = null)
         {
             Vector3 center = GetCenter();
             Vector2 heightRange = _settings.AmbientFeedHeightRange;
@@ -336,7 +344,7 @@ namespace Map.Spiral
                     transform.position.y + height,
                     center.z + (Mathf.Sin(rad) * radius));
 
-                _ambientFeeds.Add((prefab, position, tagRoot));
+                _ambientFeeds.Add((prefab, position, tagRoot, (i == 0) ? owner : null));
             }
         }
 
@@ -347,7 +355,7 @@ namespace Map.Spiral
             Renderer platformRenderer = (roundPlatform != null) ? roundPlatform.GetComponentInChildren<Renderer>() : null;
             Vector3 center = GetCenter();
 
-            foreach ((GameObject prefab, Vector3 position, Transform parent) in _ambientFeeds)
+            foreach ((GameObject prefab, Vector3 position, Transform parent, MaliciousFeed owner) in _ambientFeeds)
             {
                 Vector3 spawnPosition = position;
 
@@ -373,7 +381,18 @@ namespace Map.Spiral
                     }
                 }
 
-                Instantiate(prefab, spawnPosition, Quaternion.identity, parent);
+                GameObject instance = Instantiate(prefab, spawnPosition, Quaternion.identity, parent);
+                if (_settings.ShouldPurifyInnerFeed)
+                {
+                    FeedPostPhoto photo = instance.GetComponentInChildren<FeedPostPhoto>();
+                    if (photo != null) photo.SetContent(owner != null ? 1 : 0);
+                }
+
+                if ((owner != null) && instance.TryGetComponent(out FeedPost post))
+                {
+                    owner.SetPurifiedPost(post);
+                    instance.SetActive(false);
+                }
             }
         }
 
