@@ -1,4 +1,5 @@
 using UnityEngine;
+using Core.Audio;
 using Movement;
 
 namespace Map.Gimmicks
@@ -28,6 +29,16 @@ namespace Map.Gimmicks
         [Header("Options")]
         [Tooltip("켜면 작동 상태로 시작한다.")]
         [SerializeField] private bool _isActivatedAtStart;
+
+        [Header("Sound")]
+        [Tooltip("작동 상태로 움직이기 시작할 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _activateSound;
+
+        [Tooltip("기본 상태로 돌아가기 시작할 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _deactivateSound;
+
+        [Tooltip("작동 상태에 도착했을 때 낼 소리 (예: 크러셔 내려찍기). 비우면 무음")]
+        [SerializeField] private SOAudioData _arrivedSound;
         #endregion
 
         #region Private Fields
@@ -79,6 +90,11 @@ namespace Map.Gimmicks
 
             _progress = Mathf.MoveTowards(_progress, _targetProgress, Time.deltaTime / _duration);
             ApplyPose();
+
+            if (Mathf.Approximately(_progress, 1.0f) && Mathf.Approximately(_targetProgress, 1.0f))
+            {
+                GimmickUtility.PlaySfx(_arrivedSound, transform.position);
+            }
         }
 
         private void OnDrawGizmosSelected()
@@ -96,19 +112,19 @@ namespace Map.Gimmicks
         /// <summary>작동 상태로 움직인다. (UnityEvent로 연결 가능)</summary>
         public void Activate()
         {
-            _targetProgress = 1.0f;
+            SetTarget(1.0f);
         }
 
         /// <summary>기본 상태로 돌아간다. (UnityEvent로 연결 가능)</summary>
         public void Deactivate()
         {
-            _targetProgress = 0.0f;
+            SetTarget(0.0f);
         }
 
         /// <summary>반대 상태로 움직인다. (UnityEvent로 연결 가능)</summary>
         public void Toggle()
         {
-            _targetProgress = IsActivated ? 0.0f : 1.0f;
+            SetTarget(IsActivated ? 0.0f : 1.0f);
         }
 
         /// <summary>기본 상태로 즉시 되돌린다. 움직이는 시간 없이 바로 원위치에 놓는다.</summary>
@@ -123,6 +139,15 @@ namespace Map.Gimmicks
         #endregion
 
         #region Private Methods
+        // 목표 상태가 바뀔 때만 출발 소리를 낸다
+        private void SetTarget(float targetProgress)
+        {
+            if (Mathf.Approximately(_targetProgress, targetProgress)) return;
+
+            _targetProgress = targetProgress;
+            GimmickUtility.PlaySfx((targetProgress > 0.5f) ? _activateSound : _deactivateSound, transform.position);
+        }
+
         private void ApplyPose()
         {
             // 출발과 도착에서 부드럽게 속도를 줄인다

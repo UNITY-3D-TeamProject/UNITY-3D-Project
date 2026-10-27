@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using Attribute.Effect;
 using Core;
+using Core.Audio;
 using Core.Stage;
 using Facade.Player;
 using Map.Gimmicks;
@@ -122,6 +123,10 @@ namespace Map.Feed
 
         [Tooltip("2라운드를 시작하려면 1라운드에서 모두 모아야 하는 피드 재료 아이템. 비워 두면 조건 없이 시작한다.")]
         [SerializeField] private EFeedItemType[] _requiredItems;
+
+        [Header("Sound")]
+        [Tooltip("피드가 떠오를 때(한 번)와 총에 맞아 날아갈 때(피드마다) 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _postMoveSound;
 
         [Header("Event")]
         [Tooltip("2라운드가 시작될 때 실행할 동작")]
@@ -463,6 +468,9 @@ namespace Map.Feed
         {
             var positions = new List<Vector3>();
 
+            // 피드가 한꺼번에 떠오르므로 경기장 가운데에서 한 번만 낸다
+            GimmickUtility.PlaySfx(_postMoveSound, transform.position);
+
             foreach (FeedPost post in FindObjectsByType<FeedPost>())
             {
                 if (post.TagIndex >= _walls.Length)
@@ -555,6 +563,7 @@ namespace Map.Feed
             float duration = Vector3.Distance(post.transform.position, hitPoint) / _flySpeed;
 
             post.SetShootable(false);
+            GimmickUtility.PlaySfx(_postMoveSound, post.transform.position);
             post.MoveTo(hitPoint, duration, () => ResolveArrival(post, wallIndex));
         }
 

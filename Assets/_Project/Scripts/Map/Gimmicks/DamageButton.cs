@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Events;
 using Attribute.Core;
+using Core.Audio;
 
 namespace Map.Gimmicks
 {
@@ -26,6 +27,10 @@ namespace Map.Gimmicks
 
         [Tooltip("켜면 처음 한 번만 실행한다. 끄면 실행한 뒤 HP를 처음 값으로 되돌려 다시 누를 수 있다.")]
         [SerializeField] private bool _isOneShot = true;
+
+        [Header("Sound")]
+        [Tooltip("눌렸을 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _pressedSound;
         #endregion
 
         #region Private Fields
@@ -69,6 +74,7 @@ namespace Map.Gimmicks
             // 0 이하로 내려가는 순간에만 실행한다 (이미 0 이하인 상태에서 더 맞는 것은 무시)
             if ((data.OldValue <= 0.0f) || (data.NewValue > 0.0f)) return;
 
+            GimmickUtility.PlaySfx(_pressedSound, transform.position);
             _onPressed.Invoke();
 
             if (!_isOneShot)

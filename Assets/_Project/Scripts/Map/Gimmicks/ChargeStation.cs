@@ -1,5 +1,6 @@
 using UnityEngine;
 using Attribute.Core;
+using Core.Audio;
 using Interaction;
 
 namespace Map.Gimmicks
@@ -18,6 +19,12 @@ namespace Map.Gimmicks
         private const string MAX_BATTERY_NAME = "MaxBattery";
         #endregion
 
+        #region Serialized Fields
+        [Header("Sound")]
+        [Tooltip("충전했을 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _interactSound;
+        #endregion
+
         #region Public Methods
         /// <inheritdoc />
         public void Interact(GameObject interactor)
@@ -30,6 +37,7 @@ namespace Map.Gimmicks
 
             target.SetValue(CURRENT_HP_NAME, target.GetValue(MAX_HP_NAME));
             target.SetValue(CURRENT_BATTERY_NAME, target.GetValue(MAX_BATTERY_NAME));
+            GimmickUtility.PlayUi(_interactSound);
         }
         #endregion
 

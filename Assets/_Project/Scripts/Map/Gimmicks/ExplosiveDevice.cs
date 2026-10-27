@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
+using Core.Audio;
 using PlayerInput;
 
 namespace Map.Gimmicks
@@ -41,6 +42,10 @@ namespace Map.Gimmicks
 
         [Tooltip("폭발 표시가 커지는 데 걸리는 시간(초)")]
         [SerializeField, Min(0.05f)] private float _blastDuration = 0.3f;
+
+        [Header("Sound")]
+        [Tooltip("터질 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _explodeSound;
 
         [Header("Respawn")]
         [Tooltip("터진 뒤 다시 생길 때까지의 시간(초). 0이면 다시 생기지 않는다.")]
@@ -144,6 +149,7 @@ namespace Map.Gimmicks
             }
 
             SetBodyVisible(false);
+            GimmickUtility.PlaySfx(_explodeSound, transform.position);
             ApplyEffectsInRange();
 
             if (_blastVisual != null)

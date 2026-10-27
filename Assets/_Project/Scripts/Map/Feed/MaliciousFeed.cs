@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Core.Audio;
 using Map.Gimmicks;
 
 namespace Map.Feed
@@ -40,6 +41,13 @@ namespace Map.Feed
 
         [Tooltip("생성기가 안쪽 자리에 준비한 일반 피드")]
         [SerializeField] private FeedPost _purifiedPost;
+
+        [Header("Sound")]
+        [Tooltip("미니게임을 성공해 제거될 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _successSound;
+
+        [Tooltip("악성 데이터를 삭제·방출할 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _clearSound;
         #endregion
 
         #region Properties
@@ -66,6 +74,9 @@ namespace Map.Feed
         {
             if (IsCleared) return;
             IsCleared = true;
+
+            GimmickUtility.PlaySfx(_successSound, transform.position);
+            GimmickUtility.PlaySfx(_clearSound, transform.position);
 
             bool canPurify = (_purifiedPost != null) && (_cardVisual != null) &&
                 (_cardBody != null) && (_purificationMaterial != null);

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Core.Audio;
 using Interaction;
 
 namespace Map.Gimmicks
@@ -41,6 +42,10 @@ namespace Map.Gimmicks
 
         [Tooltip("떠오른 뒤 플레이어에게 날아가는 속도")]
         [SerializeField, Min(0.1f)] private float _flySpeed = 14.0f;
+
+        [Header("Sound")]
+        [Tooltip("상호작용(E)으로 열 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _interactSound;
         #endregion
 
         #region Private Fields
@@ -59,6 +64,7 @@ namespace Map.Gimmicks
             if (_isOpened) return;
 
             _isOpened = true;
+            GimmickUtility.PlayUi(_interactSound);
             StartCoroutine(CoOpen(interactor));
         }
         #endregion

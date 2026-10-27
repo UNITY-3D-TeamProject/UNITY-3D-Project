@@ -1,6 +1,7 @@
 using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
+using Core.Audio;
 using Interaction;
 using Map.Gimmicks;
 
@@ -38,6 +39,13 @@ namespace Map.Feed
         [Header("Fail")]
         [Tooltip("실패했을 때 플레이어에게 위에서부터 순서대로 적용할 Effect (ValueSource는 Float)")]
         [SerializeField] private SOAttributeEffect[] _failEffects;
+
+        [Header("Sound")]
+        [Tooltip("상호작용할 때마다 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _interactSound;
+
+        [Tooltip("실패했을 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _errorSound;
         #endregion
 
         #region Private Fields
@@ -84,8 +92,12 @@ namespace Map.Feed
         {
             if (_feed.IsCleared) return;
 
+            GimmickUtility.PlayUi(_interactSound);
+
             if (Mathf.Abs(_markerOffset) > _successHalfWidth)
             {
+                GimmickUtility.PlaySfx(_errorSound, transform.position);
+
                 // AttributeSet은 플레이어 루트가 아니라 자식(AttributePrefab)에 있다
                 GimmickUtility.ApplyEffects(_failEffects, interactor.GetComponentInChildren<IEffectTarget>());
                 return;

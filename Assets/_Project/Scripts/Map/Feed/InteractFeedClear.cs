@@ -1,5 +1,7 @@
 using UnityEngine;
+using Core.Audio;
 using Interaction;
+using Map.Gimmicks;
 
 namespace Map.Feed
 {
@@ -10,6 +12,12 @@ namespace Map.Feed
     [RequireComponent(typeof(MaliciousFeed))]
     public class InteractFeedClear : MonoBehaviour, IInteractable
     {
+        #region Serialized Fields
+        [Header("Sound")]
+        [Tooltip("상호작용했을 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _interactSound;
+        #endregion
+
         #region Private Fields
         private MaliciousFeed _feed;
         #endregion
@@ -25,6 +33,7 @@ namespace Map.Feed
         /// <inheritdoc />
         public void Interact(GameObject interactor)
         {
+            GimmickUtility.PlayUi(_interactSound);
             _feed.Clear();
         }
         #endregion
