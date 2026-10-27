@@ -47,6 +47,9 @@ namespace Map.Gimmicks
         [Tooltip("상태를 색으로 보여 줄 표시등 (선택)")]
         [SerializeField] private Renderer _indicator;
 
+        [Tooltip("같은 색으로 바꿀 표시등을 더 연결할 때 (선택)")]
+        [SerializeField] private Renderer[] _extraIndicators;
+
         [SerializeField] private Color _onColor = new Color(0.2f, 1.0f, 0.4f);
         [SerializeField] private Color _offColor = new Color(1.0f, 0.25f, 0.2f);
         #endregion
@@ -176,11 +179,16 @@ namespace Map.Gimmicks
 
         private void SetIndicatorColor(bool isOn)
         {
-            if (_indicator == null) return;
-
             _indicatorBlock ??= new MaterialPropertyBlock();
             _indicatorBlock.SetColor(BaseColorId, isOn ? _onColor : _offColor);
-            _indicator.SetPropertyBlock(_indicatorBlock);
+
+            if (_indicator != null) _indicator.SetPropertyBlock(_indicatorBlock);
+            if (_extraIndicators == null) return;
+
+            foreach (Renderer indicator in _extraIndicators)
+            {
+                if (indicator != null) indicator.SetPropertyBlock(_indicatorBlock);
+            }
         }
         #endregion
     }
