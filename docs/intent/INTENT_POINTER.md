@@ -60,6 +60,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[Core / Effect / VFX]** 루프 이펙트를 쓰려면 SO `Is Loop`와 프리팹 파티클 `Looping`을 미리 맞춰야 하고, AudioManager(`PlaySfx`/`PlaySfxLoop`)와 사용법이 다름 → `EffectManager.PlayLoop` 추가(자식 파티클 Looping을 켜고, `Play`는 프리팹 원래 값으로 되돌림), SO `IsLoop` 제거 → [문서](./clear/intent-074-effect-play-loop.md) (resolved: 2026-10-24)
 - **[Core / Scanning / Rendering]** 벽 너머 아이템 스캔 실루엣(`ZTest Greater`)이 앞을 가린 플레이어 몸 위에도 그려짐 → 렌더링 레이어 `PlayerStencil`(스폰 때 `GameManager`가 플레이어 렌더러에 추가)을 가진 불투명 메시 자리에 `PlayerStencilRendererFeature`가 스텐실 128을 찍고, 실루엣 셰이더가 그 픽셀을 건너뜀. Player.prefab 미수정, PC 렌더러만 등록 → [문서](./clear/intent-072-scan-silhouette-over-player.md) (resolved: 2026-10-23)
 - **[Audio / Core]** 3D 효과음 소스 16개가 모두 재생 중이면 새 요청을 버려 중요한 소리가 빠질 수 있음 → 모자라면 `_maxSfxSourceCount`(64)까지 하나씩 더 만들고, 상한에서는 생략 + 매니저당 경고 한 번 → [문서](./clear/intent-071-audio-sfx-source-grow.md) (resolved: 2026-10-23)
 - **[Audio / Core]** 효과음 번호가 int라 이전 씬 번호로 새 씬 소리를 끊거나 다른 숫자를 넘겨도 못 막음 → `SEffectHandle`과 같은 모양의 `SAudioHandle`(번호 + 매니저 토큰), `PlaySfx`·`PlaySfxLoop` 반환·`StopSfx` 인자 교체, 다른 매니저 핸들 무시 → [문서](./clear/intent-070-audio-sfx-handle.md) (resolved: 2026-10-23)
