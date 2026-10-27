@@ -44,6 +44,7 @@ namespace Map.Gimmicks
         private PlayerFacade _playerFacade;
         private CharacterController _playerController;
         private float _elapsedTime;
+        private bool _isMovementSuspended;
         #endregion
 
         #region Events
@@ -75,7 +76,7 @@ namespace Map.Gimmicks
         private void Update()
         {
             _elapsedTime += Time.deltaTime;
-            if (_elapsedTime < _startDelay) return;
+            if (_isMovementSuspended || (_elapsedTime < _startDelay)) return;
 
             if (!TryFindPlayer()) return;
 
@@ -95,6 +96,12 @@ namespace Map.Gimmicks
         #endregion
 
         #region Public Methods
+        /// <summary>연출 중 추적과 접촉 판정을 멈춘다. 공격에 의한 파괴와 생성 대기 시간은 유지한다.</summary>
+        public void SetMovementSuspended(bool isSuspended)
+        {
+            _isMovementSuspended = isSuspended;
+        }
+
         /// <summary>
         /// 쫓아가는 속도에 배율을 곱한다. 생성 직후 한 번 부른다.
         /// </summary>

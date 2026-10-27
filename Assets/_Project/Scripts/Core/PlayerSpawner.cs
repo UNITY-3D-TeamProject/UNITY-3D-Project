@@ -168,6 +168,9 @@ public class PlayerSpawner : SpawnerBase
             return;
         }
 
+        // 몸·카메라가 스폰 지점의 정면(화살표)을 보게 한다. 생성 연출이 끝날 때까지 이 방향으로 고정되고 끝나면 풀린다.
+        playerFacade.SetLookDirection(spawnPoint.forward);
+
         // TODO: 지연 활성화가 필요하면 프리팹을 비활성 상태로 생성하고 AttributeSet의 Awake 초기화를 분리한다.
         // 활성 프리팹을 Instantiate한 뒤 SetActive(false)하면 Awake/OnEnable은 이미 실행된 상태다.
         // player.SetActive(false);

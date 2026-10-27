@@ -326,9 +326,26 @@ namespace CharacterAnimation
 
             ResetSpecialIdle();
             _animator.SetBool(AnimHash.IsJumping, true);
+            // 같은 프레임에 들어온 낙하 Trigger 가 점프 애니메이션을 끊지 않게 한다
+            _animator.ResetTrigger(AnimHash.Fall);
             if (_isRiding) return;
 
             _animator.SetTrigger(AnimHash.Jump);
+        }
+
+        /// <summary>
+        /// 점프 없는 낙하 시작을 알린다. 공중 애니메이션(JumpAir)으로 전환하고, 착지는 PlayLand 로 알린다.
+        /// 구르기·탑승 중에는 기존 자세를 유지하고 공중 여부만 기록한다.
+        /// </summary>
+        public void PlayFall()
+        {
+            if (!enabled || _isDead) return;
+
+            ResetSpecialIdle();
+            _animator.SetBool(AnimHash.IsJumping, true);
+            if (_isRiding || _isRolling) return;
+
+            _animator.SetTrigger(AnimHash.Fall);
         }
 
         /// <summary>
@@ -341,6 +358,7 @@ namespace CharacterAnimation
             _animator.SetBool(AnimHash.IsJumping, false);
             // 착지 직전 프레임에 들어온 점프 Trigger 가 남아 착지 후 다시 점프 애니메이션이 재생되지 않게 한다
             _animator.ResetTrigger(AnimHash.Jump);
+            _animator.ResetTrigger(AnimHash.Fall);
         }
 
         /// <summary>
@@ -353,6 +371,7 @@ namespace CharacterAnimation
             ResetSpecialIdle();
             _isRolling = true;
             _animator.SetBool(AnimHash.IsRolling, true);
+            _animator.ResetTrigger(AnimHash.Fall);
             if (_isRiding) return;
 
             _animator.SetTrigger(AnimHash.Roll);
@@ -403,6 +422,7 @@ namespace CharacterAnimation
             // 탑승 직전에 들어온 점프·구르기 Trigger 가 탑승 점프를 덮지 않게 한다
             _animator.ResetTrigger(AnimHash.Jump);
             _animator.ResetTrigger(AnimHash.Roll);
+            _animator.ResetTrigger(AnimHash.Fall);
             _animator.SetTrigger(AnimHash.Mount);
         }
 
@@ -462,6 +482,7 @@ namespace CharacterAnimation
             _animator.ResetTrigger(AnimHash.Fire);
             _animator.ResetTrigger(AnimHash.Jump);
             _animator.ResetTrigger(AnimHash.Roll);
+            _animator.ResetTrigger(AnimHash.Fall);
             _animator.ResetTrigger(AnimHash.Mount);
             _animator.ResetTrigger(AnimHash.Hit);
             _animator.SetTrigger(AnimHash.Death);
@@ -805,6 +826,7 @@ namespace CharacterAnimation
             public static readonly int Fire = Animator.StringToHash("Fire");
             public static readonly int IsJumping = Animator.StringToHash("IsJumping");
             public static readonly int Jump = Animator.StringToHash("Jump");
+            public static readonly int Fall = Animator.StringToHash("Fall");
             public static readonly int IsRolling = Animator.StringToHash("IsRolling");
             public static readonly int Roll = Animator.StringToHash("Roll");
             public static readonly int SpecialIdle = Animator.StringToHash("SpecialIdle");

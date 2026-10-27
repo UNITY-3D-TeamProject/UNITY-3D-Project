@@ -43,5 +43,6 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 진행(2026-10-23): 화살표 그리기를 `Core.SpawnFacingGizmo.Draw`로 옮기고, 로비 `PlayerSpawner`(`Is Lobby Spawner` 켜짐)가 자기 위치·`Lobby Spawn Points`의 정면을 초록 화살표로 그린다. 컴파일 0에러, 씬 뷰 육안 미확인.
 - 진행(2026-10-23): 사용자 요청으로 `StageManager.MovePlayerTo` 끝에 `_playerFacade.SetLookDirection(destination.forward)` 추가. 방향은 맞지만 낙하 복귀 뒤 몸 방향 고정이 풀리지 않는 문제가 남아 플레이어 쪽 수정 대기.
 - 진행(2026-10-23): 사용자 요청으로 위 `SetLookDirection` 호출을 되돌림. 낙하 복귀 방향은 당분간 떨어지기 전 방향 그대로 두고, 복귀 뒤 몸이 시점을 따라 도는 것을 우선한다. 플레이어 쪽에 고정하지 않는 방향 설정이 생기면 다시 연결.
+- 진행(2026-10-24): 플레이어 담당이 `SetLookDirection`을 수정(`534f0311`) — 생성 연출 중이면 연출 끝까지 고정, 연출이 끝났거나 없으면 정렬 직후 바로 해제. 이를 이용해 `PlayerSpawner.SpawnPlayer`(최초·사망 재스폰·로비)는 생성 직후 `SetLookDirection(spawnPoint.forward)`, `StageManager.MovePlayerTo`(낙하 복귀)는 이동 뒤 `SetLookDirection(destination.forward)`를 부른다.
 - 최종 결정:
 - 관련 커밋/PR:
