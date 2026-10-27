@@ -612,6 +612,16 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 이동 애니메이션의 발 디딤을 소리 중재자로 전달한다. 사망 후에는 전달하지 않는다.
+        /// </summary>
+        private void OnFootstepSoundCallback()
+        {
+            if (_isDead) return;
+
+            _soundMediator.NotifyFootstep();
+        }
+
+        /// <summary>
         /// 스킬 단발음을 소리 중재자로 전달한다. 사망 후에는 전달하지 않는다.
         /// </summary>
         private void OnSkillSoundCallback(string skillName, ESoundPhase phase, Vector3? position)
@@ -850,6 +860,7 @@ namespace Mediator
             if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillStopped += _enemyAnimationMediator.NotifySkillStopped;
             if (_spawnEffectDriver) _spawnEffectDriver.OnSpawnEffectEnded += OnSpawnEffectEndedCallback;
             if (_moveMediator && _soundMediator) _moveMediator.OnJumpStarted += OnJumpStartedSoundCallback;
+            if (_playerAnimationMediator && _soundMediator) _playerAnimationMediator.OnFootstep += OnFootstepSoundCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnSkillSound += OnSkillSoundCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnSkillSoundLoop += OnSkillSoundLoopCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnVehicleSoundChanged += OnVehicleSoundChangedCallback;
@@ -918,6 +929,7 @@ namespace Mediator
             if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillStopped -= _enemyAnimationMediator.NotifySkillStopped;
             if (_spawnEffectDriver) _spawnEffectDriver.OnSpawnEffectEnded -= OnSpawnEffectEndedCallback;
             if (_moveMediator && _soundMediator) _moveMediator.OnJumpStarted -= OnJumpStartedSoundCallback;
+            if (_playerAnimationMediator && _soundMediator) _playerAnimationMediator.OnFootstep -= OnFootstepSoundCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnSkillSound -= OnSkillSoundCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnSkillSoundLoop -= OnSkillSoundLoopCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnVehicleSoundChanged -= OnVehicleSoundChangedCallback;

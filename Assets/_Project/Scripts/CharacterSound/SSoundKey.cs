@@ -7,9 +7,6 @@ namespace CharacterSound
     /// </summary>
     public readonly struct SSoundKey : IEquatable<SSoundKey>
     {
-        /// <summary>공통 Footstep 칸의 루프를 가리키는 예약 키. 설정 행은 빈 스킬 이름을 허용하지 않으므로 겹치지 않는다.</summary>
-        public static readonly SSoundKey Footstep = new SSoundKey(string.Empty, ESoundPhase.Move);
-
         private readonly string _skillName;
 
         public string SkillName => _skillName ?? string.Empty;

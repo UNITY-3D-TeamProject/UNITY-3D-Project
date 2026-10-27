@@ -104,6 +104,16 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 이동 애니메이션의 발 디딤을 전달한다.
+        /// </summary>
+        public void NotifyFootstep()
+        {
+            if (!_soundController || !isActiveAndEnabled) return;
+
+            _soundController.PlayFootstep();
+        }
+
+        /// <summary>
         /// 피격을 전달한다.
         /// </summary>
         public void NotifyHit()
