@@ -141,7 +141,7 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 실제 탈것이 붙거나 떨어진 것을 전달한다. 붙어 있는 동안 그 스킬의 이동음이 발소리를 대체한다.
+        /// 실제 탈것이 붙거나 떨어진 것을 전달한다. 붙어 있는 동안 그 스킬의 탈것 소리를 계속 내고 발소리는 내지 않는다.
         /// </summary>
         /// <param name="skillName">탈것 스킬의 실제 이름</param>
         /// <param name="isAttached">탈것이 붙어 있으면 true</param>
@@ -149,7 +149,7 @@ namespace Mediator.SubMediators
         {
             if (!_soundController || (isAttached && !isActiveAndEnabled)) return;
 
-            _soundController.SetMoveSoundReplacement(isAttached ? skillName : string.Empty);
+            _soundController.SetVehicleSound(isAttached ? skillName : string.Empty);
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 모든 반복음과 이동음 대체를 정리하고 착지 판정 기준을 비운다.
+        /// 모든 반복음과 탈것 반복음 설정을 정리하고 착지 판정 기준을 비운다.
         /// </summary>
         public void StopAllSounds()
         {

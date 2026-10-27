@@ -15,7 +15,7 @@ namespace CharacterSound
         Charge,
         /// <summary>탈것이 실제로 부착되었다.</summary>
         Mount,
-        /// <summary>이동 중 (반복). 탈것 이동음처럼 발소리를 대체할 때 쓴다.</summary>
+        /// <summary>이동 중 (반복). 탈것이 붙어 있는 동안 계속 내는 탈것 소리에 쓴다.</summary>
         Move,
         /// <summary>스캔 파동이 실제로 시작되었다.</summary>
         Wave,

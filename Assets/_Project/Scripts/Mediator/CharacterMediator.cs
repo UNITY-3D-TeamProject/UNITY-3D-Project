@@ -137,7 +137,7 @@ namespace Mediator
             UnbindCallbacks();
             Unsubscribe();
 
-            // 이벤트 경로가 끊기므로 반복음과 이동음 대체를 정리한다
+            // 이벤트 경로가 끊기므로 반복음과 탈것 반복음 설정을 정리한다
             if (_soundMediator) _soundMediator.StopAllSounds();
 
             // 이벤트 경로가 끊기므로 카메라 속도감 효과를 해제한다
