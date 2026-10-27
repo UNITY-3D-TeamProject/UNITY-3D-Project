@@ -2,6 +2,7 @@ using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
 using Movement;
+using Core.Effect;
 using Core.ObjectPool;
 
 namespace Projectile
@@ -9,7 +10,8 @@ namespace Projectile
     /// <summary>
     /// 총알의 직진 이동과 피격 처리를 담당한다.
     /// 매 프레임 SphereCollider 반지름으로 이동 구간을 SphereCast 해 빠른 속도에서도 중간 콜라이더를 건너뛰지 않고,
-    /// OnTriggerEnter 는 보조로 둔다. 맞힌 대상의 IEffectTarget 에 SOAttributeEffect 를 적용한 뒤 소멸한다.
+    /// OnTriggerEnter 는 보조로 둔다. 맞힌 대상의 IEffectTarget 에 SOAttributeEffect 를 적용하고 명중 VFX 를 낸 뒤 소멸한다.
+    /// 수명 만료로 끝날 때는 VFX 없이 사라진다.
     /// 풀에서 꺼낸 총알은 소멸 시 풀에 반납하고, 그 외(Instantiate)는 파괴한다.
     /// </summary>
     public class BulletController : MonoBehaviour
@@ -20,6 +22,8 @@ namespace Projectile
         [SerializeField] private LayerMask _hitLayers = Physics.DefaultRaycastLayers;
         [Tooltip("맞힌 대상에 적용할 기본 효과. Initialize 에서 효과를 넘기면 그 효과로 바뀐다.")]
         [SerializeField] private SOAttributeEffect _hitEffect;
+        [Tooltip("명중한 지점에서 한 번 재생할 VFX. 비어 있으면 재생하지 않는다")]
+        [SerializeField] private SOEffectData _hitVfx;
 
         [Header("Movement")]
         [SerializeField] private float _speed = 20.0f;
@@ -150,7 +154,18 @@ namespace Projectile
 
             _isFinished = true;
             ApplyHitEffect(other, hitPoint);
+            PlayHitVfx(hitPoint);
             Despawn();
+        }
+
+        /// <summary>
+        /// 명중 지점에서 총알이 날아온 쪽을 향해 명중 VFX 를 한 번 재생한다. VFX 나 EffectManager 가 없으면 생략한다.
+        /// </summary>
+        private void PlayHitVfx(Vector3 hitPoint)
+        {
+            if ((_hitVfx == null) || (EffectManager.Instance == null)) return;
+
+            EffectManager.Instance.Play(_hitVfx, hitPoint, Quaternion.LookRotation(-_direction));
         }
 
         /// <summary>
