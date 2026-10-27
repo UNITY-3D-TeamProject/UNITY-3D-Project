@@ -738,6 +738,7 @@ namespace Mediator
             {
                 _soundMediator.ClearGetMoveState();
                 _soundMediator.StopAllSounds();
+                _soundMediator.PlayDeath();
             }
             Debug.Log($"{name} is Death!");
             OnDeath?.Invoke();

@@ -113,6 +113,12 @@ namespace Mediator.SubMediators
             _soundController.PlayHit();
         }
 
+        /// <summary>사망음을 전달한다.</summary>
+        public void PlayDeath()
+        {
+            if (_soundController && isActiveAndEnabled) _soundController.PlayDeath();
+        }
+
         /// <summary>
         /// 스킬이 실제로 동작한 단계의 단발음을 전달한다.
         /// </summary>

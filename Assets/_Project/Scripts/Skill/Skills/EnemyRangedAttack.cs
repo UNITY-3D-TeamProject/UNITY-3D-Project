@@ -4,6 +4,7 @@ using AI;
 using Attribute.Core;
 using Attribute.Effect;
 using Combat;
+using CharacterSound;
 using Projectile;
 using Skill.Core;
 
@@ -33,6 +34,7 @@ namespace Skill.Skills
         #region Private Fields
         private IEffectTarget _cursor;
         private CharacterCombat _combat;
+        private SoundController _soundController;
         #endregion
 
         #region Unity Lifecycle
@@ -42,7 +44,11 @@ namespace Skill.Skills
             _cursor = GetComponentInParent<IEffectTarget>();
             // CharacterCombat 은 스킬의 부모가 아니라 캐릭터 루트 아래 다른 자식에 있다
             AIController controller = GetComponentInParent<AIController>();
-            if (controller) _combat = controller.GetComponentInChildren<CharacterCombat>();
+            if (controller)
+            {
+                _combat = controller.GetComponentInChildren<CharacterCombat>();
+                _soundController = controller.GetComponentInChildren<SoundController>();
+            }
 
             Debug.Assert(_bulletPrefab != null, $"[{name}] 총알 프리팹이 연결되지 않았습니다.");
             Debug.Assert(_firePoint != null, $"[{name}] 발사 지점이 연결되지 않았습니다.");
@@ -81,6 +87,7 @@ namespace Skill.Skills
 
             BulletController bullet = Instantiate(_bulletPrefab, _firePoint.position, rotation);
             bullet.Initialize(rotation * Vector3.forward, _hitEffect, _cursor);
+            if (_soundController) _soundController.PlaySkillSound(SkillName, ESoundPhase.Shot, _firePoint.position);
         }
         #endregion
 

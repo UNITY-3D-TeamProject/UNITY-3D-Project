@@ -59,6 +59,12 @@ Shader "Project/LobbyTwilightSkybox"
         _StarStrength ("Stars", Range(0, 2)) = 0.9
         _TwinkleSpeed ("Twinkle Speed", Float) = 1.5
 
+        [Header(Virus Infection)]
+        [HDR] _InfectColor ("Infected Tile (sRGB)", Color) = (1, 0.12, 0.22, 1)
+        _InfectChance ("Infected Tile Chance", Range(0, 1)) = 0.3
+        _InfectGlow ("Infected Tile Glow", Range(1, 3)) = 2
+        _InfectSkyTint ("Sky Red Tint", Range(0, 1)) = 0.45
+
         _Exposure ("Exposure", Float) = 1
     }
 
@@ -130,7 +136,14 @@ Shader "Project/LobbyTwilightSkybox"
                 float _StarStrength;
                 float _TwinkleSpeed;
                 float _Exposure;
+                half4 _InfectColor;
+                float _InfectChance;
+                float _InfectGlow;
+                float _InfectSkyTint;
             CBUFFER_END
+
+            // 보안이 다음 목적지일 때 VirusInvasionDirector 가 1 로 올리는 전역 값 (평소 0)
+            float _LobbyInfection;
 
             struct Attributes
             {
@@ -304,6 +317,13 @@ Shader "Project/LobbyTwilightSkybox"
                 float sweep = frac(tileU / 120.0 - t * _SweepSpeed);
                 col += _SweepStrength * exp(-pow((sweep - 0.5) * 30.0, 2.0)) * on;
 
+                // 바이러스 감염: 일부 타일이 빨간 타일로 바뀌어 불규칙하게 깜빡임
+                float infected = step(Hash13(tileId + 41.0), _InfectChance * _LobbyInfection);
+                float flickerPhase = frac(t * (0.8 + Hash13(tileId + 43.0) * 1.6) + h * 5.0);
+                float flicker = lerp(0.45, 1.0, step(0.35, flickerPhase)) * (0.85 + 0.15 * step(0.8, flickerPhase));
+                // 감염 색은 sRGB 값 그대로 쓴다 (Linear 로 들어온 값을 되돌리면 분홍빛으로 바래므로)
+                col = lerp(col, _InfectColor.rgb * _InfectGlow * flicker, infected);
+
                 return float4(col, alpha * tileMask);
             }
 
@@ -387,6 +407,8 @@ Shader "Project/LobbyTwilightSkybox"
 
                 // 1. 하늘 그라데이션
                 float3 col = SkyGradient(max(elev, 0.0));
+                // 감염 시 하늘을 붉은 쪽으로 살짝 물들임
+                col = lerp(col, col * float3(1.3, 0.55, 0.6), _InfectSkyTint * _LobbyInfection);
 
                 // 2. 해 빛무리 + 원반
                 float3 sunDir = DirFromAngles(_SunAzimuth, _SunElevation);
