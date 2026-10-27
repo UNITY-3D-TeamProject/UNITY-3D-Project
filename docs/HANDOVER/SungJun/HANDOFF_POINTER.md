@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-27** — Test의 `DataPacket_Basic` 이펙트에서 총알용 VFX 2개 분리: `Prefabs/Projectile/VFX/VFX_DataPacketTrail`(SquarePackets·DataStreaks)·`VFX_DataPacketImpact`(ImpactPackets), 셰이더 `Project/DataPacketUnlit`·머티리얼 2개를 `_Project`로 복사(Test 참조 0). 씬 뷰 Simulate로 모양 확인, 총알 연결·Play 미확인, 커밋 안 함: [작업 기록](./2026-10-27/datapacket-bullet-vfx.md)
 - **2026-10-27** — 메인씬 배경 차량·NPC 미생성 수정: `LobbyMenuBackdrop.prefab` 레인 9개가 `CrowdLane` 필드 변경(`_prefab`→`_prefabs`) 전 값이라 목록이 비어 있었음. 로비와 같게 `_prefabs` 채우고 풀 Crowd에 Car2·Car_3 등록. MainScene Play에서 46개 생성·에러 0 확인, 이어지는 순환은 미확인, 커밋 안 함: [작업 기록](./2026-10-27/mainscene-crowd-spawn-fix.md)
 - **2026-10-26** — intent-080: 왼쪽 위 라운드 패널 제목 동그라미 제거, 숫자 퍼즐 3줄(`목표 : N` / `숫자 : …  연산자 : …`), 패널 400×121 고정 + 2줄 문구는 줄 높이·글자 키움, 도둑 잡기 남은 시간은 위 가운데 `Round Timer`로 분리, 피드·보안 진행 문구도 3줄, 빈 칸 간격 넓힘, 제목 가운데 정렬. `Map_3_File` Play에서 라운드 번호를 바꿔 2·3라운드·타이머 확인, 직접 플레이 미확인, 커밋 안 함: [작업 기록](./2026-10-26/info-panel-layout.md)
 - **2026-10-26** — intent-076: 테스트 씬 `test_mainscene`으로 이름 변경, `UIButtonSound`(마우스 올림 Click_16·클릭 Click_18)를 MainScene 메뉴 버튼 4개 + 설정창 CloseButton에 연결, 스플래시 입력 소리(`MainMenuPresenter._splashPressSound`). 인게임 `Canvas_InGame` 설정창 버튼 3개도 연결(맵 씬엔 AudioManager 없어 무음), MainScene에 GameManager 배치 + `Awake` 커서 잠금 제거. Play에서 메뉴 소리·메인 커서 풀림 확인, 맵 진입 잠금·귀로 듣기·SVN 업로드 미확인, 커밋 안 함: [작업 기록](./2026-10-26/mainmenu-button-sound.md)
