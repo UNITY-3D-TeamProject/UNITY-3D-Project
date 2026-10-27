@@ -408,8 +408,8 @@ PrefabInstance:
       objectReference: {fileID: 1703851673}
     - target: {fileID: 3569806247981598558, guid: c7943a1706f5884408a434c50642d064, type: 3}
       propertyPath: _onTurnedOn.m_PersistentCalls.m_Calls.Array.data[2].m_Target
-      value: 
-      objectReference: {fileID: 600785772}
+      value:
+      objectReference: {fileID: 1588193181}
     - target: {fileID: 3569806247981598558, guid: c7943a1706f5884408a434c50642d064, type: 3}
       propertyPath: _onTurnedOn.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
@@ -432,7 +432,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3569806247981598558, guid: c7943a1706f5884408a434c50642d064, type: 3}
       propertyPath: _onTurnedOn.m_PersistentCalls.m_Calls.Array.data[2].m_MethodName
-      value: PlayCutscene
+      value: PlayMonologue
       objectReference: {fileID: 0}
     - target: {fileID: 3569806247981598558, guid: c7943a1706f5884408a434c50642d064, type: 3}
       propertyPath: _onTurnedOn.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
@@ -444,11 +444,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3569806247981598558, guid: c7943a1706f5884408a434c50642d064, type: 3}
       propertyPath: _onTurnedOn.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
-      value: UIandCinematic.CinematicManager, Assembly-CSharp
+      value: UI.UIManager, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 3569806247981598558, guid: c7943a1706f5884408a434c50642d064, type: 3}
       propertyPath: _onTurnedOn.m_PersistentCalls.m_Calls.Array.data[2].m_Arguments.m_IntArgument
-      value: 28
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5241387080760101715, guid: c7943a1706f5884408a434c50642d064, type: 3}
       propertyPath: _isOneShot
@@ -3840,7 +3840,7 @@ GameObject:
   - component: {fileID: 116916775}
   - component: {fileID: 116916774}
   m_Layer: 0
-  m_Name: Cutscene_20_Awake
+  m_Name: Cutscene_1_Awake
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3895,7 +3895,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 20
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -8354,6 +8354,7 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 4981263205527055687, guid: 38a17865e7a322741bfe7ecd570e541c, type: 3}
     - {fileID: 7672135983824294979, guid: 38a17865e7a322741bfe7ecd570e541c, type: 3}
+    - {fileID: 7548452427312350466, guid: 38a17865e7a322741bfe7ecd570e541c, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 38a17865e7a322741bfe7ecd570e541c, type: 3}
@@ -24722,88 +24723,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 475762085}
   m_Mesh: {fileID: 4300000, guid: 3b2da4848654f7f4392f1ddf25933d94, type: 2}
---- !u!1 &479874808
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 479874809}
-  - component: {fileID: 479874811}
-  - component: {fileID: 479874810}
-  m_Layer: 0
-  m_Name: Cutscene_1_Intro
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &479874809
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 479874808}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.5, z: -3.28}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 597869250}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &479874810
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 479874808}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4555d5fbfdd8b34e87a0b0df1abe9df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Map.Gimmicks.TriggerPlate
-  _onPlayerEntered:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 600785772}
-        m_TargetAssemblyTypeName: UIandCinematic.CinematicManager, Assembly-CSharp
-        m_MethodName: PlayCutscene
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 1
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  _isOneShot: 1
---- !u!65 &479874811
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 479874808}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 6, y: 4, z: 6}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &485337047
 GameObject:
   m_ObjectHideFlags: 0
@@ -31506,7 +31425,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 25
+          m_IntArgument: 4
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -31615,7 +31534,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: 2
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -33514,9 +33433,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 479874809}
   - {fileID: 116916773}
-  - {fileID: 746924813}
   - {fileID: 504137077}
   - {fileID: 378245757}
   - {fileID: 546441148}
@@ -52471,88 +52388,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 742968018}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &746924812
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 746924813}
-  - component: {fileID: 746924815}
-  - component: {fileID: 746924814}
-  m_Layer: 0
-  m_Name: PetGuide_1_MoveJump
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &746924813
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 746924812}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 14.2}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 597869250}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &746924814
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 746924812}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4555d5fbfdd8b34e87a0b0df1abe9df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Map.Gimmicks.TriggerPlate
-  _onPlayerEntered:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1588193181}
-        m_TargetAssemblyTypeName: UI.UIManager, Assembly-CSharp
-        m_MethodName: ShowPetGuide
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 1
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  _isOneShot: 1
---- !u!65 &746924815
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 746924812}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 90, y: 70, z: 2}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &751395045
 GameObject:
   m_ObjectHideFlags: 0
@@ -77863,7 +77698,7 @@ GameObject:
   - component: {fileID: 1228063680}
   - component: {fileID: 1228063679}
   m_Layer: 0
-  m_Name: Cutscene_19_Exit
+  m_Name: Cutscene_10_Exit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -77906,7 +77741,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 19
+          m_IntArgument: 10
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -96612,7 +96447,7 @@ GameObject:
   - component: {fileID: 1360848494}
   - component: {fileID: 1360848493}
   m_Layer: 0
-  m_Name: Cutscene_3_Escape
+  m_Name: Cutscene_9_Escape
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -96655,7 +96490,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 3
+          m_IntArgument: 9
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -119016,7 +118851,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 27
+          m_IntArgument: 8
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -119220,7 +119055,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 2
+          m_IntArgument: 7
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -172976,7 +172811,7 @@ Transform:
   m_GameObject: {fileID: 2101000001}
   serializedVersion: 2
   m_LocalRotation: {x: -0.08208231, y: 0.9178945, z: -0.27109945, w: -0.27791607}
-  m_LocalPosition: {x: 9.9, y: 20.9, z: 88.3}
+  m_LocalPosition: {x: 13.56, y: 20.58, z: 85.26}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -173065,7 +172900,7 @@ Transform:
   m_GameObject: {fileID: 2101000005}
   serializedVersion: 2
   m_LocalRotation: {x: 0.24837853, y: -0.4164152, z: 0.11937689, w: 0.8664039}
-  m_LocalPosition: {x: 14.42, y: 17.12, z: -27.83}
+  m_LocalPosition: {x: 12.26, y: 17.13, z: -30.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -173154,7 +172989,7 @@ Transform:
   m_GameObject: {fileID: 2101000009}
   serializedVersion: 2
   m_LocalRotation: {x: 0.29287595, y: 0.22779667, z: -0.07206184, w: 0.92581826}
-  m_LocalPosition: {x: 43, y: 7, z: 82}
+  m_LocalPosition: {x: 43.45, y: 8.39, z: 82.87}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -173406,7 +173241,7 @@ GameObject:
   - component: {fileID: 2101000024}
   - component: {fileID: 2101000023}
   m_Layer: 0
-  m_Name: Cutscene_26_MusicApproach
+  m_Name: Cutscene_6_MusicApproach
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -173449,7 +173284,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 26
+          m_IntArgument: 6
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -173570,12 +173405,12 @@ GameObject:
   - component: {fileID: 2101000032}
   - component: {fileID: 2101000031}
   m_Layer: 0
-  m_Name: Cutscene_24_IncineratorOverview
+  m_Name: Cutscene_3_IncineratorOverview
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2101000030
 Transform:
   m_ObjectHideFlags: 0
@@ -173613,7 +173448,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 24
+          m_IntArgument: 3
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
