@@ -73,8 +73,7 @@ namespace Core
             }
             // 인스펙터에서 받은 SO를 인자로 넣어줘서 playerState를 만들어준다.
             playerState = new PlayerState(_playerSOAttributeData);
-            // 게임 시작하면 마우스를 현재는 꺼놓았는데 메인메뉴씬 만들면 false로 해야한다.
-            SetCursorLocked(true);
+            // 커서는 여기서 잠그지 않는다. 메인 메뉴에서는 풀어 두고, 맵 씬에 들어오면 HandleSceneLoaded가 잠근다.
         }
 
         private void OnEnable()

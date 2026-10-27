@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[UI / InfoPanel]** 왼쪽 위 라운드 패널 제목 줄에도 동그라미가 있고, 숫자 퍼즐 문구가 한 줄에 몰리며, 도둑 잡기 문구가 패널 밖으로 넘침. 제목 동그라미 제거, 숫자 퍼즐 3줄(`목표 : 12` / `숫자 : …  연산자 : …`), 패널을 3줄 크기로 키우고 2줄 문구는 글자를 키워 채움, 남은 시간은 위 가운데 새 패널 → [문서](./intent-080-info-panel-layout.md)
 - **[Map / Gimmicks / VFX]** 보안 맵 0·1 낙하물이 착지하면 아무 연출 없이 사라짐. 착지점에 빨간 픽셀이 바이러스처럼 번졌다가 깨지듯 사라지는 바닥 연출(`Project/VirusPixelSpread`, `PixelSpreadEffect`, `Security_VirusSpreadFX`, `FallingObstacle._landEffect`) 추가. 시각 연출만. 테스트 6/6·Play 확인 완료, 육안 확인 남음 → [문서](./intent-077-security-falling-land-virus-fx.md)
 - **[AI / Boss]** 보스 A 최종 단계 A6 박수 예고가 양손 내려찍기(A1Double)와 똑같아 구분이 안 됨. 예고 시작부터 손이 주먹을 쥐고 떠오르고(`IsHoverDuringTelegraph`), 사이 칸 위 상자 예고를 1타 예고부터 박수 순간까지 세우며, 상자를 주황·검정 흐르는 경고 줄무늬(`Project/BossWarningStripe`, `M_BossClapWarning`)로 교체. 리컴파일·셰이더 컴파일 통과, 미리보기 렌더 확인, Play·육안 확인 남음 → [문서](./intent-076-boss-a-clap-telegraph.md)
 - **[Stage / SecurityApp / Map]** 2라운드 동안 0·1 위험물이 켜진 발판 위 무작위 위치로 떨어지고 보스 라운드에서 멈춤. `FallingHazardSpawner` + `FallingObstacle` + 풀링 구현. 후속: 보스와 같은 DTT `CircleWarnning` 원형 채움 연결 완료(예고 1초, 착지·반납 숨김, 재사용 초기화·머티리얼 독립 확인), PlayMode 5/5. 육안·손맛 및 `ThirdParty/Projectile` SVN 업로드 남음 → [문서](./intent-074-security-falling-hazards.md)
@@ -60,6 +61,8 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI / MainMenu]** 승인된 검은 타이틀·로비 페이드/이동·플레이어 메뉴를 정식 MainScene에 적용, 기존 매니저/설정 유지 및 Test 의존0개 → [문서](./clear/intent-081-main-menu-lobby-promotion.md) (resolved: 2026-10-27)
+- **[Audio / UI / MainMenu]** 메인 메뉴 버튼 마우스 올림(`Click_16`)·클릭(`Click_18`)·스플래시 입력 소리 없음 → `UIButtonSound` + `MainMenuPresenter._splashPressSound`, MainScene 버튼 5개 연결, Play 확인 → [문서](./clear/intent-076-mainmenu-button-sound.md) (resolved: 2026-10-26)
 - **[Core / Effect / VFX]** 루프 이펙트를 쓰려면 SO `Is Loop`와 프리팹 파티클 `Looping`을 미리 맞춰야 하고, AudioManager(`PlaySfx`/`PlaySfxLoop`)와 사용법이 다름 → `EffectManager.PlayLoop` 추가(자식 파티클 Looping을 켜고, `Play`는 프리팹 원래 값으로 되돌림), SO `IsLoop` 제거 → [문서](./clear/intent-074-effect-play-loop.md) (resolved: 2026-10-24)
 - **[Core / Scanning / Rendering]** 벽 너머 아이템 스캔 실루엣(`ZTest Greater`)이 앞을 가린 플레이어 몸 위에도 그려짐 → 렌더링 레이어 `PlayerStencil`(스폰 때 `GameManager`가 플레이어 렌더러에 추가)을 가진 불투명 메시 자리에 `PlayerStencilRendererFeature`가 스텐실 128을 찍고, 실루엣 셰이더가 그 픽셀을 건너뜀. Player.prefab 미수정, PC 렌더러만 등록 → [문서](./clear/intent-072-scan-silhouette-over-player.md) (resolved: 2026-10-23)
 - **[Audio / Core]** 3D 효과음 소스 16개가 모두 재생 중이면 새 요청을 버려 중요한 소리가 빠질 수 있음 → 모자라면 `_maxSfxSourceCount`(64)까지 하나씩 더 만들고, 상한에서는 생략 + 매니저당 경고 한 번 → [문서](./clear/intent-071-audio-sfx-source-grow.md) (resolved: 2026-10-23)

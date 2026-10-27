@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
+using Core.Audio;
 using SceneTransition;
 using UI.Settings;
 
@@ -17,6 +18,9 @@ namespace UI.MainMenu
         // 메인 메뉴 씬에는 PlayerInput이 없으므로 여기서 직접 켜고 끈다.
         [Header("Input")]
         [SerializeField] private InputActionReference _closeSettingsAction;
+
+        [Header("Sounds")]
+        [SerializeField] private SOAudioData _splashPressSound;
 
         // 스플래시에서 아무 버튼 입력을 한 번 기다리는 구독. 입력을 받으면 null.
         private IDisposable _anyKeyListener;
@@ -95,6 +99,9 @@ namespace UI.MainMenu
         {
             _anyKeyListener = null;
             _view.ShowMenu();
+
+            if ((_splashPressSound != null) && (AudioManager.Instance != null))
+                AudioManager.Instance.PlayUi(_splashPressSound);
         }
 
         private void HandleCloseSettingsPerformed(InputAction.CallbackContext context)
