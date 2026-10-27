@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using Core.Audio;
+using Map.Gimmicks;
 
 namespace Map.Maze
 {
@@ -22,11 +24,13 @@ namespace Map.Maze
         }
 
         /// <summary>내부 벽·기둥을 한 번만 지정 거리만큼 아래로 내린다.</summary>
-        public void Lower(float distance, float duration)
+        /// <param name="sound">내려가기 시작할 때 낼 소리 (비우면 무음)</param>
+        public void Lower(float distance, float duration, SOAudioData sound = null)
         {
             if (_hasLowered || (_innerWalls == null)) return;
 
             _hasLowered = true;
+            GimmickUtility.PlaySfx(sound, _innerWalls.position);
             Vector3 targetPosition = _innerWalls.localPosition + (Vector3.down * Mathf.Max(0.0f, distance));
 
             if (duration <= 0.0f)

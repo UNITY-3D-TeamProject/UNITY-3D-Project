@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
+using Core.Audio;
+using Map.Gimmicks;
 
 namespace AI.Boss.Arena
 {
@@ -23,6 +25,10 @@ namespace AI.Boss.Arena
         [SerializeField, Min(0.0f)] private float _riseSeconds = 0.35f;
         [Tooltip("솟아오를 때 제자리를 넘었다가 내려앉는 정도(EaseOutBack 계수). 0 이면 넘치지 않는다.")]
         [SerializeField, Min(0.0f)] private float _riseOvershoot = 2.0f;
+        [Tooltip("무너질 때 낼 소리. 비우면 무음.")]
+        [SerializeField] private SOAudioData _collapseSound;
+        [Tooltip("복구되어 솟아오르기 시작할 때 낼 소리. 비우면 무음.")]
+        [SerializeField] private SOAudioData _riseSound;
         #endregion
 
         #region Private Fields
@@ -65,6 +71,8 @@ namespace AI.Boss.Arena
         /// <summary>무너졌던 칸이 복구될 때만 아래에서 솟아오른다. 처음 시작 때(무너진 적 없음)는 연출하지 않는다.</summary>
         public void SetCollapsed(bool isCollapsed)
         {
+            if (isCollapsed && !_isCollapsed) GimmickUtility.PlaySfx(_collapseSound, transform.position);
+
             if (isCollapsed) StopRise();
             else if (_isCollapsed && (_riseDepth > 0.0f) && (_riseSeconds > 0.0f)) StartRise();
             _isCollapsed = isCollapsed;
@@ -114,6 +122,7 @@ namespace AI.Boss.Arena
             _restPosition = transform.position;
             _riseElapsed = 0.0f;
             _isRising = true;
+            GimmickUtility.PlaySfx(_riseSound, _restPosition);
             transform.position = _restPosition + (Vector3.down * _riseDepth);
         }
 

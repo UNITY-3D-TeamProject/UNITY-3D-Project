@@ -57,8 +57,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _indicator: {fileID: 5332817013669326264}
+  _extraIndicators: []
   _onColor: {r: 0.2, g: 1, b: 0.4, a: 1}
   _offColor: {r: 1, g: 0.25, b: 0.2, a: 1}
+  _whileOnLoopSound: {fileID: 0}
 --- !u!1 &2738613058599002129
 GameObject:
   m_ObjectHideFlags: 0
@@ -340,8 +342,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _indicator: {fileID: 400303530721817061}
+  _extraIndicators: []
   _onColor: {r: 0.2, g: 1, b: 0.4, a: 1}
   _offColor: {r: 1, g: 0.25, b: 0.2, a: 1}
+  _whileOnLoopSound: {fileID: 0}
 --- !u!1 &6079926145974656252
 GameObject:
   m_ObjectHideFlags: 0
@@ -662,8 +666,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _indicator: {fileID: 0}
+  _extraIndicators: []
   _onColor: {r: 0.2, g: 1, b: 0.4, a: 1}
   _offColor: {r: 1, g: 0.25, b: 0.2, a: 1}
+  _whileOnLoopSound: {fileID: 0}
 --- !u!114 &9005906261479660959
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -709,6 +715,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ShootTarget
       objectReference: {fileID: 0}
+    - target: {fileID: 6949904365123938595, guid: 16f36bda4d0601c439aca0129c9cf7db, type: 3}
+      propertyPath: _pressedSound
+      value: 
+      objectReference: {fileID: 11400000, guid: 91219a10086341c490c81cc755c5b51d, type: 2}
     - target: {fileID: 6949904365123938595, guid: 16f36bda4d0601c439aca0129c9cf7db, type: 3}
       propertyPath: _onPressed.m_PersistentCalls.m_Calls.Array.size
       value: 1
@@ -800,6 +810,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ShootTarget
       objectReference: {fileID: 0}
+    - target: {fileID: 6949904365123938595, guid: 16f36bda4d0601c439aca0129c9cf7db, type: 3}
+      propertyPath: _pressedSound
+      value: 
+      objectReference: {fileID: 11400000, guid: 91219a10086341c490c81cc755c5b51d, type: 2}
     - target: {fileID: 6949904365123938595, guid: 16f36bda4d0601c439aca0129c9cf7db, type: 3}
       propertyPath: _onPressed.m_PersistentCalls.m_Calls.Array.size
       value: 1

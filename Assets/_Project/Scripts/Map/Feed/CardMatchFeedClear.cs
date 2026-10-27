@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
+using Core.Audio;
 using Interaction;
 using Map.Gimmicks;
 
@@ -39,6 +40,16 @@ namespace Map.Feed
         [Header("Fail")]
         [Tooltip("하트를 모두 잃었을 때 플레이어에게 위에서부터 순서대로 적용할 Effect (ValueSource는 Float)")]
         [SerializeField] private SOAttributeEffect[] _failEffects;
+
+        [Header("Sound")]
+        [Tooltip("시작 상호작용할 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _interactSound;
+
+        [Tooltip("같은 그림 2장을 맞췄을 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _matchSound;
+
+        [Tooltip("다른 그림 2장을 골랐을 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _errorSound;
         #endregion
 
         #region Private Fields
@@ -75,6 +86,7 @@ namespace Map.Feed
         {
             if (_isStarted || _feed.IsCleared) return;
             _isStarted = true;
+            GimmickUtility.PlayUi(_interactSound);
 
             // AttributeSet은 플레이어 루트가 아니라 자식(AttributePrefab)에 있다
             _player = interactor.GetComponentInChildren<IEffectTarget>();
@@ -132,6 +144,7 @@ namespace Map.Feed
             {
                 yield return new WaitForSeconds(_matchShowTime);
 
+                GimmickUtility.PlaySfx(_matchSound, transform.position);
                 first.gameObject.SetActive(false);
                 second.gameObject.SetActive(false);
                 _matchedPairCount++;
@@ -146,6 +159,7 @@ namespace Map.Feed
 
             yield return new WaitForSeconds(_mismatchShowTime);
 
+            GimmickUtility.PlaySfx(_errorSound, transform.position);
             first.Conceal();
             second.Conceal();
             _isResolving = false;

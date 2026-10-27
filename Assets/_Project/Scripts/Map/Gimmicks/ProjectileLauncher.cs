@@ -1,5 +1,6 @@
 using UnityEngine;
 using Attribute.Effect;
+using Core.Audio;
 using Projectile;
 
 namespace Map.Gimmicks
@@ -30,6 +31,10 @@ namespace Map.Gimmicks
 
         [Tooltip("총알이 사라질 때까지의 시간(초). 총알이 벽을 통과하므로 통로 폭에 맞춰 짧게 둔다. 0이면 총알 프리팹의 수명을 따른다.")]
         [SerializeField, Min(0.0f)] private float _bulletLifeTime = 0.25f;
+
+        [Header("Sound")]
+        [Tooltip("발사할 때 낼 소리. 발사 지점이 여러 개여도 한 번만 낸다. 비우면 무음")]
+        [SerializeField] private SOAudioData _fireSound;
         #endregion
 
         #region Private Fields
@@ -65,6 +70,8 @@ namespace Map.Gimmicks
         public void Fire()
         {
             if (!isActiveAndEnabled || (_bulletPrefab == null)) return;
+
+            GimmickUtility.PlaySfx(_fireSound, transform.position);
 
             if ((_firePoints != null) && (_firePoints.Length > 0))
             {
