@@ -153,6 +153,37 @@ Transform:
   - {fileID: 6716303015397596653}
   m_Father: {fileID: 1269223681385773556}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &244875659318997970
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4025114598092191994}
+  m_Layer: 0
+  m_Name: JumpVfxPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4025114598092191994
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 244875659318997970}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.00000008076226, y: 0.73553956, z: -0.6774819, w: -0.00000008768331}
+  m_LocalPosition: {x: -0.000000052517805, y: -0.1169329, z: -0.22027536}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1176690491248837343}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &537639954944050344
 GameObject:
   m_ObjectHideFlags: 0
@@ -2617,6 +2648,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 251260666619412262}
+  - {fileID: 4025114598092191994}
   m_Father: {fileID: 1075002595099638617}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7066876632004969688
@@ -3790,6 +3822,14 @@ PrefabInstance:
       value: Fire
       objectReference: {fileID: 0}
     - target: {fileID: 8827643837087973989, guid: a235576c8e08dcb43b441281b659a175, type: 3}
+      propertyPath: _shotVfx
+      value: 
+      objectReference: {fileID: 11400000, guid: a0050d5389c996b4c8d5c6e330530c84, type: 2}
+    - target: {fileID: 8827643837087973989, guid: a235576c8e08dcb43b441281b659a175, type: 3}
+      propertyPath: _chargeVfx
+      value: 
+      objectReference: {fileID: 11400000, guid: 7f4b02e55e80bd74f912c86c4021660f, type: 2}
+    - target: {fileID: 8827643837087973989, guid: a235576c8e08dcb43b441281b659a175, type: 3}
       propertyPath: _firePoint
       value: 
       objectReference: {fileID: 3183685172745475560}
@@ -4039,6 +4079,10 @@ PrefabInstance:
       value: SpawnVehicle
       objectReference: {fileID: 0}
     - target: {fileID: 4027413288509265592, guid: 4ed2db9c0c0f0b541b7c565ef123e92b, type: 3}
+      propertyPath: _hoverVfx
+      value: 
+      objectReference: {fileID: 11400000, guid: 8cc27e660887f08499345c6cd270f9e8, type: 2}
+    - target: {fileID: 4027413288509265592, guid: 4ed2db9c0c0f0b541b7c565ef123e92b, type: 3}
       propertyPath: _fovOffset
       value: 30
       objectReference: {fileID: 0}
@@ -4049,6 +4093,26 @@ PrefabInstance:
     - target: {fileID: 4027413288509265592, guid: 4ed2db9c0c0f0b541b7c565ef123e92b, type: 3}
       propertyPath: _vehicleOffset.y
       value: 0.07
+      objectReference: {fileID: 0}
+    - target: {fileID: 4027413288509265592, guid: 4ed2db9c0c0f0b541b7c565ef123e92b, type: 3}
+      propertyPath: _hoverVfxOffsets.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4027413288509265592, guid: 4ed2db9c0c0f0b541b7c565ef123e92b, type: 3}
+      propertyPath: _hoverVfxOffsets.Array.data[0].y
+      value: -0.165
+      objectReference: {fileID: 0}
+    - target: {fileID: 4027413288509265592, guid: 4ed2db9c0c0f0b541b7c565ef123e92b, type: 3}
+      propertyPath: _hoverVfxOffsets.Array.data[0].z
+      value: 0.677
+      objectReference: {fileID: 0}
+    - target: {fileID: 4027413288509265592, guid: 4ed2db9c0c0f0b541b7c565ef123e92b, type: 3}
+      propertyPath: _hoverVfxOffsets.Array.data[1].y
+      value: -0.165
+      objectReference: {fileID: 0}
+    - target: {fileID: 4027413288509265592, guid: 4ed2db9c0c0f0b541b7c565ef123e92b, type: 3}
+      propertyPath: _hoverVfxOffsets.Array.data[1].z
+      value: -0.677
       objectReference: {fileID: 0}
     - target: {fileID: 8643280041519452706, guid: 4ed2db9c0c0f0b541b7c565ef123e92b, type: 3}
       propertyPath: '_references.Array.data[0]'
@@ -4329,6 +4393,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 501191497638698248}
     m_Modifications:
+    - target: {fileID: 389906408494507046, guid: 3f8d6434a9f925a40b8d5d7f27b2e500, type: 3}
+      propertyPath: _jumpVfx
+      value: 
+      objectReference: {fileID: 11400000, guid: 3897aa775597a5844a26fab577a7d3d6, type: 2}
+    - target: {fileID: 389906408494507046, guid: 3f8d6434a9f925a40b8d5d7f27b2e500, type: 3}
+      propertyPath: _jumpVfxPoint
+      value: 
+      objectReference: {fileID: 4025114598092191994}
     - target: {fileID: 7958016549331973283, guid: 3f8d6434a9f925a40b8d5d7f27b2e500, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
