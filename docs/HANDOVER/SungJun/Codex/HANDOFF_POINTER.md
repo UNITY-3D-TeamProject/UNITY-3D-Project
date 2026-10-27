@@ -3,6 +3,9 @@
 이 파일은 Codex 명의로 진행한 작업 이력의 목차이다.
 
 ## 변경 이력 (최신순)
+- **2026-10-27** — 사용자 요청에 따라 정식 메인화면 로컬 커밋 범위 정리. 관련 에셋/meta/기록 포함, 기존 설정·RT·Test 저장소 제외: [커밋 기록](./2026-10-27/main-menu-commit.md)
+- **2026-10-27** — 삭제된 메인화면 음영·타이틀 머티리얼·VolumeProfile을 기존 GUID로 복원해 흰색 덮임 해소, 재오픈/Play 검증: [복구 기록](./2026-10-27/main-menu-assets-repair.md)
+- **2026-10-27** — 승인된 로비 메인화면을 정식 MainScene에 적용. 기존 매니저/설정창 유지, Test 의존0개, 페이드/카메라/메뉴 및 설정 ESC 확인: [작업 기록](./2026-10-27/main-menu-lobby-promotion.md)
 - **2026-10-22** — SOCameraShot 입력만 잠금 설계: 기존 ShouldPauseTime=false·Cutscene 맵 재사용, Finish의 무조건 시간 정지를 제거해 마지막 단계 정책을 복귀 블렌드까지 유지하도록 제안. 코드 변경·Play 없음: [검토 기록](./2026-10-22/camera-shot-input-only-design.md)
 - **2026-10-22** — 맵·플레이어·UI 기능 기준 필요한 사운드 후보와 제작 우선순위 정리: [작업 기록](./2026-10-22/sound-needs-inventory.md)
 - **2026-10-21** — Map_4_Security 방 4개·특수몹 발판 5개·보스 로비행 탈출문 연결, 발판 NavMesh 베이크, Play 생성·클리어·사망 복구·체력바 단계 검증. 직접 조작·로비 전환 미확인: [작업 기록](./2026-10-21/security-map-round-wiring.md)
