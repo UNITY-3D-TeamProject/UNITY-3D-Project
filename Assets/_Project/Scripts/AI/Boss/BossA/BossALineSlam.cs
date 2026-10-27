@@ -11,6 +11,7 @@ namespace AI.Boss.BossA
     public class BossALineSlam : BossAPatternBase
     {
         #region Serialized Fields
+        [Tooltip("내려치기 전 줄 예고 시간(초). 보스 단계별 예고 배율(TelegraphScale)이 곱해진다")]
         [SerializeField, Min(0.0f)] private float _telegraphSeconds = 1.5f;
         [Tooltip("임시값. 손이 한 칸을 지나가는 시간(초). 이 간격으로 칸이 차례로 무너진다")]
         [SerializeField, Min(0.0f)] private float _sweepSecondsPerTile = 0.15f;

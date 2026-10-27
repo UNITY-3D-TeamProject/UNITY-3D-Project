@@ -271,12 +271,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdController
   _lookAheadDistance: 1
+  _lateralOffsetRange: 0
   _detectDistance: 4
   _detectRadius: 1.4
   _detectHeight: 1.2
   _detectLayers:
     serializedVersion: 2
     m_Bits: 6208
+  _playerLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  _restartDelay: 0.4
+  _speedVariation: 0
+  _canJumpOver: 0
+  _jumpOverSpeedMultiplier: 3
+  _noJumpEdgeDistance: 3
+  _jumpPowerAttributeKey: JumpPower
 --- !u!114 &2999080960077276631
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -297,7 +307,10 @@ MonoBehaviour:
   _rotateMediator: {fileID: 1586200280586139899}
   _spawnMediator: {fileID: 0}
   _playerAnimationMediator: {fileID: 0}
+  _enemyAnimationMediator: {fileID: 0}
   _petMediator: {fileID: 0}
+  _spawnEffectDriver: {fileID: 0}
+  _soundMediator: {fileID: 0}
 --- !u!1 &6039756841228888471
 GameObject:
   m_ObjectHideFlags: 0

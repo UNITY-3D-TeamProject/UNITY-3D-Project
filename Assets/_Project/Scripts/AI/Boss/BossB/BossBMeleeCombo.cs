@@ -26,6 +26,7 @@ namespace AI.Boss.BossB
         [Header("Knockback")]
         [Tooltip("마지막 타에서 밀어내는 거리(m)")]
         [SerializeField, Min(0.0f)] private float _lastKnockbackDistance = 2.0f;
+        [Tooltip("마지막 타에 밀려나는 데 걸리는 시간(초)")]
         [SerializeField, Min(0.05f)] private float _lastKnockbackSeconds = 0.2f;
         #endregion
 
