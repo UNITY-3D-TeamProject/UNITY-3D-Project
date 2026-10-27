@@ -27,6 +27,57 @@ namespace AI.Editor
         private const float COLUMN_WIDTH = 110.0f;
         #endregion
 
+        #region Static Fields
+        /// <summary>
+        /// 행 이름에 마우스를 올리면 보여줄 설명. 컴포넌트 값은 필드의 [Tooltip] 을 쓰므로 여기에는
+        /// 설명을 붙일 곳이 없는 어트리뷰트 이름·블랙보드 변수 이름·"노드(조건) 이름 / 필드 이름"만 적는다.
+        /// </summary>
+        private static readonly Dictionary<string, string> Descriptions = new Dictionary<string, string>
+        {
+            // 어트리뷰트
+            { "MaxHp", "최대 체력" },
+            { "CurrentHp", "스폰할 때의 체력" },
+            { "MoveSpeed", "이동 속도" },
+            { "AttackDamage", "공격 피해량" },
+
+            // 블랙보드
+            { "IsGroggy", "그로기 상태인지. 전투 중 BossEncounter 가 바꾸는 값" },
+            { "ComboRange", "보스 B 가 근접 콤보를 고르는 거리 (m)" },
+            { "ChargeReadyTime", "다음 돌진이 가능한 시각. 전투 중 자동으로 바뀌는 값" },
+            { "LeapReadyTime", "다음 도약이 가능한 시각. 전투 중 자동으로 바뀌는 값" },
+            { "AttackRange", "대상이 이 거리 안에 들어오면 공격 (m)" },
+            { "RetreateRange", "대상이 이 거리 안에 들어오면 후퇴 (m). 특수몹은 연결된 노드가 없어 효과 없음" },
+            { "RetreatExitRange", "후퇴할 때 대상과 벌릴 거리이자 한 번에 물러나는 거리 (m)" },
+            { "WindRange", "대상이 이 거리 안에 들어오면 바람 공격 시도 (m)" },
+            { "WindReach", "바람 스킬을 쓸 수 있는 최대 거리 (m). 이보다 멀면 스킬을 쓰지 않음" },
+            { "WindCooldown", "바람 공격 후 다음 사용까지 기다리는 시간 (초)" },
+            { "WindReadyTime", "다음 바람 공격이 가능한 시각. 전투 중 자동으로 바뀌는 값" },
+            { "RetreateMoveDistance", "연결된 노드가 없어 바꿔도 효과 없음" },
+            { "AttackExitRange", "연결된 노드가 없어 바꿔도 효과 없음" },
+
+            // BT 노드 값
+            { "Variable Comparison / ComparisonValue", "블랙보드 변수와 비교할 값" },
+            { "Time Out / Duration", "아래 노드를 이 시간이 지나면 강제로 끝냄 (초)" },
+            { "Wait (Seconds) / SecondsToWait", "기다리는 시간 (초)" },
+            { "스킬 사용 후 대기 / Range", "대상이 이 거리 안에 있을 때만 스킬 사용 (m)" },
+            { "준비 시각 설정 / Delay", "스킬이 끝난 뒤 다음 사용까지 기다리는 시간 (쿨타임, 초)" },
+            { "공격 / Range", "대상이 이 거리 안에 있으면 공격 (m)" },
+            { "공격 / ExitRange", "공격을 멈추는 거리 (m). Range 보다 크게 두면 경계에서 공격·추격이 번갈아 바뀌지 않음. Range 이하면 Range 사용" },
+            { "후퇴 / Range", "대상과 이 거리 이상 벌어질 때까지 후퇴 (m)" },
+            { "후퇴 / MoveDistance", "한 번에 물러나는 거리 (m)" },
+            { "후퇴 / SpeedRatio", "후퇴할 때 이동 속도 배율" },
+            { "원거리 공격 / Range", "대상이 이 거리 안에 있으면 사격 (m)" },
+            { "원거리 공격 / MinInterval", "사격 사이 대기 시간의 최솟값 (초). 최솟값~최댓값 사이에서 무작위" },
+            { "원거리 공격 / MaxInterval", "사격 사이 대기 시간의 최댓값 (초)" },
+            { "원거리 공격 / WindupDuration", "조준선을 보여주는 예고 시간 (초). 사격 모션 지연보다 짧으면 그만큼 늘어남" },
+            { "원거리 공격 / KeepMoving", "켜면 사격 중에도 이동을 멈추지 않음 (후퇴하며 사격)" },
+            { "원거리 공격 / AttackMotionDuration", "발사 직후 조준 방향을 유지하는 발사 모션 시간 (초)" },
+            { "원거리 공격 / FireDelay", "사격 모션 시작부터 총알이 나가기까지의 시간 (초). 사격 스킬의 Fire Delay 와 같게 둠" },
+            { "사선이 트여 있다 / IsClear", "켜면 대상까지 사선이 트였을 때, 끄면 막혔을 때 통과" },
+            { "대상이 거리 안에 있다 / Range", "대상이 이 거리 안에 있으면 통과 (m)" },
+        };
+        #endregion
+
         #region Private Fields
         private readonly List<SOMonsterData> _monsters = new List<SOMonsterData>();
         private readonly List<string> _groups = new List<string>();
@@ -40,6 +91,7 @@ namespace AI.Editor
         private sealed class Row
         {
             public string Label;
+            public string Tooltip;
             public Cell[] Cells;
         }
 
@@ -138,7 +190,8 @@ namespace AI.Editor
                 SerializedProperty element = attributes.GetArrayElementAtIndex(i);
                 SerializedProperty valueProperty = element.FindPropertyRelative("Value");
                 string path = valueProperty.propertyPath;
-                AddCell(GROUP_ATTRIBUTE, element.FindPropertyRelative("AttributeName").stringValue, column,
+                string attributeName = element.FindPropertyRelative("AttributeName").stringValue;
+                AddCell(GROUP_ATTRIBUTE, attributeName, FindDescription(attributeName), column,
                     ReadProperty(valueProperty), value =>
                     {
                         SerializedObject target = new SerializedObject(data);
@@ -183,7 +236,7 @@ namespace AI.Editor
                     if (!IsEditableType(property.propertyType)) continue;
 
                     string path = property.propertyPath;
-                    AddCell(group, ToLabel(path), column, ReadProperty(property),
+                    AddCell(group, ToLabel(path), property.tooltip, column, ReadProperty(property),
                         value => WritePrefab(prefabPath, componentIndex, path, value));
                 }
             }
@@ -203,7 +256,7 @@ namespace AI.Editor
                 foreach (VariableModel variable in authoring.Blackboard.Variables)
                 {
                     if (!IsEditableType(variable.Type)) continue;
-                    AddCell(GROUP_BLACKBOARD, variable.Name, column, variable.ObjectValue, value =>
+                    AddCell(GROUP_BLACKBOARD, variable.Name, FindDescription(variable.Name), column, variable.ObjectValue, value =>
                     {
                         authoring.Blackboard.MarkUndo(UNDO_NAME);
                         variable.ObjectValue = value;
@@ -218,27 +271,31 @@ namespace AI.Editor
             {
                 if (!(node is BehaviorGraphNodeModel behaviorNode)) continue;
 
-                string nodeName = NodeRegistry.GetInfoFromTypeID(behaviorNode.NodeTypeID)?.Name ?? node.GetType().Name;
-                nameCounts.TryGetValue(nodeName, out int count);
-                nameCounts[nodeName] = ++count;
-                if (count > 1) nodeName += " #" + count;
+                string baseName = NodeRegistry.GetInfoFromTypeID(behaviorNode.NodeTypeID)?.Name ?? node.GetType().Name;
+                nameCounts.TryGetValue(baseName, out int count);
+                nameCounts[baseName] = ++count;
+                string nodeName = (count > 1) ? baseName + " #" + count : baseName;
 
-                AddFieldCells(column, authoring, nodeName, behaviorNode.Fields);
+                AddFieldCells(column, authoring, nodeName, baseName, behaviorNode.Fields);
                 if (!(node is IConditionalNodeModel conditional)) continue;
 
                 foreach (ConditionModel condition in conditional.ConditionModels)
                 {
                     string conditionName = NodeRegistry.GetConditionInfoFromTypeID(condition.ConditionTypeID)?.Name ?? "Condition";
-                    AddFieldCells(column, authoring, nodeName + " / " + conditionName, condition.Fields);
+                    AddFieldCells(column, authoring, nodeName + " / " + conditionName, conditionName, condition.Fields);
                 }
             }
         }
 
-        /// <summary>블랙보드에 연결되지 않은 노드 로컬 값만 수집한다. 연결된 값은 블랙보드 행에서 고친다.</summary>
+        /// <summary>
+        /// 블랙보드에 연결되지 않은 노드 로컬 값만 수집한다. 연결된 값은 블랙보드 행에서 고친다.
+        /// 설명은 순서 번호·부모 노드와 상관없이 "필드 주인(노드·조건) 이름 / 필드 이름"으로 찾는다.
+        /// </summary>
         private void AddFieldCells(
             int column,
             BehaviorAuthoringGraph authoring,
             string prefix,
+            string ownerName,
             IEnumerable<BehaviorGraphNodeModel.FieldModel> fields)
         {
             foreach (BehaviorGraphNodeModel.FieldModel field in fields)
@@ -251,7 +308,8 @@ namespace AI.Editor
                 }
 
                 BlackboardVariable local = field.LocalValue;
-                AddCell(GROUP_BT_NODE, prefix + " / " + field.FieldName, column, local.ObjectValue, value =>
+                AddCell(GROUP_BT_NODE, prefix + " / " + field.FieldName, FindDescription(ownerName + " / " + field.FieldName),
+                    column, local.ObjectValue, value =>
                 {
                     authoring.MarkUndo(UNDO_NAME);
                     local.ObjectValue = value;
@@ -260,7 +318,7 @@ namespace AI.Editor
             }
         }
 
-        private void AddCell(string group, string label, int column, object value, Action<object> write)
+        private void AddCell(string group, string label, string description, int column, object value, Action<object> write)
         {
             if (!_rowsByGroup.TryGetValue(group, out List<Row> rows))
             {
@@ -272,7 +330,9 @@ namespace AI.Editor
             Row row = rows.Find(r => r.Label == label);
             if (row == null)
             {
-                row = new Row { Label = label, Cells = new Cell[_monsters.Count] };
+                // 잘린 라벨도 읽을 수 있도록 툴팁 첫 줄에 라벨 전체를 둔다.
+                string tooltip = string.IsNullOrEmpty(description) ? label : label + "\n" + description;
+                row = new Row { Label = label, Tooltip = tooltip, Cells = new Cell[_monsters.Count] };
                 rows.Add(row);
             }
             row.Cells[column] = new Cell { Value = value, Write = write };
@@ -328,7 +388,7 @@ namespace AI.Editor
             {
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    EditorGUILayout.LabelField(new GUIContent(row.Label, row.Label), GUILayout.Width(LABEL_WIDTH));
+                    EditorGUILayout.LabelField(new GUIContent(row.Label, row.Tooltip), GUILayout.Width(LABEL_WIDTH));
                     foreach (Cell cell in row.Cells) DrawCell(cell);
                 }
             }
@@ -372,6 +432,11 @@ namespace AI.Editor
         private bool IsMatch(string text)
         {
             return text.IndexOf(_search, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static string FindDescription(string key)
+        {
+            return Descriptions.TryGetValue(key, out string description) ? description : null;
         }
 
         private static bool IsProjectScript(MonoBehaviour behaviour)

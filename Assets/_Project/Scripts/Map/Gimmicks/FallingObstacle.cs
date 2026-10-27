@@ -9,8 +9,9 @@ namespace Map.Gimmicks
     /// 위에서 떨어졌다가 다시 올라가는 장애물의 움직임.
     /// 놓인 자리가 꼭대기이며, 대기 → 낙하 → 바닥에서 정지 → 상승을 한 번 또는 반복한다.
     /// 풀에서 꺼낸 위험물은 DropOnto(착지점)으로 시작하고, 바닥에 닿으면 풀에 반납된다.
-    /// 대기하는 동안 떨어질 자리의 DTT 원형 예고가 채워지거나 기존 표시가 점점 짙은 빨간색으로 변한다.
+    /// 대기~낙하 동안 떨어질 자리의 DTT 원형 예고가 채워지거나 기존 표시가 점점 짙은 빨간색으로 변하고, 바닥에 닿는 순간 다 찬다.
     /// 데미지는 같은 오브젝트에 EffectZone(Enter Effects)과 Trigger 콜라이더를 붙여서 준다.
+    /// 바닥에 닿아 사라질 때 착지 연출(_landEffect)이 있으면 착지점 바닥에 만든다.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public class FallingObstacle : MonoBehaviour
@@ -27,7 +28,7 @@ namespace Map.Gimmicks
         [Tooltip("낙하 가속도")]
         [SerializeField, Min(0.1f)] private float _gravity = 20.0f;
 
-        [Tooltip("떨어지기 전 대기 시간(초). 이 시간 동안 DTT 예고가 채워지거나 기존 예고 표시가 짙어진다.")]
+        [Tooltip("떨어지기 전 대기 시간(초). 예고는 이 대기 시간과 낙하 시간을 합친 동안 채워진다.")]
         [SerializeField, Min(0.0f)] private float _waitBeforeFall = 1.0f;
 
         [Header("Return")]
@@ -41,7 +42,7 @@ namespace Map.Gimmicks
         [Tooltip("떨어질 자리에 깔리는 예고 표시 (선택). 시작할 때 바닥 위치로 옮겨지고, 대기~낙하 동안에만 보인다.")]
         [SerializeField] private Renderer _warningMarker;
 
-        [Tooltip("보스와 같은 DTT 원형 예고 (선택). AoeVfxPlayer가 붙은 원형 예고를 연결하면 대기 시간 동안 채워진다.")]
+        [Tooltip("보스와 같은 DTT 원형 예고 (선택). AoeVfxPlayer가 붙은 원형 예고를 연결하면 대기~낙하 동안 채워져 바닥에 닿을 때 다 찬다.")]
         [SerializeField] private CircleRegion _warningCircle;
 
         [Tooltip("예고가 시작될 때의 색")]
@@ -49,6 +50,10 @@ namespace Map.Gimmicks
 
         [Tooltip("떨어지기 직전의 색")]
         [SerializeField] private Color _warningEndColor = new Color(0.7f, 0.0f, 0.0f, 0.9f);
+
+        [Header("Land Effect")]
+        [Tooltip("바닥에 닿아 사라질 때 착지점 바닥에 만들 연출 (선택). Is Destroy On Land 가 켜졌을 때만 쓴다.")]
+        [SerializeField] private GameObject _landEffect;
 
         [Header("Options")]
         [Tooltip("켜면 시작하자마자 떨어지기 시작한다. 끄면 Drop()이 호출될 때까지 기다린다. (TriggerPlate 등에서 호출)")]
@@ -176,9 +181,7 @@ namespace Map.Gimmicks
         {
             if ((_warningMarker == null) && (_warningCircle == null)) return;
 
-            // 바닥 높이 = 다 떨어졌을 때의 중심 높이 - 콜라이더 절반 높이
-            float halfHeight = TryGetComponent(out Collider ownCollider) ? ownCollider.bounds.extents.y : 0.0f;
-            Vector3 groundPosition = _topPosition + (Vector3.down * (_fallDistance + halfHeight - WARNING_GROUND_OFFSET));
+            Vector3 groundPosition = GetGroundPosition();
 
             // 자식으로 두면 장애물과 함께 떨어지므로 분리한다
             if (_warningCircle != null)
@@ -198,6 +201,22 @@ namespace Map.Gimmicks
             }
 
             SetWarningVisible(false);
+        }
+
+        /// <summary>
+        /// 떨어질 바닥 위 지점. 다 떨어졌을 때의 중심 높이 - 콜라이더 절반 높이에서 겹쳐 보이지 않게 살짝 띄운다.
+        /// </summary>
+        private Vector3 GetGroundPosition()
+        {
+            float halfHeight = TryGetComponent(out Collider ownCollider) ? ownCollider.bounds.extents.y : 0.0f;
+            return _topPosition + (Vector3.down * (_fallDistance + halfHeight - WARNING_GROUND_OFFSET));
+        }
+
+        private void SpawnLandEffect()
+        {
+            if (_landEffect == null) return;
+
+            Instantiate(_landEffect, GetGroundPosition(), Quaternion.identity);
         }
 
         private void SetWarningColor(float progress)
@@ -234,19 +253,19 @@ namespace Map.Gimmicks
 
             do
             {
-                // 대기: DTT 예고가 채워지거나 기존 예고 표시가 점점 짙어진다
+                // 대기~낙하: 바닥에 닿는 순간 다 차도록 DTT 예고가 채워지거나 기존 예고 표시가 점점 짙어진다
                 SetWarningColor(0.0f);
                 SetWarningVisible(true);
 
+                // 정지 상태에서 등가속도로 떨어지는 시간 = √(2 × 거리 ÷ 가속도)
+                float warningDuration = _waitBeforeFall + Mathf.Sqrt((2.0f * _fallDistance) / _gravity);
                 float elapsed = 0.0f;
                 while (elapsed < _waitBeforeFall)
                 {
                     elapsed += Time.deltaTime;
-                    SetWarningColor(elapsed / _waitBeforeFall);
+                    SetWarningColor(elapsed / warningDuration);
                     yield return null;
                 }
-
-                SetWarningColor(1.0f);
 
                 // 낙하
                 Vector3 bottomPosition = _topPosition + (Vector3.down * _fallDistance);
@@ -255,13 +274,18 @@ namespace Map.Gimmicks
                 {
                     speed += _gravity * Time.deltaTime;
                     transform.position = Vector3.MoveTowards(transform.position, bottomPosition, speed * Time.deltaTime);
+                    elapsed += Time.deltaTime;
+                    SetWarningColor(Mathf.Min(elapsed / warningDuration, 1.0f));
                     yield return null;
                 }
+
+                SetWarningColor(1.0f);
 
                 SetWarningVisible(false);
 
                 if (_isDestroyOnLand)
                 {
+                    SpawnLandEffect();
                     Despawn();
                     yield break;
                 }
