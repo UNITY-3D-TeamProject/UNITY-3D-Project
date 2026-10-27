@@ -272,6 +272,10 @@ namespace AI.Boss.Fight
         {
             _isChargePreparing = false;
             _model.NotifyBDown();
+            if ((_model.DownCount >= 2) && _bossB.TryGetComponent(out BossDeathSkill deathSkill))
+            {
+                deathSkill.TryExecute();
+            }
         }
 
         private void HandleChargePrepared(Vector3 origin, Vector3 direction)

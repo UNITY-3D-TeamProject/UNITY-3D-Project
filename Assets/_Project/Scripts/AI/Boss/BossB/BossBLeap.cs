@@ -1,4 +1,5 @@
 using UnityEngine;
+using CharacterSound;
 
 namespace AI.Boss.BossB
 {
@@ -68,6 +69,7 @@ namespace AI.Boss.BossB
         #endregion
 
         #region Private Fields
+        private SoundController _soundController;
         private ELeapPhase _phase;
         private int _landingTile;
         private float _timer;
@@ -85,6 +87,14 @@ namespace AI.Boss.BossB
 
         /// <inheritdoc />
         public override bool IsBodyInFlight => IsRunning && (_phase == ELeapPhase.Flight);
+        #endregion
+
+        #region Unity Lifecycle
+        protected override void Awake()
+        {
+            base.Awake();
+            if (Boss) _soundController = Boss.GetComponentInChildren<SoundController>();
+        }
         #endregion
 
         #region Protected Methods
@@ -289,6 +299,7 @@ namespace AI.Boss.BossB
             Arena.SetReservedTile(-1);
             DestroyCircle();
 
+            if (_soundController) _soundController.PlaySkillSound(SkillName, ESoundPhase.Impact, landing);
             TryHitTarget(landing, _landingRadius);
             ApplyShockwave(landing);
 

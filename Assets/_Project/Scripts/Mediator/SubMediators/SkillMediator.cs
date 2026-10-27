@@ -477,6 +477,9 @@ namespace Mediator.SubMediators
                     // 강제 하차(자원 고갈 등)도 쿨타임이 시작되므로 하차는 여기서 알린다
                     if (!spawnVehicle.IsRiding) OnSkillUsed?.Invoke(spawnVehicle.SkillName, spawnVehicle.Cooldown);
                     break;
+                case EnemyRangedAttack:
+                    // 실제 발사 시점에 스킬이 소리를 요청한다.
+                    break;
                 case Scan:
                     OnScanRequested?.Invoke();
                     break;

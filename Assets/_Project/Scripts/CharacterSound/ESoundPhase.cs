@@ -19,5 +19,7 @@ namespace CharacterSound
         Move,
         /// <summary>스캔 파동이 실제로 시작되었다.</summary>
         Wave,
+        /// <summary>공격이 적중하거나 착지했다.</summary>
+        Impact,
     }
 }

@@ -22,6 +22,7 @@ namespace CharacterSound
         [SerializeField] private SOAudioData _jump;
         [SerializeField] private SOAudioData _land;
         [SerializeField] private SOAudioData _hit;
+        [SerializeField] private SOAudioData _death;
 
         [Header("Landing")]
         [Tooltip("공중에 이 시간(초) 이상 떠 있다가 접지해야 착지음이 난다. 점프와 낙하에 공통 적용된다")]
@@ -124,6 +125,12 @@ namespace CharacterSound
         public void PlayHit()
         {
             PlayOneShot(_hit, transform.position);
+        }
+
+        /// <summary>사망음을 낸다.</summary>
+        public void PlayDeath()
+        {
+            PlayOneShot(_death, transform.position);
         }
 
         /// <summary>
