@@ -40,6 +40,7 @@ namespace Mediator.SubMediators
         private SpawnVehicle _spawnVehicleSkill;
         private Roll _rollSkill;
         private Scan _scanSkill;
+        private MultiJump _multiJumpSkill;
         // 점프 시작 ~ 착지. 이 동안 탑승하면 착지할 때 탈것을 생성한다
         private bool _isJumping;
         private bool _isRolling;
@@ -134,6 +135,7 @@ namespace Mediator.SubMediators
             if (_skillController) _spawnVehicleSkill = _skillController.GetComponentInChildren<SpawnVehicle>(true);
             if (_skillController) _rollSkill = _skillController.GetComponentInChildren<Roll>(true);
             if (_skillController) _scanSkill = _skillController.GetComponentInChildren<Scan>(true);
+            if (_skillController) _multiJumpSkill = _skillController.GetComponentInChildren<MultiJump>(true);
             BindRequest();
         }
 
@@ -463,6 +465,8 @@ namespace Mediator.SubMediators
                 case SpawnVehicle spawnVehicle:
                     OnBuffRatiosChanged?.Invoke(spawnVehicle.BuffRatios);
                     OnRidingChanged?.Invoke(spawnVehicle.IsRiding);
+                    // 탑승 중에는 보드가 점프 연출을 대신하므로 공중 점프 VFX 를 끈다
+                    if (_multiJumpSkill) _multiJumpSkill.SetJumpVfxEnabled(!spawnVehicle.IsRiding);
                     if (spawnVehicle.IsRiding)
                     {
                         BeginMount(spawnVehicle);

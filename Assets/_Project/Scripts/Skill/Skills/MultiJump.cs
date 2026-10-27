@@ -26,6 +26,7 @@ namespace Skill.Skills
 
         #region Private Fields
         private UseCountCondition _useCountCondition;
+        private bool _isJumpVfxEnabled = true;
         #endregion
 
         #region Properties
@@ -53,6 +54,15 @@ namespace Skill.Skills
             _useCountCondition.ResetCount();
             _useCountCondition.Use();
         }
+
+        /// <summary>
+        /// 공중 점프 VFX 재생 여부를 정한다. 보드 탑승 중처럼 VFX 를 내지 않아야 할 때 끈다.
+        /// </summary>
+        /// <param name="isEnabled">재생하려면 true</param>
+        public void SetJumpVfxEnabled(bool isEnabled)
+        {
+            _isJumpVfxEnabled = isEnabled;
+        }
         #endregion
 
         #region Protected Methods
@@ -66,10 +76,11 @@ namespace Skill.Skills
 
         #region Private Methods
         /// <summary>
-        /// 점프 VFX 위치를 따라가는 점프 VFX 를 한 번 재생한다. VFX, 위치, EffectManager 중 하나라도 없으면 생략한다.
+        /// 점프 VFX 위치를 따라가는 점프 VFX 를 한 번 재생한다. 꺼져 있거나 VFX, 위치, EffectManager 중 하나라도 없으면 생략한다.
         /// </summary>
         private void PlayJumpVfx()
         {
+            if (!_isJumpVfxEnabled) return;
             if ((_jumpVfx == null) || (_jumpVfxPoint == null) || (EffectManager.Instance == null)) return;
 
             EffectManager.Instance.Play(
