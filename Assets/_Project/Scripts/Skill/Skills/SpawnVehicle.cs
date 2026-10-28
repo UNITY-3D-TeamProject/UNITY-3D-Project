@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Core.Effect;
 using Skill.Buff;
 using Skill.Core;
 using Skill.Costs;
@@ -34,6 +35,10 @@ namespace Skill.Skills
         [SerializeField, Min(0.0f)] private float _hoverRiseSpeed = 1.5f;
         [Tooltip("요시 점프 중 DrainCost 초당 소모량에 더할 추가 소모량")]
         [SerializeField, Min(0.0f)] private float _hoverExtraDrainPerSecond = 10.0f;
+        [Tooltip("요시 점프 동안 탈것 아래쪽에서 반복 재생할 VFX. 비어 있으면 재생하지 않는다")]
+        [SerializeField] private SOEffectData _hoverVfx;
+        [Tooltip("요시 점프 VFX 를 낼 탈것 기준 위치. 위치마다 하나씩 아래를 향해 재생한다")]
+        [SerializeField] private Vector3[] _hoverVfxOffsets;
 
         [Header("Buff")]
         [Tooltip("탑승 중 적용할 대상별 배율")]
@@ -67,6 +72,8 @@ namespace Skill.Skills
         private SBuffRatio[] _resetRatios;
         private GameObject _vehicle;
         private Coroutine _hoverRoutine;
+        // 요시 점프 VFX 핸들. _hoverVfxOffsets 와 같은 순서다
+        private SEffectHandle[] _hoverVfxHandles;
         // 이번 체공 중 요시 점프를 이미 썼는지. 착지 시 ResetHover 로 초기화한다
         private bool _hasHovered;
         #endregion
@@ -183,6 +190,7 @@ namespace Skill.Skills
             IsHovering = true;
             if (_drainCost) _drainCost.SetExtraDrainPerSecond(_hoverExtraDrainPerSecond);
             _hoverRoutine = StartCoroutine(CoHover());
+            PlayHoverVfx();
             OnHoverChanged?.Invoke(true);
             return true;
         }
@@ -198,6 +206,7 @@ namespace Skill.Skills
             _hoverRoutine = null;
             IsHovering = false;
             if (_drainCost) _drainCost.SetExtraDrainPerSecond(0.0f);
+            StopHoverVfx();
             OnHoverChanged?.Invoke(false);
         }
 
@@ -248,6 +257,41 @@ namespace Skill.Skills
 
             PayCosts();
             base.Execute();
+        }
+
+        /// <summary>
+        /// 탈것 기준 위치마다 아래를 향하는 요시 점프 VFX 를 탈것에 붙여 반복 재생한다. VFX, 탈것, EffectManager 중 하나라도 없으면 생략한다.
+        /// </summary>
+        private void PlayHoverVfx()
+        {
+            StopHoverVfx();
+            if ((_hoverVfx == null) || (_hoverVfxOffsets == null) || !_vehicle || (EffectManager.Instance == null)) return;
+
+            Transform vehicle = _vehicle.transform;
+            Quaternion rotation = vehicle.rotation * Quaternion.LookRotation(Vector3.down, Vector3.forward);
+            _hoverVfxHandles = new SEffectHandle[_hoverVfxOffsets.Length];
+            for (int i = 0; i < _hoverVfxOffsets.Length; i++)
+            {
+                _hoverVfxHandles[i] = EffectManager.Instance.PlayLoop(
+                    _hoverVfx,
+                    vehicle.TransformPoint(_hoverVfxOffsets[i]),
+                    rotation,
+                    vehicle);
+            }
+        }
+
+        /// <summary>
+        /// 재생 중인 요시 점프 VFX 를 모두 멈춘다.
+        /// </summary>
+        private void StopHoverVfx()
+        {
+            if (_hoverVfxHandles == null) return;
+
+            foreach (SEffectHandle handle in _hoverVfxHandles)
+            {
+                if (handle.IsValid) EffectManager.Instance?.Stop(handle);
+            }
+            _hoverVfxHandles = null;
         }
         #endregion
 

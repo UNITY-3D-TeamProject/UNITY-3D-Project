@@ -29,6 +29,8 @@ namespace Mediator.SubMediators
         public event Action OnDeathAnimationEnded;
         /// <summary>PlayerAnimator 가 특수 Idle 재생을 시작할 때 (특수 Idle 인덱스)를 알린다.</summary>
         public event Action<int> OnSpecialIdleStarted;
+        /// <summary>PlayerAnimator 의 이동 애니메이션에서 발이 땅에 닿을 때마다 발생한다.</summary>
+        public event Action OnFootstep;
         #endregion
 
         #region Unity Lifecycle
@@ -43,6 +45,7 @@ namespace Mediator.SubMediators
         {
             if (_playerAnimator) _playerAnimator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
             if (_playerAnimator) _playerAnimator.OnSpecialIdleStarted += OnSpecialIdleStartedCallback;
+            if (_playerAnimator) _playerAnimator.OnFootstep += OnFootstepCallback;
             base.OnEnable();
         }
 
@@ -50,6 +53,7 @@ namespace Mediator.SubMediators
         {
             if (_playerAnimator) _playerAnimator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
             if (_playerAnimator) _playerAnimator.OnSpecialIdleStarted -= OnSpecialIdleStartedCallback;
+            if (_playerAnimator) _playerAnimator.OnFootstep -= OnFootstepCallback;
         }
         #endregion
 
@@ -272,6 +276,11 @@ namespace Mediator.SubMediators
         private void OnSpecialIdleStartedCallback(int specialIdleIndex)
         {
             OnSpecialIdleStarted?.Invoke(specialIdleIndex);
+        }
+
+        private void OnFootstepCallback()
+        {
+            OnFootstep?.Invoke();
         }
         #endregion
     }

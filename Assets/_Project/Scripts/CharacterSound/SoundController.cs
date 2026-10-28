@@ -6,29 +6,32 @@ using Core.Audio;
 namespace CharacterSound
 {
     /// <summary>
-    /// 캐릭터 한 명의 소리 설정과 재생 상태를 가진다. 공통 소리(발소리·점프·착지·피격)는 직렬화 칸으로,
+    /// 캐릭터 한 명의 소리 설정과 재생 상태를 가진다. 공통 소리(발소리·점프·착지·피격·사망)는 직렬화 칸으로,
     /// 스킬 소리는 (실제 스킬 이름, 단계) 키로 SO 를 찾는다. 스킬 종류나 이름 문자열로 분기하지 않는다.
-    /// 단발음은 AudioManager.PlaySfx 로 재생하고, 반복음(발소리·보드 이동음·차지음)은 "재생을 원하는 상태"와 실제 시작 기록을 관리한다.
+    /// 단발음(발소리 포함)은 AudioManager.PlaySfx 로 재생하고, 반복음(보드 이동음·차지음)은 "재생을 원하는 상태"와 실제 시작 기록을 관리한다.
+    /// 발소리는 이동 애니메이션의 발 디딤 알림(PlayFootstep)마다 한 번 내며, 낼 수 있는지는 LateUpdate 의 이동 상태 표본으로 정한다.
     /// 반복음은 AudioManager.PlaySfxLoop 로 시작해 받은 핸들을 시작한 매니저와 함께 기록하고, StopSfx(핸들)로 즉시 정지한다.
     /// 시작하지 못한 원하는 반복음은 LateUpdate 에서 다시 시도한다.
-    /// 키 비교(설정 조회·중복 요청·이동음 대체)는 모두 SSoundKey 의 같은 규칙(이름 대소문자 무시 + 단계 값)을 쓴다.
+    /// 키 비교(설정 조회·중복 요청·탈것 반복음)는 모두 SSoundKey 의 같은 규칙(이름 대소문자 무시 + 단계 값)을 쓴다.
     /// </summary>
     public class SoundController : MonoBehaviour
     {
         #region Serialized Fields
         [Header("Common")]
-        [Tooltip("이동 중 반복 재생하는 발소리. 보드 탑승 중에는 보드 이동음이 대신한다")]
+        [Tooltip("이동 애니메이션에서 발이 땅에 닿을 때마다 한 번 내는 발소리. 보드가 붙어 있는 동안에는 내지 않는다")]
         [SerializeField] private SOAudioData _footstep;
         [SerializeField] private SOAudioData _jump;
         [SerializeField] private SOAudioData _land;
         [SerializeField] private SOAudioData _hit;
+        [Tooltip("사망한 순간 한 번 내는 소리. 비어 있으면 무음")]
+        [SerializeField] private SOAudioData _death;
 
         [Header("Landing")]
         [Tooltip("공중에 이 시간(초) 이상 떠 있다가 접지해야 착지음이 난다. 점프와 낙하에 공통 적용된다")]
         [SerializeField, Min(0.0f)] private float _minAirTime = 0.1f;
 
         [Header("Move")]
-        [Tooltip("이 수평 속도(m/s)를 넘게 실제로 움직일 때만 이동음(발소리·보드 이동음)을 낸다")]
+        [Tooltip("이 수평 속도(m/s)를 넘게 실제로 움직일 때만 발소리를 낸다")]
         [SerializeField, Min(0.0f)] private float _minMoveSpeed = 0.05f;
 
         [Header("Skill Sounds")]
@@ -54,10 +57,10 @@ namespace CharacterSound
         private readonly Dictionary<SSoundKey, SActiveLoop> _activeLoops = new();
         private readonly List<SSoundKey> _releaseBuffer = new();
         private Dictionary<SSoundKey, SOAudioData> _skillSoundMap;
-        // 지금 이동음으로 재생을 원하는 키. 발소리와 보드 이동음 중 하나만 가진다
-        private SSoundKey? _activeMoveKey;
-        // 실제 보드가 붙어 있을 때 발소리를 대체하는 키 (보드 스킬 이름 + Move)
-        private SSoundKey? _moveReplacementKey;
+        // 마지막 이동 상태 표본에서 발소리를 낼 수 있었는지
+        private bool _canPlayFootstep;
+        // 실제 보드가 붙어 있는 동안 계속 재생하는 반복음 키 (보드 스킬 이름 + Move). 있으면 발소리를 내지 않는다
+        private SSoundKey? _vehicleLoopKey;
         private bool _hasGroundSample;
         private bool _wasGrounded;
         private float _airborneStartTime;
@@ -112,9 +115,17 @@ namespace CharacterSound
         #region Public Methods
         /// <summary>
         /// 점프 시작음을 낸다. 공중 점프도 점프를 시작할 때마다 낸다.
+        /// 탈것이 붙어 있으면 (탈것 스킬 이름, Jump) 소리를 내고, 표에 없으면 기본 점프음을 낸다.
         /// </summary>
         public void PlayJump()
         {
+            if (_vehicleLoopKey.HasValue &&
+                TryGetSound(new SSoundKey(_vehicleLoopKey.Value.SkillName, ESoundPhase.Jump), out SOAudioData vehicleJump))
+            {
+                PlayOneShot(vehicleJump, transform.position);
+                return;
+            }
+
             PlayOneShot(_jump, transform.position);
         }
 
@@ -124,6 +135,24 @@ namespace CharacterSound
         public void PlayHit()
         {
             PlayOneShot(_hit, transform.position);
+        }
+
+        /// <summary>
+        /// 사망음을 낸다.
+        /// </summary>
+        public void PlayDeath()
+        {
+            PlayOneShot(_death, transform.position);
+        }
+
+        /// <summary>
+        /// 이동 애니메이션의 발 디딤마다 발소리를 한 번 낸다. 마지막 이동 상태 표본에서 발소리를 낼 수 없었으면 생략한다.
+        /// </summary>
+        public void PlayFootstep()
+        {
+            if (!_canPlayFootstep) return;
+
+            PlayOneShot(_footstep, transform.position);
         }
 
         /// <summary>
@@ -158,18 +187,23 @@ namespace CharacterSound
         }
 
         /// <summary>
-        /// 발소리를 대체할 이동음을 정한다. 실제 탈것이 붙었을 때 그 스킬 이름으로 호출하고, 하차하면 빈 이름으로 해제한다.
-        /// 대체 소리가 표에 없으면 발소리로 돌아가지 않고 무음이다.
+        /// 실제 탈것이 붙어 있는 동안 계속 재생할 반복음을 정한다. 탈것이 붙었을 때 그 스킬 이름으로 호출하고, 하차하면 빈 이름으로 해제한다.
+        /// 붙어 있는 동안은 이동·접지 여부와 관계없이 (스킬 이름, Move) 소리를 내고 발소리는 내지 않는다. 표에 소리가 없으면 무음이다.
         /// </summary>
-        /// <param name="skillName">대체할 이동음의 실제 스킬 이름. 비어 있으면 해제</param>
-        public void SetMoveSoundReplacement(string skillName)
+        /// <param name="skillName">탈것 스킬의 실제 이름. 비어 있으면 해제</param>
+        public void SetVehicleSound(string skillName)
         {
-            // 꺼진 동안은 대체를 걸지 않는다 (해제는 항상 처리). 켜질 때 현재 상태로 다시 맞춘다
+            // 꺼진 동안은 걸지 않는다 (해제는 항상 처리). 켜질 때 현재 상태로 다시 맞춘다
             if (!CanPlay && !string.IsNullOrEmpty(skillName)) return;
 
-            _moveReplacementKey = string.IsNullOrEmpty(skillName)
+            SSoundKey? key = string.IsNullOrEmpty(skillName)
                 ? null
                 : new SSoundKey(skillName, ESoundPhase.Move);
+            if (_vehicleLoopKey == key) return;
+
+            if (_vehicleLoopKey.HasValue) ReleaseLoop(_vehicleLoopKey.Value);
+            _vehicleLoopKey = key;
+            if (key.HasValue) RequestLoop(key.Value);
         }
 
         /// <summary>
@@ -199,6 +233,7 @@ namespace CharacterSound
             _getHorizontalSpeed = null;
             _getGrounded = null;
             _getRolling = null;
+            _canPlayFootstep = false;
         }
 
         /// <summary>
@@ -230,7 +265,7 @@ namespace CharacterSound
         }
 
         /// <summary>
-        /// 원하는 반복음을 모두 해제하고 이동음 대체도 해제한다. 현재 상태는 필요하면 다시 맞춘다.
+        /// 원하는 반복음을 모두 해제하고 탈것 반복음 설정도 해제한다. 현재 상태는 필요하면 다시 맞춘다.
         /// </summary>
         public void StopAllSounds()
         {
@@ -242,15 +277,15 @@ namespace CharacterSound
             }
 
             _releaseBuffer.Clear();
-            _activeMoveKey = null;
-            _moveReplacementKey = null;
+            _canPlayFootstep = false;
+            _vehicleLoopKey = null;
         }
         #endregion
 
         #region Private Methods
         /// <summary>
-        /// 이동 상태 표본으로 착지음과 이동음(발소리·대체음)을 갱신한다. 매 프레임 LateUpdate 에서 호출한다.
-        /// 이동음은 이동 의도, 실제 이동, 접지, 비구르기를 모두 만족하고 컴포넌트가 켜져 있을 때만 원한다.
+        /// 이동 상태 표본으로 착지음을 내고 발소리를 낼 수 있는지 갱신한다. 매 프레임 LateUpdate 에서 호출한다.
+        /// 발소리는 이동 의도, 실제 이동, 접지, 비구르기를 모두 만족하고 탈것이 붙어 있지 않으며 컴포넌트가 켜져 있을 때만 낸다.
         /// </summary>
         /// <param name="hasMoveIntent">이동 입력(의도)이 있는지</param>
         /// <param name="isMoving">실제로 이동 중인지. 수평 속도가 _minMoveSpeed 를 넘으면 true</param>
@@ -261,10 +296,7 @@ namespace CharacterSound
             UpdateLanding(isGrounded);
 
             bool isFootMoving = hasMoveIntent && isMoving && isGrounded && !isRolling;
-            SSoundKey? desiredKey = null;
-            if (isFootMoving && CanPlay) desiredKey = _moveReplacementKey ?? SSoundKey.Footstep;
-
-            ApplyMoveLoop(desiredKey);
+            _canPlayFootstep = isFootMoving && !_vehicleLoopKey.HasValue && CanPlay;
         }
 
         /// <summary>
@@ -292,24 +324,6 @@ namespace CharacterSound
             }
 
             _wasGrounded = isGrounded;
-        }
-
-        /// <summary>
-        /// 원하는 이동음 키를 적용한다. 키가 바뀌면 이전 키를 먼저 해제하므로 이동 반복음이 동시에 둘 요청되지 않는다.
-        /// 소리를 찾지 못하면 요청하지 않으므로 무음이다.
-        /// </summary>
-        /// <param name="desiredKey">원하는 이동음 키. 없으면 이동음 없음</param>
-        private void ApplyMoveLoop(SSoundKey? desiredKey)
-        {
-            if (_activeMoveKey.HasValue && (!desiredKey.HasValue || (_activeMoveKey.Value != desiredKey.Value)))
-            {
-                ReleaseLoop(_activeMoveKey.Value);
-                _activeMoveKey = null;
-            }
-
-            if (!desiredKey.HasValue || _activeMoveKey.HasValue) return;
-
-            if (RequestLoop(desiredKey.Value)) _activeMoveKey = desiredKey;
         }
 
         /// <summary>
@@ -409,19 +423,13 @@ namespace CharacterSound
         }
 
         /// <summary>
-        /// key 에 해당하는 소리를 찾는다. Footstep 키는 공통 칸, 나머지는 스킬 소리 표에서 찾는다.
+        /// key 에 해당하는 소리를 스킬 소리 표에서 찾는다.
         /// </summary>
         /// <param name="key">소리 키</param>
         /// <param name="sfx">찾은 소리</param>
         /// <returns>소리를 찾았으면 true</returns>
         private bool TryGetSound(SSoundKey key, out SOAudioData sfx)
         {
-            if (key == SSoundKey.Footstep)
-            {
-                sfx = _footstep;
-                return sfx != null;
-            }
-
             EnsureSkillSoundMap();
             return _skillSoundMap.TryGetValue(key, out sfx) && (sfx != null);
         }
