@@ -6,6 +6,7 @@ using UnityEngine.Events;
 using Attribute.Effect;
 using Core;
 using Core.Audio;
+using Core.Effect;
 using Core.Stage;
 using Facade.Player;
 using Map.Gimmicks;
@@ -127,6 +128,10 @@ namespace Map.Feed
         [Header("Sound")]
         [Tooltip("피드가 떠오를 때(한 번)와 총에 맞아 날아갈 때(피드마다) 낼 소리 (비우면 무음)")]
         [SerializeField] private SOAudioData _postMoveSound;
+
+        [Header("VFX")]
+        [Tooltip("피드를 모두 올려 보냈을 때 이 오브젝트(라운드 중앙)에서 낼 클리어 효과 (비우면 없음)")]
+        [SerializeField] private SOEffectData _clearVfx;
 
         [Header("Event")]
         [Tooltip("2라운드가 시작될 때 실행할 동작")]
@@ -654,6 +659,7 @@ namespace Map.Feed
             if (IsCleared) return;
 
             IsCleared = true;
+            GimmickUtility.PlayVfx(_clearVfx, transform.position);
             _onCleared.Invoke();
         }
         #endregion
