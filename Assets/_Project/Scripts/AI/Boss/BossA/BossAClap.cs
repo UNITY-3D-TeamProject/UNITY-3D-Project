@@ -199,6 +199,12 @@ namespace AI.Boss.BossA
         {
             if (!_isClapping) return;
 
+            if (_clapHands[0] && _clapHands[1])
+            {
+                Vector3 position = (_clapHands[0].transform.position + _clapHands[1].transform.position) * 0.5f;
+                PlayImpactSound(position);
+            }
+
             // 맞부딪친 순간 붙잡힌 플레이어를 가운데에 놓는다
             if (_captureHandIndex >= 0) DragPlayer();
             else TryCapture();

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using AI.Boss.BossA;
+using AI.Boss.BossB;
 using Attribute.Core;
 using CameraControl;
 using CharacterSound;
@@ -479,6 +481,13 @@ namespace Mediator.SubMediators
                     break;
                 case EnemyRangedAttack:
                     // 실제 발사 시점에 스킬이 소리를 요청한다.
+                    break;
+                case EnemyMeleeAttack:
+                case EnemyWindBlast:
+                case BossBLeap:
+                case BossASlam:
+                case BossAChessSlam:
+                    // 실제 타격·지속 단계에서 각 스킬이 소리를 요청한다.
                     break;
                 case Scan:
                     OnScanRequested?.Invoke();

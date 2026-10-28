@@ -1,5 +1,6 @@
 using UnityEngine;
 using AI;
+using CharacterSound;
 using Movement;
 using Skill.Core;
 
@@ -60,6 +61,7 @@ namespace Skill.Skills
         }
 
         private AIController _controller;
+        private SoundController _soundController;
         private EWindPhase _phase;
         private Transform _target;
         private CharacterMotor _motor;
@@ -73,6 +75,7 @@ namespace Skill.Skills
         {
             base.Awake();
             _controller = GetComponentInParent<AIController>();
+            if (_controller) _soundController = _controller.GetComponentInChildren<SoundController>();
 
             Debug.Assert(_controller != null, $"[{name}] AIController 를 찾을 수 없습니다.");
             Debug.Assert(_windOrigin != null, $"[{name}] 바람 기준점이 연결되지 않았습니다.");
@@ -166,6 +169,7 @@ namespace Skill.Skills
             _phase = EWindPhase.Ramp;
 
             _controller.Hold(_forward, _rampDuration + _knockbackDuration + HOLD_MARGIN);
+            if (_soundController) _soundController.SetSkillLoop(SkillName, ESoundPhase.Move, true);
 
             base.Execute();
         }
@@ -200,6 +204,7 @@ namespace Skill.Skills
                 _knockbackDirection = direction;
                 _elapsed = 0.0f;
                 _phase = EWindPhase.Knockback;
+                if (_soundController) _soundController.PlaySkillSound(SkillName, ESoundPhase.Impact, _windOrigin.position);
             }
             else
             {
@@ -265,6 +270,7 @@ namespace Skill.Skills
         {
             if (_phase == EWindPhase.Idle) return;
 
+            if (_soundController) _soundController.SetSkillLoop(SkillName, ESoundPhase.Move, false);
             _phase = EWindPhase.Idle;
             _elapsed = 0.0f;
             _target = null;

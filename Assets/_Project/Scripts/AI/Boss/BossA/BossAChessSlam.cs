@@ -53,6 +53,7 @@ namespace AI.Boss.BossA
 
         #region Properties
         protected override float TelegraphSeconds => _telegraphSeconds;
+        protected override bool HasImpactSound => true;
         protected override int StrikeCount => (_isPlus && (_secondLineTiles.Length > 0)) ? 2 : 1;
         protected override float NextStrikeDelay => _secondLineDelay;
         #endregion
