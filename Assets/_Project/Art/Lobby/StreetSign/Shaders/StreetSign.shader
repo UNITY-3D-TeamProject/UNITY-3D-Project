@@ -3,6 +3,7 @@
 // - 깜빡임: 가끔 어두워지는 네온 깜빡임. 오브젝트 위치로 위상을 달리해 간판끼리 같이 깜빡이지 않는다.
 // - 둥실: 오브젝트 공간 Y 로 위아래 흔들림
 // - 회전: UV 를 (0.5, 0.5) 중심으로 돌림 (홀로그램 링)
+// - 롤: 세로로 줄을 쌓은 텍스처를 Roll Interval 초마다 한 줄씩 위로 넘김 (속보 띠). Roll Rows 0 이면 꺼짐, 텍스처 Wrap V 는 Repeat
 // 블렌드·깊이 쓰기·컬링은 머티리얼에서 정한다 (불투명 간판 / 반투명 네온).
 Shader "Project/StreetSign"
 {
@@ -15,6 +16,9 @@ Shader "Project/StreetSign"
         _BobHeight ("Bob Height (Object Space)", Float) = 0
         _BobSpeed ("Bob Speed", Float) = 1.5
         _RotateSpeed ("UV Rotate Speed (rad/s)", Float) = 0
+        _RollRows ("Roll Rows (0 = Off)", Float) = 0
+        _RollInterval ("Roll Interval (s)", Float) = 3
+        _RollBlend ("Roll Move Ratio", Range(0.01, 1)) = 0.15
 
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0
@@ -55,6 +59,9 @@ Shader "Project/StreetSign"
                 float _BobHeight;
                 float _BobSpeed;
                 float _RotateSpeed;
+                float _RollRows;
+                float _RollInterval;
+                float _RollBlend;
             CBUFFER_END
 
             struct Attributes
@@ -94,6 +101,16 @@ Shader "Project/StreetSign"
 
                 output.positionCS = TransformObjectToHClip(positionOS);
                 output.uv = TRANSFORM_TEX(uv, _BaseMap);
+
+                // 롤: 한 칸 머문 뒤 마지막 _RollBlend 구간에서 다음 줄로 부드럽게 넘어간다
+                if (_RollRows > 0.0)
+                {
+                    float k = _Time.y / max(_RollInterval, 0.01);
+                    float move = saturate((frac(k) - (1.0 - _RollBlend)) / _RollBlend);
+                    move = move * move * (3.0 - 2.0 * move);
+                    output.uv.y -= (fmod(floor(k), _RollRows) + move) / _RollRows;
+                }
+
                 output.phase = phase;
                 output.fogFactor = ComputeFogFactor(output.positionCS.z);
                 return output;

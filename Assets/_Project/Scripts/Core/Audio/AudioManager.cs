@@ -225,6 +225,7 @@ namespace Core.Audio
             source.clip = clip;
             source.volume = Mathf.Clamp01(audioData.Volume * volumeScale);
             source.pitch = pitch;
+            source.rolloffMode = audioData.RolloffMode;
             source.minDistance = audioData.MinDistance;
             source.maxDistance = audioData.MaxDistance;
             source.Play();
@@ -258,6 +259,7 @@ namespace Core.Audio
             source.loop = true;
             source.volume = Mathf.Clamp01(audioData.Volume * volumeScale);
             source.pitch = Mathf.Max(audioData.PickPitch() * pitchScale, MIN_PITCH);
+            source.rolloffMode = audioData.RolloffMode;
             source.minDistance = audioData.MinDistance;
             source.maxDistance = audioData.MaxDistance;
             source.Play();
