@@ -6,7 +6,7 @@ using Core.Audio;
 namespace CharacterSound
 {
     /// <summary>
-    /// 캐릭터 한 명의 소리 설정과 재생 상태를 가진다. 공통 소리(발소리·점프·착지·피격)는 직렬화 칸으로,
+    /// 캐릭터 한 명의 소리 설정과 재생 상태를 가진다. 공통 소리(발소리·점프·착지·피격·사망)는 직렬화 칸으로,
     /// 스킬 소리는 (실제 스킬 이름, 단계) 키로 SO 를 찾는다. 스킬 종류나 이름 문자열로 분기하지 않는다.
     /// 단발음(발소리 포함)은 AudioManager.PlaySfx 로 재생하고, 반복음(보드 이동음·차지음)은 "재생을 원하는 상태"와 실제 시작 기록을 관리한다.
     /// 발소리는 이동 애니메이션의 발 디딤 알림(PlayFootstep)마다 한 번 내며, 낼 수 있는지는 LateUpdate 의 이동 상태 표본으로 정한다.
@@ -23,6 +23,8 @@ namespace CharacterSound
         [SerializeField] private SOAudioData _jump;
         [SerializeField] private SOAudioData _land;
         [SerializeField] private SOAudioData _hit;
+        [Tooltip("사망한 순간 한 번 내는 소리. 비어 있으면 무음")]
+        [SerializeField] private SOAudioData _death;
 
         [Header("Landing")]
         [Tooltip("공중에 이 시간(초) 이상 떠 있다가 접지해야 착지음이 난다. 점프와 낙하에 공통 적용된다")]
@@ -113,9 +115,17 @@ namespace CharacterSound
         #region Public Methods
         /// <summary>
         /// 점프 시작음을 낸다. 공중 점프도 점프를 시작할 때마다 낸다.
+        /// 탈것이 붙어 있으면 (탈것 스킬 이름, Jump) 소리를 내고, 표에 없으면 기본 점프음을 낸다.
         /// </summary>
         public void PlayJump()
         {
+            if (_vehicleLoopKey.HasValue &&
+                TryGetSound(new SSoundKey(_vehicleLoopKey.Value.SkillName, ESoundPhase.Jump), out SOAudioData vehicleJump))
+            {
+                PlayOneShot(vehicleJump, transform.position);
+                return;
+            }
+
             PlayOneShot(_jump, transform.position);
         }
 
@@ -125,6 +135,14 @@ namespace CharacterSound
         public void PlayHit()
         {
             PlayOneShot(_hit, transform.position);
+        }
+
+        /// <summary>
+        /// 사망음을 낸다.
+        /// </summary>
+        public void PlayDeath()
+        {
+            PlayOneShot(_death, transform.position);
         }
 
         /// <summary>

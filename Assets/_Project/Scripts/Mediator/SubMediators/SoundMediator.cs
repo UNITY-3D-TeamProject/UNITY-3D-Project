@@ -124,6 +124,16 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 사망음을 전달한다.
+        /// </summary>
+        public void NotifyDeathSound()
+        {
+            if (!_soundController || !isActiveAndEnabled) return;
+
+            _soundController.PlayDeath();
+        }
+
+        /// <summary>
         /// 스킬이 실제로 동작한 단계의 단발음을 전달한다.
         /// </summary>
         /// <param name="skillName">실제 스킬 이름</param>

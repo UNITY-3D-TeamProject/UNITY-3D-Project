@@ -2,6 +2,7 @@ using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
 using Movement;
+using Core.Audio;
 using Core.Effect;
 using Core.ObjectPool;
 
@@ -11,6 +12,7 @@ namespace Projectile
     /// 총알의 직진 이동과 피격 처리를 담당한다.
     /// 매 프레임 SphereCollider 반지름으로 이동 구간을 SphereCast 해 빠른 속도에서도 중간 콜라이더를 건너뛰지 않고,
     /// OnTriggerEnter 는 보조로 둔다. 맞힌 대상의 IEffectTarget 에 SOAttributeEffect 를 적용하고 명중 VFX 를 낸 뒤 소멸한다.
+    /// 명중음은 효과가 실제로 적용된 대상에 맞았을 때만 낸다.
     /// 수명 만료로 끝날 때는 VFX 없이 사라진다.
     /// 풀에서 꺼낸 총알은 소멸 시 풀에 반납하고, 그 외(Instantiate)는 파괴한다.
     /// </summary>
@@ -24,6 +26,8 @@ namespace Projectile
         [SerializeField] private SOAttributeEffect _hitEffect;
         [Tooltip("명중한 지점에서 한 번 재생할 VFX. 비어 있으면 재생하지 않는다")]
         [SerializeField] private SOEffectData _hitVfx;
+        [Tooltip("효과가 실제로 적용된 대상에 맞았을 때 명중 지점에서 한 번 낼 소리. 비어 있으면 내지 않는다")]
+        [SerializeField] private SOAudioData _hitSfx;
 
         [Header("Movement")]
         [SerializeField] private float _speed = 20.0f;
@@ -137,12 +141,13 @@ namespace Projectile
         /// 피격 대상에 효과를 적용한다.
         /// 대상이 없거나 효과의 대상 어트리뷰트를 갖지 않으면 적용하지 않는다.
         /// </summary>
-        private void ApplyHitEffect(Collider other, Vector3 hitPoint)
+        /// <returns>효과를 적용했으면 true</returns>
+        private bool ApplyHitEffect(Collider other, Vector3 hitPoint)
         {
-            if (_hitEffect == null) return;
+            if (_hitEffect == null) return false;
 
             // hitPoint 는 맞는 순간의 총알 중심이다 (SphereCast 는 충돌 직전 지점, 트리거 보조는 겹친 순간의 위치)
-            _hitEffect.Apply(other.gameObject, new SEffectContext(_cursor, hitPoint: hitPoint, direction: _direction));
+            return _hitEffect.Apply(other.gameObject, new SEffectContext(_cursor, hitPoint: hitPoint, direction: _direction));
         }
 
         /// <summary>
@@ -153,8 +158,9 @@ namespace Projectile
             if (_isFinished) return;
 
             _isFinished = true;
-            ApplyHitEffect(other, hitPoint);
+            bool isApplied = ApplyHitEffect(other, hitPoint);
             PlayHitVfx(hitPoint);
+            if (isApplied) PlayHitSfx(hitPoint);
             Despawn();
         }
 
@@ -166,6 +172,16 @@ namespace Projectile
             if ((_hitVfx == null) || (EffectManager.Instance == null)) return;
 
             EffectManager.Instance.Play(_hitVfx, hitPoint, Quaternion.LookRotation(-_direction));
+        }
+
+        /// <summary>
+        /// 명중 지점에서 명중음을 한 번 낸다. 소리, 클립, AudioManager 중 하나라도 없으면 생략한다.
+        /// </summary>
+        private void PlayHitSfx(Vector3 hitPoint)
+        {
+            if ((_hitSfx == null) || (_hitSfx.ClipCount == 0) || (AudioManager.Instance == null)) return;
+
+            AudioManager.Instance.PlaySfx(_hitSfx, hitPoint);
         }
 
         /// <summary>

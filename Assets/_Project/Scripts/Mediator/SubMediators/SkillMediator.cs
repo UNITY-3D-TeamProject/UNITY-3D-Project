@@ -355,13 +355,14 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 지금 차지 중인지와 탈것이 붙어 있는지를 사운드 알림으로 다시 전달한다.
+        /// 지금 차지 중인지, 탈것이 붙어 있는지, 요시 점프 중인지를 사운드 알림으로 다시 전달한다.
         /// 구독이 늦어 놓친 상태를 맞출 때 호출한다. 스킬을 다시 실행하지 않는다.
         /// </summary>
         public void SyncSoundState()
         {
             if (_fireSkill) OnSkillSoundLoop?.Invoke(_fireSkill.SkillName, ESoundPhase.Charge, _fireSkill.IsCharging);
             if (_spawnVehicleSkill) OnVehicleSoundChanged?.Invoke(_spawnVehicleSkill.SkillName, _spawnVehicleSkill.Vehicle);
+            if (_spawnVehicleSkill) OnSkillSoundLoop?.Invoke(_spawnVehicleSkill.SkillName, ESoundPhase.Hover, _spawnVehicleSkill.IsHovering);
         }
         #endregion
         
@@ -560,12 +561,13 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 탈것 스킬의 요시 점프 시작·종료를 상승 속도와 함께 알린다.
+        /// 탈것 스킬의 요시 점프 시작·종료를 상승 속도와 함께 알리고, 그동안 낼 반복음을 켜거나 끈다.
         /// </summary>
         /// <param name="isHovering">시작이면 true</param>
         private void OnHoverChangedCallback(bool isHovering)
         {
             OnHoverChanged?.Invoke(isHovering, _spawnVehicleSkill.HoverRiseSpeed);
+            OnSkillSoundLoop?.Invoke(_spawnVehicleSkill.SkillName, ESoundPhase.Hover, isHovering);
         }
 
         /// <summary>
