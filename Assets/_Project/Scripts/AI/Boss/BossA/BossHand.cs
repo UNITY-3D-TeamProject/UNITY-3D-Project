@@ -102,6 +102,9 @@ namespace AI.Boss.BossA
         #region Properties
         public bool IsIdle => _state == EHandState.Idle;
 
+        /// <summary>박수 자세에서 손 본이 놓이는 위치.</summary>
+        public Vector3 ClapPoint => transform.position + (Vector3.up * _clapLift);
+
         /// <summary>떠 있는 자리에서 내려쳐 닿기까지 걸리는 시간(초).</summary>
         public float SlamSeconds => _slamSeconds;
 

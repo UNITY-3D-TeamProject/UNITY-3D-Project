@@ -1,4 +1,6 @@
 using UnityEngine;
+using CharacterSound;
+using Core.Effect;
 
 namespace AI.Boss.BossB
 {
@@ -50,6 +52,8 @@ namespace AI.Boss.BossB
         [Tooltip("체공이 시작될 때 요청할 모션 알림 스킬 이름. 비우면 요청하지 않는다. 회피에서는 쓰지 않는다")]
         [SerializeField] private string _flightMotionSkillName = "LeapFlight";
 
+        [SerializeField] private SOEffectData _landingVfx;
+
         [Header("Landing")]
         [Tooltip("착지점에서 대상까지 수평 거리가 이 안이면 피해를 받는다(m). 임시값")]
         [SerializeField, Min(0.0f)] private float _landingRadius = 4.0f;
@@ -68,6 +72,7 @@ namespace AI.Boss.BossB
         #endregion
 
         #region Private Fields
+        private SoundController _soundController;
         private ELeapPhase _phase;
         private int _landingTile;
         private float _timer;
@@ -85,6 +90,14 @@ namespace AI.Boss.BossB
 
         /// <inheritdoc />
         public override bool IsBodyInFlight => IsRunning && (_phase == ELeapPhase.Flight);
+        #endregion
+
+        #region Unity Lifecycle
+        protected override void Awake()
+        {
+            base.Awake();
+            if (Boss) _soundController = Boss.GetComponentInChildren<SoundController>();
+        }
         #endregion
 
         #region Protected Methods
@@ -114,6 +127,7 @@ namespace AI.Boss.BossB
 
             _phase = ELeapPhase.Telegraph;
             _timer = _telegraphSeconds;
+            if (_soundController) _soundController.PlaySkillSound(SkillName, ESoundPhase.Execute, null);
             ShowCircle();
         }
 
@@ -289,6 +303,9 @@ namespace AI.Boss.BossB
             Arena.SetReservedTile(-1);
             DestroyCircle();
 
+            if (_soundController) _soundController.PlaySkillSound(SkillName, ESoundPhase.Impact, landing);
+            if (_landingVfx && _landingVfx.Prefab)
+                EffectManager.Instance?.Play(_landingVfx, landing, _landingVfx.Prefab.transform.localRotation);
             TryHitTarget(landing, _landingRadius);
             ApplyShockwave(landing);
 

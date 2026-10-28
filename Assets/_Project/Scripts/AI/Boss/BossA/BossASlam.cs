@@ -15,6 +15,7 @@ namespace AI.Boss.BossA
 
         #region Properties
         protected override float TelegraphSeconds => _telegraphSeconds;
+        protected override bool HasImpactSound => true;
         #endregion
     }
 }

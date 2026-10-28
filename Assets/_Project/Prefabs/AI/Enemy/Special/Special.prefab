@@ -52,6 +52,7 @@ GameObject:
   - component: {fileID: 7319076262812618867}
   - component: {fileID: 2263111656472012693}
   - component: {fileID: 5964020298780706303}
+  - component: {fileID: 6270156651580662851}
   m_Layer: 8
   m_Name: Special
   m_TagString: Untagged
@@ -83,6 +84,7 @@ Transform:
   - {fileID: 4583436080926841985}
   - {fileID: 3303987957304950962}
   - {fileID: 5797634381731117129}
+  - {fileID: 5645739267914906352}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &1177313995823105429
@@ -300,6 +302,27 @@ MonoBehaviour:
   _graphAgent: {fileID: 0}
   _shrinkDelay: 0
   _shrinkDuration: 0.4
+--- !u!114 &6270156651580662851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 264135962324108990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d25ad3e7130c29644aafbe2a33575956, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.EnemyItemDropper
+  _characterMediator: {fileID: 8846040900669614}
+  _dropChance: 0.25
+  _entries:
+  - Prefab: {fileID: 8731887055806553684, guid: ecef143e1e6e03149a00570b0aefa05d, type: 3}
+    Weight: 1
+  - Prefab: {fileID: 365870956134482254, guid: 7c456de15f079da419ff2a821a27051a, type: 3}
+    Weight: 1
+  _spawnHeight: 0.5
+  _itemLifetime: 15
 --- !u!1 &541869566793280293
 GameObject:
   m_ObjectHideFlags: 0
@@ -998,6 +1021,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4586998315446220630}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5652812146596290044
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5645739267914906352}
+  m_Layer: 0
+  m_Name: WindVfxAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5645739267914906352
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5652812146596290044}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0.195, y: 0.622, z: 0.2169652}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8070316858917412592}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &5684328440877618090
 GameObject:
   m_ObjectHideFlags: 0
@@ -6115,7 +6169,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6944229754918002984}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.06999999, y: 0.622, z: -0.1580348}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
@@ -6452,25 +6506,33 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
+      propertyPath: _death
+      value: 
+      objectReference: {fileID: 11400000, guid: bb16b6b3e1f197c4fa2fdee217da1321, type: 2}
+    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _footstep
       value: 
-      objectReference: {fileID: 11400000, guid: 064e05a479ac06b4793d47e2f098d0e4, type: 2}
+      objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.size
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[0]._phase
-      value: 0
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[1]._phase
-      value: 0
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
+      propertyPath: _skillSounds.Array.data[2]._phase
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[0]._audioData
       value: 
-      objectReference: {fileID: 11400000, guid: ee11b7003ba40cd4981c9161fea8b4c5, type: 2}
+      objectReference: {fileID: 11400000, guid: a0f4b39e6104d0846da024cf708e7403, type: 2}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[0]._skillName
       value: Wind
@@ -6478,10 +6540,18 @@ PrefabInstance:
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[1]._audioData
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 11400000, guid: 5cfb22c93f8c435cbeea4300dc28b64c, type: 2}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[1]._skillName
+      value: Wind
+      objectReference: {fileID: 0}
+    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
+      propertyPath: _skillSounds.Array.data[2]._audioData
       value: 
+      objectReference: {fileID: 11400000, guid: 4da603dc7b7daa2428f93f6418285a86, type: 2}
+    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
+      propertyPath: _skillSounds.Array.data[2]._skillName
+      value: Attack
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6593,6 +6663,10 @@ PrefabInstance:
       propertyPath: _maxSpeed
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 5621265833919691974, guid: fad87ec11844236439353db017fd4d2d, type: 3}
+      propertyPath: _vfxAnchor
+      value: 
+      objectReference: {fileID: 5645739267914906352}
     - target: {fileID: 5621265833919691974, guid: fad87ec11844236439353db017fd4d2d, type: 3}
       propertyPath: _windOrigin
       value: 

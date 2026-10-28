@@ -1,5 +1,7 @@
 using UnityEngine;
 using AI;
+using CharacterSound;
+using Core.Effect;
 using Movement;
 using Skill.Core;
 
@@ -46,9 +48,16 @@ namespace Skill.Skills
         [Tooltip("넉백에 걸리는 시간(초). 짧을수록 세게 튕긴다.")]
         [SerializeField, Min(0.05f)] private float _knockbackDuration = 0.3f;
 
+        [Header("VFX")]
+        [SerializeField] private SOEffectData _windVfx;
+        [SerializeField] private SOEffectData _burstSmokeVfx;
+        [SerializeField] private SOEffectData _burstLinesVfx;
+
         [Header("References")]
         [Tooltip("바람이 나가는 기준점. 몸 중심 가슴 높이에 둔다.")]
         [SerializeField] private Transform _windOrigin;
+        [Tooltip("VFX 전용 기준점. VFX 의 위치와 회전(월드)을 이 오브젝트에 맞추고 붙인다. 비우면 바람 기준점을 쓴다.")]
+        [SerializeField] private Transform _vfxAnchor;
         #endregion
 
         #region Private Fields
@@ -59,7 +68,9 @@ namespace Skill.Skills
             Knockback,
         }
 
+        private SEffectHandle _windHandle;
         private AIController _controller;
+        private SoundController _soundController;
         private EWindPhase _phase;
         private Transform _target;
         private CharacterMotor _motor;
@@ -73,6 +84,7 @@ namespace Skill.Skills
         {
             base.Awake();
             _controller = GetComponentInParent<AIController>();
+            if (_controller) _soundController = _controller.GetComponentInChildren<SoundController>();
 
             Debug.Assert(_controller != null, $"[{name}] AIController 를 찾을 수 없습니다.");
             Debug.Assert(_windOrigin != null, $"[{name}] 바람 기준점이 연결되지 않았습니다.");
@@ -166,6 +178,10 @@ namespace Skill.Skills
             _phase = EWindPhase.Ramp;
 
             _controller.Hold(_forward, _rampDuration + _knockbackDuration + HOLD_MARGIN);
+            Transform vfxAnchor = GetVfxAnchor();
+            if (_windVfx && _windVfx.Prefab && EffectManager.Instance)
+                _windHandle = EffectManager.Instance.PlayLoop(_windVfx, vfxAnchor.position, GetVfxRotation(_windVfx), vfxAnchor);
+            if (_soundController) _soundController.SetSkillLoop(SkillName, ESoundPhase.Move, true);
 
             base.Execute();
         }
@@ -193,6 +209,17 @@ namespace Skill.Skills
             }
 
             if (t < 1.0f) return;
+
+            EffectManager.Instance?.Stop(_windHandle);
+            _windHandle = default;
+            if (_soundController) _soundController.PlaySkillSound(SkillName, ESoundPhase.Impact, _windOrigin.position);
+            Transform vfxAnchor = GetVfxAnchor();
+            if (_burstSmokeVfx && _burstSmokeVfx.Prefab)
+                EffectManager.Instance?.Play(
+                    _burstSmokeVfx, vfxAnchor.position, GetVfxRotation(_burstSmokeVfx), vfxAnchor);
+            if (_burstLinesVfx && _burstLinesVfx.Prefab)
+                EffectManager.Instance?.Play(
+                    _burstLinesVfx, vfxAnchor.position, GetVfxRotation(_burstLinesVfx), vfxAnchor);
 
             // 램프가 끝나는 순간 범위 안이면 넉백, 아니면 그대로 끝
             if (isInWind)
@@ -265,12 +292,32 @@ namespace Skill.Skills
         {
             if (_phase == EWindPhase.Idle) return;
 
+            EffectManager.Instance?.Stop(_windHandle);
+            _windHandle = default;
+            if (_soundController) _soundController.SetSkillLoop(SkillName, ESoundPhase.Move, false);
             _phase = EWindPhase.Idle;
             _elapsed = 0.0f;
             _target = null;
             _motor = null;
 
             if (_controller) _controller.ReleaseHold();
+        }
+
+        /// <summary>
+        /// VFX 를 놓고 붙일 기준점. VFX 전용 기준점이 없으면 바람 기준점을 쓴다.
+        /// </summary>
+        private Transform GetVfxAnchor()
+        {
+            return _vfxAnchor ? _vfxAnchor : _windOrigin;
+        }
+
+        /// <summary>
+        /// VFX 기준점의 월드 회전에 VFX 프리팹 루트의 localRotation 을 곱한 회전.
+        /// 기준점은 몸통과 함께 도므로, 몸통이 대상 쪽으로 도는 중에 놓아도 VFX 가 함께 돌아 끝에 대상 방향이 된다.
+        /// </summary>
+        private Quaternion GetVfxRotation(SOEffectData data)
+        {
+            return GetVfxAnchor().rotation * data.Prefab.transform.localRotation;
         }
 
         private static float EaseOut(float t)

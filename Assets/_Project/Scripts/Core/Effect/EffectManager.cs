@@ -199,7 +199,7 @@ namespace Core.Effect
             {
                 GameObject prefab = data.Prefab;
                 pool = new ObjectPool<GameObject>(
-                    createFunc: () => CreateInstance(prefab),
+                    createFunc: () => CreateInstance(prefab, data.PlaybackSpeed),
                     actionOnGet: null,
                     actionOnRelease: ReleaseInstance,
                     actionOnDestroy: DestroyInstance,
@@ -212,7 +212,7 @@ namespace Core.Effect
             GameObject instance = pool.Get();
             Transform effectTransform = instance.transform;
             effectTransform.SetParent(transform, false);
-            effectTransform.localScale = data.Prefab.transform.localScale;
+            effectTransform.localScale = data.Prefab.transform.localScale * data.Scale;
             effectTransform.SetPositionAndRotation(position, rotation);
             if (parent != null)
                 effectTransform.SetParent(parent, true);
@@ -246,7 +246,7 @@ namespace Core.Effect
         }
 
         // [호출] 해당 SO의 풀이 비었을 때만. 자식 파티클은 생성 시 한 번 수집한다.
-        private GameObject CreateInstance(GameObject prefab)
+        private GameObject CreateInstance(GameObject prefab, float playbackSpeed)
         {
             GameObject instance = Instantiate(prefab, _creationRoot);
             instance.SetActive(false);
@@ -258,6 +258,7 @@ namespace Core.Effect
                 main.stopAction = ParticleSystemStopAction.None;
                 main.useUnscaledTime = false;
                 main.playOnAwake = false;
+                main.simulationSpeed *= playbackSpeed;
                 prefabLoops[i] = main.loop;
             }
             _particlesByInstance.Add(instance, particles);
