@@ -56,6 +56,10 @@ namespace AI.Boss.BossB
         [Header("References")]
         [SerializeField] private SOEffectData _chargeVfx;
         [SerializeField] private Vector3 _chargeVfxOffset = Vector3.up;
+        [Tooltip("제자리 예고 동안 B 발밑에서 재생할 이펙트(커지는 원). 돌진이 시작되면 멈춘다. 비우면 재생하지 않는다")]
+        [SerializeField] private SOEffectData _windupVfx;
+        [Tooltip("돌진이 끝난 자리(급정거·적중·최대 거리)에서 한 번 재생할 이펙트(파편). 비우면 재생하지 않는다")]
+        [SerializeField] private SOEffectData _burstVfx;
         [Tooltip("직선 예고 판 프리팹(가로·세로 1 m). 로컬 X 가 폭, Z 가 길이다. 비우면 예고를 띄우지 않는다")]
         [SerializeField] private GameObject _linePrefab;
         [Tooltip("직선 예고 판을 B 발밑에서 띄우는 높이(m)")]
@@ -69,6 +73,7 @@ namespace AI.Boss.BossB
         private float _traveled;
         private bool _isPrepared;
         private SEffectHandle _chargeVfxHandle;
+        private SEffectHandle _windupVfxHandle;
         private readonly BossBTelegraph _line = new BossBTelegraph();
         #endregion
 
@@ -88,6 +93,7 @@ namespace AI.Boss.BossB
 
             _line.Show(_linePrefab);
             PlaceLine();
+            PlayWindupVfx();
 
             base.Execute();
         }
@@ -110,6 +116,7 @@ namespace AI.Boss.BossB
 
         protected override void OnRunEnded()
         {
+            StopWindupVfx();
             StopChargeVfx();
             _line.Hide();
 
@@ -131,7 +138,8 @@ namespace AI.Boss.BossB
             if (_timer > 0.0f) return;
 
             _phase = EChargePhase.Charging;
-            if (_chargeVfx && _chargeVfx.Prefab && EffectManager.Instance)
+            StopWindupVfx();
+            if (_chargeVfx &&_chargeVfx.Prefab && EffectManager.Instance)
             {
                 _chargeVfxHandle = EffectManager.Instance.PlayLoop(
                     _chargeVfx,
@@ -150,6 +158,7 @@ namespace AI.Boss.BossB
             if (IsBlocked(front))
             {
                 StopChargeVfx();
+                PlayBurstVfx();
                 _phase = EChargePhase.Stagger;
                 _timer = _staggerSeconds;
                 _line.Hide();
@@ -163,6 +172,7 @@ namespace AI.Boss.BossB
             if (TryHitTarget(Controller.Position, _hitRadius))
             {
                 KnockbackTarget(_direction, _knockbackDistance, _knockbackSeconds);
+                PlayBurstVfx();
                 PlayMotion(_stopMotionSkillName);
                 EndRun();
                 return;
@@ -170,6 +180,7 @@ namespace AI.Boss.BossB
 
             if (_traveled < _maxDistance) return;
 
+            PlayBurstVfx();
             PlayMotion(_stopMotionSkillName);
             EndRun();
         }
@@ -184,6 +195,37 @@ namespace AI.Boss.BossB
         {
             EffectManager.Instance?.Stop(_chargeVfxHandle);
             _chargeVfxHandle = default;
+        }
+
+        // 예고 동안 발밑에서 도는 이펙트. B 를 따라다니며 돌진이 시작되거나 중단되면 멈춘다
+        // 예고가 시작되면 B 가 돌진 방향으로 몸을 돌리는 중이라, 방향(_direction)이 아니라 B 의 현재 정면으로 붙인다.
+        // 이펙트는 B 루트의 자식이라 B 가 도는 대로 따라 돌아 항상 정면에 나온다
+        private void PlayWindupVfx()
+        {
+            if (!_windupVfx || !_windupVfx.Prefab || !EffectManager.Instance) return;
+
+            _windupVfxHandle = EffectManager.Instance.PlayLoop(
+                _windupVfx,
+                Controller.Position,
+                Controller.transform.rotation * _windupVfx.Prefab.transform.localRotation,
+                Controller.transform);
+        }
+
+        private void StopWindupVfx()
+        {
+            EffectManager.Instance?.Stop(_windupVfxHandle);
+            _windupVfxHandle = default;
+        }
+
+        // 돌진이 끝난 자리에 파편을 한 번 터뜨린다. B 를 따라가지 않고 그 자리에 남는다
+        private void PlayBurstVfx()
+        {
+            if (!_burstVfx || !_burstVfx.Prefab || !EffectManager.Instance) return;
+
+            EffectManager.Instance.Play(
+                _burstVfx,
+                Controller.Position,
+                Quaternion.LookRotation(_direction) * _burstVfx.Prefab.transform.localRotation);
         }
 
         // 구간 모션으로 바꾼다(중재자를 거치는 스킬 요청)
