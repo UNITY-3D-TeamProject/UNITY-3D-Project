@@ -2,6 +2,12 @@ using UnityEngine;
 
 namespace Core.Audio
 {
+    public enum EAudioRolloff
+    {
+        Linear = 0,
+        Logarithmic = 1,
+    }
+
     /// <summary>
     /// 소리 하나의 재생 정보. 클립 후보, 기본 음량, 피치 범위를 가진다.
     /// 여러 곳에서 같은 에셋을 공유하므로 재생 중 상태는 여기에 저장하지 않는다.
@@ -39,11 +45,16 @@ namespace Core.Audio
         [SerializeField] private float _fadeOutDuration = 1f;
 
         [Header("3D SFX Only (BGM · UI는 무시)")]
-        [Tooltip("3D 효과음 전용. 이 거리 안에서는 최대 음량으로 들린다")]
+        [Tooltip("Linear: Max Distance에서 무음 / Logarithmic: 거리에 따라 자연스럽게 감쇠")]
+        [SerializeField] private EAudioRolloff _rolloff = EAudioRolloff.Linear;
+
+        [Header("Min Distance: 이 거리 안에서 최대 음량")]
+        [Tooltip("이 거리부터 멀어질수록 소리가 작아진다")]
         [Min(0.01f)]
         [SerializeField] private float _minDistance = 1f;
 
-        [Tooltip("3D 효과음 전용. 이 거리부터는 더 작아지지 않는다 (Logarithmic 감쇠). 폭발처럼 멀리 들려야 하면 크게")]
+        [Header("Max Distance: Linear에서 무음이 되는 거리")]
+        [Tooltip("Linear에서 Min Distance보다 크게 설정. Logarithmic에서는 무시된다")]
         [Min(0.01f)]
         [SerializeField] private float _maxDistance = 30f;
         #endregion
@@ -54,7 +65,10 @@ namespace Core.Audio
         public float FadeInDuration => _fadeInDuration;
         public float FadeOutDuration => _fadeOutDuration;
         public float MinDistance => _minDistance;
-        public float MaxDistance => Mathf.Max(_maxDistance, _minDistance);
+        public float MaxDistance => Mathf.Max(_maxDistance, _minDistance + (_rolloff == EAudioRolloff.Linear ? 0.01f : 0f));
+        public AudioRolloffMode RolloffMode => _rolloff == EAudioRolloff.Linear
+            ? AudioRolloffMode.Linear
+            : AudioRolloffMode.Logarithmic;
         public int ClipCount => (_clips != null) ? _clips.Length : 0;
         #endregion
 
