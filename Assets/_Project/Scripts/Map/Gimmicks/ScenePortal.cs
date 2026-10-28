@@ -1,4 +1,5 @@
 using UnityEngine;
+using Core.Audio;
 using Interaction;
 using SceneTransition;
 using UIandCinematic;
@@ -37,6 +38,10 @@ namespace Map.Gimmicks
 
         [Tooltip("입장 전 컷씬이 시작될 때 끌 오브젝트. 대화 카메라를 가리지 않게 한다. (빛기둥 NextMarker, 이 포탈 자신)")]
         [SerializeField] private GameObject[] _hideDuringCutscene;
+
+        [Header("Sound")]
+        [Tooltip("상호작용(E)했을 때 낼 소리. 입장 전 대화가 시작돼도 들리도록 UI 소리로 낸다. 비우면 무음")]
+        [SerializeField] private SOAudioData _interactSound;
         #endregion
 
         #region Properties
@@ -71,6 +76,8 @@ namespace Map.Gimmicks
         public void Interact(GameObject interactor)
         {
             if (_isLocked) return;
+
+            GimmickUtility.PlayUi(_interactSound);
             if (TryPlayCutsceneBeforeEnter()) return;
 
             TryEnter();

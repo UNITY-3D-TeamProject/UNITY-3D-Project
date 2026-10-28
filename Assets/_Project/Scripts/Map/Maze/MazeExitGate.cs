@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Core.Audio;
 using Map.Gimmicks;
 
 namespace Map.Maze
@@ -21,6 +22,10 @@ namespace Map.Maze
         [Header("Condition")]
         [Tooltip("켜면 라운드를 클리어해야 열린다. 마지막 미로의 문은 생성기가 켠다.")]
         [SerializeField] private bool _shouldRequireRoundClear;
+
+        [Header("Sound")]
+        [Tooltip("문이 열릴 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _openSound;
         #endregion
 
         #region Properties
@@ -71,6 +76,7 @@ namespace Map.Maze
             IsOpen = true;
             if (_door != null)
             {
+                GimmickUtility.PlaySfx(_openSound, _door.transform.position);
                 _door.SetActive(false);
             }
 

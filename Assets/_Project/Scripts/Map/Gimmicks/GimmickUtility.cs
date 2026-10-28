@@ -1,12 +1,13 @@
 using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
+using Core.Audio;
 using PlayerInput;
 
 namespace Map.Gimmicks
 {
     /// <summary>
-    /// 맵 기믹들이 공통으로 쓰는 플레이어 판별과 Effect 적용.
+    /// 맵 기믹들이 공통으로 쓰는 플레이어 판별, Effect 적용, 효과음 재생.
     /// </summary>
     internal static class GimmickUtility
     {
@@ -38,6 +39,55 @@ namespace Map.Gimmicks
 
                 effect.Apply(target);
             }
+        }
+
+        /// <summary>
+        /// 3D 효과음을 position에서 한 번 낸다. 소리가 비어 있거나 씬에 AudioManager가 없으면 무시한다.
+        /// </summary>
+        /// <param name="sound">재생할 소리 (비우면 무음)</param>
+        /// <param name="position">소리가 나는 위치</param>
+        public static void PlaySfx(SOAudioData sound, Vector3 position)
+        {
+            if ((sound == null) || (AudioManager.Instance == null)) return;
+
+            AudioManager.Instance.PlaySfx(sound, position);
+        }
+
+        /// <summary>
+        /// 위치 없는 UI 소리로 한 번 낸다. 대화·일시정지로 3D 소리가 멈춰도 들린다. (E 상호작용음)
+        /// </summary>
+        /// <param name="sound">재생할 소리 (비우면 무음)</param>
+        public static void PlayUi(SOAudioData sound)
+        {
+            if ((sound == null) || (AudioManager.Instance == null)) return;
+
+            AudioManager.Instance.PlayUi(sound);
+        }
+
+        /// <summary>
+        /// 3D 반복음을 target을 따라가며 낸다. 이미 재생 중인 핸들이면 그대로 둔다.
+        /// </summary>
+        /// <param name="sound">반복할 소리 (비우면 무음)</param>
+        /// <param name="target">따라갈 대상</param>
+        /// <param name="handle">재생 중인 소리 핸들. 끝낼 때 StopSfxLoop에 넘긴다</param>
+        public static void PlaySfxLoop(SOAudioData sound, Transform target, ref SAudioHandle handle)
+        {
+            if (handle.IsValid) return;
+            if ((sound == null) || (AudioManager.Instance == null)) return;
+
+            handle = AudioManager.Instance.PlaySfxLoop(sound, target);
+        }
+
+        /// <summary>
+        /// PlaySfxLoop로 시작한 반복음을 끊고 핸들을 비운다.
+        /// </summary>
+        /// <param name="handle">끊을 소리 핸들</param>
+        public static void StopSfxLoop(ref SAudioHandle handle)
+        {
+            if (!handle.IsValid) return;
+
+            AudioManager.Instance?.StopSfx(handle);
+            handle = default;
         }
         #endregion
     }

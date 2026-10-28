@@ -1,4 +1,5 @@
 using UnityEngine;
+using Core.Audio;
 using Map.Maze;
 
 namespace Core.Stage
@@ -38,6 +39,9 @@ namespace Core.Stage
 
         [Tooltip("3번째 미로의 내부 벽과 내부 기둥이 내려가는 시간 (초)")]
         [SerializeField, Min(0.0f)] private float _innerWallLowerDuration = 1.25f;
+
+        [Tooltip("3번째 미로의 내부 벽과 내부 기둥이 내려가기 시작할 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _innerWallLowerSound;
         #endregion
 
         #region Private Fields
@@ -230,7 +234,7 @@ namespace Core.Stage
                 _thiefChaseGate.Open();
             }
 
-            _thiefMazeWallLowering?.Lower(_innerWallLowerDistance, _innerWallLowerDuration);
+            _thiefMazeWallLowering?.Lower(_innerWallLowerDistance, _innerWallLowerDuration, _innerWallLowerSound);
         }
         #endregion
     }

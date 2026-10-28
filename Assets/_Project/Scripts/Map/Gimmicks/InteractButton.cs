@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using Core.Audio;
 using Interaction;
 
 namespace Map.Gimmicks
@@ -18,6 +19,10 @@ namespace Map.Gimmicks
 
         [Tooltip("켜면 처음 한 번만 실행한다.")]
         [SerializeField] private bool _isOneShot;
+
+        [Header("Sound")]
+        [Tooltip("상호작용했을 때 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _interactSound;
         #endregion
 
         #region Private Fields
@@ -36,6 +41,7 @@ namespace Map.Gimmicks
             if (_isOneShot && _hasFired) return;
 
             _hasFired = true;
+            GimmickUtility.PlayUi(_interactSound);
             _onInteracted.Invoke();
         }
         #endregion
