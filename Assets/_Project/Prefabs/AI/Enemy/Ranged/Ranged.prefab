@@ -246,6 +246,7 @@ GameObject:
   - component: {fileID: 7227326023913179552}
   - component: {fileID: 8950271402365318086}
   - component: {fileID: 9037470565256239260}
+  - component: {fileID: 1700791227692117536}
   m_Layer: 8
   m_Name: Ranged
   m_TagString: Untagged
@@ -548,6 +549,27 @@ MonoBehaviour:
   _muzzleVfx: {fileID: 0}
   _muzzlePoints: []
   _fireDelay: 0
+--- !u!114 &1700791227692117536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 681821616047237814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d25ad3e7130c29644aafbe2a33575956, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.EnemyItemDropper
+  _characterMediator: {fileID: 5120159287565978398}
+  _dropChance: 0.25
+  _entries:
+  - Prefab: {fileID: 8731887055806553684, guid: ecef143e1e6e03149a00570b0aefa05d, type: 3}
+    Weight: 1
+  - Prefab: {fileID: 365870956134482254, guid: 7c456de15f079da419ff2a821a27051a, type: 3}
+    Weight: 1
+  _spawnHeight: 0.5
+  _itemLifetime: 15
 --- !u!1 &835412326865447768
 GameObject:
   m_ObjectHideFlags: 0

@@ -52,6 +52,7 @@ GameObject:
   - component: {fileID: 7319076262812618867}
   - component: {fileID: 2263111656472012693}
   - component: {fileID: 5964020298780706303}
+  - component: {fileID: 6270156651580662851}
   m_Layer: 8
   m_Name: Special
   m_TagString: Untagged
@@ -301,6 +302,27 @@ MonoBehaviour:
   _graphAgent: {fileID: 0}
   _shrinkDelay: 0
   _shrinkDuration: 0.4
+--- !u!114 &6270156651580662851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 264135962324108990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d25ad3e7130c29644aafbe2a33575956, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.EnemyItemDropper
+  _characterMediator: {fileID: 8846040900669614}
+  _dropChance: 0.25
+  _entries:
+  - Prefab: {fileID: 8731887055806553684, guid: ecef143e1e6e03149a00570b0aefa05d, type: 3}
+    Weight: 1
+  - Prefab: {fileID: 365870956134482254, guid: 7c456de15f079da419ff2a821a27051a, type: 3}
+    Weight: 1
+  _spawnHeight: 0.5
+  _itemLifetime: 15
 --- !u!1 &541869566793280293
 GameObject:
   m_ObjectHideFlags: 0
@@ -6147,7 +6169,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6944229754918002984}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.06999999, y: 0.622, z: -0.1580348}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
@@ -6472,10 +6494,6 @@ PrefabInstance:
       value: SoundPrefab
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
-      propertyPath: _death
-      value:
-      objectReference: {fileID: 11400000, guid: bb16b6b3e1f197c4fa2fdee217da1321, type: 2}
-    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _hit
       value: 
       objectReference: {fileID: 11400000, guid: 08604b05c769a194b91965bb0ee9eea8, type: 2}
@@ -6487,6 +6505,10 @@ PrefabInstance:
       propertyPath: _land
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
+      propertyPath: _death
+      value: 
+      objectReference: {fileID: 11400000, guid: bb16b6b3e1f197c4fa2fdee217da1321, type: 2}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _footstep
       value: 
@@ -6504,6 +6526,10 @@ PrefabInstance:
       value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
+      propertyPath: _skillSounds.Array.data[2]._phase
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[0]._audioData
       value: 
       objectReference: {fileID: 11400000, guid: a0f4b39e6104d0846da024cf708e7403, type: 2}
@@ -6518,10 +6544,6 @@ PrefabInstance:
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[1]._skillName
       value: Wind
-      objectReference: {fileID: 0}
-    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
-      propertyPath: _skillSounds.Array.data[2]._phase
-      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[2]._audioData

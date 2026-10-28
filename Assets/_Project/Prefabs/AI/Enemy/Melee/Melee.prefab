@@ -559,6 +559,7 @@ GameObject:
   - component: {fileID: 617126785755515221}
   - component: {fileID: 2375377855424875425}
   - component: {fileID: 5414610318173290440}
+  - component: {fileID: 4592551345122468489}
   m_Layer: 8
   m_Name: Melee
   m_TagString: Untagged
@@ -806,6 +807,27 @@ MonoBehaviour:
   _graphAgent: {fileID: 0}
   _shrinkDelay: 0
   _shrinkDuration: 0.4
+--- !u!114 &4592551345122468489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2851063550565306939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d25ad3e7130c29644aafbe2a33575956, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.EnemyItemDropper
+  _characterMediator: {fileID: 7711118245858961342}
+  _dropChance: 0.25
+  _entries:
+  - Prefab: {fileID: 8731887055806553684, guid: ecef143e1e6e03149a00570b0aefa05d, type: 3}
+    Weight: 1
+  - Prefab: {fileID: 365870956134482254, guid: 7c456de15f079da419ff2a821a27051a, type: 3}
+    Weight: 1
+  _spawnHeight: 0.5
+  _itemLifetime: 15
 --- !u!1 &2893440626600557970
 GameObject:
   m_ObjectHideFlags: 0
@@ -1711,10 +1733,6 @@ PrefabInstance:
       value: SoundPrefab
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
-      propertyPath: _death
-      value:
-      objectReference: {fileID: 11400000, guid: bb16b6b3e1f197c4fa2fdee217da1321, type: 2}
-    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _hit
       value: 
       objectReference: {fileID: 11400000, guid: 08604b05c769a194b91965bb0ee9eea8, type: 2}
@@ -1726,6 +1744,10 @@ PrefabInstance:
       propertyPath: _land
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
+      propertyPath: _death
+      value: 
+      objectReference: {fileID: 11400000, guid: bb16b6b3e1f197c4fa2fdee217da1321, type: 2}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _footstep
       value: 
