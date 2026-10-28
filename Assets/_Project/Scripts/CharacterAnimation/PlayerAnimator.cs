@@ -29,6 +29,14 @@ namespace CharacterAnimation
         [Tooltip("이동 애니메이션이 1배속으로 재생될 때의 이동속도. 현재 이동속도 / 이 값이 Locomotion 재생 배율이 된다.")]
         [SerializeField, Min(0.01f)] private float _referenceMoveSpeed = 5.0f;
 
+        [Header("Footstep")]
+        [Tooltip("앞으로 이동할 때 두 발이 땅에 닿는 Locomotion 재생 위치(0~1). Run 클립 기준")]
+        [SerializeField] private Vector2 _forwardFootstepPhases = new Vector2(0.0f, 0.5f);
+        [Tooltip("뒤로 이동할 때 두 발이 땅에 닿는 Locomotion 재생 위치(0~1). Walk_Back 클립 기준")]
+        [SerializeField] private Vector2 _backwardFootstepPhases = new Vector2(0.13f, 0.57f);
+        [Tooltip("옆으로 이동할 때 두 발이 땅에 닿는 Locomotion 재생 위치(0~1). Walk_Left·Walk_Right 클립 평균")]
+        [SerializeField] private Vector2 _sideFootstepPhases = new Vector2(0.44f, 0.95f);
+
         [Header("Fire")]
         [Tooltip("마지막 사격 후 사격 상체 애니메이션을 유지하는 시간(초).")]
         [SerializeField] private float _fireHoldDuration = 3.0f;
@@ -107,6 +115,9 @@ namespace CharacterAnimation
         private Vector3 _lastViewForward;
         private bool _isDead;
         private bool _hasDeathEnded;
+        // 직전 프레임의 Locomotion 재생 위치(0~1). Locomotion 이 아니었으면 _hasFootstepPhase 가 false 다
+        private bool _hasFootstepPhase;
+        private float _lastFootstepPhase;
         #endregion
 
         #region Events
@@ -114,6 +125,8 @@ namespace CharacterAnimation
         public event Action OnDeathAnimationEnded;
         /// <summary>특수 Idle 재생을 시작할 때 재생할 특수 Idle 인덱스(SpecialIdleIndex)를 알린다.</summary>
         public event Action<int> OnSpecialIdleStarted;
+        /// <summary>Locomotion 재생 중 발이 땅에 닿는 재생 위치를 지날 때마다 발생한다.</summary>
+        public event Action OnFootstep;
         #endregion
 
         #region Unity Lifecycle
@@ -159,6 +172,7 @@ namespace CharacterAnimation
             UpdateBoardYaw(deltaTime);
             UpdateSpecialIdle(deltaTime);
             UpdateDeath();
+            UpdateFootstep();
         }
 
         private void LateUpdate()
@@ -507,6 +521,60 @@ namespace CharacterAnimation
         }
 
         /// <summary>
+        /// 하체 현재 상태가 Locomotion 인 동안 재생 위치가 발 디딤 위치를 지나면 발 디딤을 알린다.
+        /// 블렌드 트리의 클립들은 재생 위치를 공유하므로, 현재 블렌드 방향이 앞·뒤·옆 중 어디에 가까운지로 디딤 위치를 고른다.
+        /// </summary>
+        private void UpdateFootstep()
+        {
+            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+            if (stateInfo.shortNameHash != AnimHash.LocomotionState)
+            {
+                _hasFootstepPhase = false;
+                return;
+            }
+
+            float phase = Mathf.Repeat(stateInfo.normalizedTime, 1.0f);
+            if (_hasFootstepPhase)
+            {
+                Vector2 footstepPhases = GetFootstepPhases();
+                bool hasStepped = HasPassedPhase(_lastFootstepPhase, phase, footstepPhases.x) ||
+                                  HasPassedPhase(_lastFootstepPhase, phase, footstepPhases.y);
+                if (hasStepped) OnFootstep?.Invoke();
+            }
+
+            _lastFootstepPhase = phase;
+            _hasFootstepPhase = true;
+        }
+
+        /// <summary>
+        /// 현재 블렌드 방향(MoveX, MoveY)에 맞는 발 디딤 위치를 반환한다. 좌우 성분이 더 크면 옆, 아니면 앞·뒤로 본다.
+        /// </summary>
+        /// <returns>두 발의 디딤 위치(0~1)</returns>
+        private Vector2 GetFootstepPhases()
+        {
+            float moveX = _animator.GetFloat(AnimHash.MoveX);
+            float moveY = _animator.GetFloat(AnimHash.MoveY);
+            if (Mathf.Abs(moveX) > Mathf.Abs(moveY)) return _sideFootstepPhases;
+
+            return (moveY >= 0.0f) ? _forwardFootstepPhases : _backwardFootstepPhases;
+        }
+
+        /// <summary>
+        /// 재생 위치가 from 에서 to 로 진행하는 동안 target 을 지났는지 반환한다. 한 주기를 넘어 0 으로 돌아온 경우도 처리한다.
+        /// </summary>
+        /// <param name="from">직전 재생 위치(0~1)</param>
+        /// <param name="to">현재 재생 위치(0~1)</param>
+        /// <param name="target">확인할 재생 위치</param>
+        /// <returns>지났으면 true</returns>
+        private static bool HasPassedPhase(float from, float to, float target)
+        {
+            target = Mathf.Repeat(target, 1.0f);
+            if (from <= to) return (from < target) && (target <= to);
+
+            return (target > from) || (target <= to);
+        }
+
+        /// <summary>
         /// 하체가 Idle(전환 중 아님)이고 사격 상체가 꺼져 있는 동안 무입력 시간을 센다.
         /// 대기 시간이 지나면 특수 Idle 중 하나를 랜덤으로 재생하고 시간을 다시 센다.
         /// </summary>
@@ -840,6 +908,7 @@ namespace CharacterAnimation
             public static readonly int HitDirection = Animator.StringToHash("HitDirection");
             public static readonly int FireHoldState = Animator.StringToHash("FireHold");
             public static readonly int IdleState = Animator.StringToHash("Idle");
+            public static readonly int LocomotionState = Animator.StringToHash("Locomotion");
             public static readonly int DeathLoopState = Animator.StringToHash("DeathLoop");
             public static readonly int RidingState = Animator.StringToHash("Riding");
         }

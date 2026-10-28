@@ -42,6 +42,7 @@ namespace Mediator.SubMediators
         private SpawnVehicle _spawnVehicleSkill;
         private Roll _rollSkill;
         private Scan _scanSkill;
+        private MultiJump _multiJumpSkill;
         // 점프 시작 ~ 착지. 이 동안 탑승하면 착지할 때 탈것을 생성한다
         private bool _isJumping;
         private bool _isRolling;
@@ -136,6 +137,7 @@ namespace Mediator.SubMediators
             if (_skillController) _spawnVehicleSkill = _skillController.GetComponentInChildren<SpawnVehicle>(true);
             if (_skillController) _rollSkill = _skillController.GetComponentInChildren<Roll>(true);
             if (_skillController) _scanSkill = _skillController.GetComponentInChildren<Scan>(true);
+            if (_skillController) _multiJumpSkill = _skillController.GetComponentInChildren<MultiJump>(true);
             BindRequest();
         }
 
@@ -355,13 +357,14 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 지금 차지 중인지와 탈것이 붙어 있는지를 사운드 알림으로 다시 전달한다.
+        /// 지금 차지 중인지, 탈것이 붙어 있는지, 요시 점프 중인지를 사운드 알림으로 다시 전달한다.
         /// 구독이 늦어 놓친 상태를 맞출 때 호출한다. 스킬을 다시 실행하지 않는다.
         /// </summary>
         public void SyncSoundState()
         {
             if (_fireSkill) OnSkillSoundLoop?.Invoke(_fireSkill.SkillName, ESoundPhase.Charge, _fireSkill.IsCharging);
             if (_spawnVehicleSkill) OnVehicleSoundChanged?.Invoke(_spawnVehicleSkill.SkillName, _spawnVehicleSkill.Vehicle);
+            if (_spawnVehicleSkill) OnSkillSoundLoop?.Invoke(_spawnVehicleSkill.SkillName, ESoundPhase.Hover, _spawnVehicleSkill.IsHovering);
         }
         #endregion
         
@@ -465,6 +468,8 @@ namespace Mediator.SubMediators
                 case SpawnVehicle spawnVehicle:
                     OnBuffRatiosChanged?.Invoke(spawnVehicle.BuffRatios);
                     OnRidingChanged?.Invoke(spawnVehicle.IsRiding);
+                    // 탑승 중에는 보드가 점프 연출을 대신하므로 공중 점프 VFX 를 끈다
+                    if (_multiJumpSkill) _multiJumpSkill.SetJumpVfxEnabled(!spawnVehicle.IsRiding);
                     if (spawnVehicle.IsRiding)
                     {
                         BeginMount(spawnVehicle);
@@ -568,12 +573,13 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
-        /// 탈것 스킬의 요시 점프 시작·종료를 상승 속도와 함께 알린다.
+        /// 탈것 스킬의 요시 점프 시작·종료를 상승 속도와 함께 알리고, 그동안 낼 반복음을 켜거나 끈다.
         /// </summary>
         /// <param name="isHovering">시작이면 true</param>
         private void OnHoverChangedCallback(bool isHovering)
         {
             OnHoverChanged?.Invoke(isHovering, _spawnVehicleSkill.HoverRiseSpeed);
+            OnSkillSoundLoop?.Invoke(_spawnVehicleSkill.SkillName, ESoundPhase.Hover, isHovering);
         }
 
         /// <summary>
