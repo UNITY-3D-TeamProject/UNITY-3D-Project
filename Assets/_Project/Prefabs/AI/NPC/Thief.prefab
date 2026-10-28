@@ -49,9 +49,11 @@ GameObject:
   - component: {fileID: 742138176948817436}
   - component: {fileID: 617126785755515221}
   - component: {fileID: 49148627380588292}
+  - component: {fileID: 5438867399557178269}
+  - component: {fileID: 7822587530581155690}
   m_Layer: 8
   m_Name: Thief
-  m_TagString: Untagged
+  m_TagString: Scan
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -272,6 +274,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.WaypointPatrolRoute
   _waypointTransforms: []
+--- !u!114 &5438867399557178269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2851063550565306939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19318f87a581d0408f054d5de0cef90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.ScanTarget
+  _fadeInTime: 0.2
+  _fadeOutTime: 1
+  _reactions: []
+  _scanColliders: []
+--- !u!114 &7822587530581155690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2851063550565306939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4f53d2a172f4ec9acb4b346fba4b519, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.SilhouetteReaction
+  _silhouetteRenderers: []
+  _autoShellMaterial: {fileID: 2100000, guid: 7ed16fb52a8240d08d9e97526bf8a65e, type: 2}
+  _shellSourceRoot: {fileID: 0}
 --- !u!1 &4971511409235624539
 GameObject:
   m_ObjectHideFlags: 0
@@ -1626,6 +1659,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SoundPrefab
       objectReference: {fileID: 0}
+    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
+      propertyPath: _death
+      value:
+      objectReference: {fileID: 11400000, guid: bb16b6b3e1f197c4fa2fdee217da1321, type: 2}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _hit
       value: 

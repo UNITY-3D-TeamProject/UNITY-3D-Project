@@ -155,6 +155,12 @@ namespace CharacterSound
             PlayOneShot(_footstep, transform.position);
         }
 
+        /// <summary>사망음을 낸다.</summary>
+        public void PlayDeath()
+        {
+            PlayOneShot(_death, transform.position);
+        }
+
         /// <summary>
         /// 스킬 단발음을 낸다. 표에 (skillName, phase) 행이 없으면 아무것도 하지 않는다.
         /// </summary>

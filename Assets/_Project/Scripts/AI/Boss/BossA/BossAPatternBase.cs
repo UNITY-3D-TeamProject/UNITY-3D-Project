@@ -1,5 +1,7 @@
 using UnityEngine;
 using Attribute.Effect;
+using CharacterSound;
+using Core.Effect;
 using Skill.Core;
 using AI.Boss.Arena;
 using AI.Boss.Logic;
@@ -34,10 +36,12 @@ namespace AI.Boss.BossA
         [Header("Settings")]
         [Tooltip("내려치는 순간 표적 칸 위의 플레이어에게 줄 피해. 비워 두면 피해 없음")]
         [SerializeField] private SOAttributeEffect _hitEffect;
+        [SerializeField] private SOEffectData _slamDustVfx;
         #endregion
 
         #region Private Fields
         private readonly BossHand[] _hands = new BossHand[2];
+        private SoundController _soundController;
         private readonly Vector3[] _points = new Vector3[2];
         private int _handCount;
         private int _pendingCount;
@@ -78,6 +82,7 @@ namespace AI.Boss.BossA
 
         /// <summary>한 번 내려친 충돌에서 다음 충돌까지의 간격(초). 손 이동 시간을 포함하며 TelegraphScale 을 곱하지 않는다. 손 이동이 더 오래 걸리면 도착 즉시 친다.</summary>
         protected virtual float NextStrikeDelay => 0.0f;
+        protected virtual bool HasImpactSound => false;
         #endregion
 
         #region Unity Lifecycle
@@ -86,6 +91,7 @@ namespace AI.Boss.BossA
             base.Awake();
 
             if (!_controller) _controller = GetComponentInParent<BossController>();
+            if (_controller) _soundController = _controller.GetComponentInChildren<SoundController>();
         }
 
         protected virtual void OnDisable()
@@ -260,6 +266,17 @@ namespace AI.Boss.BossA
             return _points[handIndex];
         }
 
+        protected void PlayImpactSound(Vector3 position)
+        {
+            if (_soundController) _soundController.PlaySkillSound(SkillName, ESoundPhase.Impact, position);
+        }
+
+        protected void PlaySlamDust(Vector3 position)
+        {
+            if (_slamDustVfx && _slamDustVfx.Prefab)
+                EffectManager.Instance?.Play(_slamDustVfx, position, _slamDustVfx.Prefab.transform.localRotation);
+        }
+
         protected bool IsPlayerOnTargetTile()
         {
             if (_tiles == null) return false;
@@ -389,6 +406,13 @@ namespace AI.Boss.BossA
 
         private void HandleImpact()
         {
+            if (HasImpactSound && (_handCount > 0) && _soundController)
+            {
+                Vector3 position = Vector3.zero;
+                for (int i = 0; i < _handCount; i++) position += _points[i];
+                PlayImpactSound(position / _handCount);
+            }
+            for (int i = 0; i < _handCount; i++) PlaySlamDust(_points[i]);
             OnImpact();
 
             if ((_strikeIndex + 1) < StrikeCount)

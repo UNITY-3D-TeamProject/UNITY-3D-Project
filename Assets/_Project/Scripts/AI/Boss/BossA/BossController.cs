@@ -301,6 +301,7 @@ namespace AI.Boss.BossA
             CancelPattern();
             CancelCannons();
             _isCannonActive = false;
+            if (TryGetComponent(out BossDeathSkill deathSkill)) deathSkill.TryExecute();
         }
 
         private void TickCannon(float deltaTime)

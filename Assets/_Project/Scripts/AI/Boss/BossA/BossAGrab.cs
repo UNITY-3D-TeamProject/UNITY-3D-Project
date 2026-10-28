@@ -1,5 +1,6 @@
 using UnityEngine;
 using Attribute.Effect;
+using Core.Effect;
 using Movement;
 using Skill.Core;
 using AI.Boss.Arena;
@@ -42,6 +43,7 @@ namespace AI.Boss.BossA
         [Header("Settings")]
         [Tooltip("내려치는 순간 끌려온 칸 위의 플레이어에게 줄 피해. 비워 두면 피해 없음")]
         [SerializeField] private SOAttributeEffect _hitEffect;
+        [SerializeField] private SOEffectData _slamDustVfx;
         [Tooltip("임시값. 직선 경로를 예고하는 시간(초). TelegraphScale 을 곱한다")]
         [SerializeField, Min(0.0f)] private float _aimSeconds = 1.0f;
         [Tooltip("임시값. 손이 날아가는 속도(m/s). 플레이어를 끌고 돌아올 때도 같은 속도다")]
@@ -327,6 +329,8 @@ namespace AI.Boss.BossA
 
         private void OnSlamImpact()
         {
+            if (_slamDustVfx && _slamDustVfx.Prefab)
+                EffectManager.Instance?.Play(_slamDustVfx, Arena.GetTileCenter(_slamTile), _slamDustVfx.Prefab.transform.localRotation);
             if (_hitEffect && IsPlayerOnTile(_slamTile)) Situation.TryApplyToPlayer(_hitEffect);
 
             Arena.Collapse(_slamTile);

@@ -131,6 +131,8 @@ namespace AI.Boss.BossA
                 }
 
                 // 예고 중인 칸은 무너질 때 예고도 함께 꺼진다
+                if (_isSweeping && (Arena.Grid.GetState(tile) != ETileState.Collapsed))
+                    PlaySlamDust(Arena.GetTileCenter(tile));
                 Arena.Collapse(tile);
             }
         }
