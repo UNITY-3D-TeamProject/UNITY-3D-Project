@@ -10,6 +10,7 @@ namespace Core.Stage.Security
     /// 이 라운드는 보스(A)를 쓰러뜨리면 꺼 두었던 탈출 문을 켠다.
     /// 2라운드 발판은 보스 라운드가 시작되면 내리고, 리스폰 자리 발판은 보스 바닥에 올라서면 내렸다가 리스폰할 때만 즉시 올린다. 다 내려간 발판은 꺼서 숨긴다.
     /// 보스 라운드가 시작되면 앞 구간(1라운드 방 등)도 꺼서 숨긴다.
+    /// 플레이어가 들어온 쪽 투명 벽은 보스 바닥에 올라서면 켜고, 리스폰할 때 꺼서 발판에서 다시 들어올 수 있게 한다.
     /// SecurityApp 이 필드로 들고, 스테이지 시작 때 Begin, 끝날 때 End, 보스 라운드가 되면 LowerPlatforms·HideAreas, 보스 라운드 동안 매 프레임 HideLoweredPlatforms,
     /// 이 라운드 중 죽으면 RestoreRespawnPlatform 을 부른다.
     /// </summary>
@@ -34,6 +35,9 @@ namespace Core.Stage.Security
 
         [Tooltip("보스 라운드가 시작되면 꺼서 숨기는 앞 구간 (03_Round1_Battle 등)")]
         [SerializeField] private GameObject[] _hiddenAreas;
+
+        [Tooltip("플레이어가 들어온 쪽 아레나 투명 벽. 보스 바닥에 올라서면 켜고, 리스폰할 때 끈다.")]
+        [SerializeField] private GameObject _arenaWall;
         #endregion
 
         #region Properties
@@ -51,6 +55,7 @@ namespace Core.Stage.Security
         public void Begin()
         {
             if (_exitDoor != null) _exitDoor.SetActive(false);
+            if (_arenaWall != null) _arenaWall.SetActive(false);
             if (_arenaEntrance != null) _arenaEntrance.OnPlayerEntered.AddListener(HandleArenaEntered);
 
             if (_bossFightSpawner == null)
@@ -105,9 +110,10 @@ namespace Core.Stage.Security
             HideIfLowered(_respawnPlatform);
         }
 
-        /// <summary>보스 라운드 중 죽었을 때 호출된다. 리스폰 자리 발판을 즉시 원위치로 올리고 다시 켠다.</summary>
+        /// <summary>보스 라운드 중 죽었을 때 호출된다. 아레나 벽을 끄고, 리스폰 자리 발판을 즉시 원위치로 올리고 다시 켠다.</summary>
         public void RestoreRespawnPlatform()
         {
+            if (_arenaWall != null) _arenaWall.SetActive(false);
             if (_respawnPlatform == null) return;
 
             _respawnPlatform.ResetImmediately();
@@ -116,10 +122,11 @@ namespace Core.Stage.Security
         #endregion
 
         #region Private Methods
-        // 보스 바닥에 올라서면 리스폰 자리 발판을 내린다. 이미 내려가 있으면 그대로다.
+        // 보스 바닥에 올라서면 아레나 벽을 켜고 리스폰 자리 발판을 내린다. 이미 내려가 있으면 그대로다.
         // [이벤트] TriggerPlate.OnPlayerEntered (Begin 에서 구독)
         private void HandleArenaEntered()
         {
+            if (_arenaWall != null) _arenaWall.SetActive(true);
             if (_respawnPlatform != null) _respawnPlatform.Activate();
         }
 
