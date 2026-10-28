@@ -35,7 +35,7 @@ namespace Tutorial
         [SerializeField] private GameObject _contentRoot;
         [SerializeField] private Transform _disc;
         [SerializeField] private TMP_Text _titleText;
-        [SerializeField] private string _songTitle = "불을 끄기 전에  ·  마지막 데모";
+        [SerializeField] private string _songTitle = "다시, 처음부터  ·  마지막 데모 파일";
         [SerializeField, Min(1.0f)] private float _playDuration = 8.0f;
         [SerializeField, Min(0.1f)] private float _discSpeed = 120.0f;
         [SerializeField, Min(0.05f)] private float _scrollInterval = 0.18f;
