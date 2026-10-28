@@ -243,6 +243,9 @@ GameObject:
   - component: {fileID: 9031708989183875549}
   - component: {fileID: 7585644405135888982}
   - component: {fileID: 4564190703093895376}
+  - component: {fileID: 7227326023913179552}
+  - component: {fileID: 8950271402365318086}
+  - component: {fileID: 9037470565256239260}
   m_Layer: 8
   m_Name: Ranged
   m_TagString: Untagged
@@ -270,6 +273,7 @@ Transform:
   - {fileID: 3110924223483423029}
   - {fileID: 8125789449530482015}
   - {fileID: 7461730648692798205}
+  - {fileID: 5895924647421096128}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &181254065960653664
@@ -487,6 +491,63 @@ MonoBehaviour:
   _graphAgent: {fileID: 0}
   _shrinkDelay: 0
   _shrinkDuration: 0.4
+--- !u!114 &7227326023913179552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 681821616047237814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e2c01afe5c5bf448a3825c8dac7348a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Skill.Skills.EnemyRangedAttack
+  _skillName: 
+  _bulletPrefab: {fileID: 0}
+  _firePoint: {fileID: 0}
+  _hitEffect: {fileID: 0}
+  _muzzleVfx: {fileID: 0}
+  _muzzlePoints: []
+  _fireDelay: 0
+--- !u!114 &8950271402365318086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 681821616047237814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e2c01afe5c5bf448a3825c8dac7348a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Skill.Skills.EnemyRangedAttack
+  _skillName: 
+  _bulletPrefab: {fileID: 0}
+  _firePoint: {fileID: 0}
+  _hitEffect: {fileID: 0}
+  _muzzleVfx: {fileID: 0}
+  _muzzlePoints: []
+  _fireDelay: 0
+--- !u!114 &9037470565256239260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 681821616047237814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e2c01afe5c5bf448a3825c8dac7348a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Skill.Skills.EnemyRangedAttack
+  _skillName: 
+  _bulletPrefab: {fileID: 0}
+  _firePoint: {fileID: 0}
+  _hitEffect: {fileID: 0}
+  _muzzleVfx: {fileID: 0}
+  _muzzlePoints: []
+  _fireDelay: 0
 --- !u!1 &835412326865447768
 GameObject:
   m_ObjectHideFlags: 0
@@ -600,6 +661,37 @@ Transform:
   m_Children:
   - {fileID: 1608736642259182680}
   m_Father: {fileID: 5108911859397325419}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &979785366721375291
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5895924647421096128}
+  m_Layer: 0
+  m_Name: EffectPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5895924647421096128
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 979785366721375291}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.758, y: 1.07, z: 1.086381}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7864393348264980712}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &999268554601737930
 GameObject:
@@ -787,7 +879,8 @@ Transform:
   m_LocalPosition: {x: -0.77619565, y: 0.00000022888183, z: 0.0000010681152}
   m_LocalScale: {x: 1.0000002, y: 1.0000002, z: 0.9999998}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7100000000000000004}
   m_Father: {fileID: 5502279460630996103}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1659640330737233846
@@ -1486,6 +1579,68 @@ Transform:
   - {fileID: 5108911859397325419}
   m_Father: {fileID: 8514621383736071630}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7100000000000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7100000000000000002}
+  m_Layer: 0
+  m_Name: MuzzlePoint_L
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7100000000000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7100000000000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0.275, y: -0.027, z: -0.024}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4018391803610728218}
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
+--- !u!1 &7100000000000000003
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7100000000000000004}
+  m_Layer: 0
+  m_Name: MuzzlePoint_R
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7100000000000000004
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7100000000000000003}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4061374163102813697}
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!1 &7475339702813368344
 GameObject:
   m_ObjectHideFlags: 0
@@ -1640,7 +1795,8 @@ Transform:
   m_LocalPosition: {x: -0.77619535, y: -0.00000022888183, z: 0.0000009155273}
   m_LocalScale: {x: 0.99999976, y: 0.9999998, z: 1.0000002}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7100000000000000002}
   m_Father: {fileID: 8300586373634378465}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8274321109423835035
@@ -1904,7 +2060,10 @@ MonoBehaviour:
   _bulletPrefab: {fileID: 4555850187240467820, guid: d947b178bda2a4d408aa9ce82508159b, type: 3}
   _firePoint: {fileID: 3112246835658099973}
   _hitEffect: {fileID: 11400000, guid: f50419d635f6a7e4694dea4fc131a766, type: 2}
-  _fireDelay: 0.33
+  _muzzleVfx: {fileID: 11400000, guid: 2b09a64fd49c451fb2c368f138cf8cd2, type: 2}
+  _muzzlePoints:
+  - {fileID: 7100000000000000002}
+  _fireDelay: 0.15
 --- !u!114 &8802174989168407350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2134,10 +2293,6 @@ PrefabInstance:
       value: SoundPrefab
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
-      propertyPath: _death
-      value:
-      objectReference: {fileID: 11400000, guid: bb16b6b3e1f197c4fa2fdee217da1321, type: 2}
-    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _hit
       value: 
       objectReference: {fileID: 11400000, guid: 08604b05c769a194b91965bb0ee9eea8, type: 2}
@@ -2149,6 +2304,10 @@ PrefabInstance:
       propertyPath: _land
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
+      propertyPath: _death
+      value: 
+      objectReference: {fileID: 11400000, guid: bb16b6b3e1f197c4fa2fdee217da1321, type: 2}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _footstep
       value: 

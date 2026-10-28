@@ -4,6 +4,7 @@ using Action = System.Action;
 using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
+using Core.Effect;
 using Facade.Player;
 using Mediator;
 using Movement;
@@ -30,6 +31,9 @@ namespace AI.Boss.Fight
         [Header("References")]
         [SerializeField] private BossArena _arena;
 
+        [SerializeField] private SOEffectData _groggyVfx;
+        [SerializeField] private Vector3 _groggyVfxOffset = new Vector3(0.0f, 2.0f, 0.0f);
+
         [Header("Settings")]
         [SerializeField, Min(0.0f)] private float _groggySeconds = 10.0f;
         [Tooltip("끄면 점프 중에도 착지 예상 칸 대신 지금 서 있는 칸을 쓴다")]
@@ -42,6 +46,7 @@ namespace AI.Boss.Fight
         #endregion
 
         #region Private Fields
+        private SEffectHandle _groggyVfxHandle;
         private BossFightModel _model;
         private PlayerArenaTracker _tracker;
         private BossController _bossA;
@@ -152,6 +157,7 @@ namespace AI.Boss.Fight
         /// </summary>
         public void End()
         {
+            StopGroggyVfx();
             if (_model != null)
             {
                 _model.OnGroggyStarted -= HandleGroggyStarted;
@@ -296,18 +302,33 @@ namespace AI.Boss.Fight
         {
             _bossA.SetStage(_model.Stage);
             _bossA.SetDamageMode(EBossDamageMode.HandsOnly);
+            if (_groggyVfx && _groggyVfx.Prefab && _bossB && EffectManager.Instance)
+            {
+                Transform bossTransform = _bossB.transform;
+                _groggyVfxHandle = EffectManager.Instance.PlayLoop(
+                    _groggyVfx, bossTransform.TransformPoint(_groggyVfxOffset), bossTransform.rotation * _groggyVfx.Prefab.transform.localRotation, bossTransform);
+            }
             SetVariable(_graphA, _isGroggyVariable, true);
         }
 
         private void HandleGroggyEnded()
         {
+            StopGroggyVfx();
             float maxHp = _mediatorB ? _mediatorB.GetAttribute(MAX_HP_KEY) : 0.0f;
             _bossB.Revive(maxHp);
             SetVariable(_graphA, _isGroggyVariable, false);
         }
 
+        private void StopGroggyVfx()
+        {
+            EffectManager.Instance?.Stop(_groggyVfxHandle);
+            _groggyVfxHandle = default;
+        }
+
         private void HandleStageChanged(EBossStage stage)
         {
+            if (stage == EBossStage.Defeated) StopGroggyVfx();
+
             switch (stage)
             {
                 case EBossStage.Stage1_2:

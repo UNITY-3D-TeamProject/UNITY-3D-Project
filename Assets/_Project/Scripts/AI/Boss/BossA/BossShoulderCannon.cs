@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Attribute.Effect;
+using Core.Effect;
 using AI.Boss.Arena;
 
 namespace AI.Boss.BossA
@@ -26,6 +27,11 @@ namespace AI.Boss.BossA
         [SerializeField, Min(0.0f)] private float _knockbackSeconds = 0.3f;
         [SerializeField] private SOAttributeEffect _hitEffect;
 
+        [Header("VFX")]
+        [SerializeField] private SOEffectData _muzzleVfx;
+        [SerializeField] private SOEffectData _projectileVfx;
+        [SerializeField] private SOEffectData _explosionVfx;
+
         [Header("Projectile")]
         [Tooltip("날아가는 투사체 모습. 비워 두면 예고만 띄운다")]
         [SerializeField] private GameObject _projectilePrefab;
@@ -43,6 +49,7 @@ namespace AI.Boss.BossA
         private int _circleHandle = -1;
         private Action _onDone;
         private Transform _projectile;
+        private SEffectHandle _projectileVfxHandle;
         private Vector3 _startPoint;
         #endregion
 
@@ -107,6 +114,11 @@ namespace AI.Boss.BossA
             if (_controller && _controller.Arena != null) _circleHandle = _controller.Arena.ShowCircle(point, _radius, _remaining);
 
             ShowProjectile();
+            Vector3 muzzlePosition = _muzzle ? _muzzle.position : transform.position;
+            Vector3 direction = _point - muzzlePosition;
+            Quaternion rotation = direction.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(direction) : transform.rotation;
+            if (_muzzleVfx && _muzzleVfx.Prefab)
+                EffectManager.Instance?.Play(_muzzleVfx, muzzlePosition, rotation * _muzzleVfx.Prefab.transform.localRotation);
         }
 
         /// <summary>
@@ -127,6 +139,9 @@ namespace AI.Boss.BossA
             _isFiring = false;
             HideCircle();
             HideProjectile();
+
+            if (_explosionVfx && _explosionVfx.Prefab)
+                EffectManager.Instance?.Play(_explosionVfx, _point, _explosionVfx.Prefab.transform.localRotation);
 
             IBossSituation situation = _controller ? _controller.Situation : null;
             if (situation != null) HitPlayer(situation);
@@ -165,6 +180,8 @@ namespace AI.Boss.BossA
             _startPoint = _muzzle ? _muzzle.position : transform.position;
             _projectile.gameObject.SetActive(true);
             MoveProjectile();
+            if (_projectileVfx && _projectileVfx.Prefab && EffectManager.Instance)
+                _projectileVfxHandle = EffectManager.Instance.PlayLoop(_projectileVfx, _projectile.position, _projectile.rotation * _projectileVfx.Prefab.transform.localRotation, _projectile);
         }
 
         private void MoveProjectile()
@@ -184,6 +201,8 @@ namespace AI.Boss.BossA
 
         private void HideProjectile()
         {
+            EffectManager.Instance?.Stop(_projectileVfxHandle);
+            _projectileVfxHandle = default;
             if (_projectile) _projectile.gameObject.SetActive(false);
         }
 

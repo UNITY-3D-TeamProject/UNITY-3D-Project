@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Movement;
+using Core.Effect;
 using AI.Boss.Logic;
 
 namespace AI.Boss.BossA
@@ -26,6 +27,8 @@ namespace AI.Boss.BossA
         [SerializeField, Min(0.0f)] private float _hitRadius = 6.0f;
         [Tooltip("임시값. 박수 순간 놓은 뒤에도 이동을 잠가 두는 시간(초). 그랩과 같게 둔다")]
         [SerializeField, Min(0.0f)] private float _holdSeconds = 0.7f;
+
+        [SerializeField] private SOEffectData _clapVfx;
 
         [Header("Wall Telegraph")]
         [Tooltip("1타 예고부터 박수 순간까지 사이 칸 위에 세우는 상자 예고(가운데 기준 큐브). 비워 두면 바닥 예고만 띄운다")]
@@ -201,8 +204,10 @@ namespace AI.Boss.BossA
 
             if (_clapHands[0] && _clapHands[1])
             {
-                Vector3 position = (_clapHands[0].transform.position + _clapHands[1].transform.position) * 0.5f;
+                Vector3 position = (_clapHands[0].ClapPoint + _clapHands[1].ClapPoint) * 0.5f;
                 PlayImpactSound(position);
+                if (_clapVfx && _clapVfx.Prefab)
+                    EffectManager.Instance?.Play(_clapVfx, position, Quaternion.LookRotation(_palmDirections[0]) * _clapVfx.Prefab.transform.localRotation);
             }
 
             // 맞부딪친 순간 붙잡힌 플레이어를 가운데에 놓는다

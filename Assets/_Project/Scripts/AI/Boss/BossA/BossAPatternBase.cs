@@ -1,6 +1,7 @@
 using UnityEngine;
 using Attribute.Effect;
 using CharacterSound;
+using Core.Effect;
 using Skill.Core;
 using AI.Boss.Arena;
 using AI.Boss.Logic;
@@ -35,6 +36,7 @@ namespace AI.Boss.BossA
         [Header("Settings")]
         [Tooltip("내려치는 순간 표적 칸 위의 플레이어에게 줄 피해. 비워 두면 피해 없음")]
         [SerializeField] private SOAttributeEffect _hitEffect;
+        [SerializeField] private SOEffectData _slamDustVfx;
         #endregion
 
         #region Private Fields
@@ -269,6 +271,12 @@ namespace AI.Boss.BossA
             if (_soundController) _soundController.PlaySkillSound(SkillName, ESoundPhase.Impact, position);
         }
 
+        protected void PlaySlamDust(Vector3 position)
+        {
+            if (_slamDustVfx && _slamDustVfx.Prefab)
+                EffectManager.Instance?.Play(_slamDustVfx, position, _slamDustVfx.Prefab.transform.localRotation);
+        }
+
         protected bool IsPlayerOnTargetTile()
         {
             if (_tiles == null) return false;
@@ -404,6 +412,7 @@ namespace AI.Boss.BossA
                 for (int i = 0; i < _handCount; i++) position += _points[i];
                 PlayImpactSound(position / _handCount);
             }
+            for (int i = 0; i < _handCount; i++) PlaySlamDust(_points[i]);
             OnImpact();
 
             if ((_strikeIndex + 1) < StrikeCount)

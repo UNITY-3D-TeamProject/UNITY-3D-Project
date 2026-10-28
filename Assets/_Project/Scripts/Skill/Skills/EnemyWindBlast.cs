@@ -1,6 +1,7 @@
 using UnityEngine;
 using AI;
 using CharacterSound;
+using Core.Effect;
 using Movement;
 using Skill.Core;
 
@@ -47,6 +48,11 @@ namespace Skill.Skills
         [Tooltip("넉백에 걸리는 시간(초). 짧을수록 세게 튕긴다.")]
         [SerializeField, Min(0.05f)] private float _knockbackDuration = 0.3f;
 
+        [Header("VFX")]
+        [SerializeField] private SOEffectData _windVfx;
+        [SerializeField] private SOEffectData _burstSmokeVfx;
+        [SerializeField] private SOEffectData _burstLinesVfx;
+
         [Header("References")]
         [Tooltip("바람이 나가는 기준점. 몸 중심 가슴 높이에 둔다.")]
         [SerializeField] private Transform _windOrigin;
@@ -60,6 +66,7 @@ namespace Skill.Skills
             Knockback,
         }
 
+        private SEffectHandle _windHandle;
         private AIController _controller;
         private SoundController _soundController;
         private EWindPhase _phase;
@@ -169,6 +176,8 @@ namespace Skill.Skills
             _phase = EWindPhase.Ramp;
 
             _controller.Hold(_forward, _rampDuration + _knockbackDuration + HOLD_MARGIN);
+            if (_windVfx && _windVfx.Prefab && EffectManager.Instance)
+                _windHandle = EffectManager.Instance.PlayLoop(_windVfx, _windOrigin.position, Quaternion.LookRotation(_forward) * _windVfx.Prefab.transform.localRotation, _windOrigin);
             if (_soundController) _soundController.SetSkillLoop(SkillName, ESoundPhase.Move, true);
 
             base.Execute();
@@ -198,13 +207,23 @@ namespace Skill.Skills
 
             if (t < 1.0f) return;
 
+            EffectManager.Instance?.Stop(_windHandle);
+            _windHandle = default;
+            if (_soundController) _soundController.PlaySkillSound(SkillName, ESoundPhase.Impact, _windOrigin.position);
+            Quaternion rotation = Quaternion.LookRotation(_forward);
+            if (_burstSmokeVfx && _burstSmokeVfx.Prefab)
+                EffectManager.Instance?.Play(
+                    _burstSmokeVfx, _windOrigin.position, rotation * _burstSmokeVfx.Prefab.transform.localRotation, _windOrigin);
+            if (_burstLinesVfx && _burstLinesVfx.Prefab)
+                EffectManager.Instance?.Play(
+                    _burstLinesVfx, _windOrigin.position, rotation * _burstLinesVfx.Prefab.transform.localRotation, _windOrigin);
+
             // 램프가 끝나는 순간 범위 안이면 넉백, 아니면 그대로 끝
             if (isInWind)
             {
                 _knockbackDirection = direction;
                 _elapsed = 0.0f;
                 _phase = EWindPhase.Knockback;
-                if (_soundController) _soundController.PlaySkillSound(SkillName, ESoundPhase.Impact, _windOrigin.position);
             }
             else
             {
@@ -270,6 +289,8 @@ namespace Skill.Skills
         {
             if (_phase == EWindPhase.Idle) return;
 
+            EffectManager.Instance?.Stop(_windHandle);
+            _windHandle = default;
             if (_soundController) _soundController.SetSkillLoop(SkillName, ESoundPhase.Move, false);
             _phase = EWindPhase.Idle;
             _elapsed = 0.0f;

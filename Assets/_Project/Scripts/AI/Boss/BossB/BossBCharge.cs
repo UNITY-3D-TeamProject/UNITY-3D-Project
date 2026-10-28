@@ -1,4 +1,5 @@
 using UnityEngine;
+using Core.Effect;
 
 namespace AI.Boss.BossB
 {
@@ -53,6 +54,8 @@ namespace AI.Boss.BossB
         [SerializeField] private string _stopMotionSkillName = "ChargeStop";
 
         [Header("References")]
+        [SerializeField] private SOEffectData _chargeVfx;
+        [SerializeField] private Vector3 _chargeVfxOffset = Vector3.up;
         [Tooltip("직선 예고 판 프리팹(가로·세로 1 m). 로컬 X 가 폭, Z 가 길이다. 비우면 예고를 띄우지 않는다")]
         [SerializeField] private GameObject _linePrefab;
         [Tooltip("직선 예고 판을 B 발밑에서 띄우는 높이(m)")]
@@ -65,6 +68,7 @@ namespace AI.Boss.BossB
         private float _timer;
         private float _traveled;
         private bool _isPrepared;
+        private SEffectHandle _chargeVfxHandle;
         private readonly BossBTelegraph _line = new BossBTelegraph();
         #endregion
 
@@ -106,6 +110,7 @@ namespace AI.Boss.BossB
 
         protected override void OnRunEnded()
         {
+            StopChargeVfx();
             _line.Hide();
 
             if (!_isPrepared) return;
@@ -126,6 +131,14 @@ namespace AI.Boss.BossB
             if (_timer > 0.0f) return;
 
             _phase = EChargePhase.Charging;
+            if (_chargeVfx && _chargeVfx.Prefab && EffectManager.Instance)
+            {
+                _chargeVfxHandle = EffectManager.Instance.PlayLoop(
+                    _chargeVfx,
+                    Controller.Position + _chargeVfxOffset,
+                    Quaternion.LookRotation(_direction) * _chargeVfx.Prefab.transform.localRotation,
+                    Controller.transform);
+            }
             PlayMotion(_runMotionSkillName);
         }
 
@@ -136,6 +149,7 @@ namespace AI.Boss.BossB
 
             if (IsBlocked(front))
             {
+                StopChargeVfx();
                 _phase = EChargePhase.Stagger;
                 _timer = _staggerSeconds;
                 _line.Hide();
@@ -164,6 +178,12 @@ namespace AI.Boss.BossB
         {
             _timer -= deltaTime;
             if (_timer <= 0.0f) EndRun();
+        }
+
+        private void StopChargeVfx()
+        {
+            EffectManager.Instance?.Stop(_chargeVfxHandle);
+            _chargeVfxHandle = default;
         }
 
         // 구간 모션으로 바꾼다(중재자를 거치는 스킬 요청)

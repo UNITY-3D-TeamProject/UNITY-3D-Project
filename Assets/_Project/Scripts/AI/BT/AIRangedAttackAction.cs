@@ -37,7 +37,7 @@ namespace AI.BT
         private const float DEFAULT_ATTACK_MOTION_DURATION = 0.85f;
 
         /// <summary>그래프에 FireDelay 값이 없을 때 쓰는 발사 지연(초). 사격 스킬의 Fire Delay 와 같은 값이다.</summary>
-        private const float DEFAULT_FIRE_DELAY = 0.33f;
+        private const float DEFAULT_FIRE_DELAY = 0.15f;
         #endregion
 
         #region Serialized Fields
