@@ -62,6 +62,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[Projectile / Effect]** 카메라 거리 기준 명중 VFX 크기 1~3배 보정, 10m 이내 기본 크기 유지. 일반·차지 탄환 실제 충돌 Play·풀 재사용·10m/30m 캡처 확인 → [문서](./clear/intent-085-impact-camera-distance-scale.md)
 - **[Core / Audio / Map]** 3D 단발음의 0.05초 중복 제한 제거, UI 제한 유지. 파일맵 원본 가시 효과음 4개 동시 재생·두 장애물 근거리 출력 확인 → [문서](./clear/intent-081-spatial-audio-throttle.md)
 - **[UI / MainMenu]** 승인된 검은 타이틀·로비 페이드/이동·플레이어 메뉴를 정식 MainScene에 적용, 기존 매니저/설정 유지 및 Test 의존0개 → [문서](./clear/intent-081-main-menu-lobby-promotion.md) (resolved: 2026-10-27)
 - **[Audio / UI / MainMenu]** 메인 메뉴 버튼 마우스 올림(`Click_16`)·클릭(`Click_18`)·스플래시 입력 소리 없음 → `UIButtonSound` + `MainMenuPresenter._splashPressSound`, MainScene 버튼 5개 연결, Play 확인 → [문서](./clear/intent-076-mainmenu-button-sound.md) (resolved: 2026-10-26)
