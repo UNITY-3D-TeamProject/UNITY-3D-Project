@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Serialization;
 using UnityEngine.SceneManagement;
+using SceneTransition;
 
 namespace Core.Audio
 {
@@ -40,6 +41,7 @@ namespace Core.Audio
         // 볼륨 0을 dB로 바꿀 때 log10(0)을 피하기 위한 하한값 (= -80dB)
         private const float MIN_VOLUME = 0.0001f;
         private const float DEFAULT_VOLUME = 1f;
+        private const string LOBBY_SCENE_NAME = "Map_1_Lobby";
 
         // PlaySfx의 pitchScale이 0 이하로 들어와도 끝나는 시각 계산이 깨지지 않게 하는 하한값
         private const float MIN_PITCH = 0.1f;
@@ -63,6 +65,9 @@ namespace Core.Audio
         [Header("BGM")]
         [Tooltip("이 씬에서 틀 곡. 클립이 여러 개면 플레이리스트가 된다. 비워 두면 무음")]
         [SerializeField] private SOAudioData _bgm;
+
+        [Tooltip("파일 앱에서 로비로 돌아왔을 때만 재생할 BGM")]
+        [SerializeField] private SOAudioData _fileReturnLobbyBgm;
 
         [Tooltip("끄면 Start에서 재생하지 않고 StartSceneBgm 호출을 기다린다")]
         [SerializeField] private bool _playBgmOnStart = true;
@@ -162,6 +167,11 @@ namespace Core.Audio
         {
             foreach (EAudioChannel channel in Enum.GetValues(typeof(EAudioChannel)))
                 ApplyVolume(channel);
+
+            if (gameObject.scene.name == LOBBY_SCENE_NAME &&
+                SceneLoader.PreviousScene == ESceneType.File &&
+                _fileReturnLobbyBgm != null)
+                _bgm = _fileReturnLobbyBgm;
 
             if (_playBgmOnStart)
                 StartSceneBgm();
