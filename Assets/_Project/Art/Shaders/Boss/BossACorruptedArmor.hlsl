@@ -162,6 +162,34 @@ float BossABand(float coordinate, float lower, float upper)
     return step(lower, coordinate) * (1.0 - step(upper, coordinate));
 }
 
+// Sparks flash over the cells selected by BossAGlitch. Side and top faces use the
+// bind-pose depth axis so the bolts are not smeared along the projection, and bevels
+// between planes fade out because the projected bolts collapse into dashes there.
+float3 BossAGlitchSparkEmission(float3 Position, float3 absoluteNormal, float Time)
+{
+    float2 glitchGrid = BossAGlitchGrid(Position);
+    float glitchCell = BossAGlitchCellIndex(glitchGrid);
+    float sparkScale = 3.0 / max(_BossAGlitchBounds.z, 0.0001);
+    float2 sparkGrid = glitchGrid;
+    if (absoluteNormal.x > max(absoluteNormal.y, absoluteNormal.z))
+    {
+        sparkGrid.x = Position.y * sparkScale;
+    }
+    else if (absoluteNormal.z > absoluteNormal.y)
+    {
+        sparkGrid.y = Position.y * sparkScale;
+    }
+    float sparkAntialias = max(max(fwidth(sparkGrid.x), fwidth(sparkGrid.y)), 0.0001);
+    float spark = 0.0;
+    if (BossAGlitchIsSelected(glitchCell) > 0.5)
+    {
+        float planeFacing = max(absoluteNormal.x, max(absoluteNormal.y, absoluteNormal.z));
+        spark = BossAGlitchSpark(frac(sparkGrid), glitchCell, Time, sparkAntialias)
+            * smoothstep(0.8, 0.95, planeFacing);
+    }
+    return _BossAGlitchSparkColor.rgb * spark * max(_BossAGlitchSpark.w, 0.0);
+}
+
 void BossACorruptedArmor_float(
     float3 Position, float3 Normal, float2 UV, float3 SourceColor, float Time,
     float3 ArmorTint, float3 MetalTint, float3 EnergyColor,
@@ -237,32 +265,73 @@ void BossACorruptedArmor_float(
         + eyes * max(EyeIntensity, 0.0) + core * max(CoreIntensity, 0.0)) * pulse;
     Emission += float3(1.0, 0.28, 0.1) * center * chest * max(CoreIntensity, 0.0) * pulse;
 
-    // Sparks flash over the cells selected by BossAGlitch. Side and top faces use the
-    // bind-pose depth axis so the bolts are not smeared along the projection, and bevels
-    // between planes fade out because the projected bolts collapse into dashes there.
-    float2 glitchGrid = BossAGlitchGrid(Position);
-    float glitchCell = BossAGlitchCellIndex(glitchGrid);
-    float sparkScale = 3.0 / max(_BossAGlitchBounds.z, 0.0001);
-    float2 sparkGrid = glitchGrid;
+    Emission += BossAGlitchSparkEmission(Position, absoluteNormal, Time);
+    SurfaceMetallic = saturate(Metallic + metal * 0.12 - socket * 0.3);
+    SurfaceSmoothness = saturate(Smoothness + metal * 0.12 - cracks * 0.2);
+}
+
+// Variant for the Virus King remodel, whose body, arm and hand textures are painted
+// rather than palette strips. The painted colour is kept (ArmorTint multiplies it), the
+// bright warm paint on the visor and chest core turns into red energy, and the glitch
+// sparks are shared with the original. MetalTint is unused. Set EyeIntensity and
+// CoreIntensity to 0 on materials without a visor or core (arms, hands).
+void BossAVirusKingArmor_float(
+    float3 Position, float3 Normal, float2 UV, float3 SourceColor, float Time,
+    float3 ArmorTint, float3 MetalTint, float3 EnergyColor,
+    float Metallic, float Smoothness, float CrackScale, float CrackWidth,
+    float CrackIntensity, float EyeIntensity, float CoreIntensity,
+    float PulseSpeed, float PulseAmount, float3 CoreCenter, float CoreRadius,
+    out float3 BaseColor, out float3 Emission,
+    out float SurfaceMetallic, out float SurfaceSmoothness)
+{
+    Position = mul(_BossAWorldToRest, float4(Position, 1.0)).xyz;
+    Normal = mul((float3x3)_BossANormalToRest, Normal);
+    float3 normal = normalize(Normal);
+    float3 absoluteNormal = abs(normal);
+    BaseColor = SourceColor * ArmorTint;
+
+    // Bright yellow-orange paint is the glowing part of the texture; the darker
+    // orange joints stay below the luminance threshold.
+    float luminance = dot(SourceColor, float3(0.2126, 0.7152, 0.0722));
+    float warm = saturate((SourceColor.r - SourceColor.b) * 2.5);
+    float glow = smoothstep(0.38, 0.62, luminance) * warm;
+    float front = smoothstep(0.45, 0.85, -normal.y);
+
+    // Chest core: all warm paint inside the painted hexagon around CoreCenter.
+    float2 corePosition = (Position.xz - CoreCenter.xz) / max(CoreRadius, 0.001);
+    float radius = BossAHexRadius(corePosition);
+    float chest = (1.0 - smoothstep(0.95, 1.1, radius)) * front;
+    float core = max(glow, warm * 0.7) * chest;
+    float center = pow(saturate(1.0 - radius / 0.35), 2.0) * chest;
+
+    // Visor: the glowing paint on the front of the head, well above the core so the
+    // bright paint on the shoulders stays unlit.
+    float eyes = glow * front * step(CoreCenter.z + CoreRadius * 1.8, Position.z);
+
+    float2 crackUV = Position.xz;
     if (absoluteNormal.x > max(absoluteNormal.y, absoluteNormal.z))
     {
-        sparkGrid.x = Position.y * sparkScale;
+        crackUV = Position.yz;
     }
     else if (absoluteNormal.z > absoluteNormal.y)
     {
-        sparkGrid.y = Position.y * sparkScale;
+        crackUV = Position.xy;
     }
-    float sparkAntialias = max(max(fwidth(sparkGrid.x), fwidth(sparkGrid.y)), 0.0001);
-    float spark = 0.0;
-    if (BossAGlitchIsSelected(glitchCell) > 0.5)
-    {
-        float planeFacing = max(absoluteNormal.x, max(absoluteNormal.y, absoluteNormal.z));
-        spark = BossAGlitchSpark(frac(sparkGrid), glitchCell, Time, sparkAntialias)
-            * smoothstep(0.8, 0.95, planeFacing);
-    }
-    Emission += _BossAGlitchSparkColor.rgb * spark * max(_BossAGlitchSpark.w, 0.0);
-    SurfaceMetallic = saturate(Metallic + metal * 0.12 - socket * 0.3);
-    SurfaceSmoothness = saturate(Smoothness + metal * 0.12 - cracks * 0.2);
+    float distanceToCrack = BossACrackDistance(crackUV * max(CrackScale, 0.01));
+    float antialias = max(fwidth(distanceToCrack), 0.0005);
+    float width = max(CrackWidth, 0.0);
+    float cracks = (1.0 - smoothstep(width, width + antialias, distanceToCrack))
+        * step(0.0001, CrackIntensity) * (1.0 - glow);
+
+    float energy = saturate(core * step(0.0001, CoreIntensity) + eyes * step(0.0001, EyeIntensity));
+    BaseColor = lerp(BaseColor, EnergyColor * 0.12, energy);
+    float pulse = 1.0 + sin(Time * PulseSpeed) * saturate(PulseAmount);
+    Emission = EnergyColor * (cracks * max(CrackIntensity, 0.0)
+        + eyes * max(EyeIntensity, 0.0) + core * max(CoreIntensity, 0.0)) * pulse;
+    Emission += float3(1.0, 0.28, 0.1) * center * glow * max(CoreIntensity, 0.0) * pulse;
+    Emission += BossAGlitchSparkEmission(Position, absoluteNormal, Time);
+    SurfaceMetallic = saturate(Metallic - energy * 0.3);
+    SurfaceSmoothness = saturate(Smoothness - cracks * 0.2);
 }
 
 #endif
