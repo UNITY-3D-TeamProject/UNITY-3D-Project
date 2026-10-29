@@ -1,4 +1,6 @@
 using UnityEngine;
+using Core.Audio;
+using Map.Gimmicks;
 
 namespace Map.Common
 {
@@ -20,25 +22,40 @@ namespace Map.Common
 
         [Tooltip("시작 박자를 어긋나게 하는 값 (라디안)")]
         [SerializeField] private float _timeOffset;
+
+        [Header("Sound")]
+        [Tooltip("가운데(가장 빠른 지점)를 지날 때마다 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _swingSound;
         #endregion
 
         #region Private Fields
         private Quaternion _baseRotation;
         private float _time;
+        private bool _isPositiveSide;
         #endregion
 
         #region Unity Lifecycle
         private void Start()
         {
             _baseRotation = transform.localRotation;
+            _isPositiveSide = Mathf.Sin(_timeOffset) >= 0.0f;
         }
 
         private void Update()
         {
             _time += Time.deltaTime;
 
-            float angle = Mathf.Sin((_time * _speed) + _timeOffset) * _maxAngle;
-            transform.localRotation = _baseRotation * Quaternion.AngleAxis(angle, _axis);
+            float swing = Mathf.Sin((_time * _speed) + _timeOffset);
+            transform.localRotation = _baseRotation * Quaternion.AngleAxis(swing * _maxAngle, _axis);
+
+            // 각도의 부호가 바뀌면 가운데를 지난 것이다
+            bool isPositiveSide = swing >= 0.0f;
+            if (isPositiveSide != _isPositiveSide)
+            {
+                GimmickUtility.PlaySfx(_swingSound, transform.position);
+            }
+
+            _isPositiveSide = isPositiveSide;
         }
         #endregion
     }

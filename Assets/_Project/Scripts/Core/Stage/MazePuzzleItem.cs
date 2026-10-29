@@ -16,6 +16,25 @@ namespace Core.Stage
         [Header("References")]
         [Tooltip("아이템 값을 보여 줄 글자")]
         [SerializeField] private TMP_Text _label;
+
+        [Tooltip("파일명(예: 07.mp3)을 보여 줄 글자. 비워 두면 쓰지 않는다")]
+        [SerializeField] private TMP_Text _fileNameLabel;
+
+        [Header("Kind Look")]
+        [Tooltip("숫자/연산자에 따라 머티리얼을 바꿀 렌더러")]
+        [SerializeField] private Renderer[] _kindRenderers;
+
+        [Tooltip("숫자일 때 Kind Renderers 순서대로 쓸 머티리얼")]
+        [SerializeField] private Material[] _numberMaterials;
+
+        [Tooltip("연산자일 때 Kind Renderers 순서대로 쓸 머티리얼")]
+        [SerializeField] private Material[] _operatorMaterials;
+
+        [Tooltip("숫자일 때 값 글자 색")]
+        [SerializeField] private Color _numberLabelColor = Color.white;
+
+        [Tooltip("연산자일 때 값 글자 색")]
+        [SerializeField] private Color _operatorLabelColor = Color.white;
         #endregion
 
         #region Private Fields
@@ -58,6 +77,45 @@ namespace Core.Stage
             if (_label != null)
             {
                 _label.text = token.ToDisplayString();
+                _label.color = token.IsNumber ? _numberLabelColor : _operatorLabelColor;
+            }
+
+            if (_fileNameLabel != null)
+            {
+                _fileNameLabel.text = GetFileName(token);
+            }
+
+            ApplyKindMaterials(token.IsNumber ? _numberMaterials : _operatorMaterials);
+        }
+        #endregion
+
+        #region Private Methods
+        private void ApplyKindMaterials(Material[] materials)
+        {
+            if ((_kindRenderers == null) || (materials == null)) return;
+
+            int count = Mathf.Min(_kindRenderers.Length, materials.Length);
+            for (int i = 0; i < count; i++)
+            {
+                if ((_kindRenderers[i] == null) || (materials[i] == null)) continue;
+                _kindRenderers[i].sharedMaterial = materials[i];
+            }
+        }
+
+        /// <summary>
+        /// 아이템 파일명. 예: "07.mp3", "add.mp3"
+        /// </summary>
+        private static string GetFileName(SMazeToken token)
+        {
+            if (token.IsNumber) return $"{token.Number:00}.mp3";
+
+            switch (token.Operator)
+            {
+                case EMazeOperator.Add:      return "add.mp3";
+                case EMazeOperator.Subtract: return "sub.mp3";
+                case EMazeOperator.Multiply: return "mul.mp3";
+                case EMazeOperator.Divide:   return "div.mp3";
+                default:                     return "unknown.mp3";
             }
         }
         #endregion

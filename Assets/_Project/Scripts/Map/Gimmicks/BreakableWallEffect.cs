@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Core.Audio;
 
 namespace Map.Gimmicks
 {
@@ -54,6 +55,10 @@ namespace Map.Gimmicks
         [SerializeField] private ParticleSystem _dust;
         [SerializeField] private ParticleSystem _bits;
         [SerializeField] private ParticleSystem _flash;
+
+        [Header("Sound")]
+        [Tooltip("마지막 발에 벽이 무너질 때 맞은 자리에서 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _breakSound;
         #endregion
 
         #region Private Fields
@@ -128,6 +133,7 @@ namespace Map.Gimmicks
 
             if (hitCount >= _stages.HitsToBreak)
             {
+                GimmickUtility.PlaySfx(_breakSound, _debrisSpace.TransformPoint(local));
                 Collapse(local, push);
                 return;
             }

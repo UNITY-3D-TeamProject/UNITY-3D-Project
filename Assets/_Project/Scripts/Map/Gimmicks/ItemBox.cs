@@ -6,7 +6,7 @@ using Interaction;
 namespace Map.Gimmicks
 {
     /// <summary>
-    /// 가까이에서 상호작용(E)하면 뚜껑이 열리고, 안에 든 아이템이 나와 플레이어에게 날아가는 상자.
+    /// 열기 전에는 안에 아이템이 보이고, 가까이에서 상호작용(E)하면 뚜껑이 열리며 그 아이템이 떠올라 플레이어에게 날아가는 상자.
     /// 내용물은 닿으면 획득되는 아이템 프리팹(FeedItem, Touch 방식 EffectItem)을 넣는다.
     /// 입력은 플레이어의 Interact 스킬이 카메라 레이로 찾아 넘겨준다. 콜라이더가 있는 오브젝트를 Interact 레이어로 둔다.
     /// </summary>
@@ -14,10 +14,10 @@ namespace Map.Gimmicks
     {
         #region Serialized Fields
         [Header("Content")]
-        [Tooltip("열면 나오는 아이템 프리팹 (닿으면 획득되는 것)")]
+        [Tooltip("상자 안에 들어 있다가 열면 나오는 아이템 프리팹 (닿으면 획득되는 것)")]
         [SerializeField] private GameObject _contentPrefab;
 
-        [Tooltip("아이템이 나오는 자리. 비우면 상자의 위치")]
+        [Tooltip("열기 전 아이템이 놓여 있는 자리. 비우면 상자의 위치")]
         [SerializeField] private Transform _spawnPoint;
 
         [Header("Open")]
@@ -50,11 +50,29 @@ namespace Map.Gimmicks
 
         #region Private Fields
         private bool _isOpened;
+        private GameObject _content;
+        private Collider[] _contentColliders;
         #endregion
 
         #region Properties
         /// <summary>이미 열렸는지 여부.</summary>
         public bool IsOpened => _isOpened;
+        #endregion
+
+        #region Unity Lifecycle
+        private void Start()
+        {
+            if (_contentPrefab == null) return;
+
+            // 열기 전에는 상자 안에 보여만 주고, 먹히지 않게 판정을 꺼 둔다
+            Transform holder = (_spawnPoint != null) ? _spawnPoint : transform;
+            _content = Instantiate(_contentPrefab, holder.position, transform.rotation, holder);
+            _contentColliders = _content.GetComponentsInChildren<Collider>();
+            foreach (Collider itemCollider in _contentColliders)
+            {
+                itemCollider.enabled = false;
+            }
+        }
         #endregion
 
         #region Public Methods
@@ -74,18 +92,14 @@ namespace Map.Gimmicks
         {
             yield return CoOpenLid();
 
-            if (_contentPrefab == null) yield break;
+            GameObject item = _content;
+            if (item == null) yield break;
 
-            Vector3 start = (_spawnPoint != null) ? _spawnPoint.position : transform.position;
-            GameObject item = Instantiate(_contentPrefab, start, transform.rotation, transform.parent);
+            // 상자에서 꺼낸다. 날아가는 동안에도 판정은 꺼 둔 채로 둔다
+            item.transform.SetParent(transform.parent, true);
+            Collider[] colliders = _contentColliders;
 
-            // 날아가는 동안에는 먹히지 않게 판정을 꺼 둔다
-            Collider[] colliders = item.GetComponentsInChildren<Collider>();
-            foreach (Collider itemCollider in colliders)
-            {
-                itemCollider.enabled = false;
-            }
-
+            Vector3 start = item.transform.position;
             Vector3 top = start + (Vector3.up * _riseHeight);
             for (float time = 0.0f; time < _riseDuration; time += Time.deltaTime)
             {

@@ -3,6 +3,7 @@ using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
 using Core;
+using Core.Effect;
 using Facade.Player;
 using Movement;
 
@@ -36,6 +37,10 @@ namespace Map.Gimmicks
 
         [Tooltip("닿았을 때 플레이어에게 위에서부터 순서대로 적용할 Effect (ValueSource는 Float)")]
         [SerializeField] private SOAttributeEffect[] _contactEffects;
+
+        [Header("VFX")]
+        [Tooltip("닿거나 공격받아 사라질 때 이 자리에서 낼 효과 (비우면 없음). 씬을 나갈 때는 내지 않는다")]
+        [SerializeField] private SOEffectData _destroyVfx;
         #endregion
 
         #region Private Fields
@@ -86,6 +91,7 @@ namespace Map.Gimmicks
             if (Vector3.Distance(transform.position, target) > _contactRadius) return;
 
             GimmickUtility.ApplyEffects(_contactEffects, _playerFacade.EffectTarget);
+            GimmickUtility.PlayVfx(_destroyVfx, transform.position);
             Destroy(gameObject);
         }
 
@@ -141,6 +147,7 @@ namespace Map.Gimmicks
             if (!string.Equals(data.AttributeName, HP_ATTRIBUTE, StringComparison.OrdinalIgnoreCase)) return;
             if (data.NewValue > 0.0f) return;
 
+            GimmickUtility.PlayVfx(_destroyVfx, transform.position);
             Destroy(gameObject);
         }
         #endregion

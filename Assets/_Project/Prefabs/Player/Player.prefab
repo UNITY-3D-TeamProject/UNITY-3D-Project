@@ -2793,6 +2793,7 @@ GameObject:
   - component: {fileID: 4805851590264281338}
   - component: {fileID: -5684068917259078666}
   - component: {fileID: 8405905274122422836}
+  - component: {fileID: 7489793099257562832}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -2973,6 +2974,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1cfb913bb065b14082f4b8e4186a007, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Map.Platforms.PlatformRider
+--- !u!81 &7489793099257562832
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7287643752218865281}
+  m_Enabled: 1
 --- !u!1 &7343216831179619095
 GameObject:
   m_ObjectHideFlags: 0
@@ -3917,7 +3926,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8174806103750842125, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
       propertyPath: _rules.Array.data[0].ResumeDelay
-      value: 3
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 8656628617756701993, guid: 0ff4f7bf7f0a4b17a3ab5d7162826436, type: 3}
       propertyPath: _rules.Array.size
@@ -4074,6 +4083,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 501191497638698248}
     m_Modifications:
+    - target: {fileID: 2752148484722071969, guid: 4ed2db9c0c0f0b541b7c565ef123e92b, type: 3}
+      propertyPath: _drainPerSecond
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 3300303827777807749, guid: 4ed2db9c0c0f0b541b7c565ef123e92b, type: 3}
       propertyPath: m_Name
       value: SpawnVehicle
@@ -4899,6 +4912,10 @@ PrefabInstance:
       propertyPath: _death
       value: 
       objectReference: {fileID: 11400000, guid: 0ecbec4f8572bff478d531116a400bf4, type: 2}
+    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
+      propertyPath: _skillSounds.Array.data[7]._phase
+      value: 9
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

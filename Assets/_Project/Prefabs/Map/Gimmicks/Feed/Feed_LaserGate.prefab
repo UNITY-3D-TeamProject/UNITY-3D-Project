@@ -453,6 +453,7 @@ GameObject:
   - component: {fileID: 5223245358252338153}
   - component: {fileID: 6279342825730489057}
   - component: {fileID: 8921264348501596123}
+  - component: {fileID: 3479637357151214381}
   m_Layer: 0
   m_Name: Beams
   m_TagString: Untagged
@@ -517,6 +518,19 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 78d6f9d8b2481104fb5c0aa447b6f3b2, type: 2}
   _tickInterval: 1
   _exitEffects: []
+--- !u!114 &3479637357151214381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8859316940652687394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b806a7246df81040862f67211fab790, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Map.Common.LoopSoundEmitter
+  _loopSound: {fileID: 11400000, guid: a306626bdd2448acb1de657827cbb72a, type: 2}
 --- !u!1001 &1036490605141684889
 PrefabInstance:
   m_ObjectHideFlags: 0
