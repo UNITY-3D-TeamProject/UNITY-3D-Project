@@ -177,6 +177,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossA.BossHitRelay
   _owner: {fileID: 7562927144991651820}
   _part: 1
+--- !u!1 &1643740650500274924
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9217550855604530702}
+  m_Layer: 0
+  m_Name: GrabPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9217550855604530702
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1643740650500274924}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.98, y: 0.0375, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8792478412177134632}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1924165721193531084
 GameObject:
   m_ObjectHideFlags: 0
@@ -539,6 +570,8 @@ MonoBehaviour:
   _curlAxis: {x: 0, y: 1, z: 0}
   _fistDownAxis: {x: 0, y: 0, z: 1}
   _fistLift: 4.58
+  _grabPoint: {fileID: 8604745715179955678}
+  _gripCurl: 1
 --- !u!114 &6343079012660607808
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1022,6 +1055,8 @@ MonoBehaviour:
   _curlAxis: {x: 0, y: 1, z: 0}
   _fistDownAxis: {x: 0, y: 0, z: 1}
   _fistLift: 4.58
+  _grabPoint: {fileID: 9217550855604530702}
+  _gripCurl: 1
 --- !u!114 &8779971165294156100
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1172,12 +1207,12 @@ MonoBehaviour:
   _controller: {fileID: 4199479298084343665}
   _hitEffect: {fileID: 11400000, guid: 2c8600821fc33df4dbfe491719e8288a, type: 2}
   _slamDustVfx: {fileID: 11400000, guid: b7aada382f5c440186702ea329c4df2f, type: 2}
-  _clapVfx: {fileID: 11400000, guid: b821eda3d22144d29edbdcd03d178592, type: 2}
   _telegraphSeconds: 1.5
   _strikeInterval: 1.4
   _clapGap: 8
   _hitRadius: 6
   _holdSeconds: 0.7
+  _clapVfx: {fileID: 11400000, guid: b821eda3d22144d29edbdcd03d178592, type: 2}
   _wallPrefab: {fileID: 4435415893122469050, guid: e381ed5568bb82842a9e97ff47418344, type: 3}
   _wallHeight: 6
 --- !u!1 &6993736094960404198
@@ -1316,6 +1351,37 @@ Transform:
   - {fileID: 6204078210429016821}
   - {fileID: 5232539701545348957}
   m_Father: {fileID: 2090164281432657332}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8406017625551363933
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8604745715179955678}
+  m_Layer: 0
+  m_Name: GrabPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8604745715179955678
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8406017625551363933}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.98, y: 0.0375, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5856856404481279077}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8600382558763600657
 GameObject:
@@ -1791,9 +1857,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -6538596215938112056, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8466838990120759181}
+    - targetCorrespondingSourceObject: {fileID: 7650597122457968563, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9217550855604530702}
     - targetCorrespondingSourceObject: {fileID: 7294253364382917953, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1994464420584192365}
+    - targetCorrespondingSourceObject: {fileID: -4508399158042537986, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8604745715179955678}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
       insertIndex: -1
@@ -2018,6 +2090,10 @@ PrefabInstance:
       value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
+      propertyPath: _skillSounds.Array.data[7]._phase
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[0]._audioData
       value: 
       objectReference: {fileID: 11400000, guid: bb16b6b3e1f197c4fa2fdee217da1321, type: 2}
@@ -2074,12 +2150,8 @@ PrefabInstance:
       value: A1Double
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
-      propertyPath: _skillSounds.Array.data[7]._phase
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[7]._audioData
-      value:
+      value: 
       objectReference: {fileID: 11400000, guid: 47a8dc33d34b1ebd254a8f6b65e45511, type: 2}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[7]._skillName
