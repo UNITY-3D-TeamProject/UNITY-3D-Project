@@ -27,6 +27,13 @@ namespace Core.Stage
         #endregion
 
         #region Serialized Fields
+        [Header("BGM")]
+        [Tooltip("2라운드에 진입할 때 전환할 BGM")]
+        [SerializeField] private SOAudioData _round2Bgm;
+
+        [Tooltip("3라운드에 진입할 때 전환할 BGM")]
+        [SerializeField] private SOAudioData _round3Bgm;
+
         [Header("2라운드 · 숫자 퍼즐")]
         [SerializeField] private NumberPuzzleRound _numberPuzzleRound = new NumberPuzzleRound();
 
@@ -148,6 +155,12 @@ namespace Core.Stage
         {
             _numberPuzzleRound.SetActive(CurrentRoundIndex == NUMBER_PUZZLE_ROUND_INDEX);
             _thiefChaseRound.SetActive(CurrentRoundIndex == THIEF_CHASE_ROUND_INDEX);
+
+            if ((CurrentRoundIndex == NUMBER_PUZZLE_ROUND_INDEX) && (_round2Bgm != null))
+                AudioManager.Instance?.ChangeBgm(_round2Bgm);
+
+            if ((CurrentRoundIndex == THIEF_CHASE_ROUND_INDEX) && (_round3Bgm != null))
+                AudioManager.Instance?.ChangeBgm(_round3Bgm);
         }
         #endregion
 
