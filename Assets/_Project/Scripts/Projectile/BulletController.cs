@@ -26,6 +26,10 @@ namespace Projectile
         [SerializeField] private SOAttributeEffect _hitEffect;
         [Tooltip("명중한 지점에서 한 번 재생할 VFX. 비어 있으면 재생하지 않는다")]
         [SerializeField] private SOEffectData _hitVfx;
+        [Tooltip("명중 VFX가 기본 크기를 유지하는 카메라 거리(m). 이보다 멀면 거리에 비례해 최대 배율까지 키운다")]
+        [SerializeField, Min(0.01f)] private float _hitVfxReferenceDistance = 10.0f;
+        [Tooltip("카메라에서 멀리 떨어진 명중 VFX의 최대 확대 배율. 1이면 거리 보정을 하지 않는다")]
+        [SerializeField, Min(1.0f)] private float _hitVfxMaxScale = 2.0f;
         [Tooltip("효과가 실제로 적용된 대상에 맞았을 때 명중 지점에서 한 번 낼 소리. 비어 있으면 내지 않는다")]
         [SerializeField] private SOAudioData _hitSfx;
 
@@ -171,7 +175,15 @@ namespace Projectile
         {
             if ((_hitVfx == null) || (EffectManager.Instance == null)) return;
 
-            EffectManager.Instance.Play(_hitVfx, hitPoint, Quaternion.LookRotation(-_direction));
+            float scaleMultiplier = 1.0f;
+            Camera viewCamera = Camera.main;
+            if (viewCamera != null)
+            {
+                float distance = Vector3.Distance(viewCamera.transform.position, hitPoint);
+                scaleMultiplier = Mathf.Clamp(distance / Mathf.Max(0.01f, _hitVfxReferenceDistance), 1.0f, Mathf.Max(1.0f, _hitVfxMaxScale));
+            }
+
+            EffectManager.Instance.Play(_hitVfx, hitPoint, Quaternion.LookRotation(-_direction), scaleMultiplier: scaleMultiplier);
         }
 
         /// <summary>

@@ -108,15 +108,17 @@ namespace Core.Effect
 
         #region Public Methods
         /// <summary>월드 위치·회전에서 한 번 재생하고 Duration 뒤 반납한다. parent가 있으면 현재 월드 배치를 유지하며 붙인다.</summary>
+        /// <param name="scaleMultiplier">프리팹과 SO 기본 크기에 추가로 곱할 이번 재생의 배율.</param>
         /// <returns>이번 재생의 핸들. 잘못된 요청이면 default이며 중간에 끊을 일이 없으면 무시해도 된다.</returns>
         // [호출] 피격·폭발 등 VFX가 필요한 기능. 다른 컴포넌트의 Start 이후에 사용한다.
         public SEffectHandle Play(
             SOEffectData data,
             Vector3 position,
             Quaternion rotation,
-            Transform parent = null)
+            Transform parent = null,
+            float scaleMultiplier = 1f)
         {
-            return PlayEffect(data, position, rotation, parent, false);
+            return PlayEffect(data, position, rotation, parent, false, scaleMultiplier);
         }
 
         /// <summary>자식 파티클 Loop를 켜고 반복 재생한다. Stop을 부를 때까지 반납하지 않는다.</summary>
@@ -128,7 +130,7 @@ namespace Core.Effect
             Quaternion rotation,
             Transform parent = null)
         {
-            return PlayEffect(data, position, rotation, parent, true);
+            return PlayEffect(data, position, rotation, parent, true, 1f);
         }
 
         /// <summary>Play로 낸 효과는 즉시 반납하고, PlayLoop로 낸 효과는 방출을 멈춘 뒤 잔여 파티클 대기 시간 후 반납한다.</summary>
@@ -177,7 +179,8 @@ namespace Core.Effect
             Vector3 position,
             Quaternion rotation,
             Transform parent,
-            bool isLoop)
+            bool isLoop,
+            float scaleMultiplier)
         {
             if (_isDestroying || (_creationRoot == null))
                 return default;
@@ -212,7 +215,7 @@ namespace Core.Effect
             GameObject instance = pool.Get();
             Transform effectTransform = instance.transform;
             effectTransform.SetParent(transform, false);
-            effectTransform.localScale = data.Prefab.transform.localScale * data.Scale;
+            effectTransform.localScale = data.Prefab.transform.localScale * data.Scale * Mathf.Max(0.01f, scaleMultiplier);
             effectTransform.SetPositionAndRotation(position, rotation);
             if (parent != null)
                 effectTransform.SetParent(parent, true);

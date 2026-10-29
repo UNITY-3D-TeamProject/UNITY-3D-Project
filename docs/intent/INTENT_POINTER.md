@@ -63,6 +63,8 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[Projectile / Effect]** 카메라 거리 기준 명중 VFX 보정. 최초 1~3배로 Play 검증 후 크기가 과하다는 사용자 피드백으로 최대 2배로 조정, 10m 이내 기본 크기 유지 → [문서](./clear/intent-085-impact-camera-distance-scale.md)
+- **[Core / Audio / Map]** 3D 단발음의 0.05초 중복 제한 제거, UI 제한 유지. 파일맵 원본 가시 효과음 4개 동시 재생·두 장애물 근거리 출력 확인 → [문서](./clear/intent-081-spatial-audio-throttle.md)
 - **[UI / MainMenu]** 승인된 검은 타이틀·로비 페이드/이동·플레이어 메뉴를 정식 MainScene에 적용, 기존 매니저/설정 유지 및 Test 의존0개 → [문서](./clear/intent-081-main-menu-lobby-promotion.md) (resolved: 2026-10-27)
 - **[Audio / UI / MainMenu]** 메인 메뉴 버튼 마우스 올림(`Click_16`)·클릭(`Click_18`)·스플래시 입력 소리 없음 → `UIButtonSound` + `MainMenuPresenter._splashPressSound`, MainScene 버튼 5개 연결, Play 확인 → [문서](./clear/intent-076-mainmenu-button-sound.md) (resolved: 2026-10-26)
 - **[Core / Effect / VFX]** 루프 이펙트를 쓰려면 SO `Is Loop`와 프리팹 파티클 `Looping`을 미리 맞춰야 하고, AudioManager(`PlaySfx`/`PlaySfxLoop`)와 사용법이 다름 → `EffectManager.PlayLoop` 추가(자식 파티클 Looping을 켜고, `Play`는 프리팹 원래 값으로 되돌림), SO `IsLoop` 제거 → [문서](./clear/intent-074-effect-play-loop.md) (resolved: 2026-10-24)
