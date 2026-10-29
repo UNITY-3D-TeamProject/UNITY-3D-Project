@@ -63,6 +63,9 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[Audio / Lobby]** 파일맵에서 로비로 돌아왔을 때만 `Digital Integrity Check` 재생, 일반 로비 3곡 유지 → [문서](./clear/intent-088-lobby-bgm-after-file.md) (resolved: 2026-10-30)
+- **[Audio / Stage / SecurityApp]** 보안맵 일반 구간·보스전 초반·필드보스 최종 처치 후 BGM 3곡 연결 → [문서](./clear/intent-087-security-boss-bgm.md) (resolved: 2026-10-30)
+- **[UI / BossHealth]** 보스 A·B 정면 얼굴 초상화를 체력바 옆에 표시하고 A는 처음부터 `최종보스`, B는 `필드보스`로 표기 → [문서](./clear/intent-086-boss-health-portraits.md) (resolved: 2026-10-30)
 - **[Projectile / Effect]** 카메라 거리 기준 명중 VFX 보정. 최초 1~3배로 Play 검증 후 크기가 과하다는 사용자 피드백으로 최대 2배로 조정, 10m 이내 기본 크기 유지 → [문서](./clear/intent-085-impact-camera-distance-scale.md)
 - **[Core / Audio / Map]** 3D 단발음의 0.05초 중복 제한 제거, UI 제한 유지. 파일맵 원본 가시 효과음 4개 동시 재생·두 장애물 근거리 출력 확인 → [문서](./clear/intent-081-spatial-audio-throttle.md)
 - **[UI / MainMenu]** 승인된 검은 타이틀·로비 페이드/이동·플레이어 메뉴를 정식 MainScene에 적용, 기존 매니저/설정 유지 및 Test 의존0개 → [문서](./clear/intent-081-main-menu-lobby-promotion.md) (resolved: 2026-10-27)

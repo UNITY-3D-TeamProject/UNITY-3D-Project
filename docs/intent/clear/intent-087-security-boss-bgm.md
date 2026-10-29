@@ -31,4 +31,4 @@ resolved: 2026-10-30
 ## 해결 기록 (Resolution)
 - 최종 결정: WAV 세 개를 `Assets/ThirdParty/Audio/Bgm/`으로 옮기고 GUID를 유지했다. 보안맵 AudioManager의 씬 BGM은 `App Defense Protocol`, 3라운드 진입 시 `Antivirus Protocol`, 필드보스 두 번째 다운으로 `EBossStage.Final` 진입 시 `Corrupted Virus`로 전환한다. 보스 라운드 중 사망 후 재시작하면 초반 보스 곡으로 돌아간다.
 - 검증: Unity 컴파일 오류 0, 세 클립·씬 참조·스트리밍 설정·보스 두 번째 다운의 최종 단계 전환 확인. Map_4_Security Play Mode에서 시작 곡 재생과 전환 메서드 호출로 초반·최종 곡 선택 확인. 실제 입력으로 보스 처치하거나 귀로 음량 밸런스를 확인하지는 않았다.
-- 관련 커밋/PR: 없음.
+- 관련 커밋/PR: `f629ad1e`. 씬 파일 연결 변경은 사용자 요청에 따라 커밋에서 제외했다.

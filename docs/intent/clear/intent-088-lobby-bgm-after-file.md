@@ -29,4 +29,4 @@ resolved: 2026-10-30
 ## 해결 기록 (Resolution)
 - `AudioManager`가 로비에서 BGM을 시작할 때 `SceneLoader.PreviousScene`이 File이면 전용 1곡 SO를 선택한다. 일반 로비 플레이리스트는 3곡 그대로다.
 - Unity 스크립트 컴파일 오류 0건, 전용 SO와 WAV 참조 확인.
-- 관련 커밋/PR: 이번 작업의 Audio 커밋.
+- 관련 커밋/PR: `d1e253a3`.

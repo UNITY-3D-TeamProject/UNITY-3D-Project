@@ -12,8 +12,8 @@
 ## 현재 상태 및 이슈
 - Unity 재컴파일 오류 0. 세 곡의 씬 참조, 자동 재생, 스트리밍 임포트, B 두 번째 다운의 Final 단계 전환을 에디터에서 확인했다. Map_4_Security Play Mode에서 `App Defense Protocol` 재생을 확인하고 단계 전환 메서드를 호출해 `Antivirus Protocol` → `Corrupted Virus` 선택을 확인했다. 원래 열려 있던 Map_3_File 씬으로 복귀했다.
 - 실제 보안맵 플레이 중의 청취·음량 밸런스는 확인하지 않았다.
-- `Assets/ThirdParty/`는 `.gitignore` 대상이다. 음악 파일은 일반 Git 변경 목록에 나타나지 않는다.
-- 관련 파일은 커밋하지 않았다.
+- `Assets/ThirdParty/`는 `.gitignore` 대상이지만, 이 세 WAV와 메타 파일은 `f629ad1e`에 명시적으로 포함했다.
+- `Map_4_Security.unity`의 연결 변경은 사용자 요청에 따라 커밋에서 제외했다.
 
 ## 다음 할 일
 - 보안맵에서 1·2라운드 → 3라운드 → B 두 번째 다운 → 사망·재시작의 음악 전환을 청취하며 음량을 조정한다.

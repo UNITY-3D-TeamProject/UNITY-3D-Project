@@ -10,7 +10,7 @@
 
 ## 현재 상태 및 이슈
 - Unity 에디터에서 SO가 `Assets/ThirdParty/Audio/Bgm/Maze Hopper.wav`를 참조하고 Streaming 임포트인 것을 확인했다. 실제 청취는 하지 않았다.
-- `Assets/ThirdParty/`는 Git에서 제외되므로 WAV와 `.meta`는 일반 Git 변경 목록에 나타나지 않는다.
+- `Assets/ThirdParty/`는 기본적으로 Git에서 제외되지만, 이 WAV와 `.meta`는 `ca13720a`에 명시적으로 포함했다.
 
 ## 다음 할 일
 - 파일 맵 2라운드 진입 시 곡 전환과 음량을 직접 청취한다.
