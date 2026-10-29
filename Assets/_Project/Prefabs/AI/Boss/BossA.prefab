@@ -1801,6 +1801,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1189131309104161045, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2804006441084415456}
+    - targetCorrespondingSourceObject: {fileID: 1189131309104161045, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5729336345788175159}
   m_SourcePrefab: {fileID: 100100000, guid: 884f41ae38984354ab194b645fbfc387, type: 3}
 --- !u!1 &47830560916286094 stripped
 GameObject:
@@ -1820,6 +1823,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossA.BossAMaterialSpace
   _anchor: {fileID: 6114825604901765271}
+--- !u!114 &5729336345788175159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 47830560916286094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acc4cf9cad18ed44aa133dc6b1ec914c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossA.BossAGlitch
+  _intervalRange: {x: 2, y: 3}
+  _cellCountRange: {x: 2, y: 3}
+  _candidateCells: 509
+  _bandsPerCell: 8
+  _shiftAmount: 0.08
+  _shiftRate: 8
+  _shiftChance: 0.15
+  _sparkPeriod: 1.2
+  _sparkDuration: 0.32
+  _sparkWidth: 0.008
+  _sparkColor: {r: 3.2, g: 0.32, b: 0.06, a: 1}
+  _sparkIntensity: 1
 --- !u!4 &81572559825713440 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -7995995127670312261, guid: 884f41ae38984354ab194b645fbfc387, type: 3}

@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-29** — intent-086(AI_TODO2 보스-18): 보스A 메시를 바인드 포즈 기준 3×3 칸으로 나눠 2~3초마다 2~3칸을 뽑고, 그 칸만 0·1 낙하물처럼 가로 띠가 옆으로 튀는 버텍스 글리치 + 보스B 손 같은 지그재그 스파크(후속으로 스캔라인에서 교체, 셰이더로 표면에 그림). `BossACorruptedArmor.hlsl`·그래프 버텍스 연결, 신규 `BossAGlitch`·`BossAGlitchCells`(둘 다 `BossA/`, `Logic/` 은 로컬 exclude 라 피함), `BossA.prefab` 부착. 리컴파일·셰이더 통과, 테스트 4/4, 프리뷰 렌더·Play 재선택 주기 확인. 정점이 성겨 일부 면은 늘어나 보임. **실제 보스전 육안 확인·게이트 루프 미실행, 커밋 전**: [보스A 칸 글리치](./2026-10-29/boss-a-cell-glitch.md)
 - **2026-10-29** — AI_TODO2 연출-1 회전 오프셋(intent-074 후속): `FallingObstacle._yawOffsetRange`(낙하마다 Y축 ±무작위 고정 각도, 두 프리팹 180) 추가. 리컴파일 통과, Play 에서 10개 동시 생성 시 Y각이 모두 달랐음(X·Z 0). **육안 확인·게이트 루프 미실행, 커밋 전**: [Y축 회전 오프셋](./2026-10-29/falling-yaw-offset.md)
 - **2026-10-29** — AI_TODO2 연출-1(intent-074 후속): 0·1 낙하물 10개가 한꺼번에 닿던 문제를 `FallingObstacle._gravityOffsetRange`(낙하마다 가속도 ±무작위, 두 프리팹 12)로 해결. 리컴파일 통과, Play 에서 10개 동시 생성 시 착지 시각 2.4~3.5초로 분산 확인. **육안 확인·게이트 루프 미실행, 커밋 전**: [낙하 가속도 오프셋](./2026-10-29/falling-gravity-offset.md)
 - **2026-10-29** — intent-085(AI_TODO2 스테이지2-3): 스테이지2 특수몹이 발판 순서대로 HP·에너지를 번갈아 항상 떨어뜨림. `CombatZone._clearDropItem`(마지막 적 자리에 드롭) 추가, `Map_4_Security` 발판 5곳 지정, `Special.prefab` `EnemyItemDropper` 제거. 리컴파일 통과, Play 에서 5곳 순서·리셋 후 동일 확인. 씬 저장 때 `Canvas_InGame` 레이아웃 값이 함께 바뀜. **직접 플레이 확인·게이트 루프 미실행, 커밋 전**: [특수몹 순차 드롭](./2026-10-29/special-mob-ordered-drop.md)

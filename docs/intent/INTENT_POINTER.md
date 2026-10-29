@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[AI / Boss / Shader]** 보스A 몸체에 바이러스 감염 느낌의 움직이는 표현이 없음(AI_TODO2 보스-18). 메시를 바인드 포즈 기준 3×3 칸으로 나눠 2~3초마다 2~3칸을 뽑고, 그 칸만 0·1 낙하물처럼 가로 띠가 옆으로 튀는 버텍스 글리치 + 보스B 손 같은 표면 스파크(`BossAGlitch`, `BossACorruptedArmor.hlsl`). 항상 켬 → [문서](./intent-086-boss-a-cell-glitch.md)
 - **[Stage / SecurityApp / Items]** 스테이지2 특수몹이 25% 확률로 무작위 아이템을 떨어뜨림. `CombatZone._clearDropItem` 으로 발판마다 아이템을 지정해 HP → 에너지 번갈아 항상 드롭(발판 번호 기준), `Special.prefab` 무작위 드롭 제거 → [문서](./intent-085-special-mob-ordered-drop.md)
 - **[Audio / Core]** SO별 거리 감쇠 선택 및 Linear 기본 설정. Unity 컴파일과 테스트 톤 거리별 출력 측정 완료, 실제 음원 청취·밸런스 확인 남음 → [문서](./intent-082-audio-distance-rolloff.md)
 - **[UI / InfoPanel]** 왼쪽 위 라운드 패널 제목 줄에도 동그라미가 있고, 숫자 퍼즐 문구가 한 줄에 몰리며, 도둑 잡기 문구가 패널 밖으로 넘침. 제목 동그라미 제거, 숫자 퍼즐 3줄(`목표 : 12` / `숫자 : …  연산자 : …`), 패널을 3줄 크기로 키우고 2줄 문구는 글자를 키워 채움, 남은 시간은 위 가운데 새 패널 → [문서](./intent-080-info-panel-layout.md)
