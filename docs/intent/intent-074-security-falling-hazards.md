@@ -43,6 +43,8 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 씬: `04_Platforms/FallingHazardSpawner`(간격 2초, 1개, Platform_1~6), `SecurityApp` 연결, 최상위 원본 모델 2개 삭제.
 - 검증: 리컴파일 에러 0, PlayMode `FallingHazardSpawnerTests` 4/4. Play: 1라운드 미생성 → 2라운드 생성(켜진 Platform_1 위만), 착지 시 예고와 함께 사라짐, 맞으면 HP 90 → 80, 리셋 시 위험물만 지움, 3라운드 진입 시 멈춤·전부 지움.
 - 후속(2026-10-25): 프리팹 렌더러에 `M_DigitalProjectile_*`(SG) 머티리얼 지정, 위험물을 `ObjectPoolManager`(`_mapHazards` 카테고리, `FallingZero`·`FallingVirus`)에서 꺼내 쓰도록 전환 — `FallingObstacle.DropOnto`/`Despawn` 추가, 스포너는 매니저 없으면 Instantiate 폴백. `FallingHazardSpawnerTests` 5/5, Play 에서 인스턴스 8개 재사용 확인. 상세는 handover `security-falling-hazards.md`.
+- 후속(2026-10-29, AI_TODO2 연출-1): 스포너가 한 번에 10개(씬 `_spawnCount` 10, 간격 4초)를 만들어도 0·1이 한꺼번에 떨어지지 않도록 `FallingObstacle._gravityOffsetRange` 추가. 낙하 한 번마다 가속도에 -값~+값 무작위 오프셋을 더해(예고 채움 시간도 같은 가속도로 계산) 개체마다 바닥에 닿는 시각이 달라진다. 두 프리팹에 12(가속도 8~32) 지정, 기본값 0이라 다른 배치는 그대로. Play 에서 10개 동시 생성 2회: 착지 시각 2.40~3.46초(0.1초 안팎 간격), 개체별 높이가 서로 다름. 상세: `docs/HANDOVER/BF_Leers/2026-10-29/falling-gravity-offset.md`.
+- 후속(2026-10-29, AI_TODO2 연출-1 회전): `FallingObstacle._yawOffsetRange` 추가. 낙하 사이클마다 처음 놓인 회전에 Y축 -값~+값 무작위 각도를 더해 고정 각도로 떨어뜨린다(낙하 중 회전 없음, 콜라이더 높이 계산 영향 없음). 두 프리팹에 180 지정, 기본값 0. Play 에서 10개 동시 생성: Y각 모두 달랐고 X·Z 는 0. 상세: `docs/HANDOVER/BF_Leers/2026-10-29/falling-yaw-offset.md`.
 - 남음: 육안·손맛 확인(수치), SVN 업로드.
 
 ## 해결 기록 (Resolution) — 해결 후 작성

@@ -52,7 +52,6 @@ GameObject:
   - component: {fileID: 7319076262812618867}
   - component: {fileID: 2263111656472012693}
   - component: {fileID: 5964020298780706303}
-  - component: {fileID: 6270156651580662851}
   m_Layer: 8
   m_Name: Special
   m_TagString: Untagged
@@ -302,27 +301,6 @@ MonoBehaviour:
   _graphAgent: {fileID: 0}
   _shrinkDelay: 0
   _shrinkDuration: 0.4
---- !u!114 &6270156651580662851
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 264135962324108990}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d25ad3e7130c29644aafbe2a33575956, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AI.EnemyItemDropper
-  _characterMediator: {fileID: 8846040900669614}
-  _dropChance: 0.25
-  _entries:
-  - Prefab: {fileID: 8731887055806553684, guid: ecef143e1e6e03149a00570b0aefa05d, type: 3}
-    Weight: 1
-  - Prefab: {fileID: 365870956134482254, guid: 7c456de15f079da419ff2a821a27051a, type: 3}
-    Weight: 1
-  _spawnHeight: 0.5
-  _itemLifetime: 15
 --- !u!1 &541869566793280293
 GameObject:
   m_ObjectHideFlags: 0

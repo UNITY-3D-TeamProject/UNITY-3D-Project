@@ -18,6 +18,7 @@ namespace Map.Gimmicks
     {
         #region Constants
         private const float WARNING_GROUND_OFFSET = 0.03f;
+        private const float MIN_GRAVITY = 0.1f;
         #endregion
 
         #region Serialized Fields
@@ -27,6 +28,12 @@ namespace Map.Gimmicks
 
         [Tooltip("낙하 가속도")]
         [SerializeField, Min(0.1f)] private float _gravity = 20.0f;
+
+        [Tooltip("낙하 가속도에 떨어질 때마다 더하는 무작위 오프셋의 최대 크기. -값~+값 사이에서 골라 더하므로 여러 개를 동시에 만들어도 바닥에 닿는 시각이 제각각이 된다. 0이면 쓰지 않는다.")]
+        [SerializeField, Min(0.0f)] private float _gravityOffsetRange;
+
+        [Tooltip("떨어질 때마다 세로(Y) 축으로 돌려 놓는 무작위 각도의 최대 크기(도). -값~+값 사이에서 골라 처음 놓인 각도에 더하므로 여러 개가 서로 다른 각도로 떨어진다. 낙하 중에는 돌지 않는다. 0이면 쓰지 않는다.")]
+        [SerializeField, Range(0.0f, 180.0f)] private float _yawOffsetRange;
 
         [Tooltip("떨어지기 전 대기 시간(초). 예고는 이 대기 시간과 낙하 시간을 합친 동안 채워진다.")]
         [SerializeField, Min(0.0f)] private float _waitBeforeFall = 1.0f;
@@ -70,6 +77,7 @@ namespace Map.Gimmicks
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
         private Vector3 _topPosition;
+        private Quaternion _baseRotation;
         private bool _isRunning;
         private MaterialPropertyBlock _warningBlock;
         #endregion
@@ -92,6 +100,7 @@ namespace Map.Gimmicks
             if (_isRunning) return;
 
             _topPosition = transform.position;
+            _baseRotation = transform.rotation;
             SetUpWarningMarker();
 
             if (_isAutoStart)
@@ -152,6 +161,7 @@ namespace Map.Gimmicks
             float halfHeight = TryGetComponent(out Collider ownCollider) ? ownCollider.bounds.extents.y : 0.0f;
             _topPosition = landingPoint + (Vector3.up * (_fallDistance + halfHeight));
             transform.position = _topPosition;
+            _baseRotation = transform.rotation;
 
             SetUpWarningMarker();
             Drop();
@@ -253,12 +263,18 @@ namespace Map.Gimmicks
 
             do
             {
+                // 이번 낙하의 각도. 오프셋이 있으면 낙하마다 달라진다
+                transform.rotation = Quaternion.AngleAxis(Random.Range(-_yawOffsetRange, _yawOffsetRange), Vector3.up) * _baseRotation;
+
                 // 대기~낙하: 바닥에 닿는 순간 다 차도록 DTT 예고가 채워지거나 기존 예고 표시가 점점 짙어진다
                 SetWarningColor(0.0f);
                 SetWarningVisible(true);
 
+                // 이번 낙하의 가속도. 오프셋이 있으면 낙하마다 달라진다
+                float gravity = Mathf.Max(MIN_GRAVITY, _gravity + Random.Range(-_gravityOffsetRange, _gravityOffsetRange));
+
                 // 정지 상태에서 등가속도로 떨어지는 시간 = √(2 × 거리 ÷ 가속도)
-                float warningDuration = _waitBeforeFall + Mathf.Sqrt((2.0f * _fallDistance) / _gravity);
+                float warningDuration = _waitBeforeFall + Mathf.Sqrt((2.0f * _fallDistance) / gravity);
                 float elapsed = 0.0f;
                 while (elapsed < _waitBeforeFall)
                 {
@@ -272,7 +288,7 @@ namespace Map.Gimmicks
                 float speed = 0.0f;
                 while (transform.position != bottomPosition)
                 {
-                    speed += _gravity * Time.deltaTime;
+                    speed += gravity * Time.deltaTime;
                     transform.position = Vector3.MoveTowards(transform.position, bottomPosition, speed * Time.deltaTime);
                     elapsed += Time.deltaTime;
                     SetWarningColor(Mathf.Min(elapsed / warningDuration, 1.0f));
