@@ -1,4 +1,6 @@
 using UnityEngine;
+using Core.Audio;
+using Map.Gimmicks;
 
 namespace Tutorial
 {
@@ -13,6 +15,10 @@ namespace Tutorial
         [Tooltip("비워두면 부모에서 PlatformSpawner를 자동으로 찾는다.")]
         [SerializeField] private PlatformSpawner _spawner;
         [SerializeField] private ParticleSystem _pulseEffect;
+
+        [Header("Sound")]
+        [Tooltip("발판이 생성될 때 그 위치에서 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _spawnSound;
         #endregion
 
         #region Unity Lifecycle
@@ -47,6 +53,8 @@ namespace Tutorial
         #region Private Methods
         private void HandlePlatformSpawned(Vector3 worldPosition)
         {
+            GimmickUtility.PlaySfx(_spawnSound, worldPosition);
+
             if (_pulseEffect == null) return;
 
             _pulseEffect.transform.position = worldPosition;
