@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 9178442848211999777}
   - component: {fileID: 8081609862072532909}
   - component: {fileID: 7233928664553812619}
+  - component: {fileID: 5375894084732900667}
   m_Layer: 0
   m_Name: Scan
   m_TagString: Untagged
@@ -63,6 +64,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.CooldownCost
   _cooldown: 6
+--- !u!114 &5375894084732900667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6072642546369583521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fc734381ee5c2d43850843ff3bfe3c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Skill.Costs.ResourceCost
+  _cost: 5
+  _resourceKey: CurrentBattery
 --- !u!1001 &4698938791609704925
 PrefabInstance:
   m_ObjectHideFlags: 0
