@@ -129,6 +129,9 @@ namespace Map.Feed
         [Tooltip("피드가 떠오를 때(한 번)와 총에 맞아 날아갈 때(피드마다) 낼 소리 (비우면 무음)")]
         [SerializeField] private SOAudioData _postMoveSound;
 
+        [Tooltip("피드를 모두 올려 보냈을 때 클리어 효과와 함께 이 오브젝트에서 낼 축하 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _clearSound;
+
         [Header("VFX")]
         [Tooltip("피드를 모두 올려 보냈을 때 이 오브젝트(라운드 중앙)에서 낼 클리어 효과 (비우면 없음)")]
         [SerializeField] private SOEffectData _clearVfx;
@@ -142,6 +145,9 @@ namespace Map.Feed
         #endregion
 
         #region Private Fields
+        // 정답 피드도 남겨 두고, 재시작할 때 처음 상승을 시작했던 위치로 돌린다.
+        private readonly Dictionary<FeedPost, Vector3> _initialPostPositions = new Dictionary<FeedPost, Vector3>();
+
         // 피드마다 떠 있는 자리. 올라간 피드는 뺀다.
         private readonly Dictionary<FeedPost, Vector3> _slots = new Dictionary<FeedPost, Vector3>();
         #endregion
@@ -177,7 +183,7 @@ namespace Map.Feed
         #region Unity Lifecycle
         private void OnDestroy()
         {
-            foreach (FeedPost post in _slots.Keys)
+            foreach (FeedPost post in _initialPostPositions.Keys)
             {
                 if (post != null)
                 {
@@ -212,6 +218,12 @@ namespace Map.Feed
             BuildWalls();
             BuildPlatforms();
             ShrinkCenter();
+
+            foreach (FeedPost post in FindObjectsByType<FeedPost>())
+            {
+                _initialPostPositions.Add(post, post.transform.position);
+            }
+
             RaiseFeeds();
             ClearRound1();
             RaiseFallZones();
@@ -223,6 +235,17 @@ namespace Map.Feed
                 Debug.LogWarning($"[{name}] 씬에 주위 피드(FeedPost)가 하나도 없어 바로 클리어 처리합니다.", this);
                 Clear();
             }
+        }
+
+        /// <summary>
+        /// 진행 중인 2라운드의 피드를 모두 복구하고 처음 위치에서 다시 떠오르게 한다.
+        /// </summary>
+        public void RestartFeeds()
+        {
+            if (!IsStarted || IsCleared) return;
+
+            _slots.Clear();
+            RaiseFeeds();
         }
 
         /// <summary>
@@ -468,7 +491,7 @@ namespace Map.Feed
             return null;
         }
 
-        // 씬의 주위 피드를 모두 홀로그램으로 바꾸고, 경기장 위의 무작위 자리로 떠오르게 한다.
+        // 처음 모아 둔 피드를 모두 복구해 홀로그램으로 바꾸고, 경기장 위의 무작위 자리로 떠오르게 한다.
         private void RaiseFeeds()
         {
             var positions = new List<Vector3>();
@@ -476,8 +499,11 @@ namespace Map.Feed
             // 피드가 한꺼번에 떠오르므로 경기장 가운데에서 한 번만 낸다
             GimmickUtility.PlaySfx(_postMoveSound, transform.position);
 
-            foreach (FeedPost post in FindObjectsByType<FeedPost>())
+            foreach (KeyValuePair<FeedPost, Vector3> entry in _initialPostPositions)
             {
+                FeedPost post = entry.Key;
+                if (post == null) continue;
+
                 if (post.TagIndex >= _walls.Length)
                 {
                     Debug.LogWarning($"[{name}] {post.name} 의 Tag Index({post.TagIndex})에 맞는 벽이 없습니다.", post);
@@ -489,8 +515,11 @@ namespace Map.Feed
 
                 // 다 떠오른 뒤부터 쏠 수 있다
                 FeedPost target = post;
+                post.OnShot -= HandlePostShot;
                 post.OnShot += HandlePostShot;
                 post.BecomeHologram();
+                post.ResetForRound2(entry.Value);
+                post.gameObject.SetActive(true);
                 post.MoveTo(slot, _riseDuration, () => target.SetShootable(true));
             }
         }
@@ -634,7 +663,7 @@ namespace Map.Feed
             {
                 post.OnShot -= HandlePostShot;
                 _slots.Remove(post);
-                Destroy(post.gameObject);
+                post.gameObject.SetActive(false);
 
                 if (_slots.Count == 0)
                 {
@@ -660,6 +689,7 @@ namespace Map.Feed
 
             IsCleared = true;
             GimmickUtility.PlayVfx(_clearVfx, transform.position);
+            GimmickUtility.PlaySfx(_clearSound, transform.position);
             _onCleared.Invoke();
         }
         #endregion

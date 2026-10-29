@@ -28,6 +28,7 @@ namespace Core.Stage
         private readonly HashSet<HomingHazard> _aliveMaliciousData = new HashSet<HomingHazard>();
         private MaliciousFeed[] _maliciousFeeds;
         private GameManager _gameManager;
+        private StageManager _stageManager;
 
         // 2라운드. 남은 피드 수가 바뀌어도 알려 주지 않아서 Update에서 직접 비교한다.
         private FeedRound2 _round2;
@@ -76,6 +77,9 @@ namespace Core.Stage
 
         private void OnDestroy()
         {
+            if (_stageManager != null)
+                _stageManager.OnPlayerRespawnRequested -= HandlePlayerRespawnRequested;
+
             if (_round2 != null)
                 _round2.OnStarted.RemoveListener(HandleRound2Started);
 
@@ -123,6 +127,13 @@ namespace Core.Stage
             if (_gameManager != null)
                 _gameManager.OnPlayerSpawned += HandlePlayerSpawned;
 
+            if (_stageManager != null)
+                _stageManager.OnPlayerRespawnRequested -= HandlePlayerRespawnRequested;
+
+            _stageManager = (_gameManager != null) ? _gameManager.CurrentStageManager : null;
+            if (_stageManager != null)
+                _stageManager.OnPlayerRespawnRequested += HandlePlayerRespawnRequested;
+
             NotifyProgressChanged();
         }
 
@@ -146,7 +157,18 @@ namespace Core.Stage
 
         public override void EndStage()
         {
-            
+            if (_stageManager != null)
+                _stageManager.OnPlayerRespawnRequested -= HandlePlayerRespawnRequested;
+        }
+
+        private void HandlePlayerRespawnRequested()
+        {
+            if ((_round2 == null) || !_round2.IsStarted || _round2.IsCleared)
+                return;
+
+            _round2.RestartFeeds();
+            _lastRound2RemainingCount = _round2.RemainingCount;
+            NotifyProgressChanged();
         }
 
         // 2라운드 시작 직후에는 피드가 모두 남아 있으므로 그 수를 전체 수로 기록한다.
