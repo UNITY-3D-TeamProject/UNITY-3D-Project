@@ -14,6 +14,7 @@ namespace Core.Stage.Security
     /// - 대기: 라운드가 이 구역 차례가 되면 Prepare 로 적을 미리 만들어 두고, 플레이어가 들어오기 전까지 제자리에 묶어 둔다 (생성 장면이 보이지 않게).
     /// - 시작: 플레이어가 구역 트리거에 들어오면 묶음을 풀고 OnStarted 를 알린다. 대기 없이 들어오면 그때 만든다.
     /// - 클리어: 만든 적이 모두 죽으면 OnCleared 를 알린다. 적 종류·마리 수·위치를 바꿔도 "실제로 만든 적이 다 죽었는가"로만 판정한다.
+    ///   보상 아이템(_clearDropItem)을 지정하면 마지막으로 죽은 적 자리에 떨어뜨린다.
     /// 문·발판 등 앞뒤 처리와 사망 리셋 시점은 이 구역을 가진 라운드(MobRoomRound, SpecialMobRound)가 정한다.
     /// 구역 전체를 덮는 콜라이더를 같은 오브젝트에 둔다 (Is Trigger 는 자동으로 켠다).
     /// </summary>
@@ -52,6 +53,14 @@ namespace Core.Stage.Security
 
         [Tooltip("적을 만들 위치. 적은 위치의 앞(+Z)을 보고 기다린다. 적이 위치보다 많으면 처음 위치부터 다시 돌아가며 쓴다. 비우면 이 오브젝트 위치에 만든다.")]
         [SerializeField] private Transform[] _spawnPoints;
+
+        [Header("Clear Drop")]
+        [Tooltip("구역의 마지막 적이 죽으면 그 자리에 반드시 떨어뜨릴 아이템 프리팹 (닿으면 획득되는 것). 비우면 떨어뜨리지 않는다.")]
+        [SerializeField] private GameObject _clearDropItem;
+        [Tooltip("아이템이 떨어지는 위치의 높이 보정(m). 적 발 위치 기준")]
+        [SerializeField] private float _clearDropHeight = 0.5f;
+        [Tooltip("안 먹힌 아이템이 사라지기까지의 시간(초)")]
+        [SerializeField, Min(0.1f)] private float _clearDropLifetime = 15.0f;
         #endregion
 
         #region Private Fields
@@ -247,8 +256,18 @@ namespace Core.Stage.Security
             // 들어오기 전(대기 중)에 문 너머로 다 잡아도 깬 것으로 본다
             if (_aliveEnemies.Count == 0)
             {
+                DropClearItem(mediator.transform.position);
                 Clear();
             }
+        }
+
+        // 마지막으로 죽은 적 자리에 깬 보상 아이템을 떨어뜨린다. 아이템은 획득되면 스스로 사라진다 (EnemyItemDropper 와 같은 방식)
+        private void DropClearItem(Vector3 position)
+        {
+            if (_clearDropItem == null) return;
+
+            GameObject item = Instantiate(_clearDropItem, position + (Vector3.up * _clearDropHeight), Quaternion.identity);
+            Destroy(item, _clearDropLifetime);
         }
 
         // 살아 있는 적을 전부 풀에 돌려보낸다.
