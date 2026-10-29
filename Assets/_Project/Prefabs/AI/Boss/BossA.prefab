@@ -1459,6 +1459,7 @@ GameObject:
   - component: {fileID: 6754248375782429067}
   - component: {fileID: 3878175691785739089}
   - component: {fileID: 912345678901234567}
+  - component: {fileID: 8390807612559295983}
   m_Layer: 8
   m_Name: BossA
   m_TagString: Untagged
@@ -1696,6 +1697,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossDeathSkill
   _skillName: Death
+--- !u!114 &8390807612559295983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8734686264384130684}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10f5430380f9ce34fa26138a021985bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.CriticalHitFeedback
+  _characterMediator: {fileID: 7562927144991651820}
+  _effect: {fileID: 11400000, guid: a3a60fd703537964284e973f47160b6b, type: 2}
+  _sound: {fileID: 0}
 --- !u!1001 &1164542261768244123
 PrefabInstance:
   m_ObjectHideFlags: 0

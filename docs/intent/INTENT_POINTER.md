@@ -4,6 +4,9 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[AI / Enemy / Skill]** 특수몹 바람 스킬이 발동 순간 방향을 고정해 이동하는 플레이어를 따라가지 않음(AI_TODO2 잡몹-9). 램프 동안 `EnemyWindBlast._forward` 와 `Hold` 방향을 매 프레임 대상 쪽으로 갱신(즉시 추적), 넉백 방향은 시작 순간 고정. 리컴파일 통과, 직접 플레이 확인 남음 → [문서](./intent-090-special-wind-track-player.md)
+- **[AI / Enemy / Combat / Feedback]** 약점을 맞혀도 일반 피격과 구분되는 피드백이 없음(AI_TODO2 잡몹-7). `CharacterMediator.OnCriticalHit` 를 구독하는 `CriticalHitFeedback` 로 맞은 지점에 약점 전용 이펙트(`WeakPointHit`, YellowLaserImpact 복사본)·소리를 덧입힘. 잡몹 3종·보스 2종 부착, Play 판정 확인 완료. 소리 에셋 연결·직접 플레이 확인 남음 → [문서](./intent-089-weak-point-hit-feedback.md)
+- **[AI / Enemy / Combat]** 특수몹 약점이 맞지 않음(AI_TODO2 잡몹-8). `Special.prefab` 의 `CombatPrefab._weakPoint` 연결 누락으로 치명타가 전혀 없었고, 총알이 닿는 캡슐이 작아 5번(머리 위)·3·4번(팔 바깥) 후보가 캡슐 밖. 연결 추가 + 2~5번 후보를 캡슐 안 정면으로 이동. 판정 시뮬레이션 확인 완료, 직접 플레이 확인 남음 → [문서](./intent-088-special-weak-point-position.md)
 - **[AI / Boss]** 보스A 그랩에 잡힌 플레이어가 손목 밑에 끌려가 손에 잡힌 느낌이 없음. 날아가는 동안 집게를 날아가는 방향으로 돌리고, 손바닥 본 밑 `GrabPoint`(집게 턱 사이)에 플레이어를 맞춘 뒤 잡으면 집게를 오므림 → [문서](./intent-087-boss-a-grab-claw.md)
 - **[AI / Boss / Shader]** 보스A 몸체에 바이러스 감염 느낌의 움직이는 표현이 없음(AI_TODO2 보스-18). 메시를 바인드 포즈 기준 3×3 칸으로 나눠 2~3초마다 2~3칸을 뽑고, 그 칸만 0·1 낙하물처럼 가로 띠가 옆으로 튀는 버텍스 글리치 + 보스B 손 같은 표면 스파크(`BossAGlitch`, `BossACorruptedArmor.hlsl`). 항상 켬 → [문서](./intent-086-boss-a-cell-glitch.md)
 - **[Stage / SecurityApp / Items]** 스테이지2 특수몹이 25% 확률로 무작위 아이템을 떨어뜨림. `CombatZone._clearDropItem` 으로 발판마다 아이템을 지정해 HP → 에너지 번갈아 항상 드롭(발판 번호 기준), `Special.prefab` 무작위 드롭 제거 → [문서](./intent-085-special-mob-ordered-drop.md)
