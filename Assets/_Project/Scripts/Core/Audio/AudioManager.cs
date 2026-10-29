@@ -530,7 +530,11 @@ namespace Core.Audio
             _isBgmPlaying = true;
             _bgmSource.loop = clipCount == 1;
             _bgmFadeOutDuration = audioData.FadeOutDuration;
-            _bgmTrackIndex = audioData.IsShuffle ? UnityEngine.Random.Range(0, clipCount) : 0;
+            int randomFirstTrackCount = audioData.RandomFirstTrackCount;
+            if (randomFirstTrackCount > 0)
+                _bgmTrackIndex = UnityEngine.Random.Range(0, randomFirstTrackCount);
+            else
+                _bgmTrackIndex = audioData.IsShuffle ? UnityEngine.Random.Range(0, clipCount) : 0;
 
             RestartBgmRoutine(CoPlayTracks(audioData));
         }
