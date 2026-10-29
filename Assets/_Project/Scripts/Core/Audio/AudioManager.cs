@@ -198,6 +198,17 @@ namespace Core.Audio
             StartBgm(_bgm);
         }
 
+        // 라운드 전환 등 씬 안에서 BGM을 바꿀 때 현재 곡을 페이드아웃한 뒤 새 곡을 튼다.
+        public void ChangeBgm(SOAudioData audioData)
+        {
+            if ((audioData == null) || ((_bgm == audioData) && _isBgmPlaying))
+                return;
+
+            _bgm = audioData;
+            _isBgmPlaying = false;
+            RestartBgmRoutine(CoChangeBgm(audioData));
+        }
+
         // 이 씬 BGM 플레이리스트의 다음 곡으로 넘긴다. 지금 곡을 줄인 뒤 다음 곡을 키운다.
         // [호출] 로비의 곡 넘기기 버튼 등. 다음 곡은 SO의 순서 설정(차례로/무작위)을 따른다.
         //        곡이 1개뿐이거나 BGM이 없으면 무시한다. 페이드 중에 다시 누르면 그 자리에서 다음 곡으로 넘어간다.
@@ -538,6 +549,13 @@ namespace Core.Audio
         #endregion
 
         #region Coroutines
+        private IEnumerator CoChangeBgm(SOAudioData audioData)
+        {
+            yield return CoFadeOutBgm();
+            _bgmRoutine = null;
+            StartBgm(audioData);
+        }
+
         // 지금 곡을 줄여 끄고, 플레이리스트의 다음 곡부터 이어서 튼다.
         private IEnumerator CoPlayNextBgm(SOAudioData audioData)
         {
@@ -561,7 +579,7 @@ namespace Core.Audio
 
                 // 곡이 끝나기 페이드아웃 시간 전까지 기다린다.
                 // 에디터 일시정지·앱 비활성 중에는 코루틴도 멈추므로 그동안 곡을 넘기지 않는다.
-                while (_bgmSource.isPlaying && (GetRemainingBgmTime() > audioData.FadeOutDuration))
+                while (GetRemainingBgmTime() > audioData.FadeOutDuration)
                     yield return null;
 
                 yield return CoFadeOutBgm();
