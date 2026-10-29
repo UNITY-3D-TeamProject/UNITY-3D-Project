@@ -79,7 +79,7 @@ namespace Core.Audio
         [SerializeField] private int _maxSfxSourceCount = 64;
 
         [Header("Throttle")]
-        [Tooltip("같은 클립을 이 시간(초) 안에 다시 요청하면 건너뛴다")]
+        [Tooltip("UI에서 같은 클립을 이 시간(초) 안에 다시 요청하면 건너뛴다. 3D 효과음에는 적용하지 않는다")]
         [SerializeField] private float _sameClipInterval = 0.05f;
         #endregion
 
@@ -104,7 +104,7 @@ namespace Core.Audio
         // 소스 상한 경고를 이미 남겼는지. 요청마다 찍으면 로그가 넘치므로 한 번만 남긴다.
         private bool _hasWarnedSfxLimit;
 
-        // 클립 → 마지막으로 재생한 Time.unscaledTime
+        // UI 클립 → 마지막으로 재생한 Time.unscaledTime
         private readonly Dictionary<AudioClip, float> _lastPlayTimes = new();
 
         // (int)EAudioChannel 인덱스, 0~1
@@ -207,11 +207,12 @@ namespace Core.Audio
         }
 
         // 3D 효과음을 지정 위치에서 한 번 낸다.
+        // 같은 클립의 동시 요청도 허용한다. 서로 떨어진 장애물의 소리를 누락시키지 않는다.
         // 3D 소스가 상한까지 모두 재생 중이면 생략한다.
         // 돌려주는 핸들은 중간에 끊을 때만 StopSfx에 넘긴다. 끊을 일이 없으면 무시해도 된다. 생략되면 default
         public SAudioHandle PlaySfx(SOAudioData audioData, Vector3 position, float volumeScale = 1f, float pitchScale = 1f)
         {
-            if (!TryPickClip(audioData, out AudioClip clip))
+            if (!TryPickClip(audioData, out AudioClip clip, false))
                 return default;
 
             int index = FindFreeSfxSource();
@@ -410,8 +411,8 @@ namespace Core.Audio
             _sfxFollowTargets[index] = null;
         }
 
-        // 클립을 고르고, 같은 클립이 너무 짧은 간격으로 다시 요청됐으면 거른다.
-        private bool TryPickClip(SOAudioData audioData, out AudioClip clip)
+        // 클립을 고른다. UI만 짧은 간격의 중복 요청을 거르고, 서로 다른 장애물이 쓰는 3D 효과음은 모두 허용한다.
+        private bool TryPickClip(SOAudioData audioData, out AudioClip clip, bool shouldThrottle = true)
         {
             clip = (audioData != null) ? audioData.PickClip() : null;
             if (clip == null)
@@ -419,6 +420,9 @@ namespace Core.Audio
                 Debug.LogWarning($"[AudioManager] 재생할 클립이 없습니다: '{(audioData != null ? audioData.name : "null")}'", this);
                 return false;
             }
+
+            if (!shouldThrottle)
+                return true;
 
             // 일시정지 중 UI 소리도 걸러야 하므로 unscaledTime을 쓴다.
             float now = Time.unscaledTime;
