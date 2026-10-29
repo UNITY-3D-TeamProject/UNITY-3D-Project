@@ -116,6 +116,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Map.Gimmicks.FallingObstacle
   _fallDistance: 30
   _gravity: 20
+  _gravityOffsetRange: 12
+  _yawOffsetRange: 180
   _waitBeforeFall: 1
   _restTime: 1
   _riseSpeed: 4
@@ -252,6 +254,18 @@ PrefabInstance:
     - target: {fileID: 505817761047036620, guid: 14d623cb40b07684685486e663f14a0e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 939087166126702597, guid: 14d623cb40b07684685486e663f14a0e, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 939087166126702597, guid: 14d623cb40b07684685486e663f14a0e, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 939087166126702597, guid: 14d623cb40b07684685486e663f14a0e, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 2298233139284902379, guid: 14d623cb40b07684685486e663f14a0e, type: 3}
       propertyPath: m_Name
