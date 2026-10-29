@@ -2,12 +2,13 @@ using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
 using Core.Audio;
+using Core.Effect;
 using PlayerInput;
 
 namespace Map.Gimmicks
 {
     /// <summary>
-    /// 맵 기믹들이 공통으로 쓰는 플레이어 판별, Effect 적용, 효과음 재생.
+    /// 맵 기믹들이 공통으로 쓰는 플레이어 판별, Effect 적용, 효과음·VFX 재생.
     /// </summary>
     internal static class GimmickUtility
     {
@@ -51,6 +52,18 @@ namespace Map.Gimmicks
             if ((sound == null) || (AudioManager.Instance == null)) return;
 
             AudioManager.Instance.PlaySfx(sound, position);
+        }
+
+        /// <summary>
+        /// VFX를 position에서 한 번 재생한다. 효과가 비어 있거나 씬에 EffectManager가 없으면 무시한다.
+        /// </summary>
+        /// <param name="effect">재생할 효과 (비우면 없음)</param>
+        /// <param name="position">효과가 나는 위치</param>
+        public static void PlayVfx(SOEffectData effect, Vector3 position)
+        {
+            if ((effect == null) || (EffectManager.Instance == null)) return;
+
+            EffectManager.Instance.Play(effect, position, Quaternion.identity);
         }
 
         /// <summary>

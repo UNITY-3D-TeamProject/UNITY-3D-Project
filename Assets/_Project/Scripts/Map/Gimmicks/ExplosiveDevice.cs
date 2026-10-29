@@ -4,6 +4,7 @@ using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
 using Core.Audio;
+using Core.Effect;
 using PlayerInput;
 
 namespace Map.Gimmicks
@@ -42,6 +43,12 @@ namespace Map.Gimmicks
 
         [Tooltip("폭발 표시가 커지는 데 걸리는 시간(초)")]
         [SerializeField, Min(0.05f)] private float _blastDuration = 0.3f;
+
+        [Tooltip("폭발 표시가 커질 최종 크기 (폭발 범위 지름 대비 비율). 피해 범위는 바뀌지 않는다.")]
+        [SerializeField, Range(0.0f, 1.0f)] private float _blastVisualScale = 1.0f;
+
+        [Tooltip("터지는 순간 장치 자리에서 낼 효과 (비우면 없음)")]
+        [SerializeField] private SOEffectData _explodeVfx;
 
         [Header("Sound")]
         [Tooltip("터질 때 낼 소리 (비우면 무음)")]
@@ -150,6 +157,7 @@ namespace Map.Gimmicks
 
             SetBodyVisible(false);
             GimmickUtility.PlaySfx(_explodeSound, transform.position);
+            GimmickUtility.PlayVfx(_explodeVfx, transform.position);
             ApplyEffectsInRange();
 
             if (_blastVisual != null)
@@ -160,7 +168,7 @@ namespace Map.Gimmicks
                 while (elapsed < _blastDuration)
                 {
                     elapsed += Time.deltaTime;
-                    _blastVisual.localScale = Vector3.one * (_radius * 2.0f * Mathf.Clamp01(elapsed / _blastDuration));
+                    _blastVisual.localScale = Vector3.one * (_radius * 2.0f * _blastVisualScale * Mathf.Clamp01(elapsed / _blastDuration));
                     yield return null;
                 }
 

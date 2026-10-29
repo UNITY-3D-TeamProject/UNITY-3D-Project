@@ -113,6 +113,17 @@ namespace Map.Feed
         #endregion
 
         #region Public Methods
+        /// <summary>이전 이동과 도착 콜백을 취소하고 2라운드 상승 시작 위치로 돌린다.</summary>
+        public void ResetForRound2(Vector3 position)
+        {
+            _isMoving = false;
+            _onArrived = null;
+            _restPosition = position;
+            _bobTime = 0.0f;
+            transform.position = position;
+            SetShootable(false);
+        }
+
         /// <summary>정화 중에는 부유를 멈추고 악성 카드의 자리에서 정상 이미지로 바꾼다.</summary>
         public FeedPurification BeginPurification(
             MaliciousFeed source,

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Core.Audio;
+using Core.Effect;
 using Map.Gimmicks;
 
 namespace Map.Maze
@@ -26,6 +27,10 @@ namespace Map.Maze
         [Header("Sound")]
         [Tooltip("문이 열릴 때 낼 소리 (비우면 무음)")]
         [SerializeField] private SOAudioData _openSound;
+
+        [Header("VFX")]
+        [Tooltip("문이 열릴 때 문 자리에서 낼 효과 (비우면 없음)")]
+        [SerializeField] private SOEffectData _openVfx;
         #endregion
 
         #region Properties
@@ -69,7 +74,8 @@ namespace Map.Maze
         /// <summary>
         /// 문을 연다.
         /// </summary>
-        public void Open()
+        /// <param name="shouldPlayVfx">false 면 열림 효과를 내지 않는다 (다른 자리에서 클리어 연출을 할 때)</param>
+        public void Open(bool shouldPlayVfx = true)
         {
             if (IsOpen) return;
 
@@ -77,6 +83,7 @@ namespace Map.Maze
             if (_door != null)
             {
                 GimmickUtility.PlaySfx(_openSound, _door.transform.position);
+                if (shouldPlayVfx) GimmickUtility.PlayVfx(_openVfx, _door.transform.position);
                 _door.SetActive(false);
             }
 
