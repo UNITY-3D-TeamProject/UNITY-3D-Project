@@ -10,6 +10,14 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 ## 문제 (Problem)
 게임에 소리를 내는 공용 기반이 없다. 자체 Scripts에 AudioSource/AudioMixer 기반 재생 코드가 없고, 설정창(`Canvas_MainMenu`·`Canvas_InGame`)의 `Row_Audio`·`Row_Music`·`Row_SFX`는 볼륨 로직에 연결되어 있지 않다. 씬이 바뀌어도 BGM과 볼륨 설정이 이어지는 구조가 필요하다.
 
+### 메인 메뉴 음원 후속 (2026-10-29)
+- 문제: 메인 씬 BGM이 검은 스플래시 화면에서도 즉시 시작하며, 지정한 `Whimsical Technology World.wav`가 프로젝트에 없다.
+- 기대 결과: 음원을 `Assets/ThirdParty/Audio`에 넣고 메인 메뉴 BGM SO에 지정한다. 검은 화면의 AnyPress 입력으로 메뉴가 나타날 때부터 BGM을 재생한다.
+- 영향 범위: `MainScene`, `MainMenuPresenter`, `AudioManager`, 메인 메뉴 BGM SO.
+- 제약: 다른 씬의 BGM 자동 재생과 기존 스플래시 클릭 효과음은 유지한다.
+- 열린 질문: 없음.
+- 적용 상태: WAV가 `Assets/ThirdParty/Audio`로 이동했고 GUID는 유지됨. SO·씬·입력 연결 및 원본/현재 파일 SHA-256, 직렬화 참조 검사 통과. Unity 컴파일 최신 상태, MainScene Play에서 AnyPress 전 BGM 정지와 Space 입력 뒤 지정 클립 재생 확인. 귀로 듣는 음량 평가는 남음.
+
 설계 배경과 검토 과정은 [audio-manager-design.md](../HANDOVER/SungJun/2026-10-17/audio-manager-design.md)에 있다. 이 문서는 그 뒤 대화에서 단순화·확정한 내용을 기준으로 한다.
 
 ## ★ 구조 변경: 씬 단위 AudioManager (2026-10-17 사용자 확정)
