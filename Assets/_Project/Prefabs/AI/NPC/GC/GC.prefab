@@ -176,9 +176,11 @@ GameObject:
   - component: {fileID: 742138176948817436}
   - component: {fileID: 2361320754105844520}
   - component: {fileID: -2038904461680163480}
+  - component: {fileID: 4504584026512779358}
+  - component: {fileID: 8109953446100436926}
   m_Layer: 7
   m_Name: GC
-  m_TagString: Untagged
+  m_TagString: Scan
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -450,6 +452,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.WaypointPatrolRoute
   _waypointTransforms: []
+--- !u!114 &4504584026512779358
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2851063550565306939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19318f87a581d0408f054d5de0cef90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.ScanTarget
+  _fadeInTime: 0.2
+  _fadeOutTime: 1
+  _reactions: []
+  _scanColliders: []
+--- !u!114 &8109953446100436926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2851063550565306939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4f53d2a172f4ec9acb4b346fba4b519, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Scanning.SilhouetteReaction
+  _silhouetteRenderers: []
+  _autoShellMaterial: {fileID: 2100000, guid: 7ed16fb52a8240d08d9e97526bf8a65e, type: 2}
+  _shellSourceRoot: {fileID: 0}
 --- !u!1 &2893440626600557970
 GameObject:
   m_ObjectHideFlags: 0

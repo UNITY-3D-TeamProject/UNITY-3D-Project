@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Serialization;
+using Core.Effect;
 
 namespace AI.Boss.BossB
 {
@@ -18,6 +19,8 @@ namespace AI.Boss.BossB
         [SerializeField, Min(0.0f)] private float _recoverySeconds = 0.5f;
         [Tooltip("콤보의 마지막 타인지. 마지막 타만 넉백한다")]
         [SerializeField] private bool _isLastHit;
+
+        [SerializeField] private SOEffectData _lastHitVfx;
 
         [Header("Range")]
         [Tooltip("B 위치에서 대상까지 수평 거리가 이 안이면 맞는다(m). 임시값")]
@@ -70,6 +73,11 @@ namespace AI.Boss.BossB
             RefreshHold(GetEndTime() - _elapsed);
 
             Vector3 origin = Controller.Position;
+            if (_isLastHit && _lastHitVfx && _lastHitVfx.Prefab)
+            {
+                Vector3 direction = GetDirectionToTarget();
+                EffectManager.Instance?.Play(_lastHitVfx, origin + (direction * (_range * 0.5f)), Quaternion.LookRotation(direction) * _lastHitVfx.Prefab.transform.localRotation);
+            }
             if (!TryHitTarget(origin, _range) || !_isLastHit) return;
 
             KnockbackTarget(GetDirectionToTarget(), _lastKnockbackDistance, _lastKnockbackSeconds);

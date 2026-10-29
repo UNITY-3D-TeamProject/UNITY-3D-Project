@@ -12,6 +12,10 @@ namespace Core.Effect
         [Header("Common")]
         [Tooltip("자체 Destroy/반납 스크립트가 없는 프리팹. 반복 여부는 부르는 쪽이 Play/PlayLoop로 정한다")]
         [SerializeField] private GameObject _prefab;
+        [Tooltip("프리팹 크기에 곱할 배율")]
+        [SerializeField, Min(0.01f)] private float _scale = 1f;
+        [Tooltip("파티클 재생 속도 배율. 1 미만이면 느리게, 초과면 빠르게 재생한다. 애니메이션 길이에 맞출 때 쓴다")]
+        [SerializeField, Min(0.01f)] private float _playbackSpeed = 1f;
 
         [Header("Play Only (PlayLoop는 무시)")]
         [Tooltip("재생부터 반납까지 시간(초). Stop을 호출하면 즉시 반납한다")]
@@ -28,6 +32,8 @@ namespace Core.Effect
 
         #region Properties
         public GameObject Prefab => _prefab;
+        public float Scale => Mathf.Max(0.01f, _scale);
+        public float PlaybackSpeed => Mathf.Max(0.01f, _playbackSpeed);
         public float Duration => Mathf.Max(0.01f, _duration);
         public float StopFadeDuration => Mathf.Max(0f, _stopFadeDuration);
         public int MaxSize => Mathf.Max(1, _maxSize);

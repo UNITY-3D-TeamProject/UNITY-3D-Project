@@ -107,6 +107,10 @@ namespace Map.Gimmicks
             _nextHitTime = Time.time + _hitCooldown;
             GimmickUtility.ApplyEffects(_hitEffects, player.GetComponentInChildren<IEffectTarget>());
 
+            // 꺼진 컴포넌트에도 트리거 메시지가 온다. 멈춰 있는 동안에는 피해만 주고,
+            // 넉백을 예약해 두면 다시 켜질 때 늦게 발동하므로 여기서 끝낸다.
+            if (!enabled) return;
+
             // 장애물이 움직이고 있으면 플레이어가 닿은 부분이 움직이던 방향으로 민다 (휘두르는 봉, 튀어나오는 피스톤).
             Vector3 hitPoint = other.bounds.center;
             Vector3 direction = hitPoint - _previousPose.MultiplyPoint3x4(_currentPose.inverse.MultiplyPoint3x4(hitPoint));

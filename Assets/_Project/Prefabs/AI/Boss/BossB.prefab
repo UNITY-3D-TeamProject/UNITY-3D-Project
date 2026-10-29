@@ -52,6 +52,7 @@ MonoBehaviour:
   _leapHeight: 3
   _recoverySeconds: 1.5
   _flightMotionSkillName: LeapFlight
+  _landingVfx: {fileID: 11400000, guid: 5b605397c90543c4bbdfc471eb97bf83, type: 2}
   _landingRadius: 4
   _shockwaveTiles: 1
   _knockbackDistance: 8
@@ -229,6 +230,10 @@ MonoBehaviour:
   _knockbackSeconds: 0.4
   _runMotionSkillName: ChargeRun
   _stopMotionSkillName: ChargeStop
+  _chargeVfx: {fileID: 11400000, guid: 62f089007c0f3034ba7ba01a9f6836c0, type: 2}
+  _chargeVfxOffset: {x: 0, y: 0, z: 0}
+  _windupVfx: {fileID: 11400000, guid: bd06d0adb8383b64989a2239b57f0f80, type: 2}
+  _burstVfx: {fileID: 11400000, guid: 0fb52d03d375b6845ab430e5dca12995, type: 2}
   _linePrefab: {fileID: 6860600241438202050, guid: df2dfcfc341a4b6419b05769f7c6fa2f, type: 3}
   _lineHeight: 0.05
 --- !u!1 &2124054780660964707
@@ -331,6 +336,7 @@ GameObject:
   - component: {fileID: 3583230931132079046}
   - component: {fileID: 2794957769892381437}
   - component: {fileID: 8316297890504309412}
+  - component: {fileID: 912345678901234567}
   m_Layer: 8
   m_Name: BossB
   m_TagString: Untagged
@@ -623,6 +629,19 @@ MonoBehaviour:
     _delay: 1.35
   - _skill: {fileID: 1199639999195063554}
     _delay: 1.0500001
+--- !u!114 &912345678901234567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2851063550565306939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc0876dc5848ab1f9f7ca3b916e498fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossDeathSkill
+  _skillName: Death
 --- !u!1 &2893440626600557970
 GameObject:
   m_ObjectHideFlags: 0
@@ -1026,6 +1045,7 @@ MonoBehaviour:
   _hitDelay: 0.5
   _recoverySeconds: 0.67
   _isLastHit: 1
+  _lastHitVfx: {fileID: 11400000, guid: 727de0fac20e42ea96c02dbad9b2ccbf, type: 2}
   _range: 4
   _lastKnockbackDistance: 2
   _lastKnockbackSeconds: 0.2
@@ -1269,6 +1289,7 @@ MonoBehaviour:
   _leapHeight: 6
   _recoverySeconds: 1.5
   _flightMotionSkillName: LeapFlight
+  _landingVfx: {fileID: 11400000, guid: 5b605397c90543c4bbdfc471eb97bf83, type: 2}
   _landingRadius: 10
   _shockwaveTiles: 0.5
   _knockbackDistance: 6
@@ -1421,6 +1442,7 @@ MonoBehaviour:
   _hitDelay: 0.4
   _recoverySeconds: 0.43
   _isLastHit: 0
+  _lastHitVfx: {fileID: 0}
   _range: 4
   _lastKnockbackDistance: 2
   _lastKnockbackSeconds: 0.2
@@ -1505,6 +1527,7 @@ MonoBehaviour:
   _hitDelay: 0.4
   _recoverySeconds: 0.43
   _isLastHit: 0
+  _lastHitVfx: {fileID: 0}
   _range: 4
   _lastKnockbackDistance: 2
   _lastKnockbackSeconds: 0.2
@@ -1755,7 +1778,7 @@ PrefabInstance:
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _jump
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 11400000, guid: ea3f94b97e364b8bb589a044f90e437d, type: 2}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _land
       value: 
@@ -1763,10 +1786,10 @@ PrefabInstance:
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _footstep
       value: 
-      objectReference: {fileID: 11400000, guid: 064e05a479ac06b4793d47e2f098d0e4, type: 2}
+      objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.size
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[0]._phase
@@ -1774,11 +1797,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[1]._phase
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[2]._phase
-      value: 0
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[3]._phase
@@ -1803,18 +1826,18 @@ PrefabInstance:
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[2]._audioData
       value: 
-      objectReference: {fileID: 11400000, guid: 8724b3a920651e7438f13b0c92913785, type: 2}
+      objectReference: {fileID: 11400000, guid: b72aa74732263d67eb97ab8b3833d7d1, type: 2}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[2]._skillName
-      value: ShockWave
+      value: Leap
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[3]._audioData
       value: 
-      objectReference: {fileID: 11400000, guid: de59e3942454118479305c014d84f770, type: 2}
+      objectReference: {fileID: 11400000, guid: 776c0f09e89e4a50a3c58b71f21cd444, type: 2}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.data[3]._skillName
-      value: Slam
+      value: Leap
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

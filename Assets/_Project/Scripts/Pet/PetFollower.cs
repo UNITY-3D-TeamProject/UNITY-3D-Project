@@ -12,6 +12,11 @@ namespace Pet
     /// </summary>
     public class PetFollower : MonoBehaviour
     {
+        #region Constants
+        // 이 속도(m/s) 이하면 멈춘 것으로 보고 대상의 정면을 바라본다
+        private const float MOVE_THRESHOLD = 0.1f;
+        #endregion
+
         #region Serialized Fields
         [Header("Follow")]
         [Tooltip("대상 위치까지 따라가는 데 걸리는 대략적인 시간(초)")]
@@ -82,7 +87,7 @@ namespace Pet
             Vector3 horizontalVelocity = Vector3.ProjectOnPlane(_velocity, Vector3.up);
             float moveSpeed = horizontalVelocity.magnitude;
 
-            Rotate(_target.forward, deltaTime);
+            Rotate(moveSpeed > MOVE_THRESHOLD ? horizontalVelocity : _target.forward, deltaTime);
             OnMoveSpeedUpdated?.Invoke(moveSpeed);
         }
         #endregion

@@ -137,7 +137,7 @@ namespace Mediator
             UnbindCallbacks();
             Unsubscribe();
 
-            // 이벤트 경로가 끊기므로 반복음과 이동음 대체를 정리한다
+            // 이벤트 경로가 끊기므로 반복음과 탈것 반복음 설정을 정리한다
             if (_soundMediator) _soundMediator.StopAllSounds();
 
             // 이벤트 경로가 끊기므로 카메라 속도감 효과를 해제한다
@@ -612,6 +612,16 @@ namespace Mediator
         }
 
         /// <summary>
+        /// 이동 애니메이션의 발 디딤을 소리 중재자로 전달한다. 사망 후에는 전달하지 않는다.
+        /// </summary>
+        private void OnFootstepSoundCallback()
+        {
+            if (_isDead) return;
+
+            _soundMediator.NotifyFootstep();
+        }
+
+        /// <summary>
         /// 스킬 단발음을 소리 중재자로 전달한다. 사망 후에는 전달하지 않는다.
         /// </summary>
         private void OnSkillSoundCallback(string skillName, ESoundPhase phase, Vector3? position)
@@ -738,6 +748,8 @@ namespace Mediator
             {
                 _soundMediator.ClearGetMoveState();
                 _soundMediator.StopAllSounds();
+                _soundMediator.PlayDeath();
+                _soundMediator.NotifyDeathSound();
             }
             Debug.Log($"{name} is Death!");
             OnDeath?.Invoke();
@@ -850,6 +862,7 @@ namespace Mediator
             if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillStopped += _enemyAnimationMediator.NotifySkillStopped;
             if (_spawnEffectDriver) _spawnEffectDriver.OnSpawnEffectEnded += OnSpawnEffectEndedCallback;
             if (_moveMediator && _soundMediator) _moveMediator.OnJumpStarted += OnJumpStartedSoundCallback;
+            if (_playerAnimationMediator && _soundMediator) _playerAnimationMediator.OnFootstep += OnFootstepSoundCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnSkillSound += OnSkillSoundCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnSkillSoundLoop += OnSkillSoundLoopCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnVehicleSoundChanged += OnVehicleSoundChangedCallback;
@@ -918,6 +931,7 @@ namespace Mediator
             if (_skillMediator && _enemyAnimationMediator) _skillMediator.OnSkillStopped -= _enemyAnimationMediator.NotifySkillStopped;
             if (_spawnEffectDriver) _spawnEffectDriver.OnSpawnEffectEnded -= OnSpawnEffectEndedCallback;
             if (_moveMediator && _soundMediator) _moveMediator.OnJumpStarted -= OnJumpStartedSoundCallback;
+            if (_playerAnimationMediator && _soundMediator) _playerAnimationMediator.OnFootstep -= OnFootstepSoundCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnSkillSound -= OnSkillSoundCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnSkillSoundLoop -= OnSkillSoundLoopCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnVehicleSoundChanged -= OnVehicleSoundChangedCallback;

@@ -4,6 +4,7 @@ using AI;
 using Attribute.Core;
 using Attribute.Effect;
 using Combat;
+using CharacterSound;
 using Hit;
 using Skill.Core;
 
@@ -40,6 +41,7 @@ namespace Skill.Skills
         private IEffectTarget _cursor;
         private AIController _controller;
         private CharacterCombat _combat;
+        private SoundController _soundController;
         #endregion
 
         #region Unity Lifecycle
@@ -49,7 +51,11 @@ namespace Skill.Skills
             _cursor = GetComponentInParent<IEffectTarget>();
             _controller = GetComponentInParent<AIController>();
             // CharacterCombat 은 스킬의 부모가 아니라 캐릭터 루트 아래 다른 자식에 있다
-            if (_controller) _combat = _controller.GetComponentInChildren<CharacterCombat>();
+            if (_controller)
+            {
+                _combat = _controller.GetComponentInChildren<CharacterCombat>();
+                _soundController = _controller.GetComponentInChildren<SoundController>();
+            }
 
             Debug.Assert(_hitPrefab != null, $"[{name}] 근접 판정 프리팹이 연결되지 않았습니다.");
             Debug.Assert(_hitPoint != null, $"[{name}] 판정 생성 지점이 연결되지 않았습니다.");
@@ -98,6 +104,7 @@ namespace Skill.Skills
 
             MeleeHitController hit = Instantiate(_hitPrefab, _hitPoint.position, _hitPoint.rotation);
             hit.Initialize(_hitEffect, _cursor);
+            if (_soundController) _soundController.PlaySkillSound(SkillName, ESoundPhase.Impact, _hitPoint.position);
         }
         #endregion
 

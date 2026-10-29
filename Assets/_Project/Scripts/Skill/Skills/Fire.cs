@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Core.Effect;
 using Skill.Core;
 
 namespace Skill.Skills
@@ -39,9 +40,20 @@ namespace Skill.Skills
         [Header("References")]
         [Tooltip("총알이 생성될 위치. 비어 있을 때 발동을 막으려면 NotNullCondition 에 연결한다.")]
         [SerializeField] private Transform _firePoint;
+
+        [Header("Vfx")]
+        [Tooltip("발사 지점에서 한 번 재생할 VFX. 비어 있으면 재생하지 않는다")]
+        [SerializeField] private SOEffectData _shotVfx;
+        [Tooltip("차지 중 발사 지점에서 반복 재생할 VFX. 비어 있으면 재생하지 않는다")]
+        [SerializeField] private SOEffectData _chargeVfx;
+        [Tooltip("차지 시작 후 차지 VFX 를 내기까지 기다리는 시간(초). 짧게 눌러 쏠 때 발사 VFX 와 겹치지 않게 한다")]
+        [SerializeField, Min(0.0f)] private float _chargeVfxDelay = 0.2f;
         #endregion
 
         #region Private Fields
+        private SEffectHandle _chargeVfxHandle;
+        private Coroutine _chargeVfxCoroutine;
+        private WaitForSeconds _waitChargeVfxDelay;
         private WaitForSeconds _waitChargeTime;
         private WaitForSeconds _waitRechargeDelay;
         private Coroutine _chargeCoroutine;
@@ -88,6 +100,7 @@ namespace Skill.Skills
             base.Awake();
             _waitChargeTime = new WaitForSeconds(_chargeTime);
             _waitRechargeDelay = new WaitForSeconds(_rechargeDelay);
+            _waitChargeVfxDelay = new WaitForSeconds(_chargeVfxDelay);
 
             if (_firePoint == null)
             {
@@ -137,6 +150,7 @@ namespace Skill.Skills
             Phase = EFirePhase.ChargeStarted;
             _chargeStartTime = Time.time;
             _chargeCoroutine = StartCoroutine(CoCharge());
+            PlayChargeVfx();
 
             base.Execute();
         }
@@ -154,6 +168,7 @@ namespace Skill.Skills
             IsCharged = isCharged;
             float costScale = isCharged ? _chargedCostScale : 1.0f;
             Phase = PayCosts(costScale) ? EFirePhase.Fired : EFirePhase.Canceled;
+            if (Phase == EFirePhase.Fired) PlayShotVfx();
 
             base.Execute();
 
@@ -180,10 +195,12 @@ namespace Skill.Skills
         }
 
         /// <summary>
-        /// 차지 코루틴을 멈춘다.
+        /// 차지 코루틴과 차지 VFX 를 멈춘다.
         /// </summary>
         private void EndCharge()
         {
+            // 자동 발사는 코루틴 참조를 먼저 비우고 들어오므로 VFX 는 참조 확인 전에 멈춘다
+            StopChargeVfx();
             if (_chargeCoroutine == null) return;
 
             StopCoroutine(_chargeCoroutine);
@@ -199,6 +216,48 @@ namespace Skill.Skills
 
             StopCoroutine(_rechargeCoroutine);
             _rechargeCoroutine = null;
+        }
+
+        /// <summary>
+        /// 발사 지점에서 캐릭터 정면을 향해 발사 VFX 를 한 번 재생한다. VFX 나 EffectManager 가 없으면 생략한다.
+        /// </summary>
+        private void PlayShotVfx()
+        {
+            if ((_shotVfx == null) || (_firePoint == null) || (EffectManager.Instance == null)) return;
+
+            EffectManager.Instance.Play(
+                _shotVfx,
+                _firePoint.position,
+                Quaternion.LookRotation(transform.root.forward),
+                _firePoint);
+        }
+
+        /// <summary>
+        /// 대기 시간 뒤 발사 지점을 따라가는 차지 VFX 를 반복 재생하도록 예약한다. 이미 예약·재생 중이면 먼저 멈춘다.
+        /// </summary>
+        private void PlayChargeVfx()
+        {
+            StopChargeVfx();
+            if (_chargeVfx == null) return;
+
+            _chargeVfxCoroutine = StartCoroutine(CoPlayChargeVfx());
+        }
+
+        /// <summary>
+        /// 예약된 차지 VFX 를 취소하고, 재생 중인 차지 VFX 를 멈춘다.
+        /// </summary>
+        private void StopChargeVfx()
+        {
+            if (_chargeVfxCoroutine != null)
+            {
+                StopCoroutine(_chargeVfxCoroutine);
+                _chargeVfxCoroutine = null;
+            }
+
+            if (!_chargeVfxHandle.IsValid) return;
+
+            EffectManager.Instance?.Stop(_chargeVfxHandle);
+            _chargeVfxHandle = default;
         }
         #endregion
 
@@ -222,6 +281,23 @@ namespace Skill.Skills
             // Execute 의 EndRecharge 가 실행 중인 자기 자신을 StopCoroutine 하지 않도록 먼저 비운다
             _rechargeCoroutine = null;
             if (!TryExecute()) _isHeld = false;
+        }
+
+        /// <summary>
+        /// 대기 시간 뒤 차지 VFX 를 반복 재생한다. 그 전에 차지가 끝나면 StopChargeVfx 가 취소한다.
+        /// </summary>
+        private IEnumerator CoPlayChargeVfx()
+        {
+            yield return _waitChargeVfxDelay;
+
+            _chargeVfxCoroutine = null;
+            if ((_firePoint == null) || (EffectManager.Instance == null)) yield break;
+
+            _chargeVfxHandle = EffectManager.Instance.PlayLoop(
+                _chargeVfx,
+                _firePoint.position,
+                _firePoint.rotation,
+                _firePoint);
         }
         #endregion
     }
