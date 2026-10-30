@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using Interaction;
+using Core.Scanning;
 
 namespace Core.Stage
 {
@@ -86,6 +87,9 @@ namespace Core.Stage
             }
 
             ApplyKindMaterials(token.IsNumber ? _numberMaterials : _operatorMaterials);
+
+            // Kind Renderers 에 스캔 실루엣이 들어 있으면 바뀐 머티리얼 색(숫자 초록, 연산자 파랑)을 스캔 페이드에 반영한다
+            if (TryGetComponent(out SilhouetteReaction silhouette)) silhouette.RefreshBaseColors();
         }
         #endregion
 
