@@ -1,28 +1,28 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using Unity.Cinemachine;
+using UnityEngine.Video;
 using Core;
-using UIandCinematic;
+using Core.InputMap;
 
 namespace UI.Credits
 {
     /// <summary>
-    /// 라이브 앱 엔딩의 마지막 부분. 공연 영상이 끝났을 때(LiveEndingScreen의 영상 끝 이벤트) Play를 부른다.
-    /// 마무리 컷씬(TV 앞 대화 → 여운 샷)을 재생하고, 여운 카메라에 다 도착해 잠시 머물면 화면을 어둡게 한 뒤
-    /// 제작진 명단을 아래에서 위로 올린다. 명단이 화면 위로 다 나가면 메인 메뉴로 돌아간다.
-    /// 컷씬의 여운 샷은 크레딧보다 길게 잡아 둔다. 크레딧 동안 컷씬이 계속 재생되어 조작 막기와 인게임 UI 숨김이 유지된다.
+    /// 라이브 앱 엔딩의 마지막 부분. 스크린 연출을 시작하는 발판에서 Play를 부른다.
+    /// 엔딩 영상이 _startAtVideoSeconds에 오면(영상이 먼저 끝나면 그때) 화면을 어둡게 하고 제작진 명단을 아래에서 위로 올린다.
+    /// 영상이 끝나기 전에 시작하므로 노래가 나오는 채로 크레딧이 시작된다. E를 누르고 있으면 명단이 빨리 올라간다.
+    /// 명단이 화면 위로 다 나가면 메인 메뉴로 돌아간다.
+    /// 영상이 끝나면 스크린 연출이 끝나며 조작 막기가 풀리므로, 크레딧을 시작할 때 Cutscene 입력 맵을 직접 요청해 막아 둔다.
     /// </summary>
     public class EndingCredits : MonoBehaviour
     {
         #region Serialized Fields
-        [Header("Cutscene")]
-        [Tooltip("영상이 끝난 뒤 재생할 마무리 컷씬 번호(SOCutsceneTable의 Id)")]
-        [SerializeField] private int _cutsceneId = 34;
-        [Tooltip("마무리 컷씬 마지막 여운 샷의 카메라. 이 카메라로 블렌드가 다 끝나면 크레딧을 시작할 준비를 한다")]
-        [SerializeField] private CinemachineCamera _lingerCamera;
-        [Tooltip("여운 카메라에 도착한 뒤 화면을 어둡게 하기 전까지 머무는 시간(초)")]
-        [SerializeField] private float _lingerHoldSeconds = 2.0f;
+        [Header("Start")]
+        [Tooltip("시작 시각을 잴 엔딩 영상(스크린 VideoPlayer)")]
+        [SerializeField] private VideoPlayer _videoPlayer;
+        [Tooltip("영상이 이 위치(초)에 오면 크레딧을 시작한다. 영상 길이보다 길면 영상이 끝날 때 시작한다")]
+        [SerializeField] private float _startAtVideoSeconds = 63.0f;
 
         [Header("Credits")]
         [Tooltip("검은 배경과 명단을 함께 담은 그룹. 시작할 때 투명하게 둔다")]
@@ -33,12 +33,15 @@ namespace UI.Credits
         [SerializeField] private float _fadeSeconds = 2.0f;
         [Tooltip("명단이 올라가는 속도(px/초, 캔버스 기준)")]
         [SerializeField] private float _scrollSpeed = 80.0f;
+        [Tooltip("E를 누르고 있는 동안 명단 속도에 곱하는 배수. 바꾸면 화면의 안내 문구도 같이 고친다")]
+        [SerializeField] private float _fastForwardMultiplier = 2.0f;
         [Tooltip("명단이 다 올라간 뒤 메인 메뉴로 돌아가기 전까지 기다리는 시간(초)")]
         [SerializeField] private float _endHoldSeconds = 2.0f;
         #endregion
 
         #region Private Fields
         private bool _hasStarted;
+        private bool _isVideoFinished;
         #endregion
 
         #region Unity Lifecycle
@@ -49,11 +52,20 @@ namespace UI.Credits
 
             _creditsGroup.alpha = 0.0f;
             _creditsGroup.blocksRaycasts = false;
+
+            if (_videoPlayer != null)
+                _videoPlayer.loopPointReached += HandleVideoFinished;
+        }
+
+        private void OnDestroy()
+        {
+            if (_videoPlayer != null)
+                _videoPlayer.loopPointReached -= HandleVideoFinished;
         }
         #endregion
 
         #region Public Methods
-        // 마무리 컷씬부터 메인 메뉴 복귀까지 진행한다. 한 번만 동작한다.
+        // 시작 위치를 기다렸다가 크레딧부터 메인 메뉴 복귀까지 진행한다. 한 번만 동작한다.
         public void Play()
         {
             if (_hasStarted) return;
@@ -64,6 +76,19 @@ namespace UI.Credits
         #endregion
 
         #region Private Methods
+        private void HandleVideoFinished(VideoPlayer videoPlayer)
+        {
+            _isVideoFinished = true;
+        }
+
+        // 영상이 시작 위치에 왔거나 이미 끝났으면 true. 영상을 연결하지 않았으면 바로 true.
+        private bool IsStartTime()
+        {
+            if ((_videoPlayer == null) || _isVideoFinished) return true;
+
+            return _videoPlayer.isPlaying && (_videoPlayer.time >= _startAtVideoSeconds);
+        }
+
         // 설정창이 열려 있으면(Pause) true. 그동안은 연출 시간도 세지 않는다.
         private bool IsGamePaused()
         {
@@ -71,44 +96,23 @@ namespace UI.Credits
             return (gameManager != null) && (gameManager.CurrentState != GameManager.GameState.Playing);
         }
 
-        // 여운 카메라로 넘어가 블렌드까지 끝났으면 true.
-        private bool IsLingerCameraLive()
+        // E를 누르고 있으면 true. 로딩 영상 스킵처럼 키보드를 직접 읽는다.
+        private bool IsFastForwardHeld()
         {
-            CinemachineBrain brain = (CinemachineBrain.ActiveBrainCount > 0) ? CinemachineBrain.GetActiveBrain(0) : null;
-            if (brain == null) return false;
-
-            return ((Object)brain.ActiveVirtualCamera == _lingerCamera) && !brain.IsBlending;
+            Keyboard keyboard = Keyboard.current;
+            return (keyboard != null) && keyboard.eKey.isPressed;
         }
         #endregion
 
         #region Coroutines
         private IEnumerator CoPlayEnding()
         {
-            CinematicManager cinematicManager = CinematicManager.Instance;
-            if (cinematicManager != null)
-            {
-                // 설정창이 열려 있어 시작하지 못했으면 닫힐 때까지 다시 시도한다. 다른 이유로 못 하면 크레딧으로 넘어간다.
-                while (true)
-                {
-                    cinematicManager.PlayCutscene(_cutsceneId);
-                    if (cinematicManager.IsPlaying || !IsGamePaused()) break;
+            while (!IsStartTime())
+                yield return null;
 
-                    yield return null;
-                }
+            // 영상이 끝나 스크린 연출의 조작 막기가 풀려도 크레딧 동안은 막아 둔다. 메인 메뉴로 가며 씬과 함께 정리된다.
+            InputMapController.Instance?.RequestMap(this, EInputMapType.Cutscene);
 
-                // 컷씬이 여운 샷 전에 끝나면(카메라 누락 등) 기다리지 않고 크레딧으로 넘어간다.
-                while (!IsLingerCameraLive())
-                {
-                    if (!cinematicManager.IsPlaying) break;
-                    yield return null;
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"[{name}] 씬에 CinematicManager가 없어 {_cutsceneId}번 컷씬 없이 크레딧을 시작합니다.", this);
-            }
-
-            yield return CoWait(_lingerHoldSeconds);
             yield return CoFadeIn();
             yield return CoScrollRoll();
             yield return CoWait(_endHoldSeconds);
@@ -150,7 +154,8 @@ namespace UI.Credits
                 yield return null;
                 if (IsGamePaused()) continue;
 
-                position.y = Mathf.Min(endY, position.y + (_scrollSpeed * Time.unscaledDeltaTime));
+                float speed = IsFastForwardHeld() ? _scrollSpeed * _fastForwardMultiplier : _scrollSpeed;
+                position.y = Mathf.Min(endY, position.y + (speed * Time.unscaledDeltaTime));
                 _creditsRoll.anchoredPosition = position;
             }
         }
