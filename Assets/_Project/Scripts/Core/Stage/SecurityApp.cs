@@ -61,11 +61,12 @@ namespace Core.Stage
         #endregion
 
         #region Unity Lifecycle
-        // 라운드 변경 감지는 부모가 하고, 보스 라운드 동안 다 내려간 발판을 숨긴다.
+        // 라운드 변경 감지는 부모가 하고, 2라운드·보스 라운드 동안 다 내려간 발판을 숨긴다.
         protected override void Update()
         {
             base.Update();
 
+            if (CurrentRoundIndex == SPECIAL_MOB_ROUND_INDEX) _specialMobRound.HideLoweredPlatforms();
             if (CurrentRoundIndex == BOSS_ROUND_INDEX) _bossRound.HideLoweredPlatforms();
         }
 
@@ -108,7 +109,7 @@ namespace Core.Stage
             if (_bossEncounter != null) _bossEncounter.OnStageChanged += HandleBossStageChanged;
 
             _mobRoomRound.Begin();
-            _specialMobRound.Begin();
+            _specialMobRound.Begin(_stageManager);
             _bossRound.Begin();
         }
 
@@ -129,7 +130,7 @@ namespace Core.Stage
         #endregion
 
         #region Protected Methods
-        // 2라운드 동안만 발판 위로 위험물을 떨어뜨린다.
+        // 2라운드 동안만 발판 위로 위험물을 떨어뜨린다. 다른 라운드에서는 2라운드 발판으로 바꿨던 낙하 복귀 자리를 체크포인트로 돌린다.
         // 보스 라운드로 바뀌면(3라운드 체크포인트 도착) 2라운드 발판을 내리고 앞 구간을 숨긴다.
         protected override void OnRoundChanged()
         {
@@ -138,8 +139,15 @@ namespace Core.Stage
             else if (CurrentRoundIndex == BOSS_ROUND_INDEX)
                 AudioManager.Instance?.ChangeBgm(_bossEarlyBgm);
 
-            if (CurrentRoundIndex == SPECIAL_MOB_ROUND_INDEX) _specialMobRound.StartHazards();
-            else _specialMobRound.StopHazards();
+            if (CurrentRoundIndex == SPECIAL_MOB_ROUND_INDEX)
+            {
+                _specialMobRound.StartHazards();
+            }
+            else
+            {
+                _specialMobRound.StopHazards();
+                _specialMobRound.ClearFallReturnPoint();
+            }
 
             if (CurrentRoundIndex != BOSS_ROUND_INDEX) return;
 
@@ -149,7 +157,7 @@ namespace Core.Stage
         #endregion
 
         #region Private Methods
-        // 라운드 중 죽으면 그 라운드의 못 깬 구역만 처음 상태로 돌린다. 보스 라운드는 리스폰 자리 발판만 올린다.
+        // 라운드 중 죽으면 1라운드는 못 깬 방만, 2라운드는 발판 전체를 처음 상태로 돌린다. 보스 라운드는 리스폰 자리 발판만 올린다.
         // [이벤트] StageManager.OnPlayerRespawnRequested (StartStage 에서 구독)
         private void HandlePlayerRespawnRequested()
         {
@@ -160,7 +168,7 @@ namespace Core.Stage
                     break;
 
                 case SPECIAL_MOB_ROUND_INDEX:
-                    _specialMobRound.ResetUnclearedSteps();
+                    _specialMobRound.ResetSteps();
                     break;
 
                 case BOSS_ROUND_INDEX:

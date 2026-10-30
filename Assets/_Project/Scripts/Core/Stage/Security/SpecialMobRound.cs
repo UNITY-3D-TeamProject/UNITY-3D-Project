@@ -6,11 +6,12 @@ namespace Core.Stage.Security
 {
     /// <summary>
     /// 2라운드 특수몹 발판. 발판은 순서대로 하나씩 진행한다.
-    /// - 지금 발판(아직 못 깬 첫 발판)의 특수몹은 미리 만들어 제자리에 묶어 두고, 플레이어가 발판 구역에 들어오면 움직인다.
-    /// - 특수몹을 다 잡으면 꺼 두었던 다음 발판이 나타나고, 그 발판의 특수몹을 만들어 둔다.
+    /// - 특수몹은 미리 만들지 않고, 플레이어가 발판 구역에 들어오면 그때 만든다. (건너가기 전에 원거리로 미리 잡지 못하게)
+    /// - 발판 싸움이 시작되면 바로 뒤 발판을 가라앉혀(다 내려가면 끈다) 되돌아가지 못하게 하고, 떨어지면 이 발판으로 돌아오게 한다.
+    /// - 특수몹을 다 잡으면 꺼 두었던 다음 발판이 나타난다.
     /// - 이 라운드 동안 켜져 있는 발판 위로 위험물이 떨어진다. (FallingHazardSpawner)
-    /// SecurityApp 이 필드로 들고, 스테이지 시작 때 Begin, 끝날 때 End, 이 라운드 중 죽으면 ResetUnclearedSteps 를 부른다.
-    /// 이 라운드가 되면 StartHazards, 다른 라운드가 되면 StopHazards 를 부른다.
+    /// SecurityApp 이 필드로 들고, 스테이지 시작 때 Begin, 끝날 때 End, 이 라운드 중 죽으면 ResetSteps 를 부른다.
+    /// 이 라운드가 되면 StartHazards, 다른 라운드가 되면 StopHazards 를, 이 라운드 동안 매 프레임 HideLoweredPlatforms 를 부른다.
     /// </summary>
     [Serializable]
     public class SpecialMobRound
@@ -19,6 +20,12 @@ namespace Core.Stage.Security
         [Serializable]
         private struct SPlatformStep
         {
+            [Tooltip("이 구역이 놓인 발판. 다음 발판 싸움이 시작되면 가라앉는다.")]
+            public StateMover Platform;
+
+            [Tooltip("이 발판 싸움 중 떨어지면 돌아올 자리 (앞 방향 = 바라볼 방향)")]
+            public Transform FallReturnPoint;
+
             [Tooltip("발판 위 특수몹 구역")]
             public CombatZone Zone;
 
@@ -28,11 +35,15 @@ namespace Core.Stage.Security
         #endregion
 
         #region Serialized Fields
-        [Tooltip("진행 순서대로 발판마다 특수몹 구역·다음 발판")]
+        [Tooltip("진행 순서대로 발판마다 발판·낙하 복귀 자리·특수몹 구역·다음 발판")]
         [SerializeField] private SPlatformStep[] _steps;
 
         [Tooltip("이 라운드 동안 켜져 있는 발판 위로 위험물을 떨어뜨리는 생성기 (04_Platforms/FallingHazardSpawner)")]
         [SerializeField] private FallingHazardSpawner _hazardSpawner;
+        #endregion
+
+        #region Private Fields
+        private StageManager _stageManager;
         #endregion
 
         #region Properties
@@ -69,9 +80,10 @@ namespace Core.Stage.Security
         #endregion
 
         #region Public Methods
-        /// <summary>스테이지가 시작될 때 한 번 호출된다. 다음 발판을 꺼 두고, 구독하고, 첫 발판 특수몹을 만들어 둔다.</summary>
-        public void Begin()
+        /// <summary>스테이지가 시작될 때 한 번 호출된다. 다음 발판을 꺼 두고 구독한다. 낙하 복귀 자리는 stageManager 에 알린다.</summary>
+        public void Begin(StageManager stageManager)
         {
+            _stageManager = stageManager;
             if (_steps == null) return;
 
             foreach (SPlatformStep step in _steps)
@@ -79,11 +91,10 @@ namespace Core.Stage.Security
                 if (step.NextPlatform != null) step.NextPlatform.SetActive(false);
                 if (step.Zone == null) continue;
 
+                step.Zone.OnStarted += HandleZoneStarted;
                 step.Zone.OnCleared += HandleZoneCleared;
                 step.Zone.OnProgressChanged += HandleZoneProgressChanged;
             }
-
-            PrepareCurrentStep();
         }
 
         /// <summary>스테이지가 없어질 때 한 번 호출된다. 구독을 푼다.</summary>
@@ -95,6 +106,7 @@ namespace Core.Stage.Security
             {
                 if (step.Zone == null) continue;
 
+                step.Zone.OnStarted -= HandleZoneStarted;
                 step.Zone.OnCleared -= HandleZoneCleared;
                 step.Zone.OnProgressChanged -= HandleZoneProgressChanged;
             }
@@ -112,19 +124,44 @@ namespace Core.Stage.Security
             if (_hazardSpawner != null) _hazardSpawner.StopSpawning();
         }
 
-        /// <summary>아직 못 깬 발판만 처음 상태로 돌리고 지금 발판 특수몹을 다시 만들어 둔다. 이미 나타난 발판은 그대로 둔다.
-        /// 떨어지는 중인 위험물은 지우고(리스폰 직후 맞지 않게) 생성은 계속한다.</summary>
-        public void ResetUnclearedSteps()
+        /// <summary>다른 라운드가 되면 호출된다. 낙하 복귀 자리를 원래대로(체크포인트) 돌린다.</summary>
+        public void ClearFallReturnPoint()
+        {
+            if (_stageManager != null) _stageManager.SetFallReturnPoint(null);
+        }
+
+        /// <summary>
+        /// 이 라운드 중 죽으면 호출된다. 깬 발판까지 모두 처음 상태로 돌린다: 첫 발판만 제자리에 켜 두고 나머지 발판은 끈다.
+        /// 특수몹은 다시 발판을 밟으면 만든다. 떨어지는 중인 위험물은 지우고(리스폰 직후 맞지 않게) 생성은 계속한다.
+        /// </summary>
+        public void ResetSteps()
         {
             if (_hazardSpawner != null) _hazardSpawner.ClearHazards();
+            ClearFallReturnPoint();
+            if (_steps == null) return;
+
+            for (int i = 0; i < _steps.Length; i++)
+            {
+                SPlatformStep step = _steps[i];
+                if (step.Zone != null) step.Zone.ResetAll();
+                if (step.NextPlatform != null) step.NextPlatform.SetActive(false);
+                if (step.Platform == null) continue;
+
+                // 한 번도 켜진 적 없는 발판은 원위치를 아직 모르므로, 가라앉힌 발판만 되돌린다
+                if (step.Platform.IsActivated) step.Platform.ResetImmediately();
+                step.Platform.gameObject.SetActive(i == 0);
+            }
+        }
+
+        /// <summary>이 라운드 동안 매 프레임 호출된다. 다 내려간 발판을 꺼서 숨긴다.</summary>
+        public void HideLoweredPlatforms()
+        {
             if (_steps == null) return;
 
             foreach (SPlatformStep step in _steps)
             {
-                if (step.Zone != null) step.Zone.ResetIfNotCleared();
+                HideIfLowered(step.Platform);
             }
-
-            PrepareCurrentStep();
         }
         #endregion
 
@@ -142,26 +179,40 @@ namespace Core.Stage.Security
             return -1;
         }
 
-        private void PrepareCurrentStep()
+        // 발판에 들어와 싸움이 시작되면 바로 뒤 발판을 가라앉히고, 떨어지면 이 발판으로 돌아오게 한다.
+        private void HandleZoneStarted(CombatZone zone)
         {
-            int index = FindCurrentStepIndex();
-            if (index >= 0) _steps[index].Zone.Prepare();
+            for (int i = 0; i < _steps.Length; i++)
+            {
+                if (_steps[i].Zone != zone) continue;
+
+                if ((i > 0) && (_steps[i - 1].Platform != null)) _steps[i - 1].Platform.Activate();
+                if ((_stageManager != null) && (_steps[i].FallReturnPoint != null)) _stageManager.SetFallReturnPoint(_steps[i].FallReturnPoint);
+                return;
+            }
         }
 
-        // 깬 발판의 다음 발판을 켜고, 그 발판의 특수몹을 만들어 둔다. (발판이 먼저 켜져야 그 위에 만들 수 있다)
+        // 깬 발판의 다음 발판을 켠다. 특수몹은 그 발판을 밟으면 만든다.
         private void HandleZoneCleared(CombatZone zone)
         {
             foreach (SPlatformStep step in _steps)
             {
                 if ((step.Zone == zone) && (step.NextPlatform != null)) step.NextPlatform.SetActive(true);
             }
-
-            PrepareCurrentStep();
         }
 
         private void HandleZoneProgressChanged()
         {
             OnProgressChanged?.Invoke();
+        }
+
+        // 내려가는 쪽으로 움직여 도착해 멈춘 발판만 끈다. 내려가는 중이거나 이미 꺼져 있으면 그대로다. (BossRound 와 같은 방식)
+        private static void HideIfLowered(StateMover platform)
+        {
+            if ((platform == null) || !platform.gameObject.activeSelf) return;
+            if (!platform.IsActivated || platform.IsMoving) return;
+
+            platform.gameObject.SetActive(false);
         }
         #endregion
     }
