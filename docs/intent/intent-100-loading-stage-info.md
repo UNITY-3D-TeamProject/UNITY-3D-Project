@@ -62,6 +62,11 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 사용자 요청 배치 조정: 아래 묶음(`LoadingText`·`ConnectText` y 210, `ProgressBar`·`PercentText` y 150, `TipGroup` y 86)을 50 올림, 스테이지 화면 러너 (-720, -59), `AppRow` 가운데 (0, 70), `StepList` 오른쪽 위(앵커 (1,1), (-200, -170)). Play 캡처 확인.
 - 사용자 요청: `_fillDuration` 3 → 5초(최소 로딩 약 5.8초, 모든 로딩 공통), `AppRow` x 0 → 60 → 140.
 - 사용자 요청: 튜토리얼·로비로 갈 때 "Loading..." 대신 "튜토리얼로 가는 중..." / "로비로 가는 중...". `SOLoadingStageData._moveTexts`(`SLoadingMoveText { Scene, Text }`) + `TryGetMoveText`, `LoadingStageView._defaultLoadingText`를 `TMP_Text`로 바꿔 스테이지가 아니면 문구 교체. `LoadingText` 폰트 LiberationSans → Pretendard-Bold 44(한글). Play 확인.
+- 사용자 요청: 로비로 갈 때도 스테이지처럼 "현재 스테이지 아이콘 → 로비 아이콘" 경로와 준비 단계(데이터 분석 중 / 현재 씬 종료 중 / 로비 허브 연결 중 / 접속 완료...). 
+  - SO: `_lobbyIcon`(Texture2D)·`_lobbyStepLabels` 추가. 로비 아이콘은 사용자 제공 이미지의 어두운 배경을 빼고(밝기 → 투명도) 512 정사각으로 맞춘 `Art/Loading/UI/T_LoadingLobbyIcon.png`.
+  - `LoadingStageView.TryShow(from, to)`: 스테이지면 기존 화면, 로비면 `AppRow` 끄고 `LobbyRoute`(FromSlot: 출발 스테이지 아이콘 255 + 강조 테두리 + "현재 스테이지" / 화살표 3개 / 로비 아이콘 255) 켜고 준비 단계 문구를 로비용으로 교체, 팁 숨김. 출발 씬에 아이콘이 없으면(튜토리얼) FromSlot 숨김. `LoadingScreen`은 `from`도 넘김.
+  - Play 확인: 피드 → 로비 화면 캡처, 튜토리얼 → 로비 FromSlot 숨김, 메인 메뉴 → 튜토리얼은 기본 화면.
+  - 사용자 요청: 강조 테두리(`CurrentFrame`)를 FromSlot에서 로비 아이콘으로 옮김(`LobbyRoute` 바로 아래, (210, 0), 240). "현재 스테이지" 글자는 출발 아이콘 아래 그대로.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:
