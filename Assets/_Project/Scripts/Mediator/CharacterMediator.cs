@@ -370,6 +370,8 @@ namespace Mediator
             else if (_attributeSet)
             {
                 _attributeSet.AddOnAttributeChangedCallback(OnAttributeChangeCallback);
+                // AttributeMediator 가 없으면 약점 배율을 걸어 줄 곳이 없으므로 직접 건다
+                if (_combatMediator) _attributeSet.SetPreAttributeChangedCallback(ApplyWeakPointDamage);
                 foreach (var mediator in _mediators)
                 {
                     mediator.SetGetAttribute(_attributeSet.GetValue);
@@ -410,7 +412,11 @@ namespace Mediator
         private void UnbindCallbacks()
         {
             if (_attributeMediator) _attributeMediator.OnAttributeChanged -= OnAttributeChangeCallback;
-            else if (_attributeSet) _attributeSet.RemoveOnAttributeChangedCallback(OnAttributeChangeCallback);
+            else if (_attributeSet)
+            {
+                _attributeSet.RemoveOnAttributeChangedCallback(OnAttributeChangeCallback);
+                if (_combatMediator) _attributeSet.ClearPreAttributeChangedCallback();
+            }
             foreach (var mediator in _mediators)
             {
                 mediator.ClearGetAttribute();
@@ -693,6 +699,16 @@ namespace Mediator
 
             bool isBackward = Vector3.Dot(direction, _moveMediator.GetViewDirection()) < 0.0f;
             return isBackward ? -direction : direction;
+        }
+
+        /// <summary>
+        /// 체력이 깎이기 전에 약점 명중이면 감소량을 키운다. AttributeMediator 없이 AttributeSet 을 직접 쓰는 캐릭터용.
+        /// </summary>
+        private void ApplyWeakPointDamage(string attributeName, ref float newValue, float oldValue, SEffectContext context)
+        {
+            if (newValue >= oldValue) return;
+
+            newValue = oldValue - _combatMediator.ModifyDamage(attributeName, oldValue - newValue, context);
         }
 
         private void OnCriticalHitCallback(Vector3? hitPoint)

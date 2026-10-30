@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Mediator;
 using Mediator.SubMediators;
 using Skill.Core;
+using Core.Effect;
 using AI.Boss.Arena;
 using AI.Boss.Logic;
 
@@ -33,6 +35,10 @@ namespace AI.Boss.BossA
         [SerializeField] private BossHitRelay[] _relays;
         [SerializeField] private BossShoulderCannon _leftCannon;
         [SerializeField] private BossShoulderCannon _rightCannon;
+        [Tooltip("그로기(손만 피격 가능) 동안 피격 가능한 손 위에 반복 재생하는 표시 이펙트. 비워 두면 표시하지 않는다")]
+        [SerializeField] private SOEffectData _handHintVfx;
+        [Tooltip("피해를 받을 수 없는 동안(최종 단계 전) 몸을 감싸는 에너지 실드. 비워 두면 표시하지 않는다")]
+        [SerializeField] private GameObject _energyShield;
 
         [Header("Settings")]
         [Tooltip("최종 단계 손 패턴 예고 시간 배율")]
@@ -62,6 +68,7 @@ namespace AI.Boss.BossA
         private bool _isCannonActive;
         private float _cannonRemaining;
         private bool _isNextCannonLeft = true;
+        private readonly List<SEffectHandle> _handHintHandles = new List<SEffectHandle>();
         #endregion
 
         #region Properties
@@ -114,6 +121,7 @@ namespace AI.Boss.BossA
             if (_mediator) _mediator.OnDeath -= OnDeath;
             CancelPattern();
             CancelCannons();
+            StopHandHints();
         }
 
         private void Update()
@@ -202,6 +210,12 @@ namespace AI.Boss.BossA
                 relay.SetAllowed(IsAllowed(mode, relay.Part));
                 relay.SetHpFloor(hpFloor);
             }
+
+            StopHandHints();
+            if (mode == EBossDamageMode.HandsOnly) PlayHandHints();
+
+            // 몸·머리는 최종 단계(All) 전까지 피해를 받지 못하므로 실드로 알린다. 그로기에는 손만 실드 밖으로 맞는다
+            if (_energyShield) _energyShield.SetActive(mode != EBossDamageMode.All);
         }
 
         /// <summary>
@@ -330,6 +344,31 @@ namespace AI.Boss.BossA
             Vector3 point = body.position;
             point.y = Arena.GetTileCenter(0).y;
             cannon.Fire(point, null);
+        }
+
+        // 피격이 허용된 손 부위마다 표시 이펙트를 건다. 그로기 동안 손을 때려야 한다는 안내다.
+        private void PlayHandHints()
+        {
+            if (!_handHintVfx || !_handHintVfx.Prefab || !EffectManager.Instance || (_relays == null)) return;
+
+            foreach (BossHitRelay relay in _relays)
+            {
+                if (!relay || (relay.Part != EBossHitPart.Hand)) continue;
+
+                Transform hand = relay.transform;
+                _handHintHandles.Add(EffectManager.Instance.PlayLoop(
+                    _handHintVfx, hand.position, hand.rotation * _handHintVfx.Prefab.transform.localRotation, hand));
+            }
+        }
+
+        private void StopHandHints()
+        {
+            foreach (SEffectHandle handle in _handHintHandles)
+            {
+                EffectManager.Instance?.Stop(handle);
+            }
+
+            _handHintHandles.Clear();
         }
 
         private static bool IsAllowed(EBossDamageMode mode, EBossHitPart part)

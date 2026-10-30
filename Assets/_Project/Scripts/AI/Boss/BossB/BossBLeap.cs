@@ -59,6 +59,8 @@ namespace AI.Boss.BossB
         [SerializeField, Min(0.0f)] private float _landingRadius = 4.0f;
         [Tooltip("충격파 반경(칸 수). 이 안의 대상이 착지점에서 바깥으로 밀린다")]
         [SerializeField, Min(0.0f)] private float _shockwaveTiles = 1.0f;
+        [Tooltip("착지점에서 충격파가 퍼질 때 재생할 이펙트. 비우면 생략")]
+        [SerializeField] private SOEffectData _shockwaveVfx;
         [Tooltip("충격파에 맞은 대상을 착지점에서 바깥으로 밀어내는 거리(m)")]
         [SerializeField, Min(0.0f)] private float _knockbackDistance = 8.0f;
         [Tooltip("밀려나는 데 걸리는 시간(초)")]
@@ -318,6 +320,9 @@ namespace AI.Boss.BossB
         /// </summary>
         private void ApplyShockwave(Vector3 landing)
         {
+            if (_shockwaveVfx && _shockwaveVfx.Prefab)
+                EffectManager.Instance?.Play(_shockwaveVfx, landing, _shockwaveVfx.Prefab.transform.localRotation);
+
             float radius = Arena.TileSize * _shockwaveTiles;
             if (GetFlatDistanceToTarget(landing) > radius) return;
 

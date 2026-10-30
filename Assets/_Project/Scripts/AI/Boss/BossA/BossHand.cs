@@ -77,6 +77,8 @@ namespace AI.Boss.BossA
         [Header("Grab")]
         [Tooltip("손 본 밑에 둔 집게 턱 사이 지점. 그랩에 잡힌 플레이어의 발을 여기에 맞춘다. 비워 두면 이 오브젝트 위치")]
         [SerializeField] private Transform _grabPoint;
+        [Tooltip("임시값. 그랩 자세에서 손 본 원점이 이 오브젝트보다 위에 놓이는 높이(m). 0 이면 집게 턱이 이 오브젝트 높이로 날아간다")]
+        [SerializeField, Min(0.0f)] private float _grabLift = 0.0f;
         [Tooltip("임시값. 잡았을 때 집게를 오므리는 정도. 주먹의 _fingerCurls 각도에 곱한다")]
         [SerializeField, Range(0.0f, 1.0f)] private float _gripCurl = 1.0f;
         #endregion
@@ -229,6 +231,7 @@ namespace AI.Boss.BossA
             float lift = Mathf.Lerp(_boneLift, _fingersDownLift, tilt) - (_sinkDepth * _fingerSink);
             lift = Mathf.Lerp(lift, _fistLift, fist);
             lift = Mathf.Lerp(lift, _clapLift, clap);
+            lift = Mathf.Lerp(lift, _grabLift, Mathf.SmoothStep(0.0f, 1.0f, _grabWeight));
             _bone.position = transform.position + (Vector3.up * lift);
 
             // 애니메이션이 쓴 회전에서 손가락 방향이 아래를 향하는 쪽으로 기울인다
