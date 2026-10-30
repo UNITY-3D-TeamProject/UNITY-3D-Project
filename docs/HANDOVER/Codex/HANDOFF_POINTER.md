@@ -1,6 +1,7 @@
 # Codex — Handover Pointer
 
 ## 변경 이력 (최신순)
+- **2026-10-30** — 인게임 설정창 종료 버튼 하단 고정 및 슬라이더 클릭 영역 확대: [작업 기록](./2026-10-30/settings-footer-slider-hit-area.md)
 - **2026-10-30** — ThirdParty SVN 작업 사본과 프로젝트 폴더 차이 확인: [작업 기록](./2026-10-30/thirdparty-svn-comparison.md)
 - **2026-10-30** — 로딩 영상에 E/Space 1.5초 유지 원형 스킵 UI 추가: [작업 기록](./2026-10-30/loading-video-hold-skip.md)
 - **2026-10-30** — 컷신 E 대사 넘김에 UI 클릭 효과음 연결: [작업 기록](./2026-10-30/cutscene-next-line-sound.md)
