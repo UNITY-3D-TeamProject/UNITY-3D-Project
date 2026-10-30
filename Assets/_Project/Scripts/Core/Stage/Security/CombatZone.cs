@@ -146,6 +146,19 @@ namespace Core.Stage.Security
             TotalCount = 0;
             OnProgressChanged?.Invoke();
         }
+
+        /// <summary>
+        /// 깬 구역까지 포함해 남은 적을 없애고 만들기 전 상태로 돌린다. 라운드를 처음부터 다시 할 때 쓴다. (SpecialMobRound 사망 리셋)
+        /// </summary>
+        public void ResetAll()
+        {
+            DespawnEnemies();
+            _isPrepared = false;
+            IsStarted = false;
+            IsCleared = false;
+            TotalCount = 0;
+            OnProgressChanged?.Invoke();
+        }
         #endregion
 
         #region Private Methods
