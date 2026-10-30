@@ -165,6 +165,12 @@ resolved: null
 - 대화가 끝나면 조작이 돌아오고, 라이브 포탈에서 E → 30번 입장 전 대화 → 라이브로 이동하는 기존 흐름은 그대로다.
 - 검증: 에셋 다시 불러와 12줄·카메라 키 확인. 로비 실제 재생은 미확인.
 
+## 크레딧 영어·오른쪽 배치 (2026-10-31, 사용자 요청)
+- 명단을 영어로: 제목 `FRAGMENT IN DEVICE` + `CREDITS`, PLAYER Lee Sehun / AI & ENEMY Lee Jungbin / MAP Yang Junbeom / SYSTEM Kim Sungjun, 끝 문구 `THANK YOU FOR PLAYING`.
+- `CreditsGroup/CreditsRoll` 앵커 x 0.5 → 0.75(오른쪽 절반 가운데), 폭 1200 → 800. 스크롤 방식·코드는 그대로다.
+- 왼쪽 절반은 비워 둠(사용자가 나중에 회상 사진을 넣을 자리).
+- 검증: 제목 폭 744px로 줄바꿈 없음, 임시 렌더로 오른쪽 배치 확인(씬 저장 없이 닫음). Play 미확인.
+
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:
 - 관련 커밋/PR:
