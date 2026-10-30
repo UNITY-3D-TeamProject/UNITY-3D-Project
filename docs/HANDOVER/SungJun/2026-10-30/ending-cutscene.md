@@ -34,3 +34,23 @@
 - 카메라 `CinematicCam_LiveScreenZoom` 추가, `SOCameraShot_Live_ScreenBack` 4초 → 1초.
 - Play 확인: TV → 줌·전체화면 → 63초 복귀 → 34번 첫 대사까지. 대화 → 크레딧 구간은 에디터 플레이 루프 정지(포커스)로 재확인 못 함(코드 변경 없음).
 - 주의: SVN 업데이트로 Pretendard SDF 폰트 3개가 충돌 상태다(TortoiseSVN Revert로 해결 필요). 충돌 표시가 남은 동안 폰트가 깨질 수 있다.
+
+## 추가 작업 2: 입장 거리 단축·대화 정리·뒷모습 컷 (같은 날, 사용자 요청)
+- 스폰·체크포인트를 z=-15.3(`Pool_03`)으로 옮겨 TV 앞까지 약 6초(이동 속도 6m/s). 31번 트리거도 입장 지점으로 옮겨 입장 직후 재생.
+- 32번 "시작한다" 트리거 삭제.
+- 33번 연출 두 번째 샷과 `LiveEndingScreen._screenCamera`를 뒷모습 카메라(`Live_ScreenBack`)로 바꿔, TV를 보는 플레이어 컷에서 영상이 시작되게 함. 들어가는 시각 5초.
+- Play 미확인: 에디터 플레이 루프가 1프레임에서 멈추는 현상 때문에 직접 플레이로 확인 필요.
+
+## 추가 작업 3: 영상 중 독백·크레딧 2배속 (같은 날, 사용자 요청)
+- 나오는 시각 50초(사용자 설정). TV 밖 뒷모습 컷에 도착하면 `ScreenVideoZoom`이 독백 `SOMonologue_Live_AfterShow`(6줄 × 2.3초)를 `MonologuePresenter`로 직접 띄워 68초 전에 끝남.
+- 34번 컷씬은 여운 샷만 남김(대사는 독백으로 이동). `SOCameraShot_Live_ScreenBack` 삭제.
+- 크레딧 명단 스크롤 중 E를 누르고 있으면 2배속(`EndingCredits._fastForwardMultiplier`).
+- 검증은 사용자가 직접. 2배속 코드는 컴파일 미확인(에디터 Play 중), 커밋 안 함.
+
+## 추가 작업 4: 노래가 끝나기 전 크레딧 시작·2배속 안내 (같은 날, 사용자 요청)
+- `EndingCredits`가 영상 재생 위치 `Start At Video Seconds`(63초)에 크레딧을 시작(33번 발판에서 Play, 영상 끝 이벤트 연결 제거). 크레딧 시작 때 Cutscene 입력 맵을 직접 요청해 영상 끝 뒤에도 조작을 막음.
+- TV 밖으로 나오는 시각 45초(독백 약 48.6~62.4초).
+- 크레딧 오른쪽 아래 `E 누르고 있기 : 2배속` 안내.
+- 34번 컷씬·여운 샷 SO·여운 카메라 삭제(영상 중에는 재생 불가해 안 씀).
+- 컴파일 0에러, Play 검증은 사용자. 커밋 안 함. Play로 바뀐 Bold 폰트·RenderTexture·ShaderGraphSettings는 이번 작업과 무관하니 커밋에서 뺄 것.
+- 크레딧 명단을 사용자가 준 4개 파트로 교체: 플레이어 이세훈 / AI, 적 이정빈 / 맵 양준범 / 시스템 김성준.
