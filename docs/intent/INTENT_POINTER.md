@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[UI / Settings / Core / Stage]** ESC 설정창에서 현재 스테이지 씬을 처음부터 다시 시작하는 `다시하기` 버튼 추가 → [문서](./intent-092-settings-stage-retry.md)
 - **[SceneTransition / Video]** 로딩 컷씬 영상 3개 연결 및 E 1.5초 유지 원형 스킵 UI 추가. Unity 컴파일·씬 참조 확인 완료, 실제 영상 조작 확인 남음 → [문서](./intent-090-loading-transition-videos.md)
 - **[Stage / SecurityApp / Items]** 스테이지2 특수몹이 25% 확률로 무작위 아이템을 떨어뜨림. `CombatZone._clearDropItem` 으로 발판마다 아이템을 지정해 HP → 에너지 번갈아 항상 드롭(발판 번호 기준), `Special.prefab` 무작위 드롭 제거 → [문서](./intent-085-special-mob-ordered-drop.md)
 - **[Audio / Core]** SO별 거리 감쇠 선택 및 Linear 기본 설정. Unity 컴파일과 테스트 톤 거리별 출력 측정 완료, 실제 음원 청취·밸런스 확인 남음 → [문서](./intent-082-audio-distance-rolloff.md)

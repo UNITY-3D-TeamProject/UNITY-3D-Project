@@ -18,6 +18,7 @@ namespace UI.Settings
         // 인게임 설정창의 메인 화면·게임 종료 버튼. 바꾼 설정을 먼저 저장한 뒤 발행한다.
         public event Action MainMenuRequested;
         public event Action QuitRequested;
+        public event Action RetryRequested;
 
         private void OnEnable()
         {
@@ -28,6 +29,7 @@ namespace UI.Settings
                 _view.SensitivityChanged += HandleSensitivityChanged;
                 _view.MainMenuClicked += HandleMainMenuClicked;
                 _view.QuitClicked += HandleQuitClicked;
+                _view.RetryClicked += HandleRetryClicked;
             }
         }
 
@@ -40,6 +42,7 @@ namespace UI.Settings
                 _view.SensitivityChanged -= HandleSensitivityChanged;
                 _view.MainMenuClicked -= HandleMainMenuClicked;
                 _view.QuitClicked -= HandleQuitClicked;
+                _view.RetryClicked -= HandleRetryClicked;
             }
         }
 
@@ -123,6 +126,12 @@ namespace UI.Settings
         {
             SaveChanges();
             QuitRequested?.Invoke();
+        }
+
+        private void HandleRetryClicked()
+        {
+            SaveChanges();
+            RetryRequested?.Invoke();
         }
     }
 }
