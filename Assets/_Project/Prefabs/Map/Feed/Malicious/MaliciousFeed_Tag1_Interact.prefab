@@ -90,102 +90,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &3339100726052452029
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 48030237686997855}
-  - component: {fileID: 4607890827171045910}
-  - component: {fileID: 8658539563341766362}
-  - component: {fileID: 674913333497993782}
-  m_Layer: 0
-  m_Name: Cutscene_14_FirstMalicious
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &48030237686997855
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3339100726052452029}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2, z: -5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2241877193031180909}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &4607890827171045910
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3339100726052452029}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 16, y: 4, z: 2}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &8658539563341766362
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3339100726052452029}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ae243bd2f147437499a1b420ec49232d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIandCinematic.CutscenePlayer
-  _cutsceneId: 14
---- !u!114 &674913333497993782
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3339100726052452029}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4555d5fbfdd8b34e87a0b0df1abe9df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Map.Gimmicks.TriggerPlate
-  _onPlayerEntered:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 8658539563341766362}
-        m_TargetAssemblyTypeName: UIandCinematic.CutscenePlayer, Assembly-CSharp
-        m_MethodName: Play
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  _isOneShot: 1
 --- !u!1 &4557013490682441630
 GameObject:
   m_ObjectHideFlags: 0
@@ -221,7 +125,6 @@ Transform:
   - {fileID: 995901092513066655}
   - {fileID: 4714649483427258909}
   - {fileID: 3415133891905274372}
-  - {fileID: 48030237686997855}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &710893761044341345
@@ -594,6 +497,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   _isOneShot: 1
+  _pressedSound: {fileID: 0}
 --- !u!1 &6136381531847647559
 GameObject:
   m_ObjectHideFlags: 0

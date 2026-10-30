@@ -1,4 +1,5 @@
 using UnityEngine;
+using Facade.Player;
 
 namespace Tutorial
 {
@@ -22,6 +23,11 @@ namespace Tutorial
         [SerializeField] private float _heightOffset = 0.25f;
         #endregion
 
+        #region Private Fields
+        private PlayerFacade _respawningPlayer;
+        private bool _shouldResumeSpawning;
+        #endregion
+
         #region Unity Lifecycle
         private void Awake()
         {
@@ -33,6 +39,55 @@ namespace Tutorial
             if ((_spawner == null) || _spawner.IsPaused) return;
 
             transform.position = _spawner.GetBoardingPosition(_preferredDistance) + (Vector3.up * _heightOffset);
+        }
+
+        private void OnDisable()
+        {
+            FinishRespawn();
+        }
+        #endregion
+
+        #region Public Methods
+        /// <summary>재생성 직전에 안전한 발판을 고르고 생성 연출 동안 발판 흐름을 멈춘다.</summary>
+        public void PrepareRespawn()
+        {
+            FinishRespawn();
+            if ((_spawner == null) || _spawner.IsPaused) return;
+
+            transform.position = _spawner.GetBoardingPosition(_preferredDistance) + (Vector3.up * _heightOffset);
+            _shouldResumeSpawning = true;
+            _spawner.PauseSpawning();
+        }
+
+        /// <summary>생성 연출이 끝나면 재생성 전에 움직이던 발판 흐름을 복원한다.</summary>
+        public void BindRespawningPlayer(PlayerFacade player)
+        {
+            if (!_shouldResumeSpawning) return;
+
+            _respawningPlayer = player;
+            if ((_respawningPlayer == null) || _respawningPlayer.IsSpawnEnded)
+            {
+                FinishRespawn();
+                return;
+            }
+
+            _respawningPlayer.OnSpawnEffectEnded += FinishRespawn;
+        }
+
+        /// <summary>생성 실패·비활성화 때도 정지와 이벤트 구독을 해제한다.</summary>
+        public void FinishRespawn()
+        {
+            if (_respawningPlayer != null)
+            {
+                _respawningPlayer.OnSpawnEffectEnded -= FinishRespawn;
+                _respawningPlayer = null;
+            }
+
+            if (_shouldResumeSpawning && (_spawner != null))
+            {
+                _spawner.ResumeSpawning();
+            }
+            _shouldResumeSpawning = false;
         }
         #endregion
     }
