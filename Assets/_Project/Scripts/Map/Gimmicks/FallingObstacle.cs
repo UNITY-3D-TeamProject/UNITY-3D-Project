@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Core.Audio;
 using Core.ObjectPool;
 using DTT.AreaOfEffectRegions;
 
@@ -61,6 +62,9 @@ namespace Map.Gimmicks
         [Header("Land Effect")]
         [Tooltip("바닥에 닿아 사라질 때 착지점 바닥에 만들 연출 (선택). Is Destroy On Land 가 켜졌을 때만 쓴다.")]
         [SerializeField] private GameObject _landEffect;
+
+        [Tooltip("바닥에 닿는 순간 착지점에서 낼 소리 (선택). Is Destroy On Land 가 켜졌을 때만 쓴다.")]
+        [SerializeField] private SOAudioData _landSound;
 
         [Header("Options")]
         [Tooltip("켜면 시작하자마자 떨어지기 시작한다. 끄면 Drop()이 호출될 때까지 기다린다. (TriggerPlate 등에서 호출)")]
@@ -224,6 +228,8 @@ namespace Map.Gimmicks
 
         private void SpawnLandEffect()
         {
+            GimmickUtility.PlaySfx(_landSound, GetGroundPosition());
+
             if (_landEffect == null) return;
 
             Instantiate(_landEffect, GetGroundPosition(), Quaternion.identity);
