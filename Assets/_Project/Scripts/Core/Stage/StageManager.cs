@@ -58,6 +58,9 @@ namespace Core.Stage
 
         private StageBase _currentStageBaseInstance;
 
+        // 낙하 복귀 지점을 스테이지가 직접 정할 때 쓴다. null이면 도달한 가장 높은 체크포인트로 복귀한다.
+        private Transform _fallReturnPoint;
+
         public int CurrentRoundIndex => _currentRoundIndex;
         public int CurrentCheckpointIndex => _currentCheckpointIndex;
 
@@ -183,6 +186,13 @@ namespace Core.Stage
             _isRecovering = true;
             _gameManager.PrepareSpawn(GameManager.EPlayerSpawnReason.StageRestart);
             SceneManager.LoadScene(gameObject.scene.buildIndex);
+        }
+
+        // 낙하 복귀 지점을 바꾼다. null을 넘기면 원래대로 도달한 가장 높은 체크포인트로 복귀한다.
+        // [호출] SpecialMobRound가 발판 싸움이 시작될 때 그 발판으로, 라운드가 리셋되거나 끝날 때 null로 호출한다.
+        public void SetFallReturnPoint(Transform point)
+        {
+            _fallReturnPoint = point;
         }
 
         // 현재 라운드에 지정된 체크포인트를 스폰 위치로 사용한다.
@@ -451,7 +461,7 @@ namespace Core.Stage
             }
         }
 
-        // 도달한 체크포인트 중 가장 높은 곳으로 이동한 뒤 낙하 데미지를 준다.
+        // 도달한 체크포인트 중 가장 높은 곳(스테이지가 정한 낙하 복귀 지점이 있으면 그곳)으로 이동한 뒤 낙하 데미지를 준다.
         // 데미지로 사망하면 사망 애니메이션 종료 이벤트가 라운드 복구를 처리한다.
         // [이벤트] FallZoneTrigger.OnPlayerEntered가 발생하면 호출된다. (BindFallZones에서 구독)
         private void HandleFallZoneEntered(FallZoneTrigger fallZone, Collider other)
@@ -461,16 +471,18 @@ namespace Core.Stage
                 return;
             }
 
-            if (_checkpoints == null ||
+            if (_fallReturnPoint == null &&
+                (_checkpoints == null ||
                 _currentCheckpointIndex < 0 ||
                 _currentCheckpointIndex >= _checkpoints.Length ||
-                _checkpoints[_currentCheckpointIndex] == null)
+                _checkpoints[_currentCheckpointIndex] == null))
             {
                 Debug.LogError("낙하 후 복귀할 체크포인트가 없습니다.", this);
                 return;
             }
 
-            if (!MovePlayerTo(_checkpoints[_currentCheckpointIndex].RespawnPoint))
+            Transform destination = (_fallReturnPoint != null) ? _fallReturnPoint : _checkpoints[_currentCheckpointIndex].RespawnPoint;
+            if (!MovePlayerTo(destination))
             {
                 return;
             }
