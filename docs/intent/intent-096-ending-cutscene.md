@@ -159,6 +159,12 @@ resolved: null
 - 34번 컷씬은 영상 중에는 33번 연출이 돌고 있어 재생할 수 없으므로 없앴다: `SOCutscene_Live_AfterShow`·표 34번 등록·`SOCameraShot_Live_Linger`·`CinematicCam_LiveLinger` 삭제, `LiveEndingScreen._onVideoFinished` 연결 제거.
 - 검증: 컴파일 0에러. Play는 사용자가 직접 확인.
 
+## 대사 수정 5 (2026-10-30, 사용자 요청)
+- 29번 `SOCutscene_Lobby_ReturnSecurity` 대사 5줄을 사용자 대본(로비 공연 알림 발견 → 마지막 목적지) 12줄로 교체했다. "저기 봐", "라이브 앱이 켜졌어", "공연이라니…"(플레이어가 라이브 앱을 바라봄) 세 줄은 `Lobby_LivePortal` 카메라, 나머지는 말하는 사람 카메라.
+- 대본의 무대 지시(전광판이 "공연 방송 준비 중..."으로 바뀜, 꺼져 있던 라이브 앱에 조명이 켜짐)는 `Map_1_Lobby` 작업이라 넣지 않았다. 지금은 로비에 들어오면 라이브 포탈 빛기둥·로고가 처음부터 켜져 있다(`NextDestinationMarker`).
+- 대화가 끝나면 조작이 돌아오고, 라이브 포탈에서 E → 30번 입장 전 대화 → 라이브로 이동하는 기존 흐름은 그대로다.
+- 검증: 에셋 다시 불러와 12줄·카메라 키 확인. 로비 실제 재생은 미확인.
+
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:
 - 관련 커밋/PR:

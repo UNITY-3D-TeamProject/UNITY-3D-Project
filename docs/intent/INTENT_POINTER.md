@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Core / Editor / SceneTransition]** 특정 진행 단계(예: 보안 후 로비)를 보려면 앞 스테이지를 다 깨야 함. 상단 메뉴 `Tools > 진행 단계`에서 단계를 고르면 이어하기 저장을 쓰고 MainScene부터 자동 이어하기, 로비 단계는 직전 스테이지 복귀 위치에서 시작. 에디터 전용 스크립트 하나, 런타임·씬 변경 없음 → [문서](./intent-098-progress-step-menu.md)
 - **[SceneTransition / Loading / UI]** 로딩 화면 가운데가 비어 있음. `Loading.unity`에 모습 전용 플레이어·펫 복사본(달리기 반복)과 RenderTexture 카메라를 두고 진행 바 그룹 가운데 RawImage로 표시(컷씬 영상 중 함께 숨김), 코드 변경 없음 → [문서](./intent-097-loading-runners.md)
 - **[UIandCinematic / Cutscene / Live]** 스토리 변경(보스 처치 후 플레이어 생존)에 맞지 않는 28~32번 대사, 라이브 스크린 테스트 영상·무음·BGM 겹침, 영상 뒤 마무리 대화·여운·크레딧 없음. 대사 교체 + 공연 영상 교체 + 새 34번 마무리 컷씬 + 크레딧 UI(`UI/Credits/EndingCredits`, 끝나면 메인 메뉴) + `AudioManager.StopBgm` 설계. `Map_5_Live`만 수정, 영상은 SVN 공식 `4_Ending.mp4`. TV → 화면 안으로(`ScreenVideoZoom`, 인스펙터에서 영상 몇 초에 들어가고/나올지) → 전체화면 → TV 밖 두 캐릭터 → 대화 → 크레딧 → 메인 메뉴. 31번 입장 대화 트리거(`DialogueBoxes`) 켬·재생 확인. 실제 명단·최종 영상본·보안/로비 씬 실제 재생 확인 남음 → [문서](./intent-096-ending-cutscene.md)
 - **[AI / Boss / BossA / Art]** 보스A 모델을 본·애니메이션 없는 새 FBX(`Virus_King_Boss`, 메시 5조각)로 교체(AI_TODO2 보스-24·25). 손 피벗 계층 구성, 오염 장갑 셰이더·칸 글리치를 새 텍스처에 맞춰 잇기, 사망·Idle 클립, 약점을 가슴 코어로 이동. 구현·Play 생성 확인 완료, 보스전 직접 플레이 확인 남음 → [문서](./intent-091-boss-a-model-swap.md)
