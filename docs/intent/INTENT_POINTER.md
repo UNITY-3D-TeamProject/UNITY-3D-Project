@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[UIandCinematic / Cutscene / Live]** 스토리 변경(보스 처치 후 플레이어 생존)에 맞지 않는 28~32번 대사, 라이브 스크린 테스트 영상·무음·BGM 겹침, 영상 뒤 마무리 대화·여운·크레딧 없음. 대사 교체 + 공연 영상 교체 + 새 34번 마무리 컷씬 + 크레딧 UI(`UI/Credits/EndingCredits`, 끝나면 메인 메뉴) + `AudioManager.StopBgm` 설계. `Map_5_Live`만 수정, 영상은 SVN 공식 `4_Ending.mp4`. TV → 화면 안으로(`ScreenVideoZoom`, 인스펙터에서 영상 몇 초에 들어가고/나올지) → 전체화면 → TV 밖 두 캐릭터 → 대화 → 크레딧 → 메인 메뉴. 31번 입장 대화 트리거(`DialogueBoxes`) 켬·재생 확인. 실제 명단·최종 영상본·보안/로비 씬 실제 재생 확인 남음 → [문서](./intent-096-ending-cutscene.md)
 - **[AI / Boss / BossA / Art]** 보스A 모델을 본·애니메이션 없는 새 FBX(`Virus_King_Boss`, 메시 5조각)로 교체(AI_TODO2 보스-24·25). 손 피벗 계층 구성, 오염 장갑 셰이더·칸 글리치를 새 텍스처에 맞춰 잇기, 사망·Idle 클립, 약점을 가슴 코어로 이동. 구현·Play 생성 확인 완료, 보스전 직접 플레이 확인 남음 → [문서](./intent-091-boss-a-model-swap.md)
 - **[AI / Enemy / Skill]** 특수몹 바람 스킬이 발동 순간 방향을 고정해 이동하는 플레이어를 따라가지 않음(AI_TODO2 잡몹-9). 램프 동안 `EnemyWindBlast._forward` 와 `Hold` 방향을 매 프레임 대상 쪽으로 갱신(즉시 추적), 넉백 방향은 시작 순간 고정. 리컴파일 통과, 직접 플레이 확인 남음 → [문서](./intent-090-special-wind-track-player.md)
 - **[AI / Enemy / Combat / Feedback]** 약점을 맞혀도 일반 피격과 구분되는 피드백이 없음(AI_TODO2 잡몹-7). `CharacterMediator.OnCriticalHit` 를 구독하는 `CriticalHitFeedback` 로 맞은 지점에 약점 전용 이펙트(`WeakPointHit`, YellowLaserImpact 복사본)·소리를 덧입힘. 잡몹 3종·보스 2종 부착, Play 판정 확인 완료. 소리 에셋 연결·직접 플레이 확인 남음 → [문서](./intent-089-weak-point-hit-feedback.md)
