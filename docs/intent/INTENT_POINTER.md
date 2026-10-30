@@ -64,6 +64,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[UI / MainMenu / Audio]** 메인 메뉴 배경에 로비 충전소 지붕을 복원하고 원래 카메라 구도와 BGM·UI 전용 오디오 유지 → [문서](./clear/intent-091-main-menu-charge-station.md) (resolved: 2026-10-30)
 - **[Audio / Lobby]** 일반 로비 진입 시 `Digital City Morning` 또는 `Colorful City Morning`을 무작위 첫 곡으로 선택, 이후 등록 순서대로 재생 → [문서](./clear/intent-089-lobby-random-first-bgm.md) (resolved: 2026-10-30)
 - **[Audio / Lobby]** 파일맵에서 로비로 돌아왔을 때만 `Digital Integrity Check` 재생, 일반 로비 목록과 분리 → [문서](./clear/intent-088-lobby-bgm-after-file.md) (resolved: 2026-10-30)
 - **[Audio / Stage / SecurityApp]** 보안맵 일반 구간·보스전 초반·필드보스 최종 처치 후 BGM 3곡 연결 → [문서](./clear/intent-087-security-boss-bgm.md) (resolved: 2026-10-30)
