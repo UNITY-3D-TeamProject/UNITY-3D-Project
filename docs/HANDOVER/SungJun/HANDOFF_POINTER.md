@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — intent-099: 미로 스캔 실루엣 색 구분(연산자 파랑·숫자 초록·GC·도둑 빨강). 새 머티리얼 `M_ScanSilhouette_Operator`·`_Enemy`, `SilhouetteReaction.RefreshBaseColors()` 추가, 아이템·GC·도둑 프리팹 연결. 리컴파일·격리 로드 색 확인, 실제 스캔 화면 미확인, 커밋 안 함: [작업 기록](./2026-10-31/maze-scan-silhouette-colors.md)
 - **2026-10-30** — intent-098: 상단 메뉴 `Tools > 진행 단계`(에디터 전용 `Core/Editor/ProgressStepMenu.cs`)로 9단계 중 하나를 골라 이어하기 저장 → MainScene Play → 자동 이어하기, 로비 단계는 직전 스테이지 복귀 위치에서 시작. 리컴파일·메뉴 등록·로딩 진입 확인, Unity 비활성으로 로비 도착은 미확인, 커밋 안 함: [작업 기록](./2026-10-30/progress-step-menu.md)
 - **2026-10-30** — intent-096 후속: 로비 보안 복귀 대화(29번 `SOCutscene_Lobby_ReturnSecurity`)를 사용자 대본 12줄로 교체(라이브 쪽 3줄 `Lobby_LivePortal` 카메라). 전광판·조명 무대 지시는 로비 씬 작업이라 미적용. 에셋 로드만 확인, 커밋 안 함: [작업 기록](./2026-10-30/lobby-return-security-dialogue.md)
 - **2026-10-30** — intent-097: 로딩 화면 가운데에 달리는 플레이어·펫 표시. `Loading.unity`에 모습 전용 복사본(달리기 반복 컨트롤러)·RT 카메라를 y=-2000에 두고 `ProgressGroup/Runners` RawImage로 표시(컷씬 영상 중 숨김), 코드 변경 없음. 렌더 미리보기만 확인, 커밋 안 함: [작업 기록](./2026-10-30/ending-cutscene.md)
