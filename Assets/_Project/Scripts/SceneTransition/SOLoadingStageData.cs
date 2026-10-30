@@ -52,10 +52,18 @@ namespace SceneTransition
         [Header("Move Texts")]
         [Tooltip("스테이지 목록에 없는 씬으로 갈 때 기본 화면 문구. 목록에 없으면 \"Loading...\" 그대로")]
         [SerializeField] private SLoadingMoveText[] _moveTexts;
+
+        [Header("Lobby")]
+        [Tooltip("로비로 갈 때 \"현재 스테이지 → 로비\" 경로에 띄울 로비 아이콘. 비우면 로비도 기본 화면")]
+        [SerializeField] private Texture2D _lobbyIcon;
+        [Tooltip("로비로 갈 때 준비 단계 문구 (위에서부터)")]
+        [SerializeField] private string[] _lobbyStepLabels;
         #endregion
 
         #region Properties
         public IReadOnlyList<SLoadingStageInfo> Stages => _stages ?? Array.Empty<SLoadingStageInfo>();
+        public Texture2D LobbyIcon => _lobbyIcon;
+        public IReadOnlyList<string> LobbyStepLabels => _lobbyStepLabels ?? Array.Empty<string>();
         #endregion
 
         #region Public Methods
