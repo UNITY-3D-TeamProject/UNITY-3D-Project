@@ -150,12 +150,30 @@ public class PlayerSpawner : SpawnerBase
             return;
         }
 
+        // 튜토리얼 이동 발판에서 사망 복구할 때만 생성 연출 동안 발판을 멈춘다.
+        Tutorial.BoardingRespawnPoint boardingPoint = null;
+        if (!_isLobbySpawner &&
+            (gameManager.CurrentStageManager.CurrentStage == EStageType.Tutorial) &&
+            (gameManager.SpawnReason == GameManager.EPlayerSpawnReason.RoundRecovery))
+        {
+            boardingPoint = spawnPoint.GetComponent<Tutorial.BoardingRespawnPoint>();
+            if ((boardingPoint != null) && boardingPoint.isActiveAndEnabled)
+            {
+                boardingPoint.PrepareRespawn();
+            }
+            else
+            {
+                boardingPoint = null;
+            }
+        }
+
         if (!TrySpawnWithAttributes(
             _playerPrefab,
             spawnPoint,
             out GameObject player,
             out AttributeSet _))
         {
+            if (boardingPoint != null) boardingPoint.FinishRespawn();
             return;
         }
 
@@ -163,6 +181,7 @@ public class PlayerSpawner : SpawnerBase
 
         if (playerFacade == null)
         {
+            if (boardingPoint != null) boardingPoint.FinishRespawn();
             Debug.LogError("Player 프리팹에 PlayerFacade가 없습니다.", player);
             Destroy(player);
             return;
@@ -170,6 +189,8 @@ public class PlayerSpawner : SpawnerBase
 
         // 몸·카메라가 스폰 지점의 정면(화살표)을 보게 한다. 생성 연출이 끝날 때까지 이 방향으로 고정되고 끝나면 풀린다.
         playerFacade.SetLookDirection(spawnPoint.forward);
+
+        if (boardingPoint != null) boardingPoint.BindRespawningPlayer(playerFacade);
 
         // TODO: 지연 활성화가 필요하면 프리팹을 비활성 상태로 생성하고 AttributeSet의 Awake 초기화를 분리한다.
         // 활성 프리팹을 Instantiate한 뒤 SetActive(false)하면 Awake/OnEnable은 이미 실행된 상태다.
