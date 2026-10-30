@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-30** — intent-095: 보안맵 2라운드 특수몹을 발판을 밟을 때 소환(미리 만들기 제거), 밟으면 뒤 발판 가라앉힘, 사망 시 2라운드 전체 리셋(`CombatZone.ResetAll`), 낙사 시 지금 발판 복귀(`StageManager.SetFallReturnPoint`). 소환 연출은 만들었다가 사용자 요청으로 되돌림. Play 강제 진행으로 흐름·에러 0 확인, 직접 조작 미확인, 커밋 안 함: [작업 기록](./2026-10-30/special-mob-step-spawn.md)
 - **2026-10-30** — 보안맵 정리: 1라운드 배치 아이템 6개 제거, 1라운드 몹 16→22(원거리 추가), intent-094 2라운드 특수몹 발판 5→4(Platform_5 삭제, 보스 구역 전체 x −31m, NavMesh 재생성). 발판 1~4·Platform_6·3라운드 진입 확인, 보스 등장·보스전은 프레임 미진행으로 미확인, 발판 변경 커밋 안 함: [작업 기록](./2026-10-30/security-round2-four-platforms.md)
 - **2026-10-30** — intent-093: 보안맵 `CombatZone`이 `마리 수 + Spawn Points` 대신 자식 `MonsterSpawner`로 소환·집계. `MonsterSpawner.Spawn()` 공개 + `ShouldSpawnOnStart`, `Map_4_Security` 9개 구역을 스포너 21개로 이전. Play에서 소환·클리어·다음 방·사망 리셋·패널 값 확인, 직접 조작 미확인, 커밋 안 함: [작업 기록](./2026-10-30/combat-zone-placed-spawners.md)
 - **2026-10-30** — intent-073: 인게임 설정창 높이 480→600, 세로 스크롤·스크롤바 끔. 마우스 감도까지 4행 + 하단 버튼 3개가 스크롤 없이 보임(프리팹 렌더로 확인), 실제 Play ESC 화면 미확인, 커밋 안 함: [작업 기록](./2026-10-30/settings-no-scroll.md)

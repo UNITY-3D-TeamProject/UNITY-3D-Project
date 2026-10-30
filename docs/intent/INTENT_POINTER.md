@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[Stage / SecurityApp / Map]** 보안맵 2라운드 특수몹이 다음 발판이 나타나자마자 미리 소환돼 원거리로 미리 잡을 수 있고, 지나온 발판으로 돌아갈 수 있음. 발판을 밟을 때 소환(연출 없이), 밟으면 뒤 발판 가라앉힘, 사망 시 2라운드 전체 리셋, 낙사 시 지금 발판으로 복귀(`StageManager.SetFallReturnPoint`). 구현·Play 확인 완료, 직접 조작 확인 남음 → [문서](./intent-095-special-mob-step-spawn.md)
 - **[Stage / SecurityApp / Map]** 보안맵 2라운드 특수몹 발판 5→4개. Platform_5 삭제, Platform_6·보스 구역 전체를 x −31m 당김, 참조 정리·NavMesh 재생성. 발판 진행·3라운드 진입 확인, 보스 등장·보스전 직접 플레이 확인 남음 → [문서](./intent-094-security-round2-four-platforms.md)
 - **[UI / Settings / Core / Stage]** ESC 설정창에서 현재 스테이지 씬을 처음부터 다시 시작하는 `다시하기` 버튼 추가 → [문서](./intent-092-settings-stage-retry.md)
 - **[SceneTransition / Video]** 로딩 컷씬 영상 3개 연결 및 E 1.5초 유지 원형 스킵 UI 추가. Unity 컴파일·씬 참조 확인 완료, 실제 영상 조작 확인 남음 → [문서](./intent-090-loading-transition-videos.md)
