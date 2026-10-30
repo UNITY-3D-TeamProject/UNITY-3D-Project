@@ -3,6 +3,10 @@
 이 파일은 Codex 명의로 진행한 작업 이력의 목차이다.
 
 ## 변경 이력 (최신순)
+- **2026-10-30** — 메인 메뉴 배경에 로비 충전소 지붕을 복원하고 원래 플레이어 카메라·BGM/UI 전용 오디오를 확인: [작업 기록](./2026-10-30/main-menu-charge-station-audio.md)
+- **2026-10-30** — HUD 스캔·보드 아이콘을 첨부 이미지 기반 스프라이트로 교체하고 BLUETOOTH 표시 이름을 BOARD로 수정: [작업 기록](./2026-10-30/skill-card-scan-board-icons.md)
+- **2026-10-30** — 팀원 환경 메인 씬 BGM 미재생 원인 후보와 Git 제외 음원 확인: [진단 기록](./2026-10-30/main-scene-bgm-team-diagnosis.md)
+- **2026-10-30** — 현재 브랜치의 보스 체력 UI 이름을 비트·바이트로 수정하고 프리팹 기반 미리보기 제작: [작업 기록](./2026-10-30/boss-health-names.md)
 - **2026-10-30** — 씬을 제외한 BGM 변경을 공통·로비·피드·미로·문서로 나눠 커밋: [작업 기록](./2026-10-30/bgm-category-commits.md)
 - **2026-10-30** — 파일 미로 2라운드 The Labyrinth of Forgotten, 3라운드 Maze Mayhem으로 곡 교체: [작업 기록](./2026-10-30/file-maze-round2-round3-bgm-swap.md)
 - **2026-10-30** — 파일 미로 3라운드 The Labyrinth of Forgotten BGM 연결, 검증 생략: [작업 기록](./2026-10-30/file-maze-round3-bgm.md)

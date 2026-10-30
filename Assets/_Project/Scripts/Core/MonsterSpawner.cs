@@ -35,33 +35,44 @@ namespace Core
         [Tooltip("같은 종류 몬스터라도 개체마다 MoveSpeed가 다르도록 줄 비율 오차. DB 값과 Effect를 적용한 뒤 곱한다.\n0.15면 85%~115% 사이 무작위, 0이면 오차 없음")]
         [SerializeField, Range(0.0f, 1.0f)] private float _moveSpeedVariance;
 
+        // false면 Start에서 소환하지 않는다. CombatZone처럼 소환 시점을 직접 정하는 쪽이 Awake에서 끄고 Spawn을 부른다.
+        public bool ShouldSpawnOnStart { get; set; } = true;
+
         // ObjectPoolManager.Instance는 Awake에서 채워지므로 Start에서 꺼낸다.
         private void Start()
         {
-            SpawnMonster();
+            if (!ShouldSpawnOnStart)
+            {
+                return;
+            }
+
+            Spawn();
         }
 
-        private void SpawnMonster()
+        /// <summary>
+        /// 이 위치에 몬스터 한 마리를 소환하고 돌려준다. 소환하지 못하면 null.
+        /// </summary>
+        public GameObject Spawn()
         {
             GameObject monsterPrefab = SelectMonsterPrefab();
             if (monsterPrefab == null)
             {
                 Debug.LogError($"Monster 프리팹이 지정되지 않았습니다. ({_spawnMode}: 칸이 비었거나 랜덤 목록에 빈 칸이 있음)", this);
-                return;
+                return null;
             }
 
             ObjectPoolManager poolManager = ObjectPoolManager.Instance;
             if (poolManager == null)
             {
                 Debug.LogError("씬에 ObjectPoolManager가 없어 몬스터를 생성할 수 없습니다.", this);
-                return;
+                return null;
             }
 
             // 등록되지 않은 프리팹이면 매니저가 에러를 남기고 null을 돌려준다.
             GameObject monster = poolManager.Get(monsterPrefab, transform.position, transform.rotation);
             if (monster == null)
             {
-                return;
+                return null;
             }
 
             AttributeSet attributes = monster.GetComponentInChildren<AttributeSet>(true);
@@ -69,7 +80,7 @@ namespace Core
             {
                 Debug.LogError($"[{monsterPrefab.name}] AttributeSet이 없습니다.", monster);
                 poolManager.Release(monster);
-                return;
+                return null;
             }
 
             // TODO: 지연 활성화가 필요하면 프리팹을 비활성 상태로 생성하고 AttributeSet의 Awake 초기화를 분리한다.
@@ -83,6 +94,7 @@ namespace Core
             ApplyMoveSpeedVariance(attributes);
 
             // monster.SetActive(true);
+            return monster;
         }
 
         // _monsterDatabase에서 monsterPrefab의 데이터를 찾아 초기값을 넣는다. 없으면 프리팹 기본 SO 값을 그대로 둔다.
