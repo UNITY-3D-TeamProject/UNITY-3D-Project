@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -31,6 +32,9 @@ namespace SceneTransition
         [Header("필수 (Slider ← 진행 바)")]
         [SerializeField] private Slider _progressBar;
 
+        [Header("안 해도 됨 (TMP_Text ← 진행 바 오른쪽 퍼센트)")]
+        [SerializeField] private TMP_Text _percentText;
+
         [Header("필수 (CanvasGroup ← 이 오브젝트, 저장 시 Alpha 0)")]
         [SerializeField] private CanvasGroup _canvasGroup;
 
@@ -50,6 +54,10 @@ namespace SceneTransition
         [Header("안 해도 됨 (SOLoadingCutsceneData ← ScriptableObjects/SceneTransition)")]
         [Tooltip("비워 두면 컷씬 없이 넘어간다")]
         [SerializeField] private SOLoadingCutsceneData _cutsceneData;
+
+        [Header("안 해도 됨 (LoadingStageView ← ProgressGroup/StageInfo, 저장 시 꺼 둠)")]
+        [Tooltip("비워 두면 스테이지로 갈 때도 기본 로딩 화면을 쓴다")]
+        [SerializeField] private LoadingStageView _stageView;
 
         [Header("Video Skip")]
         [SerializeField] private GameObject _skipPrompt;
@@ -93,6 +101,8 @@ namespace SceneTransition
             if (_progressBar == null) return;
 
             _progressBar.value = Mathf.Clamp01(value);
+            if (_percentText != null) _percentText.text = $"{Mathf.RoundToInt(_progressBar.value * 100f)}%";
+            if (_stageView != null) _stageView.SetProgress(_progressBar.value);
         }
 
         private void SetSkipProgress(float value)
@@ -151,6 +161,9 @@ namespace SceneTransition
             // 목적지 로드가 끝나면 SceneLoader 값이 비워지므로 이번 이동을 미리 받아 둔다.
             ESceneType? from = SceneLoader.PreviousScene;
             ESceneType to = SceneLoader.PendingScene.Value;
+
+            // 스테이지로 가면 앱 아이콘·접속 문구·팁을 페이드인 전에 채운다.
+            if (_stageView != null) _stageView.TryShow(to);
 
             SetProgress(0f);
             yield return CoFade(0f, 1f);
