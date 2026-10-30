@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-30** — AI_TODO2 보스-31: 보스 피격 이펙트가 멀리서 안 보이던 문제를 `HitEffectFeedback` 거리 비례 확대(15m 초과 시 최대 5배)로 대응. 프리팹 변경 없음, 리컴파일 통과. **직접 플레이·게이트 루프 미실행, 커밋 전**: [거리 비례 확대](./2026-10-30/boss-hit-effect-distance-scale.md)
 - **2026-10-30** — AI_TODO2 보스-30: 그로기 중 손을 때리면 피격 이펙트가 플레이어 위치에서 나오던 원인은 `BossHitRelay` 가 HP 하한 적용 때 `HitPoint` 까지 버려 공격자 위치로 대체된 것. `HitPoint` 는 유지하고 `Direction` 만 빼도록 변경(크리티컬 차단 유지). 리컴파일 통과. **직접 플레이·게이트 루프 미실행, 커밋 전**: [그로기 피격 이펙트 위치](./2026-10-30/boss-groggy-hit-effect-position.md)
 - **2026-10-30** — intent-092 후속(AI_TODO2 보스-32): 그로기 손 마커가 안 보이던 원인은 SO `_scale` 1 → 손(11×20×11m) 대비 약 10배 작음. `SOEffectData_BossHandHint._scale` 을 10 으로 변경. ThirdParty 의존(Git 미포함) 남음. **보스전 육안 확인·게이트 루프 미실행, 커밋 전**: [마커 크기](./2026-10-30/boss-groggy-hand-hint-scale.md)
 - **2026-10-30** — intent-093 후속(AI_TODO2 보스-33): 실드가 안 보이던 원인은 HoloShield 의 `NewMaterialChange` 가 4초 뒤 구체를 `Destroy`. `BossA.prefab` 오버라이드로 비활성. ThirdParty 의존(Git 미포함) 남음. **보스전 육안 확인·게이트 루프 미실행, 커밋 전**: [실드 사라짐](./2026-10-30/boss-a-shield-vanish.md)
