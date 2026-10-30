@@ -5,6 +5,7 @@ using Map.Gimmicks;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using SceneTransition;
 using UIandCinematic;
 
 namespace Core.Stage
@@ -169,6 +170,19 @@ namespace Core.Stage
             _currentStageBaseInstance.StartStage();
             OnStageStarted?.Invoke();
             PlayIntroDialogue();
+        }
+
+        // 설정창의 다시하기와 첫 라운드 사망 복구가 현재 씬을 처음부터 다시 불러온다.
+        public void RestartStage()
+        {
+            if (!IsRunning || _isRecovering || _gameManager == null || SceneLoader.IsLoading)
+            {
+                return;
+            }
+
+            _isRecovering = true;
+            _gameManager.PrepareSpawn(GameManager.EPlayerSpawnReason.StageRestart);
+            SceneManager.LoadScene(gameObject.scene.buildIndex);
         }
 
         // 현재 라운드에 지정된 체크포인트를 스폰 위치로 사용한다.
@@ -544,9 +558,7 @@ namespace Core.Stage
             // SceneLoader는 순서상 다음 씬만 허용하고 전환 이벤트로 능력치를 덮어쓰므로 직접 불러온다.
             if (_restartSceneOnFirstRoundDeath && _currentRoundIndex == 0)
             {
-                _isRecovering = true;
-                _gameManager.PrepareSpawn(GameManager.EPlayerSpawnReason.StageRestart);
-                SceneManager.LoadScene(gameObject.scene.buildIndex);
+                RestartStage();
                 return;
             }
 
