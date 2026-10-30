@@ -105,14 +105,14 @@ namespace SceneTransition
             return Mathf.Min(Time.unscaledDeltaTime, MAX_STEP_DELTA_TIME);
         }
 
-        // 이번 이동(from → to)에 틀 컷씬을 찾는다. 출발 씬을 모르거나 데이터가 없으면 컷씬 없음.
+        // 이번 이동(from → to)에 틀 컷씬을 찾는다. 출발 씬이 없으면 튜토리얼 시작 영상을 찾는다.
         private bool TryGetCutscene(ESceneType? from, ESceneType to, out VideoClip clip)
         {
             clip = null;
 
-            if ((_cutsceneData == null) || !from.HasValue) return false;
+            if (_cutsceneData == null) return false;
 
-            return _cutsceneData.TryGetClip(from.Value, to, out clip);
+            return _cutsceneData.TryGetClip(from, to, out clip);
         }
         #endregion
 
