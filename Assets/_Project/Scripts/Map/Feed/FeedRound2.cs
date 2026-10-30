@@ -126,6 +126,9 @@ namespace Map.Feed
         [SerializeField] private EFeedItemType[] _requiredItems;
 
         [Header("Sound")]
+        [Tooltip("2라운드가 시작될 때 전환할 BGM")]
+        [SerializeField] private SOAudioData _round2Bgm;
+
         [Tooltip("피드가 떠오를 때(한 번)와 총에 맞아 날아갈 때(피드마다) 낼 소리 (비우면 무음)")]
         [SerializeField] private SOAudioData _postMoveSound;
 
@@ -227,6 +230,9 @@ namespace Map.Feed
             RaiseFeeds();
             ClearRound1();
             RaiseFallZones();
+
+            if (_round2Bgm != null)
+                AudioManager.Instance?.ChangeBgm(_round2Bgm);
 
             _onStarted.Invoke();
 

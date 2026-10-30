@@ -1,0 +1,13 @@
+# Codex — Handover Pointer
+
+## 변경 이력 (최신순)
+- **2026-10-30** — ThirdParty SVN 작업 사본과 프로젝트 폴더 차이 확인: [작업 기록](./2026-10-30/thirdparty-svn-comparison.md)
+- **2026-10-30** — 로딩 영상에 E/Space 1.5초 유지 원형 스킵 UI 추가: [작업 기록](./2026-10-30/loading-video-hold-skip.md)
+- **2026-10-30** — 컷신 E 대사 넘김에 UI 클릭 효과음 연결: [작업 기록](./2026-10-30/cutscene-next-line-sound.md)
+- **2026-10-30** — 튜토리얼 전 MP4 미재생 경로 조사: [작업 기록](./2026-10-30/tutorial-intro-video-diagnosis.md)
+- **2026-10-30** — 일반 로비 첫 곡을 `Digital City Morning`·`Colorful City Morning` 중 무작위 선택: [작업 기록](./2026-10-30/lobby-random-opening-bgm.md)
+- **2026-10-30** — 로비 일반 BGM에 `The Curious Maze` 추가, 일반 4곡·파일맵 복귀 전용 1곡: [작업 기록](./2026-10-30/lobby-bgm-curious-maze.md)
+- **2026-10-30** — 파일맵 복귀 시 로비 전용 `Digital Integrity Check` BGM 연결 및 작업별 커밋: [작업 기록](./2026-10-30/lobby-bgm-after-file.md)
+- **2026-10-30** — 파일 맵 미로 2라운드 BGM을 `Maze Hopper`로 교체: [작업 기록](./2026-10-30/file-round2-maze-hopper.md)
+- **2026-10-30** — 보안맵 구간·보스전 초반·최종 단계 BGM 3곡 연결: [작업 기록](./2026-10-30/security-boss-bgm.md)
+- **2026-10-30** — 보스 체력바에 정면 얼굴 초상화와 `최종보스`·`필드보스` 문구 배치: [작업 기록](./2026-10-30/boss-health-portraits.md)

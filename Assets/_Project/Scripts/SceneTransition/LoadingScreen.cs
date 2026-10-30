@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -50,6 +51,12 @@ namespace SceneTransition
         [Tooltip("비워 두면 컷씬 없이 넘어간다")]
         [SerializeField] private SOLoadingCutsceneData _cutsceneData;
 
+        [Header("Video Skip")]
+        [SerializeField] private GameObject _skipPrompt;
+        [SerializeField] private UnityEngine.UI.Image _skipProgress;
+        [Min(0.1f)]
+        [SerializeField] private float _skipHoldDuration = 1.5f;
+
         [Header("Timing")]
         [Tooltip("로딩 화면이 나타나고 사라지는 데 걸리는 시간(초)")]
         [SerializeField] private float _fadeDuration = 0.3f;
@@ -64,6 +71,8 @@ namespace SceneTransition
         #region Unity Lifecycle
         private void Awake()
         {
+            SetSkipProgress(0f);
+            if (_skipPrompt != null) _skipPrompt.SetActive(false);
             Debug.Assert(_progressBar != null, $"[{name}] Progress Bar(Slider)가 연결되지 않았습니다.");
             Debug.Assert(_canvasGroup != null, $"[{name}] CanvasGroup이 연결되지 않았습니다.");
             Debug.Assert(_loadingCamera != null, $"[{name}] Loading Camera가 연결되지 않았습니다.");
@@ -86,6 +95,17 @@ namespace SceneTransition
             _progressBar.value = Mathf.Clamp01(value);
         }
 
+        private void SetSkipProgress(float value)
+        {
+            if (_skipProgress != null) _skipProgress.fillAmount = Mathf.Clamp01(value);
+        }
+
+        private bool IsSkipHeld()
+        {
+            Keyboard keyboard = Keyboard.current;
+            return (keyboard != null) && keyboard.eKey.isPressed;
+        }
+
         private void SetAlpha(float value)
         {
             if (_canvasGroup == null) return;
@@ -105,14 +125,14 @@ namespace SceneTransition
             return Mathf.Min(Time.unscaledDeltaTime, MAX_STEP_DELTA_TIME);
         }
 
-        // 이번 이동(from → to)에 틀 컷씬을 찾는다. 출발 씬을 모르거나 데이터가 없으면 컷씬 없음.
+        // 이번 이동(from → to)에 틀 컷씬을 찾는다. 출발 씬이 없으면 튜토리얼 시작 영상을 찾는다.
         private bool TryGetCutscene(ESceneType? from, ESceneType to, out VideoClip clip)
         {
             clip = null;
 
-            if ((_cutsceneData == null) || !from.HasValue) return false;
+            if (_cutsceneData == null) return false;
 
-            return _cutsceneData.TryGetClip(from.Value, to, out clip);
+            return _cutsceneData.TryGetClip(from, to, out clip);
         }
         #endregion
 
@@ -216,7 +236,7 @@ namespace SceneTransition
             }
         }
 
-        // 진행 바를 숨기고 컷씬을 끝까지 재생한다. 재생 오류가 나면 경고만 남기고 넘어간다.
+        // 진행 바를 숨기고 영상을 재생한다. E 유지·자연 종료·재생 오류는 같은 정리 경로를 쓴다.
         private IEnumerator CoPlayCutscene(VideoClip clip)
         {
             bool isFinished = false;
@@ -245,12 +265,34 @@ namespace SceneTransition
                 _cutsceneScreen.enabled = true;
                 _videoPlayer.Play();
 
+                float heldTime = 0f;
+                bool canSkip = !IsSkipHeld();
+                SetSkipProgress(0f);
+                if (_skipPrompt != null) _skipPrompt.SetActive(true);
+
                 while (!isFinished)
                 {
+                    bool isHeld = IsSkipHeld();
+                    if (!isHeld)
+                    {
+                        canSkip = true;
+                        heldTime = 0f;
+                    }
+                    else if (canSkip && _videoPlayer.isPlaying)
+                    {
+                        heldTime += Time.unscaledDeltaTime;
+                    }
+
+                    float progress = heldTime / Mathf.Max(0.1f, _skipHoldDuration);
+                    SetSkipProgress(progress);
+                    if (progress >= 1f) break;
+
                     yield return null;
                 }
             }
 
+            if (_skipPrompt != null) _skipPrompt.SetActive(false);
+            SetSkipProgress(0f);
             _videoPlayer.loopPointReached -= onFinished;
             _videoPlayer.errorReceived -= onError;
             _videoPlayer.Stop();

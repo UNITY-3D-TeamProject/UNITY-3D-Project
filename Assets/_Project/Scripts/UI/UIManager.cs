@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Core;
+using Core.Audio;
 using Core.InputMap;
 using Facade.Player;
 using UI.PlayerHud;
@@ -33,6 +34,8 @@ namespace UI
         [SerializeField] private SOMonologueTable _monologueTable;
         [Tooltip("대화 중 alpha를 0으로 내려 인게임 UI를 숨길 캔버스 루트의 CanvasGroup. 대화창·설정창은 Ignore Parent Groups로 계속 보인다.")]
         [SerializeField] private CanvasGroup _inGameCanvasGroup;
+        [Header("Cutscene Sound")]
+        [SerializeField] private SOAudioData _nextLineSound;
         #endregion
 
         #region Private Fields
@@ -523,6 +526,11 @@ namespace UI
                 HidePetGuide();
                 return;
             }
+
+            if (!_isCutsceneLineWaiting && !IsDialoguePlaying) return;
+
+            if ((_nextLineSound != null) && (AudioManager.Instance != null))
+                AudioManager.Instance.PlayUi(_nextLineSound, 0.45f);
 
             // 패널은 다음 단계가 새 대사로 바꾸거나 숨길 때까지 그대로 둔다.
             if (_isCutsceneLineWaiting)

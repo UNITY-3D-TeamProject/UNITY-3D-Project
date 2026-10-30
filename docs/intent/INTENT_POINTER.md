@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[SceneTransition / Video]** 로딩 컷씬 영상 3개 연결 및 E 1.5초 유지 원형 스킵 UI 추가. Unity 컴파일·씬 참조 확인 완료, 실제 영상 조작 확인 남음 → [문서](./intent-090-loading-transition-videos.md)
 - **[Stage / SecurityApp / Items]** 스테이지2 특수몹이 25% 확률로 무작위 아이템을 떨어뜨림. `CombatZone._clearDropItem` 으로 발판마다 아이템을 지정해 HP → 에너지 번갈아 항상 드롭(발판 번호 기준), `Special.prefab` 무작위 드롭 제거 → [문서](./intent-085-special-mob-ordered-drop.md)
 - **[Audio / Core]** SO별 거리 감쇠 선택 및 Linear 기본 설정. Unity 컴파일과 테스트 톤 거리별 출력 측정 완료, 실제 음원 청취·밸런스 확인 남음 → [문서](./intent-082-audio-distance-rolloff.md)
 - **[UI / InfoPanel]** 왼쪽 위 라운드 패널 제목 줄에도 동그라미가 있고, 숫자 퍼즐 문구가 한 줄에 몰리며, 도둑 잡기 문구가 패널 밖으로 넘침. 제목 동그라미 제거, 숫자 퍼즐 3줄(`목표 : 12` / `숫자 : …  연산자 : …`), 패널을 3줄 크기로 키우고 2줄 문구는 글자를 키워 채움, 남은 시간은 위 가운데 새 패널 → [문서](./intent-080-info-panel-layout.md)
@@ -63,6 +64,10 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[Audio / Lobby]** 일반 로비 진입 시 `Digital City Morning` 또는 `Colorful City Morning`을 무작위 첫 곡으로 선택, 이후 등록 순서대로 재생 → [문서](./clear/intent-089-lobby-random-first-bgm.md) (resolved: 2026-10-30)
+- **[Audio / Lobby]** 파일맵에서 로비로 돌아왔을 때만 `Digital Integrity Check` 재생, 일반 로비 목록과 분리 → [문서](./clear/intent-088-lobby-bgm-after-file.md) (resolved: 2026-10-30)
+- **[Audio / Stage / SecurityApp]** 보안맵 일반 구간·보스전 초반·필드보스 최종 처치 후 BGM 3곡 연결 → [문서](./clear/intent-087-security-boss-bgm.md) (resolved: 2026-10-30)
+- **[UI / BossHealth]** 보스 A·B 정면 얼굴 초상화를 체력바 옆에 표시하고 A는 처음부터 `최종보스`, B는 `필드보스`로 표기 → [문서](./clear/intent-086-boss-health-portraits.md) (resolved: 2026-10-30)
 - **[Projectile / Effect]** 카메라 거리 기준 명중 VFX 보정. 최초 1~3배로 Play 검증 후 크기가 과하다는 사용자 피드백으로 최대 2배로 조정, 10m 이내 기본 크기 유지 → [문서](./clear/intent-085-impact-camera-distance-scale.md)
 - **[Core / Audio / Map]** 3D 단발음의 0.05초 중복 제한 제거, UI 제한 유지. 파일맵 원본 가시 효과음 4개 동시 재생·두 장애물 근거리 출력 확인 → [문서](./clear/intent-081-spatial-audio-throttle.md)
 - **[UI / MainMenu]** 승인된 검은 타이틀·로비 페이드/이동·플레이어 메뉴를 정식 MainScene에 적용, 기존 매니저/설정 유지 및 Test 의존0개 → [문서](./clear/intent-081-main-menu-lobby-promotion.md) (resolved: 2026-10-27)
