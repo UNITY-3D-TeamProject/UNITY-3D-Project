@@ -61,6 +61,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 사용자 요청으로 진행 바를 HUD(HP 패널) 스타일로: `ProgressBar`에 `Glow`(Shift `Cut Frame Glow - 3px`, 하늘색)·`Frame`(Shift `Cut Frame Filled`, 어두운 청록) 추가, `Background`·`Fill`을 새 칸 이미지 `UI_LoadingBarCell.png`(30×24, 모서리 잘린 칸) Tiled로 교체(바탕 어두운 청록·채움 하늘색). 오른쪽 `PercentText`(Rajdhani-SemiBold 30) + `LoadingScreen._percentText`(SetProgress에서 반올림 %). 스테이지 화면 러너 위치 (-560 → -600, -59), `TipGroup` y 44 → 36. 모든 로딩 공통(러너 위치·TIP 제외). Play 캡처 확인.
 - 사용자 요청 배치 조정: 아래 묶음(`LoadingText`·`ConnectText` y 210, `ProgressBar`·`PercentText` y 150, `TipGroup` y 86)을 50 올림, 스테이지 화면 러너 (-720, -59), `AppRow` 가운데 (0, 70), `StepList` 오른쪽 위(앵커 (1,1), (-200, -170)). Play 캡처 확인.
 - 사용자 요청: `_fillDuration` 3 → 5초(최소 로딩 약 5.8초, 모든 로딩 공통), `AppRow` x 0 → 60 → 140.
+- 사용자 요청: 튜토리얼·로비로 갈 때 "Loading..." 대신 "튜토리얼로 가는 중..." / "로비로 가는 중...". `SOLoadingStageData._moveTexts`(`SLoadingMoveText { Scene, Text }`) + `TryGetMoveText`, `LoadingStageView._defaultLoadingText`를 `TMP_Text`로 바꿔 스테이지가 아니면 문구 교체. `LoadingText` 폰트 LiberationSans → Pretendard-Bold 44(한글). Play 확인.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
 - 최종 결정:
