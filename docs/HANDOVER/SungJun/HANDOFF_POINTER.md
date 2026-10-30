@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — intent-100: 피드·파일·보안·라이브로 갈 때 로딩 화면에 네온 앱 순서 줄(지금 앱 강조)·남색 배경·"○○ 앱에 접속 중..."·랜덤 TIP·준비 단계 4줄 체크 표시. `SOLoadingStageData` + `LoadingStageView`, `LoadingScreen` 필드 1개, `Loading.unity`에 `ProgressGroup/StageInfo`. Play에서 4개 화면 캡처 확인, 실제 이동 미확인, 커밋 안 함: [작업 기록](./2026-10-31/loading-stage-info.md)
 - **2026-10-31** — intent-096 후속: 엔딩 크레딧을 영어(게임 제목·파트·이름)로 바꾸고 `CreditsRoll`을 오른쪽 절반 가운데(앵커 x 0.75, 폭 800)로 옮김, 왼쪽은 사진 자리로 비움. 임시 렌더로 배치 확인, Play 미확인, 커밋 안 함: [작업 기록](./2026-10-31/ending-credits-english-right.md)
 - **2026-10-31** — intent-099: 미로 스캔 실루엣 색 구분(연산자 파랑·숫자 초록·GC·도둑 빨강). 새 머티리얼 `M_ScanSilhouette_Operator`·`_Enemy`, `SilhouetteReaction.RefreshBaseColors()` 추가, 아이템·GC·도둑 프리팹 연결. 리컴파일·격리 로드 색 확인, 실제 스캔 화면 미확인, 커밋 안 함: [작업 기록](./2026-10-31/maze-scan-silhouette-colors.md)
 - **2026-10-30** — intent-098: 상단 메뉴 `Tools > 진행 단계`(에디터 전용 `Core/Editor/ProgressStepMenu.cs`)로 9단계 중 하나를 골라 이어하기 저장 → MainScene Play → 자동 이어하기, 로비 단계는 직전 스테이지 복귀 위치에서 시작. 리컴파일·메뉴 등록·로딩 진입 확인, Unity 비활성으로 로비 도착은 미확인, 커밋 안 함: [작업 기록](./2026-10-30/progress-step-menu.md)
