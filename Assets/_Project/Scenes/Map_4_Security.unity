@@ -17086,6 +17086,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 618af9c0774347c4989ee755df4869b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.Stage.SecurityApp
+  _preBossBgm: {fileID: 11400000, guid: 3fc6d61090a5e54418bcc976d6c8d714, type: 2}
+  _bossEarlyBgm: {fileID: 11400000, guid: 971ae39e25dc81344b39618de0e9e0ab, type: 2}
+  _bossFinalBgm: {fileID: 11400000, guid: e770b0964ac64d54e83df1bfc84032ed, type: 2}
+  _bossEncounter: {fileID: 449159739}
   _mobRoomRound:
     _rooms:
     - Zone: {fileID: 1358911133}
@@ -26079,6 +26083,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7302749568019999692, guid: 7c511e92952f70340b4a25f2ecbf86d7, type: 3}
+      propertyPath: _bgm
+      value:
+      objectReference: {fileID: 11400000, guid: 3fc6d61090a5e54418bcc976d6c8d714, type: 2}
     - target: {fileID: 7982426921487473606, guid: 7c511e92952f70340b4a25f2ecbf86d7, type: 3}
       propertyPath: m_Name
       value: AudioManager
