@@ -18,7 +18,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 
 ## 기대 결과 (Proposed outcome)
 - 설정창 4개 슬라이더를 마우스로 움직이면 믹서 볼륨·마우스 감도가 바로 바뀌고, 닫을 때(또는 버튼으로 나갈 때) 저장된다.
-- 설정창 목록을 세로 스크롤로 내리면 맨 아래에 `MAIN MENU`·`QUIT GAME` 버튼이 있다.
+- 설정창을 열자마자 `MAIN MENU`·`QUIT GAME` 버튼이 하단에 항상 보이고, 4개 슬라이더는 보이는 두께보다 넓은 영역에서 마우스로 조절할 수 있다.
 - `MAIN MENU`는 멈춘 시간·커서를 풀고 `MainScene`을 바로 불러온다. `QUIT GAME`은 빌드에서 종료, 에디터에서 Play 중지.
 
 ## 영향 범위 (Affected users and systems)
@@ -50,4 +50,5 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
   - Build Settings 7번에 `MainScene` 추가.
 - 확인(TestScene Play, 시뮬레이션 클릭): 마스터 0.5(-6.0dB)·음악 0.19(-14.5dB)·효과음 0.81(-1.9dB), 감도 0.81 → 배율 2.35. 스크롤 후 MAIN MENU → MainScene, timeScale 1·커서 풀림·값 저장, 메인 메뉴 설정창에 저장값 표시·클릭 동작. 다시 Play 시 저장 감도가 스폰 때 적용. QUIT GAME → Play 중지. 테스트 후 PlayerPrefs 볼륨·감도 키는 지움.
 - 남은 것: 실제 마우스로 시점 회전 감도 체감, 맵 씬에서의 확인, 메인 → 새 게임으로 튜토리얼 재진입 확인(맵 씬이라 미실행).
+- 후속 변경(2026-10-30): 사용자 요청에 따라 인게임 `Row_Exit`를 ScrollView 밖의 `Window` 하단에 고정하고 ScrollView 높이를 줄였다. 4개 슬라이더의 RectTransform 높이는 18→40, 배경·채움·손잡이 영역은 18 유지, 투명 Image로 넓어진 영역의 클릭을 받는다. 프리팹 구조·참조 정적 점검 완료, 실제 Editor Play 확인은 남음.
 - 관련 커밋/PR: `252e3706`(MouseSensitivity), `4a091bab`(GameManager), `d213b1ea`(설정창 UI·프리팹), `a4ed336d`(Build Settings 보완)
