@@ -42,6 +42,7 @@ namespace Core.Audio
         private const float MIN_VOLUME = 0.0001f;
         private const float DEFAULT_VOLUME = 1f;
         private const string LOBBY_SCENE_NAME = "Map_1_Lobby";
+        private const string MAIN_SCENE_NAME = "MainScene";
 
         // PlaySfx의 pitchScale이 0 이하로 들어와도 끝나는 시각 계산이 깨지지 않게 하는 하한값
         private const float MIN_PITCH = 0.1f;
@@ -246,6 +247,9 @@ namespace Core.Audio
         // 돌려주는 핸들은 중간에 끊을 때만 StopSfx에 넘긴다. 끊을 일이 없으면 무시해도 된다. 생략되면 default
         public SAudioHandle PlaySfx(SOAudioData audioData, Vector3 position, float volumeScale = 1f, float pitchScale = 1f)
         {
+            if (gameObject.scene.name == MAIN_SCENE_NAME)
+                return default;
+
             if (!TryPickClip(audioData, out AudioClip clip, false))
                 return default;
 
@@ -277,6 +281,9 @@ namespace Core.Audio
         //        target이 파괴되면 마지막 위치에서 계속 나므로, 부르는 쪽이 OnDisable 등에서 꼭 멈춘다.
         public SAudioHandle PlaySfxLoop(SOAudioData audioData, Transform target, float volumeScale = 1f, float pitchScale = 1f)
         {
+            if (gameObject.scene.name == MAIN_SCENE_NAME)
+                return default;
+
             AudioClip clip = (audioData != null) ? audioData.PickClip() : null;
             if ((clip == null) || (target == null))
             {

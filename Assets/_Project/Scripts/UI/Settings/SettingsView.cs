@@ -22,6 +22,7 @@ namespace UI.Settings
 
         // 인게임 설정창에만 둔다. 메인 메뉴 설정창은 비워 둔다.
         [Header("Exit (인게임 전용, 비워도 됨)")]
+        [SerializeField] private Button _retryButton;
         [SerializeField] private Button _mainMenuButton;
         [SerializeField] private Button _quitButton;
 
@@ -30,6 +31,7 @@ namespace UI.Settings
         public event Action<float> SensitivityChanged;
         public event Action MainMenuClicked;
         public event Action QuitClicked;
+        public event Action RetryClicked;
 
         private void OnEnable()
         {
@@ -47,6 +49,8 @@ namespace UI.Settings
                 _mainMenuButton.onClick.AddListener(HandleMainMenuClicked);
             if (_quitButton != null)
                 _quitButton.onClick.AddListener(HandleQuitClicked);
+            if (_retryButton != null)
+                _retryButton.onClick.AddListener(HandleRetryClicked);
         }
 
         private void OnDisable()
@@ -65,6 +69,8 @@ namespace UI.Settings
                 _mainMenuButton.onClick.RemoveListener(HandleMainMenuClicked);
             if (_quitButton != null)
                 _quitButton.onClick.RemoveListener(HandleQuitClicked);
+            if (_retryButton != null)
+                _retryButton.onClick.RemoveListener(HandleRetryClicked);
         }
 
         // 저장된 볼륨을 화면에만 표시한다. VolumeChanged는 발행하지 않는다.
@@ -126,6 +132,11 @@ namespace UI.Settings
         private void HandleQuitClicked()
         {
             QuitClicked?.Invoke();
+        }
+
+        private void HandleRetryClicked()
+        {
+            RetryClicked?.Invoke();
         }
     }
 }

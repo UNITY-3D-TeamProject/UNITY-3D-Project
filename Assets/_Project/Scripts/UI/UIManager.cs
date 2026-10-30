@@ -346,6 +346,7 @@ namespace UI
             _settingsPresenter.CloseRequested += CloseSettings;
             _settingsPresenter.MainMenuRequested += HandleMainMenuRequested;
             _settingsPresenter.QuitRequested += HandleQuitRequested;
+            _settingsPresenter.RetryRequested += HandleRetryRequested;
 
             // 게임 상태와 입력 전환.
             _gameManager.PauseGame();
@@ -365,6 +366,7 @@ namespace UI
             _settingsPresenter.CloseRequested -= CloseSettings;
             _settingsPresenter.MainMenuRequested -= HandleMainMenuRequested;
             _settingsPresenter.QuitRequested -= HandleQuitRequested;
+            _settingsPresenter.RetryRequested -= HandleRetryRequested;
             _settingsPresenter.Close();
 
             InputMapController.Instance?.ReleaseMap(_settingsPresenter);
@@ -391,6 +393,13 @@ namespace UI
             GameManager gameManager = _gameManager;
             CloseSettings();
             gameManager?.QuitGame();
+        }
+
+        private void HandleRetryRequested()
+        {
+            GameManager gameManager = _gameManager;
+            CloseSettings();
+            gameManager?.CurrentStageManager?.RestartStage();
         }
 
         // 플레이어가 스폰되거나 바뀌면 HUD와 입력을 새 플레이어에 연결한다. null이면 연결만 해제한다.
