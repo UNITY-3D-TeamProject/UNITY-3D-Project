@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using AI;
-using Attribute.Core;
 using Core.ObjectPool;
 using Map.Gimmicks;
 using Mediator;
@@ -13,7 +12,9 @@ namespace Core.Stage.Security
     /// 전투 구역 하나의 적 묶음. 순서는 대기(Prepare) → 시작 → 클리어다.
     /// - 대기: 라운드가 이 구역 차례가 되면 Prepare 로 적을 미리 만들어 두고, 플레이어가 들어오기 전까지 제자리에 묶어 둔다 (생성 장면이 보이지 않게).
     /// - 시작: 플레이어가 구역 트리거에 들어오면 묶음을 풀고 OnStarted 를 알린다. 대기 없이 들어오면 그때 만든다.
-    /// - 클리어: 만든 적이 모두 죽으면 OnCleared 를 알린다. 적 종류·마리 수·위치를 바꿔도 "실제로 만든 적이 다 죽었는가"로만 판정한다.
+    /// - 적: 이 오브젝트의 자식(손자 포함) MonsterSpawner 하나가 적 한 마리다. 몹을 늘리려면 스포너를 복제해 자리만 옮긴다.
+    ///   자식 스포너는 씬 시작 때 스스로 소환하지 않고, 대기·시작 때 이 구역이 소환시킨다.
+    /// - 클리어: 만든 적이 모두 죽으면 OnCleared 를 알린다. 스포너 수·종류·위치를 바꿔도 "실제로 만든 적이 다 죽었는가"로만 판정한다.
     ///   보상 아이템(_clearDropItem)을 지정하면 마지막으로 죽은 적 자리에 떨어뜨린다.
     /// 문·발판 등 앞뒤 처리와 사망 리셋 시점은 이 구역을 가진 라운드(MobRoomRound, SpecialMobRound)가 정한다.
     /// 구역 전체를 덮는 콜라이더를 같은 오브젝트에 둔다 (Is Trigger 는 자동으로 켠다).
@@ -27,17 +28,6 @@ namespace Core.Stage.Security
         #endregion
 
         #region Nested Types
-        /// <summary>구역에 만들 적 한 종류와 마리 수.</summary>
-        [Serializable]
-        private struct SZoneEnemy
-        {
-            [Tooltip("만들 몬스터의 데이터. 프리팹은 이 데이터의 Monster Prefab 을 쓰고, 값은 생성 직후 SetValue 로 넣는다.\n씬에 ObjectPoolManager 가 있으면 그 프리팹이 등록돼 있어야 한다.")]
-            public SOMonsterData Monster;
-
-            [Tooltip("이 종류를 몇 마리 만들지. 0 이면 만들지 않는다.")]
-            [Min(0)] public int Count;
-        }
-
         /// <summary>살아 있는 적 하나. 사망 구독을 풀 핸들러와 묶어 둘 AI 를 함께 든다.</summary>
         private class AliveEnemy
         {
@@ -47,13 +37,6 @@ namespace Core.Stage.Security
         #endregion
 
         #region Serialized Fields
-        [Header("Enemies")]
-        [Tooltip("이 구역에 만들 적 종류와 마리 수. 적이 하나도 없으면 들어오자마자 클리어된다.")]
-        [SerializeField] private SZoneEnemy[] _enemies;
-
-        [Tooltip("적을 만들 위치. 적은 위치의 앞(+Z)을 보고 기다린다. 적이 위치보다 많으면 처음 위치부터 다시 돌아가며 쓴다. 비우면 이 오브젝트 위치에 만든다.")]
-        [SerializeField] private Transform[] _spawnPoints;
-
         [Header("Clear Drop")]
         [Tooltip("구역의 마지막 적이 죽으면 그 자리에 반드시 떨어뜨릴 아이템 프리팹 (닿으면 획득되는 것). 비우면 떨어뜨리지 않는다.")]
         [SerializeField] private GameObject _clearDropItem;
@@ -98,6 +81,12 @@ namespace Core.Stage.Security
         private void Awake()
         {
             GetComponent<Collider>().isTrigger = true;
+
+            // 자식 스포너의 Start 보다 먼저 돈다. 소환은 이 구역 차례가 되면 Prepare 에서 한다
+            foreach (MonsterSpawner spawner in GetComponentsInChildren<MonsterSpawner>(true))
+            {
+                spawner.ShouldSpawnOnStart = false;
+            }
         }
 
         private void Update()
@@ -195,48 +184,27 @@ namespace Core.Stage.Security
             OnProgressChanged?.Invoke();
         }
 
+        // 비활성 구역에 Prepare 가 먼저 불릴 수도 있으니 Awake 에서 모아 두지 않고 소환할 때마다 찾는다
         private void SpawnEnemies()
         {
-            if (_enemies == null) return;
-
-            int spawnIndex = 0;
-            foreach (SZoneEnemy enemy in _enemies)
+            foreach (MonsterSpawner spawner in GetComponentsInChildren<MonsterSpawner>(true))
             {
-                if (enemy.Monster == null || enemy.Monster.MonsterPrefab == null)
-                {
-                    Debug.LogError($"[{name}] 몬스터 데이터 또는 그 Monster Prefab 이 비어 있어 건너뜁니다.", this);
-                    continue;
-                }
-
-                for (int i = 0; i < enemy.Count; i++)
-                {
-                    SpawnEnemy(enemy.Monster, GetSpawnPoint(spawnIndex));
-                    spawnIndex++;
-                }
+                SpawnEnemy(spawner);
             }
         }
 
-        // 한 마리를 만들고 사망을 구독한다. 풀 매니저가 있으면 풀에서 꺼낸다 (MonsterSpawner 와 같은 방식).
-        private void SpawnEnemy(SOMonsterData monster, Transform spawnPoint)
+        // 스포너로 한 마리를 만들고 사망을 구독한다. 몬스터 값 적용은 스포너가 한다.
+        private void SpawnEnemy(MonsterSpawner spawner)
         {
-            GameObject prefab = monster.MonsterPrefab;
-            ObjectPoolManager poolManager = ObjectPoolManager.Instance;
-
-            // 등록되지 않은 프리팹이면 풀 매니저가 에러를 남기고 null 을 돌려준다
-            GameObject instance = (poolManager != null)
-                ? poolManager.Get(prefab, spawnPoint.position, spawnPoint.rotation)
-                : Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
+            GameObject instance = spawner.Spawn();
             if (instance == null) return;
 
-            AttributeSet attributes = instance.GetComponentInChildren<AttributeSet>(true);
-            if (!instance.TryGetComponent(out CharacterMediator mediator) || (attributes == null))
+            if (!instance.TryGetComponent(out CharacterMediator mediator))
             {
-                Debug.LogError($"[{name}] '{prefab.name}' 루트에 CharacterMediator 또는 AttributeSet 이 없어 적으로 쓸 수 없습니다.", this);
+                Debug.LogError($"[{name}] '{instance.name}' 루트에 CharacterMediator 가 없어 적으로 쓸 수 없습니다.", spawner);
                 ReleaseEnemy(instance);
                 return;
             }
-
-            ApplyMonsterData(monster, attributes);
 
             AliveEnemy enemy = new AliveEnemy { Controller = instance.GetComponent<AIController>() };
             enemy.OnDeathHandler = () => HandleEnemyDeath(mediator);
@@ -291,30 +259,6 @@ namespace Core.Stage.Security
                 ObjectPoolManager.Instance.Release(enemy);
             else
                 Destroy(enemy);
-        }
-
-        // 적 순서대로 위치를 돌아가며 쓴다. 위치가 없으면 이 오브젝트 위치를 쓴다.
-        private Transform GetSpawnPoint(int spawnIndex)
-        {
-            if ((_spawnPoints == null) || (_spawnPoints.Length == 0)) return transform;
-
-            Transform spawnPoint = _spawnPoints[spawnIndex % _spawnPoints.Length];
-            return (spawnPoint != null) ? spawnPoint : transform;
-        }
-
-        /// <summary>몬스터 데이터의 초기값을 SetValue 로 넣는다. 없는 키는 건너뛴다.</summary>
-        private static void ApplyMonsterData(SOMonsterData monster, AttributeSet attributes)
-        {
-            foreach (SOAttributeData.SAttribute entry in monster.Attributes)
-            {
-                if (!attributes.IsValidTarget(entry.AttributeName))
-                {
-                    Debug.LogWarning($"[{monster.name}] 어트리뷰트 '{entry.AttributeName}'가 몬스터에 없어 건너뜁니다.", monster);
-                    continue;
-                }
-
-                attributes.SetValue(entry.AttributeName, entry.Value);
-            }
         }
         #endregion
     }
