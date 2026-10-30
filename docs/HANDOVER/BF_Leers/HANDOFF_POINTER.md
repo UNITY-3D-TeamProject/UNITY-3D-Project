@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-30** — AI_TODO2 보스-30: 그로기 중 손을 때리면 피격 이펙트가 플레이어 위치에서 나오던 원인은 `BossHitRelay` 가 HP 하한 적용 때 `HitPoint` 까지 버려 공격자 위치로 대체된 것. `HitPoint` 는 유지하고 `Direction` 만 빼도록 변경(크리티컬 차단 유지). 리컴파일 통과. **직접 플레이·게이트 루프 미실행, 커밋 전**: [그로기 피격 이펙트 위치](./2026-10-30/boss-groggy-hit-effect-position.md)
 - **2026-10-30** — intent-092 후속(AI_TODO2 보스-32): 그로기 손 마커가 안 보이던 원인은 SO `_scale` 1 → 손(11×20×11m) 대비 약 10배 작음. `SOEffectData_BossHandHint._scale` 을 10 으로 변경. ThirdParty 의존(Git 미포함) 남음. **보스전 육안 확인·게이트 루프 미실행, 커밋 전**: [마커 크기](./2026-10-30/boss-groggy-hand-hint-scale.md)
 - **2026-10-30** — intent-093 후속(AI_TODO2 보스-33): 실드가 안 보이던 원인은 HoloShield 의 `NewMaterialChange` 가 4초 뒤 구체를 `Destroy`. `BossA.prefab` 오버라이드로 비활성. ThirdParty 의존(Git 미포함) 남음. **보스전 육안 확인·게이트 루프 미실행, 커밋 전**: [실드 사라짐](./2026-10-30/boss-a-shield-vanish.md)
 - **2026-10-30** — intent-074 후속(AI_TODO2 연출-2): 0·1 낙하를 1라운드 전 구역(스폰방·복도·방 1~4·연결 통로)으로 확대. `SecurityApp._zoneHazardSpawners`(1라운드에만 켬, 리스폰 시 정리) + `FallingHazardSpawner._isAreaWeighted`(넓이 비례 선택, 기본 꺼짐), 씬 루트 `FallingZones` 생성기 6개(바닥 격자 레이로 만든 슬랩, 구역별 개수 3~6). 리컴파일 통과, Play 에서 1라운드 6개 가동·낙하물 전부 바닥 위 확인. **개수는 초기값, 직접 플레이·게이트 루프 미실행, 커밋 전**: [전체 맵 낙하](./2026-10-30/falling-whole-map.md)
