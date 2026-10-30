@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-30** — 로딩 영상 스킵을 E 키 전용으로 바꾸고 스킵 안내 UI를 약 70%로 축소: [작업 기록](./2026-10-30/loading-video-skip-e-only.md)
 - **2026-10-30** — 에디터에서 MainScene Play 시 가끔 커서가 사라지던 문제 수정: 이전 Play의 커서 잠금이 에디터에 남는데 메인씬에서 풀어 주는 코드가 없었음. `GameManager.Awake`에서 `SetCursorLocked(false)` 호출. 잠금 상태를 남긴 채 Play해서 풀리는 것 확인, 버튼 직접 클릭은 미확인: [작업 기록](./2026-10-30/mainmenu-cursor-unlock.md)
 - **2026-10-29** — 기본 커서를 네온 화살표로 교체: `Art/UI/Cursor/Cursor_Default.png`(64×64, Cursor 타입) + Player Settings Default Cursor·핫스팟 (6,7). 에디터가 닫혀 있어 파일 직접 수정, 임포트·표시 미확인, 커밋 안 함: [작업 기록](./2026-10-29/default-cursor.md)
 - **2026-10-27** — Test의 `DataPacket_Basic` 이펙트에서 총알용 VFX 2개 분리: `Prefabs/Projectile/VFX/VFX_DataPacketTrail`(SquarePackets·DataStreaks)·`VFX_DataPacketImpact`(ImpactPackets), 셰이더 `Project/DataPacketUnlit`·머티리얼 2개를 `_Project`로 복사(Test 참조 0). 씬 뷰 Simulate로 모양 확인, 총알 연결·Play 미확인, 커밋 안 함: [작업 기록](./2026-10-27/datapacket-bullet-vfx.md)
