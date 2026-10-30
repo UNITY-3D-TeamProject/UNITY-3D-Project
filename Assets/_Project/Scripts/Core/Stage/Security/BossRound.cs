@@ -122,12 +122,13 @@ namespace Core.Stage.Security
         #endregion
 
         #region Private Methods
-        // 보스 바닥에 올라서면 아레나 벽을 켜고 리스폰 자리 발판을 내린다. 이미 내려가 있으면 그대로다.
+        // 보스 바닥에 올라서면 아레나 벽을 켜고 리스폰 자리 발판을 내리고 보스전 시작을 허가한다. 이미 내려가 있으면 그대로다.
         // [이벤트] TriggerPlate.OnPlayerEntered (Begin 에서 구독)
         private void HandleArenaEntered()
         {
             if (_arenaWall != null) _arenaWall.SetActive(true);
             if (_respawnPlatform != null) _respawnPlatform.Activate();
+            if (_bossFightSpawner != null) _bossFightSpawner.AllowStart();
         }
 
         // 내려가는 쪽으로 움직여 도착해 멈춘 발판만 끈다. 내려가는 중이거나 이미 꺼져 있으면 그대로다.

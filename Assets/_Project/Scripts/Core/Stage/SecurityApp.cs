@@ -3,12 +3,13 @@ using AI.Boss.Fight;
 using AI.Boss.Logic;
 using Core.Audio;
 using Core.Stage.Security;
+using Map.Gimmicks;
 
 namespace Core.Stage
 {
     /// <summary>
     /// 보안 앱(전투 맵) 스테이지. 지금 라운드 번호는 StageBase 가 따라가고, 이 컴포넌트는 번호를 보고 그 라운드의 로직을 직접 부른다. 설정은 인스펙터의 각 라운드 항목에서 한다.
-    /// - 1라운드: 잡몹 방(MobRoomRound). 방의 적을 다 잡으면 출구 문이 열린다.
+    /// - 1라운드: 잡몹 방(MobRoomRound). 방의 적을 다 잡으면 출구 문이 열린다. 이 라운드 동안 구역 바닥으로 위험물이 떨어진다.
     /// - 2라운드: 특수몹 발판(SpecialMobRound). 특수몹을 잡으면 다음 발판이 나타난다. 이 라운드 동안 발판 위로 위험물이 떨어진다.
     /// - 3라운드: 보스(BossRound). 보스를 쓰러뜨리면 탈출 문이 나타난다.
     /// 라운드 중 플레이어가 죽으면 그 라운드의 못 깬 구역만 다시 시작한다. (보스는 BossFightSpawner 가 다시 만든다)
@@ -35,6 +36,9 @@ namespace Core.Stage
 
         [Header("1라운드 · 잡몹 방")]
         [SerializeField] private MobRoomRound _mobRoomRound = new MobRoomRound();
+
+        [Tooltip("1라운드 동안 구역(복도·방·연결 통로)마다 바닥으로 위험물을 떨어뜨리는 생성기. 구역별 개수·간격은 각 생성기에서 정한다.")]
+        [SerializeField] private FallingHazardSpawner[] _zoneHazardSpawners;
 
         [Header("2라운드 · 특수몹 발판")]
         [SerializeField] private SpecialMobRound _specialMobRound = new SpecialMobRound();
@@ -130,7 +134,7 @@ namespace Core.Stage
         #endregion
 
         #region Protected Methods
-        // 2라운드 동안만 발판 위로 위험물을 떨어뜨린다. 다른 라운드에서는 2라운드 발판으로 바꿨던 낙하 복귀 자리를 체크포인트로 돌린다.
+        // 1라운드 동안은 구역 바닥으로, 2라운드 동안은 발판 위로 위험물을 떨어뜨린다. 보스 라운드에는 둘 다 멈춘다.
         // 보스 라운드로 바뀌면(3라운드 체크포인트 도착) 2라운드 발판을 내리고 앞 구간을 숨긴다.
         protected override void OnRoundChanged()
         {
@@ -149,6 +153,8 @@ namespace Core.Stage
                 _specialMobRound.ClearFallReturnPoint();
             }
 
+            SetZoneHazards(CurrentRoundIndex == MOB_ROOM_ROUND_INDEX);
+
             if (CurrentRoundIndex != BOSS_ROUND_INDEX) return;
 
             _bossRound.LowerPlatforms();
@@ -164,6 +170,7 @@ namespace Core.Stage
             switch (CurrentRoundIndex)
             {
                 case MOB_ROOM_ROUND_INDEX:
+                    ClearZoneHazards();
                     _mobRoomRound.ResetUnclearedRooms();
                     break;
 
@@ -187,6 +194,31 @@ namespace Core.Stage
         {
             if (CurrentRoundIndex == BOSS_ROUND_INDEX && stage == EBossStage.Final)
                 AudioManager.Instance?.ChangeBgm(_bossFinalBgm);
+        }
+
+        // 구역 생성기를 모두 시작하거나(떨어지는 중인 위험물까지) 멈춘다.
+        private void SetZoneHazards(bool isOn)
+        {
+            if (_zoneHazardSpawners == null) return;
+
+            foreach (FallingHazardSpawner spawner in _zoneHazardSpawners)
+            {
+                if (spawner == null) continue;
+
+                if (isOn) spawner.StartSpawning();
+                else spawner.StopSpawning();
+            }
+        }
+
+        // 리스폰 직후 맞지 않게 떨어지는 중인 위험물만 지우고 생성은 계속한다.
+        private void ClearZoneHazards()
+        {
+            if (_zoneHazardSpawners == null) return;
+
+            foreach (FallingHazardSpawner spawner in _zoneHazardSpawners)
+            {
+                if (spawner != null) spawner.ClearHazards();
+            }
         }
         #endregion
     }

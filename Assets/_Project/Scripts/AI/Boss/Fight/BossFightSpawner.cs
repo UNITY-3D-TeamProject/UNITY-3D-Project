@@ -18,6 +18,7 @@ namespace AI.Boss.Fight
     /// Prespawn Round Index 를 정하면 그 라운드에 A 만 미리 만들어 BT 를 멈춘 채 세워 두고, 보스전 라운드가 되면 그 A 로 시작한다.
     /// B 는 보스전 라운드가 되어서야 A 머리 위에 나타나 Spell 을 재생하고 땅에 내려앉은 뒤, 그때 BT 를 켜고 보스전을 시작한다.
     /// 등장 연출 동안 플레이어는 움직이지 못한다. 연출 중 플레이어가 재스폰되면 보스를 다시 만들어 연출도 처음부터 다시 한다.
+    /// 보스전 라운드가 되어도 AllowStart 가 불리기 전에는 시작하지 않는다(아레나 진입 때 맵 쪽이 부른다). 보스를 지우면 허가도 거둔다.
     /// </summary>
     public class BossFightSpawner : RoundSpawnerBase
     {
@@ -50,6 +51,7 @@ namespace AI.Boss.Fight
         private bool _hasSpawned;
         private bool _isPrespawned;
         private bool _isBeginFailed;
+        private bool _isStartAllowed;
         private Coroutine _entranceRoutine;
         private PlayerFacade _lockedPlayer;
         #endregion
@@ -69,6 +71,7 @@ namespace AI.Boss.Fight
         {
             if (_hasSpawned || _isPrespawned) Despawn();
             _isBeginFailed = false;
+            _isStartAllowed = false;
 
             base.OnDisable();
         }
@@ -84,10 +87,18 @@ namespace AI.Boss.Fight
         }
         #endregion
 
+        #region Public Methods
+        /// <summary>보스전 시작을 허가한다. 보스전 라운드면 다음 프레임에 보스가 나타난다. 보스가 지워지면 허가도 거둬진다.</summary>
+        public void AllowStart()
+        {
+            _isStartAllowed = true;
+        }
+        #endregion
+
         #region Protected Methods
         protected override void Spawn()
         {
-            if (_isBeginFailed) return;
+            if (_isBeginFailed || !_isStartAllowed) return;
 
             PlayerFacade player = CurrentPlayerFacade;
             if (!player)
@@ -132,6 +143,7 @@ namespace AI.Boss.Fight
             DestroyBosses();
             _hasSpawned = false;
             _isPrespawned = false;
+            _isStartAllowed = false;
         }
 
         protected override void OnPlayerSpawned(PlayerFacade playerFacade)

@@ -4,6 +4,12 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[AI / Boss / BossA / Art]** 보스A 모델을 본·애니메이션 없는 새 FBX(`Virus_King_Boss`, 메시 5조각)로 교체(AI_TODO2 보스-24·25). 손 피벗 계층 구성, 오염 장갑 셰이더·칸 글리치를 새 텍스처에 맞춰 잇기, 사망·Idle 클립, 약점을 가슴 코어로 이동. 구현·Play 생성 확인 완료, 보스전 직접 플레이 확인 남음 → [문서](./intent-091-boss-a-model-swap.md)
+- **[AI / Enemy / Skill]** 특수몹 바람 스킬이 발동 순간 방향을 고정해 이동하는 플레이어를 따라가지 않음(AI_TODO2 잡몹-9). 램프 동안 `EnemyWindBlast._forward` 와 `Hold` 방향을 매 프레임 대상 쪽으로 갱신(즉시 추적), 넉백 방향은 시작 순간 고정. 리컴파일 통과, 직접 플레이 확인 남음 → [문서](./intent-090-special-wind-track-player.md)
+- **[AI / Enemy / Combat / Feedback]** 약점을 맞혀도 일반 피격과 구분되는 피드백이 없음(AI_TODO2 잡몹-7). `CharacterMediator.OnCriticalHit` 를 구독하는 `CriticalHitFeedback` 로 맞은 지점에 약점 전용 이펙트(`WeakPointHit`, YellowLaserImpact 복사본)·소리를 덧입힘. 잡몹 3종·보스 2종 부착, Play 판정 확인 완료. 소리 에셋 연결·직접 플레이 확인 남음 → [문서](./intent-089-weak-point-hit-feedback.md)
+- **[AI / Enemy / Combat]** 특수몹 약점이 맞지 않음(AI_TODO2 잡몹-8). `Special.prefab` 의 `CombatPrefab._weakPoint` 연결 누락으로 치명타가 전혀 없었고, 총알이 닿는 캡슐이 작아 5번(머리 위)·3·4번(팔 바깥) 후보가 캡슐 밖. 연결 추가 + 2~5번 후보를 캡슐 안 정면으로 이동. 판정 시뮬레이션 확인 완료, 직접 플레이 확인 남음 → [문서](./intent-088-special-weak-point-position.md)
+- **[AI / Boss]** 보스A 그랩에 잡힌 플레이어가 손목 밑에 끌려가 손에 잡힌 느낌이 없음. 날아가는 동안 집게를 날아가는 방향으로 돌리고, 손바닥 본 밑 `GrabPoint`(집게 턱 사이)에 플레이어를 맞춘 뒤 잡으면 집게를 오므림 → [문서](./intent-087-boss-a-grab-claw.md)
+- **[AI / Boss / Shader]** 보스A 몸체에 바이러스 감염 느낌의 움직이는 표현이 없음(AI_TODO2 보스-18). 메시를 바인드 포즈 기준 3×3 칸으로 나눠 2~3초마다 2~3칸을 뽑고, 그 칸만 0·1 낙하물처럼 가로 띠가 옆으로 튀는 버텍스 글리치 + 보스B 손 같은 표면 스파크(`BossAGlitch`, `BossACorruptedArmor.hlsl`). 항상 켬 → [문서](./intent-086-boss-a-cell-glitch.md)
 - **[Stage / SecurityApp / Map]** 보안맵 2라운드 특수몹이 다음 발판이 나타나자마자 미리 소환돼 원거리로 미리 잡을 수 있고, 지나온 발판으로 돌아갈 수 있음. 발판을 밟을 때 소환(연출 없이), 밟으면 뒤 발판 가라앉힘, 사망 시 2라운드 전체 리셋, 낙사 시 지금 발판으로 복귀(`StageManager.SetFallReturnPoint`). 구현·Play 확인 완료, 직접 조작 확인 남음 → [문서](./intent-095-special-mob-step-spawn.md)
 - **[Stage / SecurityApp / Map]** 보안맵 2라운드 특수몹 발판 5→4개. Platform_5 삭제, Platform_6·보스 구역 전체를 x −31m 당김, 참조 정리·NavMesh 재생성. 발판 진행·3라운드 진입 확인, 보스 등장·보스전 직접 플레이 확인 남음 → [문서](./intent-094-security-round2-four-platforms.md)
 - **[UI / Settings / Core / Stage]** ESC 설정창에서 현재 스테이지 씬을 처음부터 다시 시작하는 `다시하기` 버튼 추가 → [문서](./intent-092-settings-stage-retry.md)

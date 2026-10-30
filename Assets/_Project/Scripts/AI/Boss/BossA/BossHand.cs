@@ -6,7 +6,7 @@ namespace AI.Boss.BossA
 {
     /// <summary>
     /// A 의 손. 위치 보간으로 떠오르고 내려치고 머물고 회수한다. 물리는 쓰지 않는다.
-    /// 손 본(_bone)이 있으면 이 오브젝트를 따라 손 본만 움직인다(팔은 애니메이션 그대로). 떠올라 내려찍는 동안은 손가락이 아래를 향하게 돌린다(주먹으로 칠 때는 손가락을 오므려 판 쪽으로 눕힌다). 박수 자세에서는 손가락을 위로, 손바닥을 맞은편 손 쪽으로 세운다. 쉬는 동안은 반대로 이 오브젝트가 평소 위치를 따라간다.
+    /// 손 본(_bone)이 있으면 이 오브젝트를 따라 손 본만 움직인다(팔은 애니메이션 그대로). 떠올라 내려찍는 동안은 손가락이 아래를 향하게 돌린다(주먹으로 칠 때는 손가락을 오므려 판 쪽으로 눕힌다). 박수 자세에서는 손가락을 위로, 손바닥을 맞은편 손 쪽으로 세운다. 그랩 자세에서는 집게를 날아가는 방향으로 돌리고, 잡으면 오므린다. 쉬는 동안은 반대로 이 오브젝트가 평소 위치를 따라간다.
     /// 콜라이더는 손 프리팹 쪽에 늘 켜 두고(피격 중계·막기 겸용), 머무는 동안만 NavMesh 장애물을 켠다.
     /// </summary>
     public class BossHand : MonoBehaviour
@@ -73,6 +73,14 @@ namespace AI.Boss.BossA
         [SerializeField] private Vector3 _fistDownAxis = Vector3.forward;
         [Tooltip("임시값. 주먹 자세에서 손 본 원점이 이 오브젝트(지면)보다 위에 놓이는 높이(m). 주먹 아랫면이 지면에 닿게 맞춘다")]
         [SerializeField, Min(0.0f)] private float _fistLift = 4.58f;
+
+        [Header("Grab")]
+        [Tooltip("손 본 밑에 둔 집게 턱 사이 지점. 그랩에 잡힌 플레이어의 발을 여기에 맞춘다. 비워 두면 이 오브젝트 위치")]
+        [SerializeField] private Transform _grabPoint;
+        [Tooltip("임시값. 그랩 자세에서 손 본 원점이 이 오브젝트보다 위에 놓이는 높이(m). 0 이면 집게 턱이 이 오브젝트 높이로 날아간다")]
+        [SerializeField, Min(0.0f)] private float _grabLift = 0.0f;
+        [Tooltip("임시값. 잡았을 때 집게를 오므리는 정도. 주먹의 _fingerCurls 각도에 곱한다")]
+        [SerializeField, Range(0.0f, 1.0f)] private float _gripCurl = 1.0f;
         #endregion
 
         #region Private Fields
@@ -88,9 +96,14 @@ namespace AI.Boss.BossA
         private float _fingerSink;
         private float _clapWeight;
         private float _fistWeight;
+        private float _grabWeight;
+        private float _gripWeight;
         private bool _isClapPose;
         private bool _isFist;
+        private bool _isGrabPose;
+        private bool _isGripping;
         private Vector3 _clapDirection;
+        private Vector3 _grabDirection;
         private Action _onImpact;
         private Action _onFlyDone;
         private Action _onSweepDone;
@@ -104,6 +117,9 @@ namespace AI.Boss.BossA
 
         /// <summary>박수 자세에서 손 본이 놓이는 위치.</summary>
         public Vector3 ClapPoint => transform.position + (Vector3.up * _clapLift);
+
+        /// <summary>그랩에 잡힌 플레이어의 발을 맞출 집게 턱 사이 위치.</summary>
+        public Vector3 GrabPoint => _grabPoint ? _grabPoint.position : transform.position;
 
         /// <summary>떠 있는 자리에서 내려쳐 닿기까지 걸리는 시간(초).</summary>
         public float SlamSeconds => _slamSeconds;
@@ -127,6 +143,8 @@ namespace AI.Boss.BossA
             _state = EHandState.Idle;
             _isClapPose = false;
             _isFist = false;
+            _isGrabPose = false;
+            _isGripping = false;
             if (_stayObstacle) _stayObstacle.enabled = false;
         }
 
@@ -181,6 +199,8 @@ namespace AI.Boss.BossA
                 _fingerSink = 0.0f;
                 _clapWeight = 0.0f;
                 _fistWeight = 0.0f;
+                _grabWeight = 0.0f;
+                _gripWeight = 0.0f;
                 transform.position = GetRestPosition();
                 return;
             }
@@ -211,6 +231,7 @@ namespace AI.Boss.BossA
             float lift = Mathf.Lerp(_boneLift, _fingersDownLift, tilt) - (_sinkDepth * _fingerSink);
             lift = Mathf.Lerp(lift, _fistLift, fist);
             lift = Mathf.Lerp(lift, _clapLift, clap);
+            lift = Mathf.Lerp(lift, _grabLift, Mathf.SmoothStep(0.0f, 1.0f, _grabWeight));
             _bone.position = transform.position + (Vector3.up * lift);
 
             // 애니메이션이 쓴 회전에서 손가락 방향이 아래를 향하는 쪽으로 기울인다
@@ -228,6 +249,20 @@ namespace AI.Boss.BossA
                 _bone.rotation = Quaternion.Slerp(_bone.rotation, fistPose, fist);
                 CurlFingers(fist);
             }
+
+            // 그랩 자세: 집게(손가락)를 날아가는 수평 방향으로 돌리고, 잡으면 집게를 오므린다. 회수할 때 풀린다
+            _grabWeight = Mathf.MoveTowards(_grabWeight, _isGrabPose ? 1.0f : 0.0f, tiltStep);
+            float grab = Mathf.SmoothStep(0.0f, 1.0f, _grabWeight);
+            if (grab > 0.0f)
+            {
+                Vector3 fingers = _bone.TransformDirection(_fingerAxis);
+                fingers.y = 0.0f;
+                Quaternion grabFacing = Quaternion.AngleAxis(Vector3.SignedAngle(fingers, _grabDirection, Vector3.up), Vector3.up) * _bone.rotation;
+                _bone.rotation = Quaternion.Slerp(_bone.rotation, grabFacing, grab);
+            }
+
+            _gripWeight = Mathf.MoveTowards(_gripWeight, _isGripping ? 1.0f : 0.0f, tiltStep);
+            if (_gripWeight > 0.0f) CurlFingers(Mathf.SmoothStep(0.0f, 1.0f, _gripWeight) * _gripCurl);
 
             // 박수 자세: 손가락은 위로, 손바닥은 맞은편 손을 향하게 세운다
             if (clap <= 0.0f) return;
@@ -275,6 +310,24 @@ namespace AI.Boss.BossA
             _flySeconds = seconds;
             _onFlyDone = onArrived;
             BeginMove(position, EHandState.Flying);
+        }
+
+        /// <summary>
+        /// 그랩 자세로 바꾼다. 집게(손가락)를 direction 수평 방향으로 돌린다. 회수할 때 풀린다.
+        /// </summary>
+        public void SetGrabPose(Vector3 direction)
+        {
+            direction.y = 0.0f;
+            _grabDirection = direction.normalized;
+            _isGrabPose = true;
+        }
+
+        /// <summary>
+        /// 그랩 자세에서 집게를 오므린다. 회수할 때 풀린다.
+        /// </summary>
+        public void Grip()
+        {
+            _isGripping = true;
         }
 
         /// <summary>
@@ -394,6 +447,8 @@ namespace AI.Boss.BossA
 
             _isClapPose = false;
             _isFist = false;
+            _isGrabPose = false;
+            _isGripping = false;
             BeginMove(GetRestPosition(), EHandState.Recalling);
         }
 

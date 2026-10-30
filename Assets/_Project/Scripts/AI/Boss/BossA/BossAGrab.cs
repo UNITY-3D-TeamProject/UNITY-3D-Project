@@ -10,7 +10,7 @@ namespace AI.Boss.BossA
 {
     /// <summary>
     /// A4. 블리츠크랭크 Q 식 그랩. 한 손이 직선 경로를 예고한 뒤 판 반대편 끝까지 곧장 날아가고, 경로에서 처음 닿은 플레이어를 잡는다.
-    /// 잡힌 플레이어는 손에 매달린 채(중력 없음) 손이 끝까지 가는 만큼 끌려갔다가, 같은 속도로 돌아오는 손에 끌려
+    /// 날아가는 동안 손은 집게를 날아가는 방향으로 돌리고, 잡으면 집게를 오므린다. 잡힌 플레이어는 집게 턱 사이에 쥐인 채(중력 없음) 손이 끝까지 가는 만큼 끌려갔다가, 같은 속도로 돌아오는 손에 끌려
     /// 손이 떠난 쪽에서 가장 가까운 멀쩡한 칸의 중심에 놓인다. 놓인 칸은 예고가 뜨고, 반대쪽 손이 내려쳐 그 칸 하나만 무너뜨린다.
     /// 빗나가면 손만 돌아오고 끝난다.
     /// 잡힌 순간 화면이 흔들리고, 매달린 동안과 놓인 뒤 잠시 플레이어는 움직일 수 없다(남은 예고 시간에는 피할 수 있다).
@@ -69,6 +69,7 @@ namespace AI.Boss.BossA
         private Vector3 _origin;
         private Vector3 _direction;
         private float _hookDistance;
+        private float _grabReach;
         private float _floorY;
         private float _heldHeight;
         private float _remaining;
@@ -216,8 +217,13 @@ namespace AI.Boss.BossA
             SetGrabHandPassThrough(true);
 
             _state = EGrabState.Flying;
-            Vector3 destination = _origin + (_direction * _hookDistance) + (Vector3.up * _hookHeight);
-            _grabHand.Fly(destination, _hookDistance / _hookSpeed, OnFlyArrived);
+            _grabHand.SetGrabPose(_direction);
+
+            // 집게는 손 위치보다 앞에 있으므로 그만큼 덜 날아가 집게가 판 끝에 닿게 한다
+            _grabReach = GetGrabReach();
+            float flyDistance = Mathf.Max(0.0f, _hookDistance - _grabReach);
+            Vector3 destination = _origin + (_direction * flyDistance) + (Vector3.up * _hookHeight);
+            _grabHand.Fly(destination, flyDistance / _hookSpeed, OnFlyArrived);
         }
 
         private void TryCapture()
@@ -225,7 +231,7 @@ namespace AI.Boss.BossA
             Transform body = Situation.PlayerBody;
             if (!body) return;
 
-            Vector3 offset = body.position - _grabHand.transform.position;
+            Vector3 offset = body.position - _grabHand.GrabPoint;
             offset.y = 0.0f;
             if (offset.sqrMagnitude > (_hookRadius * _hookRadius)) return;
 
@@ -238,28 +244,27 @@ namespace AI.Boss.BossA
             LockPlayer(float.PositiveInfinity);
             _isPlayerHeld = true;
             Situation.SetPlayerHeld(true);
+            _grabHand.Grip();
             if (_captureShakeForce > 0.0f) Situation.ShakePlayerCamera(_captureShakeForce);
 
             DragPlayer();
         }
 
         /// <summary>
-        /// 매달린 플레이어를 손 아래(잡을 때의 발 높이)로 옮긴다. 손은 이 뒤에 움직이므로 한 프레임 뒤따라간다.
+        /// 매달린 플레이어의 발(PlayerBody 위치)을 집게 턱 사이에 맞춘다. 손은 이 뒤에 움직이므로 한 프레임 뒤따라간다.
         /// </summary>
         private void DragPlayer()
         {
-            Vector3 hand = _grabHand.transform.position;
-            MovePlayerTo(new Vector3(hand.x, _floorY, hand.z));
+            MovePlayerTo(_grabHand.GrabPoint);
         }
 
-        /// <param name="floorPoint">옮길 바닥 높이의 위치. 잡을 때의 발 높이만큼 위로 올려 둔다</param>
-        private void MovePlayerTo(Vector3 floorPoint)
+        /// <param name="target">플레이어 몸(PlayerBody)을 옮길 위치</param>
+        private void MovePlayerTo(Vector3 target)
         {
             Transform body = Situation.PlayerBody;
             CharacterMotor motor = Situation.PlayerMotor;
             if (!body || !motor) return;
 
-            Vector3 target = floorPoint + (Vector3.up * _heldHeight);
             motor.AddExternalDisplacement(target - body.position);
         }
 
@@ -281,7 +286,8 @@ namespace AI.Boss.BossA
                 return;
             }
 
-            Vector3 destination = Arena.GetTileCenter(_slamTile) + (Vector3.up * _hookHeight);
+            // 집게는 계속 바깥쪽(_direction)을 향하므로, 집게가 칸 위에 오도록 손은 그만큼 보스 쪽에 멈춘다
+            Vector3 destination = Arena.GetTileCenter(_slamTile) - (_direction * _grabReach) + (Vector3.up * _hookHeight);
             float distance = Vector3.Distance(_grabHand.transform.position, destination);
             _state = EGrabState.Returning;
             _grabHand.Fly(destination, distance / _hookSpeed, OnReturnArrived);
@@ -290,8 +296,9 @@ namespace AI.Boss.BossA
         private void OnReturnArrived()
         {
             // 칸 중심에 놓으면 손은 돌아가고 반대 손이 그 칸을 향해 떠오른다
+            // 놓을 때는 칸 바닥에 잡을 때의 발 높이만큼 올려 둔다
             Vector3 destination = Arena.GetTileCenter(_slamTile);
-            MovePlayerTo(destination);
+            MovePlayerTo(destination + (Vector3.up * _heldHeight));
             DropPlayer();
 
             _isGrabHandBusy = true;
@@ -401,6 +408,14 @@ namespace AI.Boss.BossA
 
             _isPlayerHeld = false;
             if (_controller && (_controller.Situation != null)) _controller.Situation.SetPlayerHeld(false);
+        }
+
+        /// <returns>손 위치에서 집게 턱 사이(GrabPoint)까지의 수평 거리</returns>
+        private float GetGrabReach()
+        {
+            Vector3 reach = _grabHand.GrabPoint - _grabHand.transform.position;
+            reach.y = 0.0f;
+            return reach.magnitude;
         }
 
         /// <returns>_origin 에서 _direction 으로 판 반대편 끝까지의 거리. 판을 비껴가거나 _hookRange 보다 멀면 _hookRange</returns>

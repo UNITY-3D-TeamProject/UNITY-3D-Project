@@ -72,9 +72,10 @@ namespace Core.Scanning
             _propertyBlock = new MaterialPropertyBlock();
 
             // 외곽선은 법선 방향으로 부풀려 그리므로, 각진 메시는 매끄러운 법선으로 바꿔야 모서리가 이어진다.
+            // 자동 셸은 스킨드 셸과 같게 원본 메시를 그대로 쓴다.
             foreach (Renderer targetRenderer in _silhouetteRenderers)
             {
-                if (targetRenderer && targetRenderer.TryGetComponent(out MeshFilter meshFilter))
+                if (!_autoShellMaterial && targetRenderer && targetRenderer.TryGetComponent(out MeshFilter meshFilter))
                 {
                     meshFilter.sharedMesh = GetSmoothNormalMesh(meshFilter.sharedMesh);
                 }
@@ -125,6 +126,7 @@ namespace Core.Scanning
         /// <summary>
         /// 기준 오브젝트(_shellSourceRoot, 비어 있으면 자신) 아래 모든 SkinnedMeshRenderer 마다 같은 메시·본을 쓰고 _autoShellMaterial 을 지정한 셸 렌더러를 만든다.
         /// 셸은 원본 렌더러 오브젝트의 자식으로 두므로 원본과 함께 켜지고 꺼지며, 같은 본을 따라 애니메이션된다.
+        /// SkinnedMeshRenderer 가 하나도 없으면(본 없이 메시 조각으로 된 모델, 예: 보스A) 일반 MeshRenderer 마다 셸을 만든다.
         /// </summary>
         /// <returns>만든 셸 렌더러 목록</returns>
         private Renderer[] BuildShellRenderers()
@@ -133,6 +135,8 @@ namespace Core.Scanning
 
             // 새로 만든 셸이 다시 잡히지 않도록 원본 목록을 먼저 모아 둔다.
             SkinnedMeshRenderer[] sources = sourceRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            if (sources.Length == 0) return BuildMeshShellRenderers(sourceRoot);
+
             Renderer[] shells = new Renderer[sources.Length];
 
             for (int i = 0; i < sources.Length; i++)
@@ -163,6 +167,42 @@ namespace Core.Scanning
             }
 
             return shells;
+        }
+
+        /// <summary>
+        /// 기준 오브젝트 아래 모든 MeshRenderer 마다 같은 메시를 쓰고 _autoShellMaterial 을 지정한 셸 렌더러를 원본의 자식으로 만든다.
+        /// </summary>
+        /// <param name="sourceRoot">MeshRenderer 를 찾을 기준 오브젝트</param>
+        /// <returns>만든 셸 렌더러 목록</returns>
+        private Renderer[] BuildMeshShellRenderers(Transform sourceRoot)
+        {
+            MeshRenderer[] sources = sourceRoot.GetComponentsInChildren<MeshRenderer>(true);
+            List<Renderer> shells = new List<Renderer>(sources.Length);
+
+            foreach (MeshRenderer source in sources)
+            {
+                if (!source.TryGetComponent(out MeshFilter sourceFilter) || !sourceFilter.sharedMesh) continue;
+
+                GameObject shellObject = new GameObject("ScanHologram");
+                shellObject.transform.SetParent(source.transform, false);
+                shellObject.AddComponent<MeshFilter>().sharedMesh = sourceFilter.sharedMesh;
+
+                MeshRenderer shell = shellObject.AddComponent<MeshRenderer>();
+                shell.shadowCastingMode = ShadowCastingMode.Off;
+                shell.receiveShadows = false;
+
+                // 서브메시가 여러 개여도 전체가 셸로 덮이도록 서브메시 수만큼 같은 머티리얼을 채운다.
+                Material[] materials = new Material[Mathf.Max(1, sourceFilter.sharedMesh.subMeshCount)];
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    materials[i] = _autoShellMaterial;
+                }
+                shell.sharedMaterials = materials;
+
+                shells.Add(shell);
+            }
+
+            return shells.ToArray();
         }
 
         /// <summary>
