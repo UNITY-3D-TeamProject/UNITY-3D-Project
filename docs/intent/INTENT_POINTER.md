@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[UI / Credits / Ending]** 엔딩 크레딧 왼쪽 절반이 비어 있음. 모습 전용 캐릭터 복사본 + RT 카메라 무대(`EndingCastStage`)로 앞부분은 플레이어·펫 장난, 뒷부분은 적·NPC 커튼콜을 `EndingCastDirector`가 재생, `EndingCredits`가 크레딧 시작 때 켬 → [문서](./intent-101-ending-cast-stage.md)
 - **[SceneTransition / Loading / UI]** 로딩 화면이 목적지와 상관없이 똑같음. 피드·파일·보안·라이브로 갈 때만 네온 앱 순서 줄(지금 앱 강조), "○○ 앱에 접속 중...", 진행 바 아래 랜덤 TIP, 오른쪽 준비 단계 4줄 체크 표시. 배경은 남색 그라데이션. `SOLoadingStageData`(씬별 앱 이름·아이콘·팁) + `LoadingStageView`, `LoadingScreen` 필드 1개 → [문서](./intent-100-loading-stage-info.md)
 - **[Core / Editor / SceneTransition]** 특정 진행 단계(예: 보안 후 로비)를 보려면 앞 스테이지를 다 깨야 함. 상단 메뉴 `Tools > 진행 단계`에서 단계를 고르면 이어하기 저장을 쓰고 MainScene부터 자동 이어하기, 로비 단계는 직전 스테이지 복귀 위치에서 시작. 에디터 전용 스크립트 하나, 런타임·씬 변경 없음 → [문서](./intent-098-progress-step-menu.md)
 - **[SceneTransition / Loading / UI]** 로딩 화면 가운데가 비어 있음. `Loading.unity`에 모습 전용 플레이어·펫 복사본(달리기 반복)과 RenderTexture 카메라를 두고 진행 바 그룹 가운데 RawImage로 표시(컷씬 영상 중 함께 숨김), 코드 변경 없음 → [문서](./intent-097-loading-runners.md)
