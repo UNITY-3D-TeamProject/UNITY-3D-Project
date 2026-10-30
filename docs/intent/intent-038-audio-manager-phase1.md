@@ -10,6 +10,88 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 ## 문제 (Problem)
 게임에 소리를 내는 공용 기반이 없다. 자체 Scripts에 AudioSource/AudioMixer 기반 재생 코드가 없고, 설정창(`Canvas_MainMenu`·`Canvas_InGame`)의 `Row_Audio`·`Row_Music`·`Row_SFX`는 볼륨 로직에 연결되어 있지 않다. 씬이 바뀌어도 BGM과 볼륨 설정이 이어지는 구조가 필요하다.
 
+### 파일 미로 2·3라운드 곡 교체 (2026-10-30)
+- 문제: 현재 2라운드는 `The Curious Maze`, 3라운드는 `The Labyrinth of Forgotten`이 재생된다.
+- 기대 결과: 2라운드는 `The Labyrinth of Forgotten`, 3라운드는 새 `Maze Mayhem`을 재생한다.
+- 영향 범위: 파일 미로 2·3라운드 BGM SO와 새 AudioClip 에셋.
+- 제약: 1라운드 BGM 및 라운드 전환 코드는 유지한다. Unity 검증은 사용자 요청에 따라 하지 않는다.
+- 열린 질문: 없음.
+- 적용 상태: `The Labyrinth of Forgotten` 클립을 `SOAudioData_BgmFileRound2`에 연결하고, `Maze Mayhem.wav`와 메타를 추가해 `SOAudioData_BgmFileRound3`에 연결했다. 기존 1라운드 SO와 라운드 전환 코드는 유지했다. Unity 검증은 사용자 요청에 따라 생략했다.
+
+### 파일 미로 1·2라운드 BGM 후속 (2026-10-30)
+- 문제: 파일 맵의 기존 `Algorithm Arpeggio`는 라운드 구분 없이 씬 전체에서 반복된다.
+- 기대 결과: 기존 곡을 `SOAudioData_BgmFileRound1`로 이름을 정리해 씬 시작 BGM으로 유지하고, 2라운드 진입 시 `The Curious Maze` 전용 `SOAudioData_BgmFileRound2`로 전환한다.
+- 영향 범위: 파일 맵 BGM SO, `FileApp`, `Map_3_File`, 새 AudioClip 에셋.
+- 제약: 기존 씬 참조 GUID와 다른 라운드 로직은 유지한다. 사용자 요청에 따라 Unity 검증은 하지 않는다.
+- 열린 질문: 없음.
+- 적용 상태: `SOAudioData_BgmFile`을 GUID를 유지한 채 `SOAudioData_BgmFileRound1`로 이름 변경했다. `The Curious Maze.wav`와 메타, `SOAudioData_BgmFileRound2`를 추가했다. 파일 씬의 AudioManager는 기존 1라운드 SO를 계속 참조하고, `FileApp.OnRoundChanged`에서 2라운드 진입 시 새 SO로 전환한다. 3라운드에는 별도 BGM 전환을 지정하지 않았다. Unity 검증은 사용자 요청에 따라 생략했다.
+
+### 파일 미로 3라운드 BGM 후속 (2026-10-30)
+- 문제: 미로 3라운드에 진입해도 2라운드 BGM이 계속 재생된다.
+- 기대 결과: `The Labyrinth of Forgotten.wav`가 3라운드 진입 시 반복 재생된다.
+- 영향 범위: 새 BGM SO와 AudioClip, `FileApp`, `Map_3_File`.
+- 제약: 1·2라운드 BGM 연결과 다른 라운드 로직은 유지한다. 사용자 요청에 따라 Unity 검증은 하지 않는다.
+- 열린 질문: 없음.
+- 적용 상태: `The Labyrinth of Forgotten.wav`와 메타를 BGM 폴더에 두고 `SOAudioData_BgmFileRound3`를 만들었다. 파일 씬의 `FileApp._round3Bgm`에 연결하고 3라운드 진입 시 `AudioManager.ChangeBgm`을 호출한다. Unity 검증은 사용자 요청에 따라 생략했다.
+
+### 로비·피드 라운드 BGM 후속 (2026-10-30)
+- 문제: 로비 플레이리스트에 새 곡이 없고, 피드 맵은 1·2라운드에 같은 BGM이 재생된다.
+- 기대 결과: `Whimsical City Adventure.wav`를 로비의 세 번째 곡으로 추가한다. 피드 1라운드는 기존 `Social Media Jump.wav`, 2라운드 시작부터 `Smartphone City Groove.wav`를 반복 재생한다.
+- 영향 범위: 로비·피드 BGM SO, 피드 2라운드 시작점, AudioManager의 BGM 교체 호출, 새 AudioClip 에셋.
+- 제약: 기존 곡과 다른 오디오 설정은 유지한다. 로비 곡은 추가만 한다.
+- 열린 질문: 없음.
+- 적용 상태: 두 WAV와 메타를 `Assets/ThirdParty/Audio/Bgm`에 추가했다. 로비 BGM 목록의 세 번째 곡으로 `Whimsical City Adventure`를 연결했다. 피드 씬 시작 BGM은 기존 `Social Media Jump`를 유지하고, `FeedRound2.Begin`이 성공하면 `Smartphone City Groove` 전용 SO로 전환하도록 연결했다. 사용자 요청에 따라 재생·컴파일 검증은 하지 않았다.
+- 후속 수정: 에디터 포커스 복귀 시 `AudioSource.isPlaying == false`를 곡 종료로 오인해 다음 곡으로 넘어가는 조건을 제거했다. 남은 재생 시간이 페이드아웃 구간에 도달할 때만 곡을 넘긴다. 재생 검증은 요청에 따라 생략했다.
+- 명명 정리: 기존 피드 시작 BGM SO 파일과 에셋 이름을 `SOAudioData_BgmFeedRound1`로 바꾸고 GUID를 유지했다. 2라운드 SO는 `SOAudioData_BgmFeedRound2`다.
+
+### 메인 메뉴 음원 후속 (2026-10-29)
+- 문제: 메인 씬 BGM이 검은 스플래시 화면에서도 즉시 시작하며, 지정한 `Whimsical Technology World.wav`가 프로젝트에 없다.
+- 기대 결과: 음원을 `Assets/ThirdParty/Audio`에 넣고 메인 메뉴 BGM SO에 지정한다. 검은 화면의 AnyPress 입력으로 메뉴가 나타날 때부터 BGM을 재생한다.
+- 영향 범위: `MainScene`, `MainMenuPresenter`, `AudioManager`, 메인 메뉴 BGM SO.
+- 제약: 다른 씬의 BGM 자동 재생과 기존 스플래시 클릭 효과음은 유지한다.
+- 열린 질문: 없음.
+- 적용 상태: WAV가 `Assets/ThirdParty/Audio`로 이동했고 GUID는 유지됨. SO·씬·입력 연결 및 원본/현재 파일 SHA-256, 직렬화 참조 검사 통과. Unity 컴파일 최신 상태, MainScene Play에서 AnyPress 전 BGM 정지와 Space 입력 뒤 지정 클립 재생 확인. 귀로 듣는 음량 평가는 남음.
+
+### 로비 BGM 음원 후속 (2026-10-29)
+- 문제: 로비 씬에 AudioManager는 배치되어 있으나 BGM SO 참조가 비어 있다.
+- 기대 결과: `Digital City Morning.wav`를 `Assets/ThirdParty/Audio`에 두고, 로비용 BGM SO의 단일 반복 곡으로 지정해 로비 입장부터 재생한다.
+- 영향 범위: `Map_1_Lobby`, `SOAudioData_BgmLobby`, 서드파티 AudioClip.
+- 제약: `Assets/ThirdParty`는 Git에서 제외되므로 음원·메타는 별도로 공유해야 한다.
+- 열린 질문: 없음.
+- 적용 상태: WAV와 메타 추가, 기존 로비 BGM SO를 단일 클립으로 교체하고 로비 씬 AudioManager에 연결. Unity 임포트 126.8초, Play에서 `playing=True`, 클립 `Digital City Morning`, `loop=True`, 음량 0.60 확인. 직접 청취 평가는 남음.
+
+### 피드 맵 BGM 음원 후속 (2026-10-29)
+- 문제: 피드 씬에 AudioManager는 배치돼 있으나 BGM SO 참조가 비어 있다.
+- 기대 결과: `Social Media Jump.wav`를 `Assets/ThirdParty/Audio`에 넣고 피드 전용 BGM SO를 만들어 씬 입장부터 반복 재생한다.
+- 영향 범위: `Map_2_Feed`, 새 `SOAudioData_BgmFeed`, 서드파티 AudioClip.
+- 제약: `Assets/ThirdParty`는 Git에서 제외되므로 음원·메타는 별도로 공유해야 한다. 다른 씬 오디오 설정은 유지한다.
+- 열린 질문: 없음.
+- 적용 상태: WAV·메타와 `SOAudioData_BgmFeed` 생성, 피드 씬 AudioManager에 연결. Unity 임포트 72.2초, Play에서 `playing=True`, 클립 `Social Media Jump`, `loop=True`, 음량 0.60 확인. 직접 청취 평가는 남음.
+
+### 로비 BGM 두 번째 곡 추가 (2026-10-29)
+- 문제: 로비 BGM 목록에 `Digital City Morning` 한 곡만 있다.
+- 기대 결과: 제공된 `Colorful City Morning.wav`를 로비 음악으로도 재생한다.
+- 영향 범위: `SOAudioData_BgmLobby`, 새 AudioClip 에셋.
+- 제약: 기존 로비 곡을 유지하고, 사용자 요청에 따라 검증은 실행하지 않는다.
+- 열린 질문: 없음.
+- 적용 상태: WAV와 AudioImporter 메타를 `Assets/ThirdParty/Audio/Bgm`에 두고 로비 BGM 목록의 두 번째 곡으로 연결했다. 재생 순서는 기존 곡 다음이다. 검증은 사용자에게 남겼다.
+
+### 파일 앱 미로맵 BGM 추가 (2026-10-29)
+- 문제: `Map_3_File` 씬의 AudioManager에 BGM이 지정되지 않았다.
+- 기대 결과: 제공된 `Algorithm Arpeggio.wav`가 미로맵에서 반복 재생된다.
+- 영향 범위: `Map_3_File`, 새 `SOAudioData_BgmFile`, 새 AudioClip 에셋.
+- 제약: 기존 씬 오디오 설정을 유지하고, 사용자 요청에 따라 검증은 실행하지 않는다.
+- 열린 질문: 없음.
+- 적용 상태: WAV와 메타를 `Assets/ThirdParty/Audio/Bgm`에 두고 단일 클립 BGM SO를 씬 AudioManager에 연결했다. 검증은 사용자에게 남겼다.
+
+### BGM 파일 폴더 통일 (2026-10-29)
+- 문제: BGM WAV 5개가 `Assets/ThirdParty/Audio`와 `Assets/_Project/Audio`에 나뉘어 있다.
+- 기대 결과: 모든 BGM WAV와 메타를 `Assets/ThirdParty/Audio/Bgm`에 둔다.
+- 영향 범위: BGM 5개와 각 메타 파일, 새 Bgm 폴더 메타.
+- 제약: 기존 GUID와 SO·씬 연결을 유지한다. 사용자 요청에 따라 검증은 실행하지 않는다.
+- 열린 질문: 없음.
+- 적용 상태: `Digital City Morning`, `Social Media Jump`, `Whimsical Technology World`, `Algorithm Arpeggio`, `Colorful City Morning`의 WAV와 메타를 새 폴더로 이동했다.
+
 설계 배경과 검토 과정은 [audio-manager-design.md](../HANDOVER/SungJun/2026-10-17/audio-manager-design.md)에 있다. 이 문서는 그 뒤 대화에서 단순화·확정한 내용을 기준으로 한다.
 
 ## ★ 구조 변경: 씬 단위 AudioManager (2026-10-17 사용자 확정)

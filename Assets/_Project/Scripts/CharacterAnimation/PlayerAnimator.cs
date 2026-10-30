@@ -76,6 +76,10 @@ namespace CharacterAnimation
         [Header("Death")]
         [Tooltip("사망 루프(DeathLoop) 상태를 이 횟수만큼 재생하면 사망 애니메이션 종료를 알린다.")]
         [SerializeField, Min(0.0f)] private float _deathLoopCount = 2.0f;
+        [Tooltip("사망 클립은 양손 캐논을 모두 보이게 하므로, 사망 중 이 이름의 뼈(왼손 캐논)를 접어 둔다.")]
+        [SerializeField] private string _stowedCannonName = "Buster_L";
+        [Tooltip("사망 중 접어 둔 캐논 뼈의 스케일. 이동·사격 클립의 접힌 값과 맞춘다.")]
+        [SerializeField, Min(0.0f)] private float _stowedCannonScale = 0.13f;
         #endregion
 
         #region Private Fields
@@ -86,6 +90,7 @@ namespace CharacterAnimation
         private Transform _twistBone;
         private Transform _aimBone;
         private Transform _muzzle;
+        private Transform _stowedCannon;
         // Idle 자세의 골반 로컬 회전. 이동 애니메이션이 골반을 얼마나 돌렸는지 비교하는 기준이다
         private bool _hasPelvisReference;
         private Quaternion _pelvisReferenceLocal;
@@ -178,6 +183,9 @@ namespace CharacterAnimation
         private void LateUpdate()
         {
             // Animator 가 포즈를 적용한 뒤 상체를 정면으로 맞추고, 총신이 조준점을 향하도록 조준 뼈를 돌린다
+            // 사망 클립은 왼손 캐논 스케일이 1 이라 Animator 가 펼쳐 놓는다. 평소처럼 접어 둔다
+            if (_isDead && _stowedCannon) _stowedCannon.localScale = Vector3.one * _stowedCannonScale;
+
             CapturePelvisReference();
             ApplyUpperBodyTwist();
             ApplyRidingTurn();
@@ -619,7 +627,9 @@ namespace CharacterAnimation
             _twistBone = Array.Find(children, child => child.name == _twistBoneName);
             _aimBone = Array.Find(children, child => child.name == _aimBoneName);
             _muzzle = Array.Find(children, child => child.name == _muzzleName);
+            _stowedCannon = Array.Find(children, child => child.name == _stowedCannonName);
 
+            if (!_stowedCannon) Debug.LogWarning($"[{name}] 접어 둘 캐논 뼈 '{_stowedCannonName}'을(를) 찾지 못했습니다.", this);
             if (!_twistBone) Debug.LogWarning($"[{name}] 상체 비틀림 뼈 '{_twistBoneName}'을(를) 찾지 못했습니다.", this);
             if (!_aimBone) Debug.LogWarning($"[{name}] 조준 뼈 '{_aimBoneName}'을(를) 찾지 못했습니다.", this);
             if (!_muzzle) Debug.LogWarning($"[{name}] 총구 '{_muzzleName}'을(를) 찾지 못했습니다.", this);

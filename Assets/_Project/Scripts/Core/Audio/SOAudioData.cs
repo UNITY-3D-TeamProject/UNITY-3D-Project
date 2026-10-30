@@ -36,6 +36,10 @@ namespace Core.Audio
         [Tooltip("BGM으로 쓸 때 클립이 2개 이상이면 플레이리스트가 된다. 켜면 무작위 순서, 끄면 위에서부터 차례로 튼다. 효과음·UI는 이 값과 상관없이 매번 무작위로 고른다")]
         [SerializeField] private bool _isShuffle;
 
+        [Tooltip("BGM 시작 시 앞에서부터 무작위로 고를 클립 수. 0이면 기존 순서·셔플 설정을 따른다")]
+        [Min(0)]
+        [SerializeField] private int _randomFirstTrackCount;
+
         [Tooltip("BGM 전용. 곡이 시작할 때 0에서 음량까지 키우는 시간 (초)")]
         [Min(0f)]
         [SerializeField] private float _fadeInDuration = 1f;
@@ -62,6 +66,7 @@ namespace Core.Audio
         #region Properties
         public float Volume => _volume;
         public bool IsShuffle => _isShuffle;
+        public int RandomFirstTrackCount => Mathf.Clamp(_randomFirstTrackCount, 0, ClipCount);
         public float FadeInDuration => _fadeInDuration;
         public float FadeOutDuration => _fadeOutDuration;
         public float MinDistance => _minDistance;

@@ -100,6 +100,8 @@ namespace UI.MainMenu
             _anyKeyListener = null;
             _view.ShowMenu();
 
+            AudioManager.Instance?.StartSceneBgm();
+
             if ((_splashPressSound != null) && (AudioManager.Instance != null))
                 AudioManager.Instance.PlayUi(_splashPressSound);
         }

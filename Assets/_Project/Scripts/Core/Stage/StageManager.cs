@@ -24,7 +24,7 @@ namespace Core.Stage
 
         [Header("Fall")]
         [SerializeField] private FallZoneTrigger[] _fallZones;
-        [Tooltip("낙하 구역에 닿았을 때 플레이어에게 적용할 Effect (예: CurrentHp 감소)")]
+        [Tooltip("낙하 후 체크포인트로 이동한 플레이어에게 적용할 Effect (예: CurrentHp 감소)")]
         [SerializeField] private SOAttributeEffect _fallEffect;
 
         [Header("Restart")]
@@ -437,28 +437,12 @@ namespace Core.Stage
             }
         }
 
-        // 낙하 데미지를 주고, 생존하면 도달한 체크포인트 중 가장 높은 곳으로 이동시킨다.
-        // 데미지로 사망하면 사망 애니메이션 종료 이벤트가 라운드 복구를 처리하므로 여기서는 이동하지 않는다.
+        // 도달한 체크포인트 중 가장 높은 곳으로 이동한 뒤 낙하 데미지를 준다.
+        // 데미지로 사망하면 사망 애니메이션 종료 이벤트가 라운드 복구를 처리한다.
         // [이벤트] FallZoneTrigger.OnPlayerEntered가 발생하면 호출된다. (BindFallZones에서 구독)
         private void HandleFallZoneEntered(FallZoneTrigger fallZone, Collider other)
         {
             if (!IsLivingPlayerCollider(other))
-            {
-                return;
-            }
-
-            // 데미지는 Effect SO로 적용한다. 값이 줄면 PlayerFacade.OnHit이 발생한다.
-            if (_fallEffect == null || _playerFacade.EffectTarget == null)
-            {
-                Debug.LogError("낙하 Effect 또는 플레이어 EffectTarget이 없습니다.", this);
-            }
-            else
-            {
-                _fallEffect.Apply(_playerFacade.EffectTarget);
-            }
-
-            // 사망 처리는 사망 애니메이션이 끝난 뒤 OnDeathEnded에서 하므로, 여기서는 체력으로 사망을 확인한다.
-            if (_playerFacade.GetAttribute(CURRENT_HP_KEY) <= 0f)
             {
                 return;
             }
@@ -472,7 +456,20 @@ namespace Core.Stage
                 return;
             }
 
-            MovePlayerTo(_checkpoints[_currentCheckpointIndex].RespawnPoint);
+            if (!MovePlayerTo(_checkpoints[_currentCheckpointIndex].RespawnPoint))
+            {
+                return;
+            }
+
+            // 데미지는 복귀 후 Effect SO로 적용한다. 값이 줄면 PlayerFacade.OnHit이 발생한다.
+            if (_fallEffect == null || _playerFacade.EffectTarget == null)
+            {
+                Debug.LogError("낙하 Effect 또는 플레이어 EffectTarget이 없습니다.", this);
+            }
+            else
+            {
+                _fallEffect.Apply(_playerFacade.EffectTarget);
+            }
         }
 
         // 플레이 중인 현재 플레이어의 살아있는 몸체에 접촉한 것인지 확인한다.
@@ -499,13 +496,13 @@ namespace Core.Stage
         }
 
         // 기존 플레이어를 destination 위치와 회전으로 이동시킨다.
-        // [호출] HandleFallZoneEntered에서 생존 낙하 시 체크포인트로 되돌릴 때 호출한다.
-        private void MovePlayerTo(Transform destination)
+        // [호출] HandleFallZoneEntered에서 낙하한 플레이어를 체크포인트로 되돌릴 때 호출한다.
+        private bool MovePlayerTo(Transform destination)
         {
             if (destination == null || _playerController == null)
             {
                 Debug.LogError("플레이어를 이동시킬 위치 또는 CharacterController가 없습니다.", this);
-                return;
+                return false;
             }
 
             // CharacterController가 켜져 있으면 위치를 직접 바꿔도 되돌아갈 수 있어 잠시 끈다.
@@ -515,6 +512,7 @@ namespace Core.Stage
 
             // 몸·카메라가 복귀 지점의 정면(화살표)을 보게 한다. 생성 연출이 끝난 뒤라 바로 고정이 풀려 시점을 따라 돈다.
             _playerFacade.SetLookDirection(destination.forward);
+            return true;
         }
 
         // [호출] OnDisable과 BindPlayer(새 플레이어로 교체 전)에서 호출된다.

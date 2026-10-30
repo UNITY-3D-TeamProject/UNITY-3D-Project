@@ -1,5 +1,7 @@
 using UnityEngine;
 using Core.Audio;
+using Core.Effect;
+using Map.Gimmicks;
 using Map.Maze;
 
 namespace Core.Stage
@@ -25,6 +27,13 @@ namespace Core.Stage
         #endregion
 
         #region Serialized Fields
+        [Header("BGM")]
+        [Tooltip("2라운드에 진입할 때 전환할 BGM")]
+        [SerializeField] private SOAudioData _round2Bgm;
+
+        [Tooltip("3라운드에 진입할 때 전환할 BGM")]
+        [SerializeField] private SOAudioData _round3Bgm;
+
         [Header("2라운드 · 숫자 퍼즐")]
         [SerializeField] private NumberPuzzleRound _numberPuzzleRound = new NumberPuzzleRound();
 
@@ -42,6 +51,12 @@ namespace Core.Stage
 
         [Tooltip("3번째 미로의 내부 벽과 내부 기둥이 내려가기 시작할 때 낼 소리 (비우면 무음)")]
         [SerializeField] private SOAudioData _innerWallLowerSound;
+
+        [Tooltip("클리어할 때 3번째 미로 중앙 공중에서 낼 축하 효과 (비우면 없음). 이 라운드는 출구 문 자리에서 효과를 내지 않는다")]
+        [SerializeField] private SOEffectData _thiefClearVfx;
+
+        [Tooltip("축하 효과를 낼 높이. 3번째 미로 중앙 바닥에서 위로 (m)")]
+        [SerializeField] private float _thiefClearVfxHeight = 12.0f;
         #endregion
 
         #region Private Fields
@@ -140,6 +155,12 @@ namespace Core.Stage
         {
             _numberPuzzleRound.SetActive(CurrentRoundIndex == NUMBER_PUZZLE_ROUND_INDEX);
             _thiefChaseRound.SetActive(CurrentRoundIndex == THIEF_CHASE_ROUND_INDEX);
+
+            if ((CurrentRoundIndex == NUMBER_PUZZLE_ROUND_INDEX) && (_round2Bgm != null))
+                AudioManager.Instance?.ChangeBgm(_round2Bgm);
+
+            if ((CurrentRoundIndex == THIEF_CHASE_ROUND_INDEX) && (_round3Bgm != null))
+                AudioManager.Instance?.ChangeBgm(_round3Bgm);
         }
         #endregion
 
@@ -231,10 +252,33 @@ namespace Core.Stage
         {
             if (_thiefChaseGate != null)
             {
-                _thiefChaseGate.Open();
+                _thiefChaseGate.Open(false);
+            }
+
+            if (_thiefMazeWallLowering != null)
+            {
+                PlayMazeCenterVfx(_thiefMazeWallLowering.transform, _thiefClearVfx, _thiefClearVfxHeight);
             }
 
             _thiefMazeWallLowering?.Lower(_innerWallLowerDistance, _innerWallLowerDuration, _innerWallLowerSound);
+        }
+
+        // 미로의 바닥·벽이 차지한 범위의 가운데 바닥에서 height 만큼 위에 효과를 낸다. 벽이 내려가기 전에 범위를 잰다.
+        private void PlayMazeCenterVfx(Transform mazeRoot, SOEffectData effect, float height)
+        {
+            if (effect == null) return;
+
+            Renderer[] renderers = mazeRoot.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0) return;
+
+            Bounds bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+            {
+                bounds.Encapsulate(renderers[i].bounds);
+            }
+
+            var center = new Vector3(bounds.center.x, mazeRoot.position.y + height, bounds.center.z);
+            GimmickUtility.PlayVfx(effect, center);
         }
         #endregion
     }

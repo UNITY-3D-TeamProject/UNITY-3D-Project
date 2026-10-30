@@ -1,4 +1,7 @@
 using UnityEngine;
+using AI.Boss.Fight;
+using AI.Boss.Logic;
+using Core.Audio;
 using Core.Stage.Security;
 using Map.Gimmicks;
 
@@ -25,6 +28,12 @@ namespace Core.Stage
         #endregion
 
         #region Serialized Fields
+        [Header("BGM")]
+        [SerializeField] private SOAudioData _preBossBgm;
+        [SerializeField] private SOAudioData _bossEarlyBgm;
+        [SerializeField] private SOAudioData _bossFinalBgm;
+        [SerializeField] private BossEncounter _bossEncounter;
+
         [Header("1라운드 · 잡몹 방")]
         [SerializeField] private MobRoomRound _mobRoomRound = new MobRoomRound();
 
@@ -74,6 +83,7 @@ namespace Core.Stage
             _mobRoomRound.OnProgressChanged -= HandleRoundProgressChanged;
             _specialMobRound.OnProgressChanged -= HandleRoundProgressChanged;
             _bossRound.OnProgressChanged -= HandleRoundProgressChanged;
+            if (_bossEncounter != null) _bossEncounter.OnStageChanged -= HandleBossStageChanged;
 
             _mobRoomRound.End();
             _specialMobRound.End();
@@ -99,6 +109,7 @@ namespace Core.Stage
             _mobRoomRound.OnProgressChanged += HandleRoundProgressChanged;
             _specialMobRound.OnProgressChanged += HandleRoundProgressChanged;
             _bossRound.OnProgressChanged += HandleRoundProgressChanged;
+            if (_bossEncounter != null) _bossEncounter.OnStageChanged += HandleBossStageChanged;
 
             _mobRoomRound.Begin();
             _specialMobRound.Begin();
@@ -126,6 +137,11 @@ namespace Core.Stage
         // 보스 라운드로 바뀌면(3라운드 체크포인트 도착) 2라운드 발판을 내리고 앞 구간을 숨긴다.
         protected override void OnRoundChanged()
         {
+            if ((CurrentRoundIndex >= MOB_ROOM_ROUND_INDEX) && (CurrentRoundIndex < BOSS_ROUND_INDEX))
+                AudioManager.Instance?.ChangeBgm(_preBossBgm);
+            else if (CurrentRoundIndex == BOSS_ROUND_INDEX)
+                AudioManager.Instance?.ChangeBgm(_bossEarlyBgm);
+
             if (CurrentRoundIndex == SPECIAL_MOB_ROUND_INDEX) _specialMobRound.StartHazards();
             else _specialMobRound.StopHazards();
 
@@ -156,6 +172,7 @@ namespace Core.Stage
 
                 case BOSS_ROUND_INDEX:
                     _bossRound.RestoreRespawnPlatform();
+                    AudioManager.Instance?.ChangeBgm(_bossEarlyBgm);
                     break;
             }
         }
@@ -163,6 +180,12 @@ namespace Core.Stage
         private void HandleRoundProgressChanged()
         {
             NotifyProgressChanged();
+        }
+
+        private void HandleBossStageChanged(EBossStage stage)
+        {
+            if (CurrentRoundIndex == BOSS_ROUND_INDEX && stage == EBossStage.Final)
+                AudioManager.Instance?.ChangeBgm(_bossFinalBgm);
         }
 
         // 구역 생성기를 모두 시작하거나(떨어지는 중인 위험물까지) 멈춘다.

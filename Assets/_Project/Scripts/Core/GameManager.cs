@@ -73,7 +73,9 @@ namespace Core
             }
             // 인스펙터에서 받은 SO를 인자로 넣어줘서 playerState를 만들어준다.
             playerState = new PlayerState(_playerSOAttributeData);
-            // 커서는 여기서 잠그지 않는다. 메인 메뉴에서는 풀어 두고, 맵 씬에 들어오면 HandleSceneLoaded가 잠근다.
+            // 커서는 여기서 풀어 둔다. 맵 씬에 들어오면 HandleSceneLoaded가 잠근다.
+            // 에디터에서는 이전 Play의 커서 잠금이 남아 있어서, 풀지 않으면 메인 메뉴에서 커서가 안 보일 수 있다.
+            SetCursorLocked(false);
         }
 
         private void OnEnable()

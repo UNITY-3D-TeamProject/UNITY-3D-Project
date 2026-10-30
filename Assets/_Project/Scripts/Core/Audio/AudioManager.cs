@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Serialization;
 using UnityEngine.SceneManagement;
+using SceneTransition;
 
 namespace Core.Audio
 {
@@ -19,7 +20,8 @@ namespace Core.Audio
     //    매니저에 미리 등록할 필요가 없다. 씬에 있는 오브젝트가 참조하는 소리만 그 씬과 함께 메모리에 올라온다.
     //    BGM은 밖에서 직접 바꾸지 않고, PlayNextBgm으로 이 씬 플레이리스트 안에서만 다음 곡으로 넘긴다.
     // 3. Awake에서 스피커(AudioSource)를 자식으로 만든다.
-    //    - BGM 1개: Start에서 페이드인으로 튼다. 플레이리스트는 곡이 끝나기 페이드아웃 시간 전부터 줄이고 다음 곡을 0에서 키운다.
+    //    - BGM 1개: 기본은 Start에서 페이드인으로 튼다. 설정에 따라 입력 후 시작할 수 있다.
+    //      플레이리스트는 곡이 끝나기 페이드아웃 시간 전부터 줄이고 다음 곡을 0에서 키운다.
     //    - UI 1개: PlayOneShot으로 짧은 소리를 겹쳐 낸다.
     //    - 3D N개: 발생 위치로 옮겨 단발음을 낸다. 끝나는 시각만 적어 두고, 새 요청 때 끝난 소스를 고른다.
     //      끝난 소스가 없으면 상한(_maxSfxSourceCount)까지 하나씩 더 만든다.
@@ -39,6 +41,7 @@ namespace Core.Audio
         // 볼륨 0을 dB로 바꿀 때 log10(0)을 피하기 위한 하한값 (= -80dB)
         private const float MIN_VOLUME = 0.0001f;
         private const float DEFAULT_VOLUME = 1f;
+        private const string LOBBY_SCENE_NAME = "Map_1_Lobby";
 
         // PlaySfx의 pitchScale이 0 이하로 들어와도 끝나는 시각 계산이 깨지지 않게 하는 하한값
         private const float MIN_PITCH = 0.1f;
@@ -63,6 +66,12 @@ namespace Core.Audio
         [Tooltip("이 씬에서 틀 곡. 클립이 여러 개면 플레이리스트가 된다. 비워 두면 무음")]
         [SerializeField] private SOAudioData _bgm;
 
+        [Tooltip("파일 앱에서 로비로 돌아왔을 때만 재생할 BGM")]
+        [SerializeField] private SOAudioData _fileReturnLobbyBgm;
+
+        [Tooltip("끄면 Start에서 재생하지 않고 StartSceneBgm 호출을 기다린다")]
+        [SerializeField] private bool _playBgmOnStart = true;
+
         // LoadingScreen은 화면 페이드(_fadeDuration, 0.3초)가 끝나면 바로 이 씬을 내린다. 이보다 길면 줄어들다 끊긴다.
         [Tooltip("다른 씬으로 갈 때 BGM을 줄이는 시간 (초). LoadingScreen의 Fade Duration 이하로 맞춘다")]
         [Min(0f)]
@@ -79,7 +88,7 @@ namespace Core.Audio
         [SerializeField] private int _maxSfxSourceCount = 64;
 
         [Header("Throttle")]
-        [Tooltip("같은 클립을 이 시간(초) 안에 다시 요청하면 건너뛴다")]
+        [Tooltip("UI에서 같은 클립을 이 시간(초) 안에 다시 요청하면 건너뛴다. 3D 효과음에는 적용하지 않는다")]
         [SerializeField] private float _sameClipInterval = 0.05f;
         #endregion
 
@@ -104,7 +113,7 @@ namespace Core.Audio
         // 소스 상한 경고를 이미 남겼는지. 요청마다 찍으면 로그가 넘치므로 한 번만 남긴다.
         private bool _hasWarnedSfxLimit;
 
-        // 클립 → 마지막으로 재생한 Time.unscaledTime
+        // UI 클립 → 마지막으로 재생한 Time.unscaledTime
         private readonly Dictionary<AudioClip, float> _lastPlayTimes = new();
 
         // (int)EAudioChannel 인덱스, 0~1
@@ -159,8 +168,13 @@ namespace Core.Audio
             foreach (EAudioChannel channel in Enum.GetValues(typeof(EAudioChannel)))
                 ApplyVolume(channel);
 
-            if (_bgm != null)
-                StartBgm(_bgm);
+            if (gameObject.scene.name == LOBBY_SCENE_NAME &&
+                SceneLoader.PreviousScene == ESceneType.File &&
+                _fileReturnLobbyBgm != null)
+                _bgm = _fileReturnLobbyBgm;
+
+            if (_playBgmOnStart)
+                StartSceneBgm();
         }
 
         // 반복 효과음 소스를 대상 위치로 옮긴다. 대상이 파괴되면 마지막 위치에 남긴다.
@@ -185,6 +199,26 @@ namespace Core.Audio
         #endregion
 
         #region Public Methods
+        // 씬 BGM을 아직 틀지 않았다면 시작한다. 메인 메뉴는 스플래시 입력 뒤에 호출한다.
+        public void StartSceneBgm()
+        {
+            if ((_bgm == null) || _isBgmPlaying)
+                return;
+
+            StartBgm(_bgm);
+        }
+
+        // 라운드 전환 등 씬 안에서 BGM을 바꿀 때 현재 곡을 페이드아웃한 뒤 새 곡을 튼다.
+        public void ChangeBgm(SOAudioData audioData)
+        {
+            if ((audioData == null) || ((_bgm == audioData) && _isBgmPlaying))
+                return;
+
+            _bgm = audioData;
+            _isBgmPlaying = false;
+            RestartBgmRoutine(CoChangeBgm(audioData));
+        }
+
         // 이 씬 BGM 플레이리스트의 다음 곡으로 넘긴다. 지금 곡을 줄인 뒤 다음 곡을 키운다.
         // [호출] 로비의 곡 넘기기 버튼 등. 다음 곡은 SO의 순서 설정(차례로/무작위)을 따른다.
         //        곡이 1개뿐이거나 BGM이 없으면 무시한다. 페이드 중에 다시 누르면 그 자리에서 다음 곡으로 넘어간다.
@@ -207,11 +241,12 @@ namespace Core.Audio
         }
 
         // 3D 효과음을 지정 위치에서 한 번 낸다.
+        // 같은 클립의 동시 요청도 허용한다. 서로 떨어진 장애물의 소리를 누락시키지 않는다.
         // 3D 소스가 상한까지 모두 재생 중이면 생략한다.
         // 돌려주는 핸들은 중간에 끊을 때만 StopSfx에 넘긴다. 끊을 일이 없으면 무시해도 된다. 생략되면 default
         public SAudioHandle PlaySfx(SOAudioData audioData, Vector3 position, float volumeScale = 1f, float pitchScale = 1f)
         {
-            if (!TryPickClip(audioData, out AudioClip clip))
+            if (!TryPickClip(audioData, out AudioClip clip, false))
                 return default;
 
             int index = FindFreeSfxSource();
@@ -412,8 +447,8 @@ namespace Core.Audio
             _sfxFollowTargets[index] = null;
         }
 
-        // 클립을 고르고, 같은 클립이 너무 짧은 간격으로 다시 요청됐으면 거른다.
-        private bool TryPickClip(SOAudioData audioData, out AudioClip clip)
+        // 클립을 고른다. UI만 짧은 간격의 중복 요청을 거르고, 서로 다른 장애물이 쓰는 3D 효과음은 모두 허용한다.
+        private bool TryPickClip(SOAudioData audioData, out AudioClip clip, bool shouldThrottle = true)
         {
             clip = (audioData != null) ? audioData.PickClip() : null;
             if (clip == null)
@@ -421,6 +456,9 @@ namespace Core.Audio
                 Debug.LogWarning($"[AudioManager] 재생할 클립이 없습니다: '{(audioData != null ? audioData.name : "null")}'", this);
                 return false;
             }
+
+            if (!shouldThrottle)
+                return true;
 
             // 일시정지 중 UI 소리도 걸러야 하므로 unscaledTime을 쓴다.
             float now = Time.unscaledTime;
@@ -478,7 +516,7 @@ namespace Core.Audio
         }
 
         // 이 씬의 BGM을 페이드인으로 튼다.
-        // [호출] Start
+        // [호출] StartSceneBgm
         private void StartBgm(SOAudioData audioData)
         {
             int clipCount = audioData.ClipCount;
@@ -492,7 +530,11 @@ namespace Core.Audio
             _isBgmPlaying = true;
             _bgmSource.loop = clipCount == 1;
             _bgmFadeOutDuration = audioData.FadeOutDuration;
-            _bgmTrackIndex = audioData.IsShuffle ? UnityEngine.Random.Range(0, clipCount) : 0;
+            int randomFirstTrackCount = audioData.RandomFirstTrackCount;
+            if (randomFirstTrackCount > 0)
+                _bgmTrackIndex = UnityEngine.Random.Range(0, randomFirstTrackCount);
+            else
+                _bgmTrackIndex = audioData.IsShuffle ? UnityEngine.Random.Range(0, clipCount) : 0;
 
             RestartBgmRoutine(CoPlayTracks(audioData));
         }
@@ -521,6 +563,13 @@ namespace Core.Audio
         #endregion
 
         #region Coroutines
+        private IEnumerator CoChangeBgm(SOAudioData audioData)
+        {
+            yield return CoFadeOutBgm();
+            _bgmRoutine = null;
+            StartBgm(audioData);
+        }
+
         // 지금 곡을 줄여 끄고, 플레이리스트의 다음 곡부터 이어서 튼다.
         private IEnumerator CoPlayNextBgm(SOAudioData audioData)
         {
@@ -544,7 +593,7 @@ namespace Core.Audio
 
                 // 곡이 끝나기 페이드아웃 시간 전까지 기다린다.
                 // 에디터 일시정지·앱 비활성 중에는 코루틴도 멈추므로 그동안 곡을 넘기지 않는다.
-                while (_bgmSource.isPlaying && (GetRemainingBgmTime() > audioData.FadeOutDuration))
+                while (GetRemainingBgmTime() > audioData.FadeOutDuration)
                     yield return null;
 
                 yield return CoFadeOutBgm();

@@ -1,5 +1,6 @@
 using UnityEngine;
 using Core.Audio;
+using Core.Effect;
 using Movement;
 
 namespace Map.Gimmicks
@@ -39,6 +40,13 @@ namespace Map.Gimmicks
 
         [Tooltip("작동 상태에 도착했을 때 낼 소리 (예: 크러셔 내려찍기). 비우면 무음")]
         [SerializeField] private SOAudioData _arrivedSound;
+
+        [Header("VFX")]
+        [Tooltip("작동 상태에 도착했을 때 낼 효과 (예: 크러셔가 바닥을 찍을 때 연기). 비우면 없음")]
+        [SerializeField] private SOEffectData _arrivedVfx;
+
+        [Tooltip("도착 효과를 낼 자리 (비우면 이 오브젝트 위치)")]
+        [SerializeField] private Transform _arrivedVfxPoint;
         #endregion
 
         #region Private Fields
@@ -94,6 +102,7 @@ namespace Map.Gimmicks
             if (Mathf.Approximately(_progress, 1.0f) && Mathf.Approximately(_targetProgress, 1.0f))
             {
                 GimmickUtility.PlaySfx(_arrivedSound, transform.position);
+                GimmickUtility.PlayVfx(_arrivedVfx, (_arrivedVfxPoint != null) ? _arrivedVfxPoint.position : transform.position);
             }
         }
 

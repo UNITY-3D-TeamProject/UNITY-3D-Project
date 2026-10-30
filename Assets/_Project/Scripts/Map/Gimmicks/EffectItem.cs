@@ -2,6 +2,7 @@ using UnityEngine;
 using Attribute.Core;
 using Attribute.Effect;
 using Core.Audio;
+using Core.Effect;
 using Interaction;
 using PlayerInput;
 
@@ -32,6 +33,10 @@ namespace Map.Gimmicks
         [Header("Sound")]
         [Tooltip("획득했을 때 낼 소리 (비우면 무음)")]
         [SerializeField] private SOAudioData _pickupSound;
+
+        [Header("VFX")]
+        [Tooltip("획득했을 때 아이템 자리에서 낼 효과 (비우면 없음)")]
+        [SerializeField] private SOEffectData _pickupVfx;
         #endregion
 
         #region Unity Lifecycle
@@ -62,6 +67,7 @@ namespace Map.Gimmicks
 
             GimmickUtility.ApplyEffects(_effects, target);
             GimmickUtility.PlaySfx(_pickupSound, transform.position);
+            GimmickUtility.PlayVfx(_pickupVfx, transform.position);
             Destroy(gameObject);
         }
         #endregion
