@@ -25,6 +25,19 @@ namespace SceneTransition
     }
 
     /// <summary>
+    /// 스테이지 목록에 없는 씬(튜토리얼, 로비 등)으로 갈 때 기본 로딩 화면에 쓸 문구.
+    /// </summary>
+    [Serializable]
+    public struct SLoadingMoveText
+    {
+        [Tooltip("목적지 씬")]
+        public ESceneType Scene;
+
+        [Tooltip("\"Loading...\" 대신 쓸 문구 (예: 로비로 가는 중...)")]
+        public string Text;
+    }
+
+    /// <summary>
     /// 목적지 씬별 로딩 화면 앱 정보 목록. LoadingStageView가 로딩을 시작할 때 목적지 씬으로 찾는다.
     /// 목록 순서가 로딩 화면의 앱 순서 줄 순서다. 목록에 없는 씬(튜토리얼, 로비 등)은 기본 로딩 화면을 쓴다.
     /// </summary>
@@ -35,6 +48,10 @@ namespace SceneTransition
         [Header("Stages")]
         [Tooltip("스테이지별 앱 정보. 이 순서대로 앱 순서 줄에 놓인다. 같은 씬이 여러 칸이면 위쪽 칸을 쓴다.")]
         [SerializeField] private SLoadingStageInfo[] _stages;
+
+        [Header("Move Texts")]
+        [Tooltip("스테이지 목록에 없는 씬으로 갈 때 기본 화면 문구. 목록에 없으면 \"Loading...\" 그대로")]
+        [SerializeField] private SLoadingMoveText[] _moveTexts;
         #endregion
 
         #region Properties
@@ -63,6 +80,30 @@ namespace SceneTransition
 
             stage = default;
             index = -1;
+            return false;
+        }
+
+        /// <summary>
+        /// 스테이지가 아닌 목적지 씬의 기본 화면 문구를 찾는다.
+        /// </summary>
+        /// <param name="scene">목적지 씬</param>
+        /// <param name="text">찾은 문구</param>
+        /// <returns>목록에 있으면 true</returns>
+        public bool TryGetMoveText(ESceneType scene, out string text)
+        {
+            if (_moveTexts != null)
+            {
+                foreach (SLoadingMoveText moveText in _moveTexts)
+                {
+                    if (moveText.Scene == scene)
+                    {
+                        text = moveText.Text;
+                        return true;
+                    }
+                }
+            }
+
+            text = null;
             return false;
         }
         #endregion

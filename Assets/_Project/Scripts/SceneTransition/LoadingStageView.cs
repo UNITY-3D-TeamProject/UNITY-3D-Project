@@ -37,8 +37,8 @@ namespace SceneTransition
         [SerializeField] private SLoadingStep[] _steps;
 
         [Header("스테이지 화면일 때 바꿀 기본 화면")]
-        [Tooltip("숨길 기본 \"Loading...\" 문구")]
-        [SerializeField] private GameObject _defaultLoadingText;
+        [Tooltip("기본 \"Loading...\" 문구. 스테이지 화면이면 숨기고, 아니면 목적지 문구로 바꾼다")]
+        [SerializeField] private TMP_Text _defaultLoadingText;
         [Tooltip("옮길 달리는 플레이어·펫 RawImage")]
         [SerializeField] private RectTransform _runners;
         [SerializeField] private Vector2 _runnersPosition = new Vector2(-720f, -59f);
@@ -71,6 +71,13 @@ namespace SceneTransition
         {
             if ((_stageData == null) || !_stageData.TryGetStage(scene, out SLoadingStageInfo stage, out int stageIndex))
             {
+                if ((_stageData != null) &&
+                    (_defaultLoadingText != null) &&
+                    _stageData.TryGetMoveText(scene, out string moveText))
+                {
+                    _defaultLoadingText.text = moveText;
+                }
+
                 gameObject.SetActive(false);
                 return false;
             }
@@ -83,7 +90,7 @@ namespace SceneTransition
             if (_tipGroup != null) _tipGroup.SetActive(hasTip);
             if (hasTip && (_tipText != null)) _tipText.text = stage.Tips[UnityEngine.Random.Range(0, stage.Tips.Length)];
 
-            if (_defaultLoadingText != null) _defaultLoadingText.SetActive(false);
+            if (_defaultLoadingText != null) _defaultLoadingText.gameObject.SetActive(false);
             if (_runners != null) _runners.anchoredPosition = _runnersPosition;
 
             gameObject.SetActive(true);
