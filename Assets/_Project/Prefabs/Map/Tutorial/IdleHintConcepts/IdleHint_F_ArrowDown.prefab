@@ -31,6 +31,7 @@ Transform:
   m_Children:
   - {fileID: 5556961250787667119}
   - {fileID: 7665356790176972239}
+  - {fileID: 1863282128138021040}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5895520801285091988
@@ -155,6 +156,80 @@ MonoBehaviour:
   _amplitude: 0.25
   _frequency: 0.8
   _phase: 0
+--- !u!1001 &1861151976265964926
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 9028813408853325032}
+    m_Modifications:
+    - target: {fileID: 1675316567130464, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_Name
+      value: LootRayBlue
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.04
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+--- !u!4 &1863282128138021040 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4388037733217742, guid: bb6f6b139d42b4745be0b8f605709c64, type: 3}
+  m_PrefabInstance: {fileID: 1861151976265964926}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7669557485339634077
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -166,6 +241,10 @@ PrefabInstance:
     - target: {fileID: 1448971607870028, guid: d01a7b49ea71d0a47bb667a590616946, type: 3}
       propertyPath: m_Name
       value: GlowZoneBlue
+      objectReference: {fileID: 0}
+    - target: {fileID: 1448971607870028, guid: d01a7b49ea71d0a47bb667a590616946, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4341449868645458, guid: d01a7b49ea71d0a47bb667a590616946, type: 3}
       propertyPath: m_LocalScale.x

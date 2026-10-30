@@ -92,7 +92,7 @@ Shader "Project/HoloGlow"
 
                 // 어둠: 칸 단위로 조각조각 사라진다 (드러날 때도 조각조각 켜짐)
                 float visibility = HoloVisibility(_DarkImmune);
-                clip(HoloCellNoise(input.positionWS, _DissolveCell) - (1.0 - visibility) - 0.0001);
+                clip(HoloCellNoise(input.positionWS, _DissolveCell) - (1.0 - visibility));
 
                 color.rgb = lerp(HoloAlarmTint(color.rgb), color.rgb, _AlarmImmune);
 

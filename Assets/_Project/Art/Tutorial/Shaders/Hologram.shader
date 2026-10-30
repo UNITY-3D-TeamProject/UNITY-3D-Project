@@ -32,6 +32,7 @@ Shader "Project/Hologram"
         [Header(Tutorial Atmosphere)]
         [Toggle] _DarkImmune ("Dark Immune (어둠에서도 보임)", Float) = 0
         [Toggle] _AlarmImmune ("Alarm Immune (경보에도 원래 색)", Float) = 0
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 0
     }
 
     SubShader
@@ -46,7 +47,7 @@ Shader "Project/Hologram"
 
         Blend SrcAlpha OneMinusSrcAlpha
         ZWrite Off
-        Cull Off
+        Cull [_Cull]
 
         Pass
         {
@@ -79,6 +80,7 @@ Shader "Project/Hologram"
                 float _FlickerSpeed;
                 float _DarkImmune;
                 float _AlarmImmune;
+                float _Cull;
             CBUFFER_END
 
             struct Attributes
@@ -125,7 +127,7 @@ Shader "Project/Hologram"
 
                 // 튜토리얼 어둠: 칸 단위로 조각조각 사라진다
                 float visibility = HoloVisibility(_DarkImmune);
-                clip(HoloCellNoise(p, 0.8) - (1.0 - visibility) - 0.0001);
+                clip(HoloCellNoise(p, 0.8) - (1.0 - visibility));
 
                 float3 n = normalize(input.normalWS);
                 float3 viewDirection = normalize(GetWorldSpaceViewDir(p));
