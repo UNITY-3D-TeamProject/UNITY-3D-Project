@@ -183,3 +183,23 @@ resolved: null
 - 구현: 기존 6줄 대사를 `SOCutscene_Live_AfterShow`(34번)로 옮겨 E로 진행하고, TV 영상이 끝나도 대화가 유지되도록 영상 종료의 컷씬 중지를 차단했다. 대화 종료 시 크레딧을 시작하며 영상 소리를 끄고 WAV 67.5초부터 재생한다.
 - 검증: 사용자 요청에 따라 추가 실행 검증을 생략했다.
 - `develop` 병합 시 파일 맵 업로드 컷씬과 34번이 중복되어, `develop`의 파일 맵 업로드를 34번으로 유지하고 라이브 엔딩 컷씬을 35번으로 변경했다.
+
+## 연출 수정 7 (2026-10-31, 사용자 요청: "TV 안으로 들어가는 연출이 사라졌다")
+- 원인: 구현·씬 연결(`ScreenVideoZoom`, 줌 카메라, `FullscreenVideo`, 33번 발판 이벤트)은 그대로였다. Play 중 Unity 창이 포커스를 잃으면(`Run In Background` 꺼짐) VideoPlayer가 스스로 일시정지하는데, `ScreenVideoZoom`이 `isPlaying == false`를 "영상 끝남"으로 보고 전체화면을 바로 걷어 냈다. 런타임 확인: 영상 8.3초에서 `isPaused = true`, 연출은 이미 TV 밖 뒷모습 카메라로 나와 있었다. 영상을 멈추는 프로젝트 코드는 없다.
+- 수정: `ScreenVideoZoom.IsVideoRunning()`(재생 중 또는 일시정지)으로 들어가기 전·전체화면 유지 조건을 판단. 끝까지 재생했거나 멈췄을 때만 나온다.
+- 인스펙터: `Enter At Video Seconds` = 전체화면 시작 시각, `Exit At Video Seconds` = 전체화면에서 나와 폰 주인과 펫을 보여 주는 시각(현재 씬 값 5초·45초). 툴팁 문구만 정리.
+- 검증: 사용자가 Play 중이라 리컴파일·재생 확인 못 함.
+
+## 연출 수정 8 (2026-10-31, 사용자 요청: E 길게 눌러 노래 영상 스킵)
+- 영상을 보는 동안(TV 단계·전체화면 단계) E를 `Skip Hold Seconds`(기본 1.5초, 인스펙터)만큼 누르고 있으면 영상을 `Exit At Video Seconds` 위치로 넘기고, 전체화면을 걷어 TV 밖 뒷모습 카메라 → 35번 대화로 바로 간다. TV 단계에서 누르면 화면 안으로 들어가지 않는다.
+- E는 로딩 영상 스킵처럼 `Keyboard.current.eKey`를 직접 읽는다. 대화 넘기기는 누른 순간(`performed`)에만 반응해 길게 누르기와 겹치지 않는다.
+- 스킵 안내: 로딩 컷씬 `VideoSkipPrompt`(Loading.unity)와 같은 모양으로 `Canvas_EndingCredits/VideoSkipPrompt`(오른쪽 아래 (-107, 62), 150×60 어두운 패널 + `SkipRingTrack`·`SkipRingFill` 원형 게이지 + `SkipLabel` "E 꾹 누르기 / 건너뛰기")를 만들어 `ScreenVideoZoom._skipPrompt`·`_skipProgress`에 연결. 영상이 나오기 시작하면 켜고, TV 밖으로 나가기 시작하면(스킵·나오는 시각·영상 정지) 끈다. 게이지는 E를 누른 시간 / `Skip Hold Seconds`만큼 찬다. 씬에는 꺼 둔 채 저장.
+- 검증: 리컴파일 에러 0, 씬 다시 불러와 연결 확인, 편집 모드 임시 렌더로 안내·게이지 60% 모양 확인(저장 안 함). Play는 에디터 루프가 멈춰 실제 스킵 동작 미확인.
+
+## 연출 수정 9 (2026-10-31, 사용자 요청: 대화 끝 → 천천히 페이드 아웃 → 크레딧 자연스럽게)
+- 문제: 35번 대화가 끝나면 컷씬이 종료되어 카메라가 플레이어로 돌아가고 HUD가 다시 뜬 뒤, 그 위로 크레딧 그룹이 2초 만에 나타났다. 영상 소리는 즉시 끊기고 노래는 즉시 최대 음량으로 시작했다.
+- 수정:
+  - 35번 `SOCutscene_Live_AfterShow` 끝에 카메라 단계 추가: 새 `SOCameraShot_Live_EndingHold`(`Live_ScreenBack`, 3600초, 블렌드 0, 시간 흐름). 마지막 대사를 넘겨도 TV 뒷모습 화면·HUD 숨김·조작 막기가 유지된다.
+  - `ScreenVideoZoom`: `CinematicManager.OnCutsceneStepStarted`로 35번의 마지막 카메라 단계가 시작되면(=대화 끝) `EndingCredits.Play`. 그 단계가 없으면 예전처럼 컷씬이 끝날 때 시작.
+  - `EndingCredits`: ① 덮개(`FadeOutCover`)를 불투명하게 두고 크레딧 그룹을 `_fadeSeconds`(씬 3초) 동안 드러내 대화 장면을 검게 어둡게 하며 영상 소리를 함께 줄임 → ② 노래(2절)를 소리 0으로 틀고 왼쪽 무대를 켠 뒤 `_revealSeconds`(새 필드, 2초) 동안 덮개를 걷으며 노래를 키움 → 명단 스크롤 → 기존 끝 페이드 → 메인 메뉴.
+- 검증: 리컴파일 에러 0, 씬 값·컷씬 마지막 단계 확인. Play는 에디터 루프가 멈춰 실제 전환 미확인.
