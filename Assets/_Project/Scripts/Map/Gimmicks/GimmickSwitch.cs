@@ -57,6 +57,12 @@ namespace Map.Gimmicks
         [Header("Sound")]
         [Tooltip("켜져 있는 동안 반복할 소리 (예: 바람, 전기). 비우면 무음")]
         [SerializeField] private SOAudioData _whileOnLoopSound;
+
+        [Tooltip("켜지는 순간 낼 소리 (예: 색 바꾸기 블록 전환). 비우면 무음")]
+        [SerializeField] private SOAudioData _turnOnSound;
+
+        [Tooltip("꺼지는 순간 낼 소리 (예: 길·발판 사라짐). 비우면 무음")]
+        [SerializeField] private SOAudioData _turnOffSound;
         #endregion
 
         #region Private Fields
@@ -164,10 +170,12 @@ namespace Map.Gimmicks
 
             if (IsOn)
             {
+                GimmickUtility.PlaySfx(_turnOnSound, transform.position);
                 _onTurnedOn.Invoke();
             }
             else
             {
+                GimmickUtility.PlaySfx(_turnOffSound, transform.position);
                 _onTurnedOff.Invoke();
             }
         }

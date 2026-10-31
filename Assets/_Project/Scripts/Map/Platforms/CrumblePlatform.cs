@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Core.Audio;
 using Map.Gimmicks;
 
 namespace Map.Platforms
@@ -22,6 +23,10 @@ namespace Map.Platforms
 
         [Tooltip("사라진 뒤 다시 생기기까지의 시간(초)")]
         [SerializeField, Min(0f)] private float _respawnDelay = 2.5f;
+
+        [Header("Sound")]
+        [Tooltip("발판이 사라지는 순간 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _vanishSound;
         #endregion
 
         #region Private Fields
@@ -88,6 +93,7 @@ namespace Map.Platforms
             _body.SetVisible(true);
             _isSolid = false;
             _body.SetSolid(false);
+            GimmickUtility.PlaySfx(_vanishSound, transform.position);
 
             yield return new WaitForSeconds(_respawnDelay);
 
