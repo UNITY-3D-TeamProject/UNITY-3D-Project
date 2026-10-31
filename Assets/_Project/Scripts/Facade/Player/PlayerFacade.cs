@@ -260,6 +260,16 @@ namespace Facade.Player
         {
             SwitchActionMap(ACTION_MAP_PLAYER);
         }
+
+        /// <summary>
+        /// 진행 중인 사격 차지를 쏘지 않고 취소한다.
+        /// </summary>
+        public void CancelFireCharge()
+        {
+            if (!_characterMediator) return;
+
+            _characterMediator.CancelFireCharge();
+        }
         #endregion
 
         #region Private Methods
