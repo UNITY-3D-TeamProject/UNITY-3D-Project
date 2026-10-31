@@ -7,6 +7,9 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — AI_TODO2 사운드-10: GC 공격음은 `GC.prefab` 의 `Attack` 소리가 `Execute` 단계라 근접 공격의 `Impact` 와 안 맞던 것(→7), 이동음은 `EnemyAnimator._footstepStride` 0 이던 것(→2). 프리팹만 수정, **Play·청취·게이트 루프 미실행, 커밋 전, 클립 ThirdParty 의존**: [GC 사운드](./2026-10-31/gc-sound-fix.md)
+- **2026-10-31** — AI_TODO2 사운드-8: 도둑 피격·사망 소리는 프리팹 연결이 이미 되어 있고 Map_4 Play 에서 두 클립 모두 재생 확인, 재현 안 됨(변경 없음). Map_3_File 실제 라운드 확인 필요: [도둑 사운드 확인](./2026-10-31/thief-hit-death-sound-check.md)
+- **2026-10-31** — AI_TODO2 사운드-3: Enemy 발소리 미재생 원인은 `EnemyAnimator` 에 발 디딤 알림이 없던 것. 이동 거리 기준 `OnFootstep`(`_footstepStride`) 추가 후 Melee/Ranged/Special 에 메카 발소리 SO 연결. 리컴파일 통과, **Play·청취·게이트 루프 미실행, 커밋 전, 클립 ThirdParty 의존**: [Enemy 발소리](./2026-10-31/enemy-footstep-sound.md)
 - **2026-10-30** — intent-096(AI_TODO2 보스-19·23): 박수·그랩 예고를 `WarningSignals_Arrows` 화살표로 교체(`BossArrowTelegraph`, `BossArena.SetArrowTelegraph/ShowArrowLine`), 화살표가 뜬 칸의 맵 WarningSignals 는 예고 동안만 끔. 리컴파일 통과, Play 에서 표시·해제 확인. **직접 플레이·게이트 루프 미실행, 커밋 전**: [화살표 예고](./2026-10-30/boss-a-arrow-telegraph.md)
 - **2026-10-30** — AI_TODO2 보스-31: 보스 피격 이펙트가 멀리서 안 보이던 문제를 `HitEffectFeedback` 거리 비례 확대(15m 초과 시 최대 5배)로 대응. 프리팹 변경 없음, 리컴파일 통과. **직접 플레이·게이트 루프 미실행, 커밋 전**: [거리 비례 확대](./2026-10-30/boss-hit-effect-distance-scale.md)
 - **2026-10-30** — AI_TODO2 보스-30: 그로기 중 손을 때리면 피격 이펙트가 플레이어 위치에서 나오던 원인은 `BossHitRelay` 가 HP 하한 적용 때 `HitPoint` 까지 버려 공격자 위치로 대체된 것. `HitPoint` 는 유지하고 `Direction` 만 빼도록 변경(크리티컬 차단 유지). 리컴파일 통과. **직접 플레이·게이트 루프 미실행, 커밋 전**: [그로기 피격 이펙트 위치](./2026-10-30/boss-groggy-hit-effect-position.md)
