@@ -122,6 +122,8 @@ namespace SceneTransition
             {
                 bool isDone = progress >= (float)(i + 1) / _steps.Length;
                 SetStep(_steps[i], isDone);
+                if ((i == _steps.Length - 1) && (_steps[i].Label != null))
+                    _steps[i].Label.text = isDone ? "접속 완료" : "접속 준비중...";
             }
         }
         #endregion
