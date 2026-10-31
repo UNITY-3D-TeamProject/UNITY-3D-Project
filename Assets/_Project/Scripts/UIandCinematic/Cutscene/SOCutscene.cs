@@ -20,11 +20,13 @@ namespace UIandCinematic
         public string SpeakerName;
         [Tooltip("비워 두면 말하는 사람의 기본 얼굴(CutscenePresenter에 지정)을 쓴다. 표정을 바꿀 때만 넣는다")]
         public Sprite Portrait;
-        [Tooltip("이 줄에서 켤 씬 카메라의 키(CinematicCamera). 비워 두면 말하는 사람(PLAYER·PET)을 비추는 카메라를 쓴다")]
+        [Tooltip("이 줄에서 켤 씬 카메라의 키(CinematicCamera). 비워 두면 말하는 사람(코리·비트)을 비추는 카메라를 쓴다")]
         public string CameraKey;
         [TextArea(3, 5)] public string Message;
         [Tooltip("켜면 대사를 읽는 동안에도 게임 시간이 흐른다. 발판 이동을 보여 주는 설명에 사용하며, 플레이어 입력은 계속 차단된다")]
         public bool ShouldRunTime;
+        [Tooltip("켜면 상대(관리자 등)와 대화하는 줄. 펫을 세우지 않고 제자리에 두며, 카메라 키가 비어 있으면 상대가 말할 때 플레이어 어깨 너머로 상대를, 코리·비트가 말할 때 상대 쪽에서 플레이어를 비춘다")]
+        public bool IsPartnerTalk;
 
         [Header("Camera")]
         [Tooltip("카메라 단계에서 재생할 카메라 연출. 대사창은 숨기고 샷을 끝까지 보여 준 뒤 다음 단계로 넘어간다")]

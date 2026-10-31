@@ -5,6 +5,11 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — intent-108: 미로 관리자 대화 카메라. 줄 단위 `IsPartnerTalk`(2라운드 7줄·3라운드 앞 2줄)에서 펫은 제자리, 관리자가 말하면 `SpeakerCam_Partner`(플레이어 어깨 너머), 코리·비트가 말하면 관리자 등 너머 역샷. 이름 칸 폰트를 Pretendard-Bold로 바꿔 한글 이름 □□ 수정. TestScene Play 캡처·흐름 확인, 실제 미로 미확인, 커밋 안 함: [작업 기록](./2026-10-31/admin-talk-camera.md)
+- **2026-10-31** — intent-107: 미로 관리자(Spook) 정면 초상화 `AdminPortraits/Admin_00_Default.png`(조명 포함 렌더, 하늘색) 추가, 컷씬 기본 초상화에 `관리자` 등록. 화자 이름 ADMIN→관리자, PET→비트, PLAYER→코리(SO 67개·`Canvas_InGame`·스크립트 기본값). 리컴파일·에셋 값 확인, Play 미확인, 커밋 안 함: [작업 기록](./2026-10-31/admin-portrait-speaker-names.md)
+- **2026-10-31** — intent-106: 미로(`Map_3_File`, 씬 이름 상수)에서 벽 너머 3D 효과음(도둑 발소리) 처리. `AudioManager.PlaySfx`에서 Linecast로 막혔을 때만 NavMesh 경로 길이로 감쇠하고 입구 방향 가상 위치에서 재생(경로 없음·너무 길면 생략). 리컴파일 통과, 청취 미확인, 커밋 안 함: [작업 기록](./2026-10-31/audio-wall-occlusion-design.md)
+- **2026-10-31** — 튜토리얼 데모파일 소리가 낙하 중 피치가 내려가던 원인은 도플러. `AudioManager.CreateSfxSource`에서 3D 효과음 `dopplerLevel = 0`. 리컴파일 통과, 청취 미확인, 커밋 안 함: [작업 기록](./2026-10-31/audio-sfx-spread.md)
+- **2026-10-31** — intent-105: 이어폰에서 3D 효과음이 한쪽 귀로만 들림(튜토리얼 총소리 등). `AudioManager._sfxSpread`(기본 120)를 단발·반복 3D 효과음에 적용, 반복음은 넘긴 값과 큰 쪽 사용. 리컴파일 통과, 청취 미확인, 커밋 안 함: [작업 기록](./2026-10-31/audio-sfx-spread.md)
 - **2026-10-31** — intent-096 연출 수정 10: TV 보는·TV 밖 복귀 공용 카메라 `CinematicCam_LiveScreenBack`을 z 10 → 14.5로 앞당김, 2배속 안내를 명단이 올라가는 동안만 표시(`EndingCredits._fastForwardHint`). 리컴파일 통과, Play 미확인, 커밋 안 함: [작업 기록](./2026-10-31/ending-zoom-pause-fix.md)
 - **2026-10-31** — intent-096 연출 수정 7: 엔딩 TV 줌·전체화면이 "사라지던" 원인은 창 포커스 이탈로 VideoPlayer가 일시정지된 것을 `ScreenVideoZoom`이 영상 끝으로 본 것. `IsVideoRunning()`(재생 또는 일시정지)으로 수정, 시작·종료 시각 툴팁 정리(씬 값 5·45초 그대로). E 길게(1.5초) 누르면 영상을 나오는 위치로 넘기고 TV 밖 대화로 가는 스킵 + 로딩 컷씬과 같은 모양의 안내 `Canvas_EndingCredits/VideoSkipPrompt`(원형 게이지 + "E 꾹 누르기 / 건너뛰기") 추가. 대화 끝 → 장면 3초 페이드 아웃(영상 소리 같이 줄어듦) → 검은 화면에서 크레딧·노래 2초 드러남으로 변경(35번 끝 유지 샷 `SOCameraShot_Live_EndingHold`). 리컴파일 통과, Play 미확인, 커밋 안 함: [작업 기록](./2026-10-31/ending-zoom-pause-fix.md)
 - **2026-10-31** — intent-104: 과열로 열이 내려가는 동안 히트 원호를 진한 빨강 + 0.1초 간격 점멸, 0이 되면 원래 색 복구. `PlayerHudPresenter`가 `HeatCost`와 같은 규칙으로 과열 판단 → `PlayerHudView.SetHeatOverheated`. 컴파일·프리팹 격리 로드로 색 변경/복구 확인, Play 미확인, 커밋 안 함: [작업 기록](./2026-10-31/overheat-heat-arc-blink.md)

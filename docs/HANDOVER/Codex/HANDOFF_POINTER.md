@@ -1,6 +1,7 @@
 # Codex — Handover Pointer
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — 라이브앱 체크포인트 뒤 바닥·조명·경계벽 정리: [작업 기록](./2026-10-31/live-checkpoint-backspace-trim.md)
 - **2026-10-31** — 튜토리얼 음악 파일의 오른쪽 편향 수정: [작업 기록](./2026-10-31/tutorial-music-file-right-channel-diagnosis.md)
 - **2026-10-31** — 튜토리얼 대시·스캔·탈것 안내 이벤트에 스킬 해금 연결: [작업 기록](./2026-10-31/tutorial-skill-unlock-scene-events.md)
 - **2026-10-31** — 튜토리얼 시작 영상을 재생하고 진행 바 없이 진입하도록 변경: [작업 기록](./2026-10-31/tutorial-loading-video-order.md)
