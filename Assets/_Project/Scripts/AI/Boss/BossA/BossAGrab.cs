@@ -208,6 +208,9 @@ namespace AI.Boss.BossA
             _isCaptured = false;
             _slamTile = -1;
             _state = EGrabState.Aiming;
+
+            // 손의 평소 높이가 날아갈 높이와 달라 비스듬히 날지 않도록, 예고 동안 제자리에서 날아갈 높이까지 먼저 올린다
+            _grabHand.Fly(_origin + (Vector3.up * _hookHeight), _remaining, null);
         }
         #endregion
 

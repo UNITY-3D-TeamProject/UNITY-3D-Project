@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — AI_TODO2 보스-34: 그랩이 위로 비스듬히 날던 원인은 손 평소 높이(-10m)와 목적지(바닥+1m) 차이. `BossAGrab.Execute` 에서 예고 동안 손을 제자리에서 먼저 올리도록 변경(수직만, 수평 방향·복귀 칸은 그대로). 리컴파일 통과, **Play·직접 플레이·게이트 루프 미실행, 커밋 전**: [그랩 수평 비행](./2026-10-31/boss-a-grab-straight-fly.md)
 - **2026-10-31** — AI_TODO2 사운드-10: GC 공격음은 `GC.prefab` 의 `Attack` 소리가 `Execute` 단계라 근접 공격의 `Impact` 와 안 맞던 것(→7), 이동음은 `EnemyAnimator._footstepStride` 0 이던 것(→2). 프리팹만 수정, **Play·청취·게이트 루프 미실행, 커밋 전, 클립 ThirdParty 의존**: [GC 사운드](./2026-10-31/gc-sound-fix.md)
 - **2026-10-31** — AI_TODO2 사운드-8: 도둑 피격·사망 소리는 프리팹 연결이 이미 되어 있고 Map_4 Play 에서 두 클립 모두 재생 확인, 재현 안 됨(변경 없음). Map_3_File 실제 라운드 확인 필요: [도둑 사운드 확인](./2026-10-31/thief-hit-death-sound-check.md)
 - **2026-10-31** — AI_TODO2 사운드-3: Enemy 발소리 미재생 원인은 `EnemyAnimator` 에 발 디딤 알림이 없던 것. 이동 거리 기준 `OnFootstep`(`_footstepStride`) 추가 후 Melee/Ranged/Special 에 메카 발소리 SO 연결. 리컴파일 통과, **Play·청취·게이트 루프 미실행, 커밋 전, 클립 ThirdParty 의존**: [Enemy 발소리](./2026-10-31/enemy-footstep-sound.md)
