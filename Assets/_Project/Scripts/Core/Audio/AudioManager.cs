@@ -88,6 +88,11 @@ namespace Core.Audio
         [Min(1)]
         [SerializeField] private int _maxSfxSourceCount = 64;
 
+        // 0이면 리스너 옆에서 난 소리가 반대쪽 귀에서 전혀 들리지 않는다. (이어폰에서 한쪽만 들림)
+        [Tooltip("3D 효과음이 좌우로 퍼지는 각도. 0이면 옆에서 난 소리가 한쪽 귀로만 들리고, 클수록 방향감이 약해진다")]
+        [Range(0f, 360f)]
+        [SerializeField] private float _sfxSpread = 120f;
+
         [Header("Throttle")]
         [Tooltip("UI에서 같은 클립을 이 시간(초) 안에 다시 요청하면 건너뛴다. 3D 효과음에는 적용하지 않는다")]
         [SerializeField] private float _sameClipInterval = 0.05f;
@@ -271,7 +276,7 @@ namespace Core.Audio
 
             source.transform.position = position;
             source.clip = clip;
-            source.spread = 0f;
+            source.spread = _sfxSpread;
             source.volume = Mathf.Clamp01(audioData.Volume * volumeScale);
             source.pitch = pitch;
             source.rolloffMode = audioData.RolloffMode;
@@ -289,7 +294,7 @@ namespace Core.Audio
         // 3D 효과음을 target 위치에서 반복한다. StopSfx를 부를 때까지 3D 소스 하나를 점유한다.
         // [호출] 차지 시작 등. 같은 클립 중복 차단은 하지 않는다. 3D 소스가 상한까지 모두 재생 중이면 default를 돌려준다.
         //        target이 파괴되면 마지막 위치에서 계속 나므로, 부르는 쪽이 OnDisable 등에서 꼭 멈춘다.
-        //        spread(0~360도)를 180으로 주면 거리 감쇠는 그대로 두고 좌우 쏠림만 없앤다.
+        //        spread(0~360도)를 180으로 주면 거리 감쇠는 그대로 두고 좌우 쏠림만 없앤다. _sfxSpread보다 작으면 _sfxSpread를 쓴다.
         public SAudioHandle PlaySfxLoop(SOAudioData audioData, Transform target, float volumeScale = 1f, float pitchScale = 1f, float spread = 0f)
         {
             if (gameObject.scene.name == MAIN_SCENE_NAME)
@@ -310,7 +315,7 @@ namespace Core.Audio
             source.transform.position = target.position;
             source.clip = clip;
             source.loop = true;
-            source.spread = Mathf.Clamp(spread, 0f, 360f);
+            source.spread = Mathf.Clamp(Mathf.Max(spread, _sfxSpread), 0f, 360f);
             source.volume = Mathf.Clamp01(audioData.Volume * volumeScale);
             source.pitch = Mathf.Max(audioData.PickPitch() * pitchScale, MIN_PITCH);
             source.rolloffMode = audioData.RolloffMode;
