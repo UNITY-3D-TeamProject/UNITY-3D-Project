@@ -44,6 +44,7 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - 같은 작업에서 사용자 요청으로 명단 아래에 `ASSETS & SOURCES`(...) / `SPECIAL THANKS`(...) / `TOOLS`(Unity Engine) / `FRAGMENT IN DEVICE` / "누군가의 꿈을 위해, 작은 데이터 하나가 움직였습니다."를 `THANK YOU FOR PLAYING` 앞에 추가.
 - 확인: 리컴파일 통과. Play(로딩씬에서 프리팹을 잠깐 생성)에서 시간대별 카메라 캡처로 장난·쫓아가기·커튼콜·피날레 구도 확인 후 쫓아가기 거리·콩 높이·커튼콜 카메라·줄 위치 조정. `Map_5_Live` diff는 위 추가·연결·문구뿐. 실제 엔딩 흐름(크레딧과 겹친 모습)은 미확인.
 - 사용자 요청: 크레딧이 끝날 때도 페이드아웃. `EndingCredits._fadeOutCover`(Graphic)·`_fadeOutSeconds`(2초) 추가, 명단이 다 올라가고 `_endHoldSeconds` 뒤 `CreditsGroup/FadeOutCover`(맨 위 검은 이미지, 시작 시 투명)를 불투명하게 만든 뒤 메인 메뉴로. 설정창이 열려 있으면 멈춤. 리컴파일 통과, 실제 흐름 미확인.
+- 사용자 추가 요청: 기존 플레이어·펫 추격에 이어 펫이 플레이어 머리 위에 앉아 함께 좌우로 이동하고, 커튼콜의 가비지 컬렉터가 먼저 나타나 둘을 쫓는다. 추격 후 컬렉터를 숨겼다가 기존 커튼콜 순서에 다시 등장시킨다. `EndingCastDirector.cs`만 수정.
 - 알려진 점: 도둑은 색이 어두워 뒤줄에서 잘 안 보임. 크레딧 길이에 따라 장난 구간 중 명단이 시작됨(장면은 명단과 독립).
 
 ## 해결 기록 (Resolution) — 해결 후 작성

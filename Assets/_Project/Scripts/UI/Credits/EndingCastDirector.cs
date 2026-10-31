@@ -29,8 +29,9 @@ namespace UI.Credits
     /// 엔딩 크레딧 왼쪽 무대의 연출. 켜지면 처음부터 재생한다.
     /// 1. 플레이어·펫 장난 (가까운 카메라): 펫이 머리 위를 돌고 웃음 → 플레이어 손 흔듦 → 펫이 콩 → 플레이어 깜짝
     ///    → 펫이 도망가고 플레이어가 쫓아감 → 같이 점프 → 펫 춤
-    /// 2. 커튼콜 (카메라가 뒤로 빠짐): 등장 캐릭터가 하나씩 걸어 들어와 줄을 선다.
-    /// 3. 피날레: 다 같이 동작을 반복한다. (크레딧이 끝날 때까지)
+    /// 2. 펫이 플레이어 머리 위에 앉아 함께 걷다가 가비지 컬렉터에게 쫓긴다.
+    /// 3. 커튼콜 (카메라가 뒤로 빠짐): 등장 캐릭터가 하나씩 걸어 들어와 줄을 선다.
+    /// 4. 피날레: 다 같이 동작을 반복한다. (크레딧이 끝날 때까지)
     /// 크레딧과 같이 게임 시간이 아닌 실제 시간으로 움직인다.
     /// </summary>
     public class EndingCastDirector : MonoBehaviour
@@ -145,6 +146,7 @@ namespace UI.Credits
         {
             PlaceAtStart();
             yield return CoPlayerAndPet();
+            yield return CoHeadRideAndChase();
             yield return CoCurtainCall();
             yield return CoFinale();
         }
@@ -218,6 +220,10 @@ namespace UI.Credits
 
         private IEnumerator CoCurtainCall()
         {
+            // 추격에 먼저 등장한 가비지 컬렉터도 다시 화면 밖에서 들어온다.
+            if ((_members != null) && (_members.Length > 0) && (_members[0].Root != null))
+                _members[0].Root.gameObject.SetActive(false);
+
             Play(_playerAnimator, PLAYER_IDLE);
             Play(_petAnimator, PET_FLY);
             StartCoroutine(CoMove(_pet, _petHomePosition, 0.6f));
@@ -234,6 +240,59 @@ namespace UI.Credits
             }
 
             yield return CoWait(_enterSeconds);
+        }
+
+        private IEnumerator CoHeadRideAndChase()
+        {
+            Vector3 headOffset = new Vector3(0.0f, 1.85f, 0.0f);
+            Play(_petAnimator, PET_FLY);
+            yield return CoMove(_pet, _player.localPosition + headOffset, 0.5f);
+            Face(_pet, FACE_CAMERA_YAW);
+            Play(_petAnimator, PET_IDLE);
+            Play(_playerAnimator, PLAYER_RUN);
+            yield return CoMoveWithPetOnHead(new Vector3(-0.7f, 0.0f, 0.0f), headOffset, 1.5f);
+            Face(_player, FACE_RIGHT_YAW);
+            yield return CoMoveWithPetOnHead(new Vector3(0.7f, 0.0f, 0.0f), headOffset, 1.5f);
+
+            if ((_members != null) && (_members.Length > 0) && (_members[0].Root != null))
+            {
+                SCastMember collector = _members[0];
+                collector.Root.localPosition = new Vector3(-2.5f, 0.0f, 0.8f);
+                Face(collector.Root, FACE_RIGHT_YAW);
+                collector.Root.gameObject.SetActive(true);
+                Play(collector.Animator, collector.MoveState);
+
+                Play(_petAnimator, PET_FLY);
+                Face(_player, FACE_RIGHT_YAW);
+                StartCoroutine(CoMove(collector.Root, new Vector3(0.0f, 0.0f, 0.8f), 1.5f));
+                yield return CoMoveWithPetOnHead(new Vector3(1.4f, 0.0f, 0.0f), headOffset, 1.5f);
+                Face(_player, FACE_LEFT_YAW);
+                Face(collector.Root, FACE_LEFT_YAW);
+                StartCoroutine(CoMove(collector.Root, new Vector3(-1.1f, 0.0f, 0.8f), 1.5f));
+                yield return CoMoveWithPetOnHead(new Vector3(-1.4f, 0.0f, 0.0f), headOffset, 1.5f);
+                Play(collector.Animator, collector.IdleState);
+            }
+
+            StartCoroutine(CoMove(_pet, _petHomePosition, 0.8f));
+            Face(_player, FACE_RIGHT_YAW);
+            yield return CoMove(_player, Vector3.zero, 0.8f);
+            Face(_player, FACE_CAMERA_YAW);
+        }
+
+        private IEnumerator CoMoveWithPetOnHead(Vector3 to, Vector3 headOffset, float seconds)
+        {
+            Vector3 from = _player.localPosition;
+            float elapsed = 0.0f;
+            while (elapsed < seconds)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                _player.localPosition = Vector3.Lerp(from, to, Mathf.SmoothStep(0.0f, 1.0f, elapsed / seconds));
+                _pet.localPosition = _player.localPosition + headOffset;
+                yield return null;
+            }
+
+            _player.localPosition = to;
+            _pet.localPosition = to + headOffset;
         }
 
         // 화면 밖 옆에서 줄 자리까지 걸어 들어와 카메라를 본다.

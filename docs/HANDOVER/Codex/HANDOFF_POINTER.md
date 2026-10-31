@@ -1,6 +1,8 @@
 # Codex — Handover Pointer
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — 엔딩 무대에 펫 머리 위 동행과 가비지 컬렉터 추격 추가: [작업 기록](./2026-10-31/ending-cast-chase.md)
+- **2026-10-31** — 엔딩 크레딧 시간 설정 방식 확인: [작업 기록](./2026-10-31/ending-credits-duration-review.md)
 - **2026-10-30** — 인게임 설정창 하단에 RETRY 버튼 추가 및 현재 스테이지 재시작 연결: [작업 기록](./2026-10-30/settings-stage-retry.md)
 - **2026-10-30** — 인게임 설정창 종료 버튼 하단 고정 및 슬라이더 클릭 영역 확대: [작업 기록](./2026-10-30/settings-footer-slider-hit-area.md)
 - **2026-10-30** — ThirdParty SVN 작업 사본과 프로젝트 폴더 차이 확인: [작업 기록](./2026-10-30/thirdparty-svn-comparison.md)
