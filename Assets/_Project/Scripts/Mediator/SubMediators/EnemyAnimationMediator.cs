@@ -26,6 +26,9 @@ namespace Mediator.SubMediators
         #region Events
         /// <summary>EnemyAnimator 의 사망 애니메이션이 끝났을 때 발생한다.</summary>
         public event Action OnDeathAnimationEnded;
+
+        /// <summary>EnemyAnimator 가 이동 중 발 디딤을 알렸을 때 발생한다.</summary>
+        public event Action OnFootstep;
         #endregion
 
         #region Unity Lifecycle
@@ -38,12 +41,14 @@ namespace Mediator.SubMediators
         protected override void OnEnable()
         {
             if (_enemyAnimator) _enemyAnimator.OnDeathAnimationEnded += OnDeathAnimationEndedCallback;
+            if (_enemyAnimator) _enemyAnimator.OnFootstep += OnFootstepCallback;
             base.OnEnable();
         }
 
         private void OnDisable()
         {
             if (_enemyAnimator) _enemyAnimator.OnDeathAnimationEnded -= OnDeathAnimationEndedCallback;
+            if (_enemyAnimator) _enemyAnimator.OnFootstep -= OnFootstepCallback;
         }
         #endregion
 
@@ -147,6 +152,11 @@ namespace Mediator.SubMediators
         private void OnDeathAnimationEndedCallback()
         {
             OnDeathAnimationEnded?.Invoke();
+        }
+
+        private void OnFootstepCallback()
+        {
+            OnFootstep?.Invoke();
         }
         #endregion
     }

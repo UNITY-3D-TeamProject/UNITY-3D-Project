@@ -29,6 +29,9 @@ namespace CharacterAnimation
         [Tooltip("이동 애니메이션이 1배속으로 재생될 때의 이동속도. 현재 이동속도 / 이 값이 Move 재생 배율이 된다.")]
         [SerializeField, Min(0.01f)] private float _referenceMoveSpeed = 3.0f;
 
+        [Tooltip("이동 중 이 거리(m)만큼 움직일 때마다 발 디딤을 알린다. 0 이면 알리지 않는다.")]
+        [SerializeField, Min(0.0f)] private float _footstepStride = 0.0f;
+
         [Header("Skill")]
         [Tooltip("스킬 이름별 모션. 객체마다 프리팹에서 항목을 채운다.")]
         [SerializeField] private SSkillAnimation[] _skillAnimations =
@@ -46,11 +49,17 @@ namespace CharacterAnimation
         private int[] _skillParameterHashes;
         private bool _isDead;
         private bool _hasDeathEnded;
+        private bool _isMoving;
+        private Vector3 _lastPosition;
+        private float _stepDistance;
         #endregion
 
         #region Events
         /// <summary>사망 애니메이션이 끝났을 때 한 번 발생한다.</summary>
         public event Action OnDeathAnimationEnded;
+
+        /// <summary>이동 중 보폭만큼 움직일 때마다 발생한다. 보폭이 0 이면 발생하지 않는다.</summary>
+        public event Action OnFootstep;
         #endregion
 
         #region Unity Lifecycle
@@ -74,11 +83,14 @@ namespace CharacterAnimation
             // 풀에서 다시 꺼낼 때 이전 사망 상태가 남지 않게 한다
             _isDead = false;
             _hasDeathEnded = false;
+            _lastPosition = transform.position;
+            _stepDistance = 0.0f;
         }
 
         private void Update()
         {
             UpdateDeath();
+            UpdateFootstep();
         }
         #endregion
 
@@ -91,6 +103,7 @@ namespace CharacterAnimation
         {
             if (!enabled || _isDead) return;
 
+            _isMoving = isMoving;
             _animator.SetBool(AnimHash.IsMoving, isMoving);
         }
 
@@ -222,6 +235,30 @@ namespace CharacterAnimation
             if (stateInfo.normalizedTime < _deathPlayCount) return;
 
             EndDeath();
+        }
+
+        /// <summary>
+        /// 이동 중 실제로 움직인 수평 거리를 모아 보폭마다 발 디딤을 알린다. 이동을 멈추면 모은 거리를 비운다.
+        /// </summary>
+        private void UpdateFootstep()
+        {
+            Vector3 position = transform.position;
+            Vector3 delta = position - _lastPosition;
+            _lastPosition = position;
+            delta.y = 0.0f;
+
+            bool canStep = (_footstepStride > 0.0f) && _isMoving && !_isDead;
+            if (!canStep)
+            {
+                _stepDistance = 0.0f;
+                return;
+            }
+
+            _stepDistance += delta.magnitude;
+            if (_stepDistance < _footstepStride) return;
+
+            _stepDistance %= _footstepStride;
+            OnFootstep?.Invoke();
         }
 
         private void EndDeath()

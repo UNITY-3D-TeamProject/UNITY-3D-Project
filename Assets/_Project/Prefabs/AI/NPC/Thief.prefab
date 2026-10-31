@@ -375,6 +375,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimation.EnemyAnimator
   _referenceMoveSpeed: 3
+  _footstepStride: 0.85
   _skillAnimations: []
   _deathPlayCount: 1
 --- !u!1 &6473601438803460352
@@ -1660,10 +1661,6 @@ PrefabInstance:
       value: SoundPrefab
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
-      propertyPath: _death
-      value:
-      objectReference: {fileID: 11400000, guid: bb16b6b3e1f197c4fa2fdee217da1321, type: 2}
-    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _hit
       value: 
       objectReference: {fileID: 11400000, guid: 08604b05c769a194b91965bb0ee9eea8, type: 2}
@@ -1676,9 +1673,13 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
+      propertyPath: _death
+      value: 
+      objectReference: {fileID: 11400000, guid: bb16b6b3e1f197c4fa2fdee217da1321, type: 2}
+    - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _footstep
       value: 
-      objectReference: {fileID: 11400000, guid: 064e05a479ac06b4793d47e2f098d0e4, type: 2}
+      objectReference: {fileID: 11400000, guid: 31d64d1fa68c7af4691ef312a7f4b08a, type: 2}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.size
       value: 0

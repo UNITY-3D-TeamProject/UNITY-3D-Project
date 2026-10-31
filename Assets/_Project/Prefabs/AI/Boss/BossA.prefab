@@ -1727,6 +1727,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimation.EnemyAnimator
   _referenceMoveSpeed: 3
+  _footstepStride: 1.5
   _skillAnimations: []
   _deathPlayCount: 1
 --- !u!114 &4937425827775882170
@@ -2418,6 +2419,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AI.HitSoundFeedback
   _characterMediator: {fileID: 0}
   _sound: {fileID: 11400000, guid: df5749c9a4509b841b2a87cb16b5518b, type: 2}
+  _minInterval: 0.1
 --- !u!114 &22810455073405011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2677,7 +2679,7 @@ PrefabInstance:
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _hit
       value: 
-      objectReference: {fileID: 11400000, guid: 08604b05c769a194b91965bb0ee9eea8, type: 2}
+      objectReference: {fileID: 0}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _jump
       value: 
@@ -2689,7 +2691,7 @@ PrefabInstance:
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _footstep
       value: 
-      objectReference: {fileID: 11400000, guid: 064e05a479ac06b4793d47e2f098d0e4, type: 2}
+      objectReference: {fileID: 11400000, guid: 31d64d1fa68c7af4691ef312a7f4b08a, type: 2}
     - target: {fileID: 7911213874210823054, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: _skillSounds.Array.size
       value: 8

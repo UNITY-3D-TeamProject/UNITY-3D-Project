@@ -878,6 +878,7 @@ namespace Mediator
             if (_spawnEffectDriver) _spawnEffectDriver.OnSpawnEffectEnded += OnSpawnEffectEndedCallback;
             if (_moveMediator && _soundMediator) _moveMediator.OnJumpStarted += OnJumpStartedSoundCallback;
             if (_playerAnimationMediator && _soundMediator) _playerAnimationMediator.OnFootstep += OnFootstepSoundCallback;
+            if (_enemyAnimationMediator && _soundMediator) _enemyAnimationMediator.OnFootstep += OnFootstepSoundCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnSkillSound += OnSkillSoundCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnSkillSoundLoop += OnSkillSoundLoopCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnVehicleSoundChanged += OnVehicleSoundChangedCallback;
@@ -947,6 +948,7 @@ namespace Mediator
             if (_spawnEffectDriver) _spawnEffectDriver.OnSpawnEffectEnded -= OnSpawnEffectEndedCallback;
             if (_moveMediator && _soundMediator) _moveMediator.OnJumpStarted -= OnJumpStartedSoundCallback;
             if (_playerAnimationMediator && _soundMediator) _playerAnimationMediator.OnFootstep -= OnFootstepSoundCallback;
+            if (_enemyAnimationMediator && _soundMediator) _enemyAnimationMediator.OnFootstep -= OnFootstepSoundCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnSkillSound -= OnSkillSoundCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnSkillSoundLoop -= OnSkillSoundLoopCallback;
             if (_skillMediator && _soundMediator) _skillMediator.OnVehicleSoundChanged -= OnVehicleSoundChangedCallback;
