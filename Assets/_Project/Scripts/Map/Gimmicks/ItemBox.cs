@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using Core.Audio;
 using Interaction;
+using Map.Feed;
 
 namespace Map.Gimmicks
 {
@@ -43,6 +44,10 @@ namespace Map.Gimmicks
         [Tooltip("떠오른 뒤 플레이어에게 날아가는 속도")]
         [SerializeField, Min(0.1f)] private float _flySpeed = 14.0f;
 
+        [Header("Exit")]
+        [SerializeField] private Collider _interactionCollider;
+        [SerializeField, Min(0.05f)] private float _shrinkDuration = 0.5f;
+
         [Header("Sound")]
         [Tooltip("상호작용(E)으로 열 때 낼 소리 (비우면 무음)")]
         [SerializeField] private SOAudioData _interactSound;
@@ -67,6 +72,10 @@ namespace Map.Gimmicks
             // 열기 전에는 상자 안에 보여만 주고, 먹히지 않게 판정을 꺼 둔다
             Transform holder = (_spawnPoint != null) ? _spawnPoint : transform;
             _content = Instantiate(_contentPrefab, holder.position, transform.rotation, holder);
+            if (_interactionCollider != null && _content.TryGetComponent(out FeedItem feedItem))
+            {
+                feedItem.OnCollected += HandleCollected;
+            }
             _contentColliders = _content.GetComponentsInChildren<Collider>();
             foreach (Collider itemCollider in _contentColliders)
             {
@@ -82,12 +91,29 @@ namespace Map.Gimmicks
             if (_isOpened) return;
 
             _isOpened = true;
+            if (_interactionCollider != null) _interactionCollider.enabled = false;
             GimmickUtility.PlayUi(_interactSound);
             StartCoroutine(CoOpen(interactor));
         }
         #endregion
 
         #region Coroutines
+        private void HandleCollected()
+        {
+            StartCoroutine(CoShrink());
+        }
+
+        private IEnumerator CoShrink()
+        {
+            Vector3 startScale = transform.localScale;
+            for (float time = 0.0f; time < _shrinkDuration; time += Time.deltaTime)
+            {
+                transform.localScale = Vector3.Lerp(startScale, Vector3.zero, Mathf.SmoothStep(0.0f, 1.0f, time / _shrinkDuration));
+                yield return null;
+            }
+            gameObject.SetActive(false);
+        }
+
         private IEnumerator CoOpen(GameObject interactor)
         {
             yield return CoOpenLid();

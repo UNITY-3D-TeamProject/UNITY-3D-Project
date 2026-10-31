@@ -40,6 +40,9 @@ namespace UI.PlayerHud
         [SerializeField] private TMP_Text _bluetoothCooldownText;
         [SerializeField] private Image _scanCooldownBar;
         [SerializeField] private TMP_Text _scanCooldownText;
+        [SerializeField] private GameObject _rollCardRoot;
+        [SerializeField] private GameObject _bluetoothCardRoot;
+        [SerializeField] private GameObject _scanCardRoot;
 
         // 사격 차지 중에만 보이는 칸형 차지 바. 왼쪽 칸부터 빈 색 → 찬 색으로 차오른다.
         [Header("Charge Bar")]
@@ -51,6 +54,10 @@ namespace UI.PlayerHud
         // 상호작용 대상을 조준하는 동안에만 보이는 안내 ("E 상호작용")
         [Header("Interact Label")]
         [SerializeField] private GameObject _interactLabelRoot;
+
+        private CanvasGroup _rollCardGroup;
+        private CanvasGroup _bluetoothCardGroup;
+        private CanvasGroup _scanCardGroup;
 
         public void SetHp(float currentValue, float maxValue)
         {
@@ -81,6 +88,13 @@ namespace UI.PlayerHud
         public void SetScanCooldown(float remainingRatio, float remainingTime)
         {
             SetCooldownGauge(_scanCooldownBar, _scanCooldownText, remainingRatio, remainingTime);
+        }
+
+        public void SetSkillCardsLocked(bool isRollLocked, bool isBluetoothLocked, bool isScanLocked)
+        {
+            SetCardLocked(_rollCardRoot, ref _rollCardGroup, isRollLocked);
+            SetCardLocked(_bluetoothCardRoot, ref _bluetoothCardGroup, isBluetoothLocked);
+            SetCardLocked(_scanCardRoot, ref _scanCardGroup, isScanLocked);
         }
 
         public void SetChargeBarVisible(bool isVisible)
@@ -208,6 +222,18 @@ namespace UI.PlayerHud
                 float shownTime = Mathf.Ceil(remainingTime * 10.0f) / 10.0f;
                 cooldownText.text = remainingTime > 0.0f ? $"{shownTime:F1}s" : string.Empty;
             }
+        }
+
+        private void SetCardLocked(GameObject cardRoot, ref CanvasGroup cardGroup, bool isLocked)
+        {
+            if (cardRoot == null) return;
+            if (cardGroup == null)
+            {
+                cardGroup = cardRoot.GetComponent<CanvasGroup>();
+                if (cardGroup == null) cardGroup = cardRoot.AddComponent<CanvasGroup>();
+            }
+
+            cardGroup.alpha = isLocked ? 0.3f : 1.0f;
         }
 
         private void SetGaugeValue(Slider slider, float currentValue, float maxValue)

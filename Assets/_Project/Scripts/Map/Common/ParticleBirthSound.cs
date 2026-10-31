@@ -14,11 +14,14 @@ namespace Map.Common
         [Header("Sound")]
         [Tooltip("파티클이 새로 생길 때 낼 소리 (비우면 무음)")]
         [SerializeField] private SOAudioData _birthSound;
+        [Tooltip("같은 그룹에서 경고음을 다시 낼 때까지의 최소 간격(초)")]
+        [SerializeField, Min(0.0f)] private float _minimumInterval;
         #endregion
 
         #region Private Fields
         private ParticleSystem[] _systems;
         private int[] _lastCounts;
+        private float _nextSoundTime;
         #endregion
 
         #region Unity Lifecycle
@@ -31,6 +34,7 @@ namespace Map.Common
         // 켜질 때(Prewarm 포함) 이미 있는 파티클은 새로 생긴 것으로 세지 않도록 첫 프레임 개수를 기준으로 삼는다
         private void OnEnable()
         {
+            _nextSoundTime = 0.0f;
             for (int i = 0; i < _lastCounts.Length; i++)
             {
                 _lastCounts[i] = -1;
@@ -42,9 +46,10 @@ namespace Map.Common
             for (int i = 0; i < _systems.Length; i++)
             {
                 int count = _systems[i].particleCount;
-                if ((_lastCounts[i] >= 0) && (count > _lastCounts[i]))
+                if ((_lastCounts[i] >= 0) && (count > _lastCounts[i]) && (Time.time >= _nextSoundTime))
                 {
                     GimmickUtility.PlaySfx(_birthSound, _systems[i].transform.position);
+                    _nextSoundTime = Time.time + _minimumInterval;
                 }
 
                 _lastCounts[i] = count;

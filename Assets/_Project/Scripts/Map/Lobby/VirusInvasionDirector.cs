@@ -5,7 +5,8 @@ namespace Map.Lobby
 {
     /// <summary>
     /// 로비에서 보안이 다음 목적지일 때 "세상이 바이러스에 침공당한" 연출을 켠다.
-    /// 보안 발판의 NextMarker 아래에 두어 NextDestinationMarker 가 켜고 끄는 것을 그대로 따른다.
+    /// 보안 발판의 NextMarker와 별도로 두고 NextDestinationMarker의 _unlockedObjects에 등록한다.
+    /// 대화 중 NextMarker를 숨겨도 감염은 유지하고, 보안이 다음 목적지일 때만 켠다.
     /// 켜지면: 감염 오브젝트(어둡게 하는 Volume, 하늘 틈, 붉은 조명, 전광판·광고판 감염 화면)를 켜고,
     /// 하늘 감염 전역 값(_LobbyInfection)을 1 로 올리고, 일정 간격으로 붉은 섬광 두 번(경보 Volume)을 낸다.
     /// </summary>

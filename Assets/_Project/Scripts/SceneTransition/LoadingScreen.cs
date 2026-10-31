@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -10,10 +11,10 @@ namespace SceneTransition
 {
     /// <summary>
     /// 로딩씬 루트에 배치한다. SceneLoader가 로딩씬을 지금 씬 위에 겹쳐 열면 다음 순서로 전환한다.
-    /// 1. 로딩 화면 페이드인 (지금 씬을 덮음)
+    /// 1. 로딩 화면 페이드인 (지금 씬을 덮음. 컷씬이 있으면 진행 바 묶음은 숨긴 채)
     /// 2. 지금 씬 정리 (정리하며 생기는 멈춤은 로딩 화면 뒤에서 일어남)
-    /// 3. 목적지 씬 불러오기 + 진행 바 (실제 진행률을 일정 속도 이하로 따라감)
-    /// 4. 이 이동에 컷씬이 있으면 재생 (로딩이 다 끝난 뒤, 목적지를 켜기 전)
+    /// 3. 이 이동에 컷씬이 있으면 재생 (목적지를 불러오기 전이라 불러오기와 겹치지 않음)
+    /// 4. 목적지 씬 불러오기 + 진행 바 (실제 진행률을 일정 속도 이하로 따라감)
     /// 5. 목적지 씬 켜기 (로딩 화면만 DontDestroyOnLoad로 남김)
     /// 6. 로딩 화면 페이드아웃 후 삭제
     /// </summary>
@@ -30,6 +31,9 @@ namespace SceneTransition
         #region Serialized Fields
         [Header("필수 (Slider ← 진행 바)")]
         [SerializeField] private Slider _progressBar;
+
+        [Header("안 해도 됨 (TMP_Text ← 진행 바 오른쪽 퍼센트)")]
+        [SerializeField] private TMP_Text _percentText;
 
         [Header("필수 (CanvasGroup ← 이 오브젝트, 저장 시 Alpha 0)")]
         [SerializeField] private CanvasGroup _canvasGroup;
@@ -50,6 +54,10 @@ namespace SceneTransition
         [Header("안 해도 됨 (SOLoadingCutsceneData ← ScriptableObjects/SceneTransition)")]
         [Tooltip("비워 두면 컷씬 없이 넘어간다")]
         [SerializeField] private SOLoadingCutsceneData _cutsceneData;
+
+        [Header("안 해도 됨 (LoadingStageView ← ProgressGroup/StageInfo, 저장 시 꺼 둠)")]
+        [Tooltip("비워 두면 스테이지로 갈 때도 기본 로딩 화면을 쓴다")]
+        [SerializeField] private LoadingStageView _stageView;
 
         [Header("Video Skip")]
         [SerializeField] private GameObject _skipPrompt;
@@ -93,6 +101,8 @@ namespace SceneTransition
             if (_progressBar == null) return;
 
             _progressBar.value = Mathf.Clamp01(value);
+            if (_percentText != null) _percentText.text = $"{Mathf.RoundToInt(_progressBar.value * 100f)}%";
+            if (_stageView != null) _stageView.SetProgress(_progressBar.value);
         }
 
         private void SetSkipProgress(float value)
@@ -152,22 +162,30 @@ namespace SceneTransition
             ESceneType? from = SceneLoader.PreviousScene;
             ESceneType to = SceneLoader.PendingScene.Value;
 
+            // 스테이지·로비로 가면 앱 아이콘·접속 문구·팁을 페이드인 전에 채운다.
+            if (_stageView != null) _stageView.TryShow(from, to);
+
+            // 컷씬이 있으면 로딩 화면은 영상이 끝난 뒤에 보여 준다.
+            bool hasCutscene = TryGetCutscene(from, to, out VideoClip clip);
+            if (hasCutscene) _progressGroup.SetActive(false);
+
             SetProgress(0f);
             yield return CoFade(0f, 1f);
 
-            // 화면이 다 덮인 뒤 지금 씬을 정리한다.
+            // 화면이 다 덮인 뒤 지금 씬을 정리한다. (지금 씬의 소리가 영상과 겹치지 않음)
             SetLoadingCameraActive(true);
             yield return CoUnloadOtherScenes();
+
+            // 컷씬은 목적지를 불러오기 전에 튼다. (불러오기와 겹치지 않아 끊기지 않음)
+            if (hasCutscene)
+            {
+                yield return CoPlayCutscene(clip);
+                _progressGroup.SetActive(true);
+            }
 
             AsyncOperation operation = SceneLoader.LoadPendingSceneAsync();
             yield return CoFillProgress(operation);
             yield return new WaitForSecondsRealtime(_holdAfterFull);
-
-            // 컷씬은 로딩이 다 끝난 뒤, 목적지를 켜기 전에 튼다. (불러오기·켜기와 겹치지 않아 끊기지 않음)
-            if (TryGetCutscene(from, to, out VideoClip clip))
-            {
-                yield return CoPlayCutscene(clip);
-            }
 
             // 목적지 씬을 켜면 로딩씬이 정리되므로, 페이드아웃을 위해 로딩 화면만 남겨 둔다.
             DontDestroyOnLoad(gameObject);
@@ -297,7 +315,7 @@ namespace SceneTransition
             _videoPlayer.errorReceived -= onError;
             _videoPlayer.Stop();
 
-            // 목적지를 켜는 동안에는 검은 배경만 보이게 한다.
+            // 영상 화면을 끄고 로딩 화면 배경으로 돌아간다.
             _cutsceneScreen.enabled = false;
         }
 

@@ -231,6 +231,15 @@ namespace Core.Audio
             RestartBgmRoutine(CoPlayNextBgm(_bgm));
         }
 
+        // 지금 BGM을 fadeDuration 동안 줄여 끈다. 다시 틀려면 ChangeBgm을 부른다.
+        // [호출] 라이브 앱 엔딩 영상이 시작되기 전(씬 UnityEvent). 영상 소리와 BGM이 겹치지 않게 한다.
+        public void StopBgm(float fadeDuration)
+        {
+            _isBgmPlaying = false;
+            _bgmFadeOutDuration = fadeDuration;
+            RestartBgmRoutine(CoFadeOutBgm());
+        }
+
         // UI 소리(버튼 클릭 등)를 낸다. 일시정지 중에도 들린다.
         public void PlayUi(SOAudioData audioData, float volumeScale = 1f)
         {

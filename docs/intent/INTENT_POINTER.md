@@ -1,10 +1,15 @@
-# Intent Pointer
+# Intent Pointer 
 
 이슈 트래커처럼 "어느 파트에 어떤 문제가 있는지"를 한눈에 보기 위한 목차이다.
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
-- **[AI / Boss / BossA]** 박수·그랩 예고가 타일 채움·직선 판이라 위험 영역과 방향이 안 읽힘(AI_TODO2 보스-19·23). `WarningSignals_Arrows` 프리팹을 풀로 띄워 박수(양 끝 안쪽·사이 칸 가운데)·그랩(경로·놓일 칸) 예고를 교체하고, 화살표가 뜬 칸의 맵 `WarningSignals` 는 예고 동안만 끔 → [문서](./intent-096-boss-a-arrow-telegraph.md)
+- **[Core / Stage / Tutorial / Player Skill]** 튜토리얼 시작 시 이동·2단 점프를 허용하고 안내 대사에 맞춰 스킬을 순차 해금 → [문서](./intent-102-tutorial-skill-unlock.md)
+- **[UI / Credits / Ending]** 엔딩 크레딧 왼쪽 절반이 비어 있음. 모습 전용 캐릭터 복사본 + RT 카메라 무대(`EndingCastStage`)로 앞부분은 플레이어·펫 장난, 뒷부분은 적·NPC 커튼콜을 `EndingCastDirector`가 재생, `EndingCredits`가 크레딧 시작 때 켬 → [문서](./intent-101-ending-cast-stage.md)
+- **[SceneTransition / Loading / UI]** 로딩 화면이 목적지와 상관없이 똑같음. 피드·파일·보안·라이브로 갈 때만 네온 앱 순서 줄(지금 앱 강조), "○○ 앱에 접속 중...", 진행 바 아래 랜덤 TIP, 오른쪽 준비 단계 4줄 체크 표시. 배경은 남색 그라데이션. `SOLoadingStageData`(씬별 앱 이름·아이콘·팁) + `LoadingStageView`, `LoadingScreen` 필드 1개 → [문서](./intent-100-loading-stage-info.md)
+- **[Core / Editor / SceneTransition]** 특정 진행 단계(예: 보안 후 로비)를 보려면 앞 스테이지를 다 깨야 함. 상단 메뉴 `Tools > 진행 단계`에서 단계를 고르면 이어하기 저장을 쓰고 MainScene부터 자동 이어하기, 로비 단계는 직전 스테이지 복귀 위치에서 시작. 에디터 전용 스크립트 하나, 런타임·씬 변경 없음 → [문서](./intent-098-progress-step-menu.md)
+- **[SceneTransition / Loading / UI]** 로딩 화면 가운데가 비어 있음. `Loading.unity`에 모습 전용 플레이어·펫 복사본(달리기 반복)과 RenderTexture 카메라를 두고 진행 바 그룹 가운데 RawImage로 표시(컷씬 영상 중 함께 숨김), 코드 변경 없음 → [문서](./intent-097-loading-runners.md)
+- **[UIandCinematic / Cutscene / Live]** 스토리 변경(보스 처치 후 플레이어 생존)에 맞지 않는 28~32번 대사, 라이브 스크린 테스트 영상·무음·BGM 겹침, 영상 뒤 마무리 대화·여운·크레딧 없음. 대사 교체 + 공연 영상 교체 + 새 34번 마무리 컷씬 + 크레딧 UI(`UI/Credits/EndingCredits`, 끝나면 메인 메뉴) + `AudioManager.StopBgm` 설계. `Map_5_Live`만 수정, 영상은 SVN 공식 `4_Ending.mp4`. TV → 화면 안으로(`ScreenVideoZoom`, 인스펙터에서 영상 몇 초에 들어가고/나올지) → 전체화면 → TV 밖 두 캐릭터 → 대화 → 크레딧 → 메인 메뉴. 31번 입장 대화 트리거(`DialogueBoxes`) 켬·재생 확인. 실제 명단·최종 영상본·보안/로비 씬 실제 재생 확인 남음 → [문서](./intent-096-ending-cutscene.md)
 - **[AI / Boss / BossA / Art]** 보스A 모델을 본·애니메이션 없는 새 FBX(`Virus_King_Boss`, 메시 5조각)로 교체(AI_TODO2 보스-24·25). 손 피벗 계층 구성, 오염 장갑 셰이더·칸 글리치를 새 텍스처에 맞춰 잇기, 사망·Idle 클립, 약점을 가슴 코어로 이동. 구현·Play 생성 확인 완료, 보스전 직접 플레이 확인 남음 → [문서](./intent-091-boss-a-model-swap.md)
 - **[AI / Enemy / Skill]** 특수몹 바람 스킬이 발동 순간 방향을 고정해 이동하는 플레이어를 따라가지 않음(AI_TODO2 잡몹-9). 램프 동안 `EnemyWindBlast._forward` 와 `Hold` 방향을 매 프레임 대상 쪽으로 갱신(즉시 추적), 넉백 방향은 시작 순간 고정. 리컴파일 통과, 직접 플레이 확인 남음 → [문서](./intent-090-special-wind-track-player.md)
 - **[AI / Enemy / Combat / Feedback]** 약점을 맞혀도 일반 피격과 구분되는 피드백이 없음(AI_TODO2 잡몹-7). `CharacterMediator.OnCriticalHit` 를 구독하는 `CriticalHitFeedback` 로 맞은 지점에 약점 전용 이펙트(`WeakPointHit`, YellowLaserImpact 복사본)·소리를 덧입힘. 잡몹 3종·보스 2종 부착, Play 판정 확인 완료. 소리 에셋 연결·직접 플레이 확인 남음 → [문서](./intent-089-weak-point-hit-feedback.md)
@@ -74,6 +79,7 @@
 - **[AI / Crowd]** 로비에 보행자·차량이 없음. Splines 닫힌 레인 순환 + 앞쪽 SphereCast 연쇄 정지 + 레인이 시작 시 생성, 기존 중재자 골격 재사용 → [문서](./intent-017-lobby-crowd.md)
 
 ## 해결됨 (Resolved)
+- **[Core / Scanning / Stage]** 미로 스캔 실루엣이 모두 초록이라 종류 구분이 안 됨. 연산자 파랑·숫자(피연산자) 초록·GC·도둑 빨강(`M_ScanSilhouette_Operator`·`_Enemy`, `SilhouetteReaction.RefreshBaseColors`) → [문서](./clear/intent-099-maze-scan-silhouette-colors.md) (resolved: 2026-10-31)
 - **[Stage / SecurityApp / Spawner]** 보안맵 전투 구역 몹을 `마리 수 + Spawn Points` 대신 `CombatZone` 자식 `MonsterSpawner` 배치로 정하고 자동 집계 → [문서](./clear/intent-093-combat-zone-placed-spawners.md) (resolved: 2026-10-30)
 - **[UI / MainMenu / Audio]** 메인 메뉴 배경에 로비 충전소 지붕을 복원하고 원래 카메라 구도와 BGM·UI 전용 오디오 유지 → [문서](./clear/intent-091-main-menu-charge-station.md) (resolved: 2026-10-30)
 - **[Audio / Lobby]** 일반 로비 진입 시 `Digital City Morning` 또는 `Colorful City Morning`을 무작위 첫 곡으로 선택, 이후 등록 순서대로 재생 → [문서](./clear/intent-089-lobby-random-first-bgm.md) (resolved: 2026-10-30)
