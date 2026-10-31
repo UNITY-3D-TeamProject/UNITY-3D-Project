@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[AI / Boss / BossA]** 박수·그랩 예고가 타일 채움·직선 판이라 위험 영역과 방향이 안 읽힘(AI_TODO2 보스-19·23). `WarningSignals_Arrows` 프리팹을 풀로 띄워 박수(양 끝 안쪽·사이 칸 가운데)·그랩(경로·놓일 칸) 예고를 교체하고, 화살표가 뜬 칸의 맵 `WarningSignals` 는 예고 동안만 끔 → [문서](./intent-096-boss-a-arrow-telegraph.md)
 - **[AI / Boss / BossA / Art]** 보스A 모델을 본·애니메이션 없는 새 FBX(`Virus_King_Boss`, 메시 5조각)로 교체(AI_TODO2 보스-24·25). 손 피벗 계층 구성, 오염 장갑 셰이더·칸 글리치를 새 텍스처에 맞춰 잇기, 사망·Idle 클립, 약점을 가슴 코어로 이동. 구현·Play 생성 확인 완료, 보스전 직접 플레이 확인 남음 → [문서](./intent-091-boss-a-model-swap.md)
 - **[AI / Enemy / Skill]** 특수몹 바람 스킬이 발동 순간 방향을 고정해 이동하는 플레이어를 따라가지 않음(AI_TODO2 잡몹-9). 램프 동안 `EnemyWindBlast._forward` 와 `Hold` 방향을 매 프레임 대상 쪽으로 갱신(즉시 추적), 넉백 방향은 시작 순간 고정. 리컴파일 통과, 직접 플레이 확인 남음 → [문서](./intent-090-special-wind-track-player.md)
 - **[AI / Enemy / Combat / Feedback]** 약점을 맞혀도 일반 피격과 구분되는 피드백이 없음(AI_TODO2 잡몹-7). `CharacterMediator.OnCriticalHit` 를 구독하는 `CriticalHitFeedback` 로 맞은 지점에 약점 전용 이펙트(`WeakPointHit`, YellowLaserImpact 복사본)·소리를 덧입힘. 잡몹 3종·보스 2종 부착, Play 판정 확인 완료. 소리 에셋 연결·직접 플레이 확인 남음 → [문서](./intent-089-weak-point-hit-feedback.md)

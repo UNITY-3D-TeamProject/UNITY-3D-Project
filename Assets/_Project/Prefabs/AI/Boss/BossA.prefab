@@ -1655,7 +1655,7 @@ MonoBehaviour:
   _hitRadius: 6
   _holdSeconds: 0.7
   _clapVfx: {fileID: 11400000, guid: b821eda3d22144d29edbdcd03d178592, type: 2}
-  _wallPrefab: {fileID: 4435415893122469050, guid: e381ed5568bb82842a9e97ff47418344, type: 3}
+  _wallPrefab: {fileID: 0}
   _wallHeight: 6
 --- !u!1 &6885358754800627905
 GameObject:
@@ -2432,6 +2432,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AI.HitEffectFeedback
   _characterMediator: {fileID: 0}
   _effect: {fileID: 11400000, guid: f045bb975f89a154482aa4ed91f10a8c, type: 2}
+  _scaleStartDistance: 15
+  _maxScaleMultiplier: 5
 --- !u!1 &8975528361479726249
 GameObject:
   m_ObjectHideFlags: 0
