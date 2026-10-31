@@ -8,8 +8,9 @@ using Skill.Core;
 namespace Skill.Skills
 {
     /// <summary>
-    /// 적의 바람 스킬. 발동하면 몸통을 대상 쪽으로 고정해 붙잡고(AIController.Hold),
-    /// 램프 시간 동안 점점 세지는 바람으로 부채꼴 안의 대상을 밀어낸 뒤, 끝나는 순간 범위 안이면 한 번 크게 넉백한다.
+    /// 적의 바람 스킬. 발동하면 몸통을 제자리에 붙잡고(AIController.Hold),
+    /// 램프 시간 동안 바람 방향을 매 프레임 대상 쪽으로 맞추며 점점 세지는 바람으로 부채꼴 안의 대상을 밀어낸 뒤,
+    /// 끝나는 순간 범위 안이면 그 순간 방향으로 한 번 크게 넉백한다.
     /// 피해는 없다. 쿨타임은 이 스킬이 아니라 BT 가 관리한다(CooldownCost 를 붙이지 않는다).
     /// 끝나면(정상·대상 놓침·Stop·비활성화) 붙잡힘을 풀므로, BT 는 IsHolding 이 풀릴 때까지 기다리면 된다.
     /// </summary>
@@ -120,7 +121,7 @@ namespace Skill.Skills
         {
             if (!_windOrigin) return;
 
-            // 발동 중이면 시작 순간 고정한 방향, 아니면 기준점 정면을 쓴다
+            // 발동 중이면 현재 바람 방향, 아니면 기준점 정면을 쓴다
             Vector3 forward = (_phase != EWindPhase.Idle)
                 ? _forward
                 : Vector3.ProjectOnPlane(_windOrigin.forward, Vector3.up).normalized;
@@ -170,7 +171,7 @@ namespace Skill.Skills
             _target = target;
             _motor = motor;
 
-            // 몹→대상 수평 방향을 시작 순간에 고정한다. 판정 부채꼴도 이 방향 기준이다
+            // 몹→대상 수평 방향으로 시작한다. 판정 부채꼴도 이 방향 기준이며 램프 동안 매 프레임 갱신한다
             Vector3 toTarget = Vector3.ProjectOnPlane(GetTargetPoint() - _windOrigin.position, Vector3.up);
             _forward = (toTarget.sqrMagnitude > Mathf.Epsilon) ? toTarget.normalized : _windOrigin.forward;
 
@@ -201,8 +202,12 @@ namespace Skill.Skills
             float t = Mathf.Clamp01(_elapsed / _rampDuration);
             float speed = Mathf.Lerp(_minSpeed, _maxSpeed, t);
 
-            bool isInWind = IsTargetInWind();
+            // 램프 동안 바람 방향과 몸 방향을 매 프레임 대상 쪽으로 다시 맞춰, 움직이는 대상을 따라간다
             Vector3 direction = GetPushDirection();
+            _forward = direction;
+            _controller.Hold(_forward, (_rampDuration - _elapsed) + _knockbackDuration + HOLD_MARGIN);
+
+            bool isInWind = IsTargetInWind();
             if (isInWind)
             {
                 _motor.AddExternalDisplacement(direction * (speed * Time.deltaTime));

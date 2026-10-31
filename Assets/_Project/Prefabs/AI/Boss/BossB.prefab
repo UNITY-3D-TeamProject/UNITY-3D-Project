@@ -55,6 +55,7 @@ MonoBehaviour:
   _landingVfx: {fileID: 11400000, guid: 5b605397c90543c4bbdfc471eb97bf83, type: 2}
   _landingRadius: 4
   _shockwaveTiles: 1
+  _shockwaveVfx: {fileID: 11400000, guid: 6700b823f14cea44b91b996c31f824fa, type: 2}
   _knockbackDistance: 8
   _knockbackSeconds: 0.4
   _circlePrefab: {fileID: 0}
@@ -337,6 +338,7 @@ GameObject:
   - component: {fileID: 2794957769892381437}
   - component: {fileID: 8316297890504309412}
   - component: {fileID: 912345678901234567}
+  - component: {fileID: 2787755007266435760}
   m_Layer: 8
   m_Name: BossB
   m_TagString: Untagged
@@ -642,6 +644,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.BossDeathSkill
   _skillName: Death
+--- !u!114 &2787755007266435760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2851063550565306939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10f5430380f9ce34fa26138a021985bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.CriticalHitFeedback
+  _characterMediator: {fileID: 7711118245858961342}
+  _effect: {fileID: 11400000, guid: a3a60fd703537964284e973f47160b6b, type: 2}
+  _sound: {fileID: 11400000, guid: ea927ea69bd8d494383713ca9339ca87, type: 2}
 --- !u!1 &2893440626600557970
 GameObject:
   m_ObjectHideFlags: 0
@@ -1292,6 +1309,7 @@ MonoBehaviour:
   _landingVfx: {fileID: 11400000, guid: 5b605397c90543c4bbdfc471eb97bf83, type: 2}
   _landingRadius: 10
   _shockwaveTiles: 0.5
+  _shockwaveVfx: {fileID: 11400000, guid: 6700b823f14cea44b91b996c31f824fa, type: 2}
   _knockbackDistance: 6
   _knockbackSeconds: 0.4
   _circlePrefab: {fileID: 2722304414745882798, guid: a48c7e5b9fbd6e446b9572fb36423461, type: 3}

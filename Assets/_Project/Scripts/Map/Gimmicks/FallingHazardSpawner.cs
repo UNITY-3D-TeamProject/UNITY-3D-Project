@@ -31,6 +31,9 @@ namespace Map.Gimmicks
 
         [Tooltip("발판 가장자리에서 안쪽으로 비우는 거리. 위험물이 발판 밖에 걸쳐 떨어지지 않게 한다.")]
         [SerializeField, Min(0.0f)] private float _edgeMargin = 1.0f;
+
+        [Tooltip("켜면 발판을 윗면 넓이에 비례해 고른다. 크기가 제각각인 조각을 이어 한 구역을 덮을 때 구역 전체에 고르게 떨어진다. 끄면 켜진 발판 중 하나를 같은 확률로 고른다.")]
+        [SerializeField] private bool _isAreaWeighted;
         #endregion
 
         #region Private Fields
@@ -133,7 +136,7 @@ namespace Map.Gimmicks
 
             if (_activePlatforms.Count == 0) return false;
 
-            Bounds bounds = _activePlatforms[Random.Range(0, _activePlatforms.Count)].bounds;
+            Bounds bounds = PickPlatform().bounds;
 
             // 발판이 여백보다 좁으면 가운데에 떨어뜨린다
             float marginX = Mathf.Min(_edgeMargin, bounds.extents.x);
@@ -144,6 +147,33 @@ namespace Map.Gimmicks
                 bounds.max.y,
                 Random.Range(bounds.min.z + marginZ, bounds.max.z - marginZ));
             return true;
+        }
+
+        // 켜진 발판 중 하나를 고른다. 넓이 가중이 켜져 있으면 윗면 넓이에 비례해 고른다
+        private Collider PickPlatform()
+        {
+            if (!_isAreaWeighted) return _activePlatforms[Random.Range(0, _activePlatforms.Count)];
+
+            float totalArea = 0.0f;
+            foreach (Collider platform in _activePlatforms)
+            {
+                totalArea += GetTopArea(platform);
+            }
+
+            float pick = Random.Range(0.0f, totalArea);
+            foreach (Collider platform in _activePlatforms)
+            {
+                pick -= GetTopArea(platform);
+                if (pick <= 0.0f) return platform;
+            }
+
+            return _activePlatforms[_activePlatforms.Count - 1];
+        }
+
+        private static float GetTopArea(Collider platform)
+        {
+            Vector3 size = platform.bounds.size;
+            return size.x * size.z;
         }
 
         // 풀 매니저가 있으면 풀에서 꺼내고, 없으면 새로 만든다. 꺼낸 직후 위치는 DropOnto 가 다시 정한다

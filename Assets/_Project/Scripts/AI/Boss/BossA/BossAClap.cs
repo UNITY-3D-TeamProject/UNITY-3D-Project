@@ -62,6 +62,8 @@ namespace AI.Boss.BossA
 
         // 예고가 시작될 때 주먹을 쥐고 미리 떠올라 다른 내려치기 패턴과 구분되게 한다
         protected override bool IsHoverDuringTelegraph => true;
+
+        protected override bool IsArrowTelegraph => true;
         #endregion
 
         #region Unity Lifecycle
@@ -109,6 +111,14 @@ namespace AI.Boss.BossA
             // 1타는 줄의 양 끝 칸만 맞는다
             int[] tiles = Controller.CurrentChoice.Tiles;
             return new[] { tiles[0], tiles[ArenaGrid.SIZE - 1] };
+        }
+
+        protected override Vector3 GetArrowDirection(int tile)
+        {
+            // 박수는 두 손이 가운데로 모이므로 왼쪽 절반은 오른쪽을, 오른쪽 절반은 왼쪽을 가리킨다. 가운데 칸은 줄 방향을 따른다
+            int[] tiles = Controller.CurrentChoice.Tiles;
+            GetRowLayout(tiles, out _, out Vector3 rowDirection, out _);
+            return (System.Array.IndexOf(tiles, tile) > (ArenaGrid.SIZE / 2)) ? -rowDirection : rowDirection;
         }
 
         protected override void OnImpact()

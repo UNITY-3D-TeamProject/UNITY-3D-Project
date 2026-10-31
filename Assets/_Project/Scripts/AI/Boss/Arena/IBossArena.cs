@@ -19,6 +19,13 @@ namespace AI.Boss.Arena
         /// <param name="color">예고 색(알파는 머티리얼 값 유지). null 이면 머티리얼 색</param>
         void SetTelegraph(int index, bool isOn, float fillSeconds, Color? color = null);
 
+        /// <summary>
+        /// SetTelegraph 와 같게 칸 상태(예고 중)만 바꾸고, 칸 채움 대신 화살표 예고를 칸 가운데에 띄운다.
+        /// 화살표가 뜬 칸의 맵 WarningSignals 는 예고가 꺼질 때까지 끈다.
+        /// </summary>
+        /// <param name="direction">화살표가 가리킬 수평 방향. 켤 때만 쓴다</param>
+        void SetArrowTelegraph(int index, bool isOn, Vector3 direction);
+
         void Collapse(int index);
 
         /// <summary>월드 좌표에 원형 예고를 켠다.</summary>
@@ -37,6 +44,13 @@ namespace AI.Boss.Arena
 
         /// <param name="handle">ShowLine 이 돌려준 핸들. 유효하지 않으면 무시한다</param>
         void HideLine(int handle);
+
+        /// <summary>월드 좌표 두 점을 잇는 직선을 따라 진행 방향(from → to) 화살표 예고를 이어 붙인다. 지나는 칸의 맵 WarningSignals 는 끌 때까지 끈다.</summary>
+        /// <returns>끌 때 쓸 핸들. 화살표 프리팹이 없거나 두 점이 같으면 -1</returns>
+        int ShowArrowLine(Vector3 from, Vector3 to);
+
+        /// <param name="handle">ShowArrowLine 이 돌려준 핸들. 유효하지 않으면 무시한다</param>
+        void HideArrowLine(int handle);
 
         /// <summary>모든 칸·원판을 처음 상태로 되돌린다.</summary>
         void ResetAll();

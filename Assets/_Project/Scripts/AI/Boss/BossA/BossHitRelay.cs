@@ -39,7 +39,8 @@ namespace AI.Boss.BossA
 
         /// <summary>
         /// 최대 HP 에 대한 비율 하한을 정한다. 0 이면 하한 없음.
-        /// 하한이 있으면 맞은 지점·방향을 빼서 넘긴다. 맞은 지점이 없으면 약점(크리티컬) 보정이 붙지 않아 자른 값이 그대로 들어간다.
+        /// 하한이 있으면 방향을 빼서 넘긴다. 방향이 없으면 약점(크리티컬) 보정이 붙지 않아 자른 값이 그대로 들어간다.
+        /// 맞은 지점은 남겨 둔다. 빼면 피격 이펙트가 공격자 위치에서 나온다.
         /// </summary>
         public void SetHpFloor(float ratio)
         {
@@ -72,7 +73,7 @@ namespace AI.Boss.BossA
             if (isFloorTarget)
             {
                 value = Mathf.Max(value, target.GetValue(MAX_HP_KEY) * _hpFloorRatio);
-                context = new SEffectContext(context.Cursor, context.Effect);
+                context = new SEffectContext(context.Cursor, context.Effect, context.HitPoint);
             }
 
             target.SetValue(targetName, value, context);
