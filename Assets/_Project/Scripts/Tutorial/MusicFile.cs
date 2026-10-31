@@ -75,12 +75,12 @@ namespace Tutorial
 
         private void Start()
         {
-            GimmickUtility.PlaySfxLoop(_musicSound, transform, ref _musicHandle);
+            GimmickUtility.PlaySfxLoop(_musicSound, transform, ref _musicHandle, spread: 180f);
         }
 
         private void OnEnable()
         {
-            if (!IsAcquired) GimmickUtility.PlaySfxLoop(_musicSound, transform, ref _musicHandle);
+            if (!IsAcquired) GimmickUtility.PlaySfxLoop(_musicSound, transform, ref _musicHandle, spread: 180f);
         }
 
         private void OnDisable()

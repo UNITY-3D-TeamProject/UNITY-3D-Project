@@ -83,12 +83,13 @@ namespace Map.Gimmicks
         /// <param name="sound">반복할 소리 (비우면 무음)</param>
         /// <param name="target">따라갈 대상</param>
         /// <param name="handle">재생 중인 소리 핸들. 끝낼 때 StopSfxLoop에 넘긴다</param>
-        public static void PlaySfxLoop(SOAudioData sound, Transform target, ref SAudioHandle handle)
+        /// <param name="spread">좌우로 퍼지는 각도(0~360). 180이면 거리 감쇠는 유지하고 한쪽 귀 쏠림을 없앤다</param>
+        public static void PlaySfxLoop(SOAudioData sound, Transform target, ref SAudioHandle handle, float spread = 0f)
         {
             if (handle.IsValid) return;
             if ((sound == null) || (AudioManager.Instance == null)) return;
 
-            handle = AudioManager.Instance.PlaySfxLoop(sound, target);
+            handle = AudioManager.Instance.PlaySfxLoop(sound, target, spread: spread);
         }
 
         /// <summary>

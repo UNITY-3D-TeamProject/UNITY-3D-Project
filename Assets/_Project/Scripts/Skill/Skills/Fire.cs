@@ -137,6 +137,16 @@ namespace Skill.Skills
 
             Shoot(false);
         }
+
+        /// <summary>
+        /// 누름 상태를 해제하고 진행 중인 차지·재차지를 쏘지 않고 취소한다.
+        /// </summary>
+        public override void ResetState()
+        {
+            _isHeld = false;
+            EndRecharge();
+            Cancel();
+        }
         #endregion
 
         #region Protected Methods
