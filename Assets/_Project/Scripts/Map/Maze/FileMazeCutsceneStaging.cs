@@ -46,7 +46,7 @@ namespace Map.Maze
             CinematicManager.OnCutsceneStepStarted -= HandleStep;
             CinematicManager.OnPlayFinished -= HandleFinished;
             StopAllCoroutines();
-            Cleanup();
+            Cleanup(true);
         }
 
         private void Update()
@@ -87,7 +87,11 @@ namespace Map.Maze
 
         private void SetupCamera()
         {
-            if (_camera != null) return;
+            if (_camera != null)
+            {
+                PlaceCamera(false);
+                return;
+            }
             GameObject cameraObject = new GameObject("FileMazeCutsceneCamera");
             _camera = cameraObject.AddComponent<CinemachineCamera>();
             _camera.Priority = 50;
@@ -152,10 +156,10 @@ namespace Map.Maze
         private void HandleFinished(CinematicManager manager)
         {
             StopAllCoroutines();
-            Cleanup();
+            Cleanup(false);
         }
 
-        private void Cleanup()
+        private void Cleanup(bool shouldDestroyCamera)
         {
             if (_idleGraph.IsValid()) _idleGraph.Destroy();
             foreach (GameObject actor in _actors) if (actor != null) Destroy(actor);
@@ -164,8 +168,12 @@ namespace Map.Maze
             _materials.Clear();
             foreach (Mesh mesh in _meshes) if (mesh != null) Destroy(mesh);
             _meshes.Clear();
-            if (_camera != null) Destroy(_camera.gameObject);
-            _camera = null;
+            // 복귀 블렌드가 진행되는 동안 마지막 카메라를 유지한다.
+            if (shouldDestroyCamera && _camera != null)
+            {
+                Destroy(_camera.gameObject);
+                _camera = null;
+            }
             _administrator = null;
         }
         #endregion
