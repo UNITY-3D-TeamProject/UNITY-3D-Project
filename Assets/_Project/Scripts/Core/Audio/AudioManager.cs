@@ -404,10 +404,12 @@ namespace Core.Audio
         }
 
         // 들리는 거리(min/max)는 재생할 때 SO 값으로 정한다.
+        // 도플러는 끈다. 플레이어가 떨어지거나 순간이동하면 리스너 속도 때문에 피치가 바뀐다.
         private AudioSource CreateSfxSource(int index)
         {
             AudioSource source = CreateSource($"SfxSource_{index:00}", _sfxGroup);
             source.spatialBlend = 1f;
+            source.dopplerLevel = 0f;
             return source;
         }
 
