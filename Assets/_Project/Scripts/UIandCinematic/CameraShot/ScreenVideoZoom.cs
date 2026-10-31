@@ -2,6 +2,8 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Video;
 using Unity.Cinemachine;
+using Map.Live;
+using UI.Credits;
 
 namespace UIandCinematic
 {
@@ -10,8 +12,7 @@ namespace UIandCinematic
     /// 영상이 끝나기 조금 전에 전체화면을 걷어 내고, 카메라를 화면 밖으로 빼 마무리 카메라(TV 앞 인물)로 옮긴다.
     /// 영상을 틀고 끝내는 일은 스크린 쪽(LiveEndingScreen 등)이 맡고, 이 컴포넌트는 카메라와 전체화면만 맡는다.
     /// 카메라는 재생 중인 컷씬의 샷 카메라 위에 켜서 덮는다(Priority가 같으면 나중에 켠 카메라가 화면을 잡는다).
-    /// 마무리 카메라에 도착하면 남은 영상 동안 독백(_outroMonologue)을 띄운다.
-    /// 마무리 카메라는 영상 뒤 컷씬이 같은 카메라 키로 이어받아 끈다.
+    /// 마무리 카메라에 도착하면 E로 넘기는 대화 컷씬으로 이어지고, 대화가 끝나면 크레딧을 시작한다.
     /// 블렌드 시간은 Brain 기본 블렌드를 잠시 바꿔 정한다. CinematicManager가 다음 샷에서 다시 정하고, 연출이 끝나면 원래 값으로 돌린다.
     /// </summary>
     public class ScreenVideoZoom : MonoBehaviour
@@ -45,11 +46,10 @@ namespace UIandCinematic
         [Tooltip("화면 밖으로 나와 마무리 카메라로 가는 블렌드 시간(초)")]
         [SerializeField] private float _zoomOutSeconds = 3.0f;
 
-        [Header("Outro Monologue")]
-        [Tooltip("TV 밖으로 나와 마무리 카메라에 도착하면 띄울 독백. 비우면 띄우지 않는다. 영상이 끝나면 다음 연출이 독백을 끄므로, 줄 수 × 줄 시간이 남은 영상 길이 안에 들어오게 맞춘다")]
-        [SerializeField] private SOMonologue _outroMonologue;
-        [Tooltip("독백을 그리는 MonologuePresenter(Canvas_InGame). 연출 중에도 띄우기 위해 UIManager를 거치지 않고 직접 부른다")]
-        [SerializeField] private MonologuePresenter _monologuePresenter;
+        [Header("Outro Cutscene")]
+        [SerializeField] private LiveEndingScreen _endingScreen;
+        [SerializeField] private int _outroCutsceneId = 34;
+        [SerializeField] private EndingCredits _endingCredits;
         #endregion
 
         #region Private Fields
@@ -121,11 +121,20 @@ namespace UIandCinematic
             yield return CoFade(0.0f);
             SwitchCamera(_outroCamera, _zoomInCamera, _zoomOutSeconds);
 
-            // TV 밖으로 다 나오면 남은 영상 동안 독백을 띄운다.
-            if ((_outroMonologue == null) || (_monologuePresenter == null)) yield break;
-
+            // TV 밖으로 다 나오면 스크린 컷씬을 E 대화 컷씬에 넘긴다.
             yield return CoWait(_zoomOutSeconds);
-            _monologuePresenter.Play(_outroMonologue);
+            CinematicManager cinematicManager = CinematicManager.Instance;
+            if (cinematicManager == null) yield break;
+
+            _endingScreen?.HandOffCutscene();
+            if (cinematicManager.IsPlaying) cinematicManager.Stop();
+            cinematicManager.PlayCutscene(_outroCutsceneId);
+            if (!cinematicManager.IsPlaying) yield break;
+
+            while (cinematicManager.IsPlaying)
+                yield return null;
+
+            _endingCredits?.Play();
         }
 
         private IEnumerator CoFade(float targetAlpha)
