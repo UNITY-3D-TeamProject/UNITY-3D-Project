@@ -19,6 +19,8 @@ namespace AI.Boss.Arena
         [SerializeField] private NavMeshObstacle _holeObstacle;
         [Tooltip("칸 예고용 반투명 쿼드. 기본 꺼짐.")]
         [SerializeField] private GameObject _telegraph;
+        [Tooltip("칸에 붙은 정적 화살표 장식(WarningSignals). 화살표 예고가 뜨는 동안 끈다. 비우면 건드리지 않는다.")]
+        [SerializeField] private GameObject _warningSignals;
         [Tooltip("복구될 때 솟아오르기 시작하는 깊이(m). 0 이면 연출 없이 바로 나타난다.")]
         [SerializeField, Min(0.0f)] private float _riseDepth = 4.0f;
         [Tooltip("복구될 때 제자리까지 솟아오르는 시간(초). 0 이면 연출 없이 바로 나타난다.")]
@@ -50,6 +52,7 @@ namespace AI.Boss.Arena
         private float _riseElapsed;
         private bool _isRising;
         private bool _isCollapsed;
+        private bool _wasWarningSignalsActive = true;
         #endregion
 
         #region Unity Lifecycle
@@ -112,6 +115,16 @@ namespace AI.Boss.Arena
             ApplyFill(_isFilling ? 0.0f : 1.0f);
 
             _telegraph.SetActive(isOn);
+        }
+
+        /// <summary>화살표 예고가 이 칸에 뜨는 동안 맵의 정적 화살표 장식을 끈다.</summary>
+        public void SetWarningSignalsVisible(bool isVisible)
+        {
+            if (!_warningSignals) return;
+
+            // 처음부터 꺼 둔 장식을 예고가 끝났다고 켜지 않도록, 끄기 직전 상태를 기억했다가 되돌린다
+            if (!isVisible) _wasWarningSignalsActive = _warningSignals.activeSelf;
+            _warningSignals.SetActive(isVisible && _wasWarningSignalsActive);
         }
         #endregion
 

@@ -17,6 +17,13 @@ namespace AI
         [Header("Feedback")]
         [Tooltip("맞을 때마다 맞은 지점에서 한 번 재생할 이펙트. 메인 카메라 쪽을 향한다. 비어 있으면 생략")]
         [SerializeField] private SOEffectData _effect;
+
+        [Header("Distance Scale")]
+        [Tooltip("이 거리(m)까지는 기본 크기. 넘으면 거리에 비례해 이펙트를 키운다")]
+        [SerializeField] private float _scaleStartDistance = 15.0f;
+
+        [Tooltip("거리 비례 확대의 최대 배율. 1 이면 확대하지 않는다")]
+        [SerializeField] private float _maxScaleMultiplier = 5.0f;
         #endregion
 
         #region Unity Lifecycle
@@ -45,7 +52,15 @@ namespace AI
             Camera mainCamera = Camera.main;
             Vector3 toCamera = mainCamera ? mainCamera.transform.position - hitPoint : Vector3.zero;
             Quaternion rotation = (toCamera.sqrMagnitude > 0.0001f) ? Quaternion.LookRotation(toCamera) : Quaternion.identity;
-            EffectManager.Instance.Play(_effect, hitPoint, rotation);
+
+            float scaleMultiplier = 1.0f;
+            if (mainCamera && (_scaleStartDistance > 0.0f))
+            {
+                float distance = Mathf.Sqrt(toCamera.sqrMagnitude);
+                scaleMultiplier = Mathf.Clamp(distance / _scaleStartDistance, 1.0f, Mathf.Max(1.0f, _maxScaleMultiplier));
+            }
+
+            EffectManager.Instance.Play(_effect, hitPoint, rotation, null, scaleMultiplier);
         }
         #endregion
     }
