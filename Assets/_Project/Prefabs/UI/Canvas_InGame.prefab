@@ -2268,7 +2268,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UI.PetGuidePresenter
   _view: {fileID: 7887929865638432593}
   _table: {fileID: 11400000, guid: b17f4a93fa246db4ea97b06f36fcc3cb, type: 2}
-  _petName: PET
+  _petName: "\uBE44\uD2B8"
   _petPortrait: {fileID: 21300000, guid: 7ba522b0699e7ca448c526a129b856f1, type: 3}
   _closeLabel: "E \u25B6 \uB2EB\uAE30"
 --- !u!114 &8731293427100546493
@@ -2285,10 +2285,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UIandCinematic.CutscenePresenter
   _petGuideView: {fileID: 7887929865638432593}
   _speakerDefaultPortraits:
-  - SpeakerName: PET
+  - SpeakerName: "\uBE44\uD2B8"
     DefaultPortrait: {fileID: 21300000, guid: 7ba522b0699e7ca448c526a129b856f1, type: 3}
-  - SpeakerName: PLAYER
+  - SpeakerName: "\uCF54\uB9AC"
     DefaultPortrait: {fileID: 21300000, guid: 623d10fefd86d67459f01c6ebbc8267d, type: 3}
+  - SpeakerName: "\uAD00\uB9AC\uC790"
+    DefaultPortrait: {fileID: 21300000, guid: ebd7415843cda184199835f9dc657cf3, type: 3}
   _nextLineLabel: "E \u25B6 \uB2E4\uC74C"
   _lastLineLabel: "E \u25B6 \uB2EB\uAE30"
 --- !u!225 &2833129856539580348
@@ -14958,9 +14960,9 @@ MonoBehaviour:
   _petGuideView: {fileID: 7887929865638432593}
   _defaultLineDuration: 3
   _speakerDefaultPortraits:
-  - SpeakerName: PET
+  - SpeakerName: "\uBE44\uD2B8"
     DefaultPortrait: {fileID: 21300000, guid: 7ba522b0699e7ca448c526a129b856f1, type: 3}
-  - SpeakerName: PLAYER
+  - SpeakerName: "\uCF54\uB9AC"
     DefaultPortrait: {fileID: 21300000, guid: 623d10fefd86d67459f01c6ebbc8267d, type: 3}
 --- !u!1 &6069464682617171420
 GameObject:
@@ -19513,8 +19515,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36f4da30e39398d4d842c3032aa6f08e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIandCinematic.CutsceneDirector
-  _playerSpeakerName: PLAYER
-  _petSpeakerName: PET
+  _playerSpeakerName: "\uCF54\uB9AC"
+  _petSpeakerName: "\uBE44\uD2B8"
   _petStandOffset: {x: 0, y: 1.2, z: 1.8}
   _playerShotCamera: {fileID: 913152863756071322}
   _petShotCamera: {fileID: 6854108317463674969}

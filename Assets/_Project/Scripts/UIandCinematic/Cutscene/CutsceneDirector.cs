@@ -19,8 +19,8 @@ namespace UIandCinematic
         #region Serialized Fields
         [Header("Speakers")]
         [Tooltip("대사의 SpeakerName과 똑같이 적는다")]
-        [SerializeField] private string _playerSpeakerName = "PLAYER";
-        [SerializeField] private string _petSpeakerName = "PET";
+        [SerializeField] private string _playerSpeakerName = "코리";
+        [SerializeField] private string _petSpeakerName = "비트";
 
         [Header("Pet Staging")]
         [Tooltip("대화 중 펫이 설 위치. 플레이어 기준 (오른쪽, 위, 앞) m. 펫은 이 자리에서 플레이어를 본다")]

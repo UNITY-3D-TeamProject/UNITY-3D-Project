@@ -9,7 +9,7 @@ namespace UIandCinematic
 
         [Header("Speaker")]
         [Tooltip("안내 문구를 띄울 때 표시할 이름. 대화 연출이 같은 패널을 쓰므로 안내할 때마다 다시 넣는다")]
-        [SerializeField] private string _petName = "PET";
+        [SerializeField] private string _petName = "비트";
         [SerializeField] private Sprite _petPortrait;
 
         [Header("Close Label")]
