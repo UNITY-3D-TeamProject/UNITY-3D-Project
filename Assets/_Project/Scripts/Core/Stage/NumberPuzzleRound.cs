@@ -190,7 +190,7 @@ namespace Core.Stage
             if (!IsReady || IsSolved) return;
 
             TargetValue = PickTargetValue();
-            _board.SetTargetText($"목표 {TargetValue}");
+            _board.SetTargetText(TargetValue.ToString());
 
             _heldNumbers.Clear();
             _heldOperators.Clear();

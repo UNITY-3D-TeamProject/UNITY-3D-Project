@@ -1,8 +1,11 @@
+using System.Collections;
 using UnityEngine;
 using TMPro;
+using Core.Audio;
+using Core.Effect;
 using Interaction;
 using Core.Scanning;
-
+using Map.Gimmicks;
 namespace Core.Stage
 {
     /// <summary>
@@ -36,10 +39,22 @@ namespace Core.Stage
 
         [Tooltip("연산자일 때 값 글자 색")]
         [SerializeField] private Color _operatorLabelColor = Color.white;
+
+        [Header("Collect")]
+        [SerializeField] private Transform _collectRoot;
+        [SerializeField] private SOAudioData _collectSound;
+        [SerializeField] private SOEffectData _collectVfx;
+        [SerializeField, Min(0.0f)] private float _riseHeight = 1.2f;
+        [SerializeField, Min(0.0f)] private float _riseDuration = 0.6f;
+        [SerializeField, Min(0.01f)] private float _flyScale = 0.35f;
+        [SerializeField, Min(0.1f)] private float _flySpeed = 14.0f;
         #endregion
 
         #region Private Fields
         private NumberPuzzleRound _puzzle;
+        private Vector3 _initialLocalPosition;
+        private Vector3 _initialLocalScale;
+        private bool _isCollecting;
         #endregion
 
         #region Properties
@@ -51,6 +66,16 @@ namespace Core.Stage
         private void Awake()
         {
             Debug.Assert(_label != null, $"[{name}] Label이 연결되지 않았습니다.");
+            if (_collectRoot != null)
+            {
+                _initialLocalPosition = _collectRoot.localPosition;
+                _initialLocalScale = _collectRoot.localScale;
+            }
+        }
+
+        private void OnDisable()
+        {
+            ResetCollectVisual();
         }
         #endregion
 
@@ -58,12 +83,13 @@ namespace Core.Stage
         /// <inheritdoc />
         public void Interact(GameObject interactor)
         {
-            if (_puzzle == null) return;
+            if ((_puzzle == null) || _isCollecting) return;
 
             // 숫자 퍼즐 라운드가 아니거나, 숫자 3개·연산자 2개가 이미 차 있으면 먹지 않고 그 자리에 남는다
             if (!_puzzle.TryCollect(Token)) return;
 
-            gameObject.SetActive(false);
+            _isCollecting = true;
+            StartCoroutine(CoCollect(interactor));
         }
 
         /// <summary>
@@ -71,6 +97,8 @@ namespace Core.Stage
         /// </summary>
         public void Setup(NumberPuzzleRound puzzle, SMazeToken token)
         {
+            StopAllCoroutines();
+            ResetCollectVisual();
             _puzzle = puzzle;
             Token = token;
             name = $"PuzzleItem_{token.ToDisplayString()}";
@@ -94,6 +122,14 @@ namespace Core.Stage
         #endregion
 
         #region Private Methods
+        private void ResetCollectVisual()
+        {
+            _isCollecting = false;
+            if (_collectRoot == null) return;
+            _collectRoot.localPosition = _initialLocalPosition;
+            _collectRoot.localScale = _initialLocalScale;
+        }
+
         private void ApplyKindMaterials(Material[] materials)
         {
             if ((_kindRenderers == null) || (materials == null)) return;
@@ -121,6 +157,42 @@ namespace Core.Stage
                 case EMazeOperator.Divide:   return "div.mp3";
                 default:                     return "unknown.mp3";
             }
+        }
+        #endregion
+
+        #region Coroutines
+        private IEnumerator CoCollect(GameObject interactor)
+        {
+            if (_collectRoot != null)
+            {
+                Vector3 start = _collectRoot.position;
+                Vector3 top = start + (Vector3.up * _riseHeight);
+                Vector3 startScale = _collectRoot.localScale;
+                Vector3 flyScale = startScale * _flyScale;
+                for (float time = 0.0f; time < _riseDuration; time += Time.deltaTime)
+                {
+                    float t = Mathf.SmoothStep(0.0f, 1.0f, time / _riseDuration);
+                    _collectRoot.position = Vector3.Lerp(start, top, t);
+                    _collectRoot.localScale = Vector3.Lerp(startScale, flyScale, t);
+                    yield return null;
+                }
+
+                _collectRoot.position = top;
+                _collectRoot.localScale = flyScale;
+                CharacterController body = (interactor != null) ? interactor.GetComponentInChildren<CharacterController>() : null;
+                while (body != null)
+                {
+                    Vector3 target = body.bounds.center;
+                    _collectRoot.position = Vector3.MoveTowards(_collectRoot.position, target, _flySpeed * Time.deltaTime);
+                    if ((_collectRoot.position - target).sqrMagnitude < 0.01f) break;
+                    yield return null;
+                }
+            }
+
+            Vector3 position = (_collectRoot != null) ? _collectRoot.position : transform.position;
+            GimmickUtility.PlaySfx(_collectSound, position);
+            GimmickUtility.PlayVfx(_collectVfx, position);
+            gameObject.SetActive(false);
         }
         #endregion
     }

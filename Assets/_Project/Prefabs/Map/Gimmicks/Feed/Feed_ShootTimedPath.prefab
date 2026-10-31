@@ -91,11 +91,12 @@ MonoBehaviour:
   _onTurnedOff:
     m_PersistentCalls:
       m_Calls: []
-  _indicator: {fileID: 8211787430659817149}
+  _indicator: {fileID: 0}
   _extraIndicators: []
   _onColor: {r: 0.2, g: 1, b: 0.4, a: 1}
   _offColor: {r: 1, g: 0.25, b: 0.2, a: 1}
   _whileOnLoopSound: {fileID: 0}
+  _turnOffSound: {fileID: 11400000, guid: 4b1dab031aa14125b017646477004d93, type: 2}
 --- !u!1001 &33984930995633178
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -177,11 +178,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 16f36bda4d0601c439aca0129c9cf7db, type: 3}
---- !u!23 &8211787430659817149 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: 8182649321687810727, guid: 16f36bda4d0601c439aca0129c9cf7db, type: 3}
-  m_PrefabInstance: {fileID: 33984930995633178}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8684847636052721415 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8718542218566419229, guid: 16f36bda4d0601c439aca0129c9cf7db, type: 3}

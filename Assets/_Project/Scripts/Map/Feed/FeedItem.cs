@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using Core.Audio;
 using Core.Stage;
 using Map.Gimmicks;
 
@@ -15,7 +17,13 @@ namespace Map.Feed
         [Header("Item")]
         [Tooltip("이 아이템의 종류")]
         [SerializeField] private EFeedItemType _itemType;
+
+        [Header("Sound")]
+        [Tooltip("플레이어 몸에 들어가 획득되는 순간 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _collectSound;
         #endregion
+
+        public event Action OnCollected;
 
         #region Unity Lifecycle
         private void OnTriggerEnter(Collider other)
@@ -30,7 +38,10 @@ namespace Map.Feed
             else
             {
                 feedApp.CollectItem(_itemType);
+                OnCollected?.Invoke();
             }
+
+            GimmickUtility.PlaySfx(_collectSound, transform.position);
 
             Destroy(gameObject);
         }
