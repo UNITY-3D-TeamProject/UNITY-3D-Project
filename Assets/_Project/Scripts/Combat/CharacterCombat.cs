@@ -49,8 +49,8 @@ namespace Combat
 
         #region Events
         public event Action OnHit;
-        /// <summary>약점에 명중해 피해 배율이 적용될 때 맞은 지점을 알린다. 체력이 반영되기 전이라 OnHit 보다 먼저 발생한다.</summary>
-        public event Action<Vector3?> OnCriticalHit;
+        /// <summary>약점에 명중해 피해 배율이 적용될 때 맞은 지점과 효과가 날아온 방향을 알린다. 체력이 반영되기 전이라 OnHit 보다 먼저 발생한다.</summary>
+        public event Action<Vector3?, Vector3?> OnCriticalHit;
         public event Action OnDeath;
         #endregion
 
@@ -66,7 +66,7 @@ namespace Combat
         {
             if (!IsCriticalHit(hitPoint, direction)) return damage;
 
-            OnCriticalHit?.Invoke(hitPoint);
+            OnCriticalHit?.Invoke(hitPoint, direction);
             return damage * _criticalMultiplier;
         }
 

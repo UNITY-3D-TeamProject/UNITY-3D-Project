@@ -60,7 +60,7 @@ namespace AI
 
         #region Private Methods
         // 약점 명중은 같은 피격에서 OnHit 보다 먼저 오므로, 그 프레임의 OnHit 은 건너뛴다
-        private void OnCriticalHitCallback(Vector3? hitPoint)
+        private void OnCriticalHitCallback(Vector3? hitPoint, Vector3? direction)
         {
             _lastCriticalFrame = Time.frameCount;
         }
