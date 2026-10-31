@@ -168,6 +168,8 @@ Item  (태그 Scan)
 
 실루엣은 평소 꺼져 있다가 스캔 중에만 켜지고, 사라질 때 서서히 투명해진다(스크립트가 처리). 마커는 쓰지 않는다.
 
+**종류별 색 (미로)**: 숫자 퍼즐 아이템(`MazePuzzleItem`)은 값이 정해질 때 실루엣 머티리얼도 바꾼다. 숫자(피연산자)는 `M_ScanSilhouette`(초록), 연산자는 `M_ScanSilhouette_Operator`(파랑)이며, 프리팹의 Kind Renderers 4번째 칸이 `ScanSilhouette` 렌더러다. 실행 중에 실루엣 머티리얼을 바꾸면 `SilhouetteReaction.RefreshBaseColors()`를 불러야 색이 반영된다. GC·도둑은 셸 머티리얼 `M_ScanSilhouette_Enemy`(빨강)를 쓴다.
+
 ### 머티리얼 설정 (`M_ScanSilhouette`, 셰이더 `Project/ScanSilhouetteHologram`)
 - 벽에 가려진 부분만 그리는 셰이더(ZTest Greater)라 따로 설정할 것은 없다.
 - 주요 조절 값

@@ -98,6 +98,27 @@ namespace Core.Scanning
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// 실루엣 렌더러의 머티리얼을 바꾼 뒤 부른다. 페이드에 쓰는 원래 색을 현재 머티리얼에서 다시 읽는다.
+        /// Awake 전에 불리면 Awake 가 바뀐 머티리얼을 읽으므로 아무것도 하지 않는다.
+        /// </summary>
+        public void RefreshBaseColors()
+        {
+            if (_baseColors == null) return;
+
+            for (int i = 0; i < _silhouetteRenderers.Length; i++)
+            {
+                Renderer targetRenderer = _silhouetteRenderers[i];
+                Material material = targetRenderer ? targetRenderer.sharedMaterial : null;
+                _baseColors[i] = (material && material.HasColor(ColorId)) ? material.GetColor(ColorId) : Color.white;
+            }
+
+            // 같은 세기라도 바뀐 색을 다시 적용하도록 마지막 세기를 지운다.
+            float fade = Mathf.Max(0.0f, _appliedFade);
+            _appliedFade = -1.0f;
+            ApplyAlpha(fade);
+        }
+
         /// <inheritdoc />
         public override void OnScanBegin(in SScanHit hit)
         {

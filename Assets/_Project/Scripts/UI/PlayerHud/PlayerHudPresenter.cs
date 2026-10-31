@@ -96,6 +96,7 @@ namespace UI.PlayerHud
         {
             // 스킬 쿨타임은 시간이 흐르는 동안 매 프레임 비율을 갱신한다. (Pause 중에는 Time.time이 멈춘다.)
             UpdateSkillCooldownHuds();
+            UpdateSkillLockHuds();
 
             // 차지 진행도는 이벤트가 없어서 차지 중에만 매 프레임 읽는다.
             if (_isFireCharging)
@@ -135,6 +136,7 @@ namespace UI.PlayerHud
             {
                 UpdateAllHudGauges();
                 UpdateSkillCooldownHuds();
+                UpdateSkillLockHuds();
                 return;
             }
 
@@ -148,6 +150,7 @@ namespace UI.PlayerHud
                 SubscribePlayer();
                 UpdateAllHudGauges();
                 UpdateSkillCooldownHuds();
+                UpdateSkillLockHuds();
             }
         }
 
@@ -263,6 +266,16 @@ namespace UI.PlayerHud
             _view.SetRollCooldown(_rollCooldown.RemainingRatio, _rollCooldown.RemainingTime);
             _view.SetBluetoothCooldown(_bluetoothCooldown.RemainingRatio, _bluetoothCooldown.RemainingTime);
             _view.SetScanCooldown(_scanCooldown.RemainingRatio, _scanCooldown.RemainingTime);
+        }
+
+        private void UpdateSkillLockHuds()
+        {
+            if (_view == null) return;
+
+            _view.SetSkillCardsLocked(
+                _playerFacade != null && !_playerFacade.IsSkillEnabled(_rollSkillName),
+                _playerFacade != null && !_playerFacade.IsSkillEnabled(_bluetoothSkillName),
+                _playerFacade != null && !_playerFacade.IsSkillEnabled(_scanSkillName));
         }
 
         // 사격 차지가 시작되면 차지 바를 보이고, 발사·취소로 끝나면 숨기는 함수
