@@ -59,6 +59,9 @@ namespace UI.PlayerHud
         private SSkillCooldown _bluetoothCooldown;
         private SSkillCooldown _scanCooldown;
 
+        // 과열로 사격이 잠겨 열이 내려가는 중인지. HeatCost와 같은 규칙으로 열이 최댓값에 닿으면 켜고 0이 되면 끈다.
+        private bool _isHeatOverheated;
+
         // 사격 차지 중인지. true인 동안 매 프레임 차지 진행도를 읽어 차지 바를 갱신한다.
         private bool _isFireCharging;
 
@@ -123,6 +126,7 @@ namespace UI.PlayerHud
             _rollCooldown = default;
             _bluetoothCooldown = default;
             _scanCooldown = default;
+            _isHeatOverheated = false;
             ResetFireChargeHud();
             ResetInteractLabel();
 
@@ -176,6 +180,7 @@ namespace UI.PlayerHud
                 _view.SetHp(0.0f, 1.0f);
                 _view.SetBattery(0.0f, 1.0f);
                 _view.SetHeat(0.0f, 1.0f);
+                _view.SetHeatOverheated(false);
                 return;
             }
 
@@ -361,9 +366,20 @@ namespace UI.PlayerHud
 
         private void UpdateHeatHud()
         {
-            _view.SetHeat(
-                _playerFacade.GetAttribute(_currentHeatKey),
-                _playerFacade.GetAttribute(_maxHeatKey));
+            float currentHeat = _playerFacade.GetAttribute(_currentHeatKey);
+            float maxHeat = _playerFacade.GetAttribute(_maxHeatKey);
+
+            if ((maxHeat > 0.0f) && (currentHeat >= maxHeat))
+            {
+                _isHeatOverheated = true;
+            }
+            else if (currentHeat <= 0.0f)
+            {
+                _isHeatOverheated = false;
+            }
+
+            _view.SetHeat(currentHeat, maxHeat);
+            _view.SetHeatOverheated(_isHeatOverheated);
         }
 
         // 변경된 Attribute 이름이 현재값 또는 최대값 이름과 같은지 확인하는 함수

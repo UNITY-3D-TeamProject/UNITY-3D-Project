@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -32,6 +33,14 @@ namespace UI.PlayerHud
         [SerializeField] private SArcCell[] _batteryArcCells;
         [SerializeField] private TMP_Text _batteryPercentText;
 
+        // 과열로 열이 내려가는 동안 히트 원호를 진한 색으로 바꾸고 빠르게 점멸시킨다.
+        [Header("Overheat")]
+        [SerializeField] private Color _overheatColor = new Color(0.85f, 0.04f, 0.04f, 1.0f);
+        [Tooltip("켜짐/꺼짐 한 번씩 유지되는 시간 (초)")]
+        [SerializeField, Min(0.01f)] private float _overheatBlinkInterval = 0.1f;
+        [Tooltip("꺼졌을 때 남는 투명도 배율 (0 = 완전히 사라짐)")]
+        [SerializeField, Range(0.0f, 1.0f)] private float _overheatBlinkMinAlpha = 0.15f;
+
         // 스킬 카드의 원형 쿨타임 바(Filled 이미지)와 남은 시간 글자
         [Header("Skill Cards")]
         [SerializeField] private Image _rollCooldownBar;
@@ -59,6 +68,24 @@ namespace UI.PlayerHud
         private CanvasGroup _bluetoothCardGroup;
         private CanvasGroup _scanCardGroup;
 
+        // 히트 원호 이미지들과 원래 색. 과열이 끝나면 이 색으로 되돌린다.
+        private readonly List<Image> _heatImages = new List<Image>();
+        private readonly List<Color> _heatBaseColors = new List<Color>();
+        private bool _isHeatOverheated;
+
+        private void Awake()
+        {
+            CacheHeatImages();
+        }
+
+        private void Update()
+        {
+            if (_isHeatOverheated)
+            {
+                UpdateOverheatBlink();
+            }
+        }
+
         public void SetHp(float currentValue, float maxValue)
         {
             SetHpCells(currentValue, maxValue);
@@ -72,6 +99,28 @@ namespace UI.PlayerHud
         public void SetHeat(float currentValue, float maxValue)
         {
             SetArcCells(_heatArcCells, _heatPercentText, currentValue, maxValue);
+        }
+
+        // 과열 중이면 히트 원호를 진한 색으로 점멸시키고, 끝나면 원래 색으로 되돌린다.
+        public void SetHeatOverheated(bool isOverheated)
+        {
+            if (_isHeatOverheated == isOverheated)
+            {
+                return;
+            }
+
+            _isHeatOverheated = isOverheated;
+
+            if (isOverheated)
+            {
+                UpdateOverheatBlink();
+                return;
+            }
+
+            for (int i = 0; i < _heatImages.Count; i++)
+            {
+                _heatImages[i].color = _heatBaseColors[i];
+            }
         }
 
         // 남은 쿨타임 비율(0~1)과 남은 시간(초)을 표시한다. 비율 1 = 방금 사용, 0 = 사용 가능
@@ -182,6 +231,52 @@ namespace UI.PlayerHud
                 // 앞 칸들이 담은 몫을 뺀 나머지가 이 칸에 담기는 비율
                 float cellValue = Mathf.Clamp01((ratio * cells.Length) - i);
                 FillArcCell(cells[i], cellValue);
+            }
+        }
+
+        private void CacheHeatImages()
+        {
+            if (_heatArcCells == null)
+            {
+                return;
+            }
+
+            foreach (SArcCell cell in _heatArcCells)
+            {
+                if (cell.FillImages != null)
+                {
+                    foreach (Image fillImage in cell.FillImages)
+                    {
+                        AddHeatImage(fillImage);
+                    }
+                }
+
+                AddHeatImage(cell.GlowImage);
+            }
+        }
+
+        private void AddHeatImage(Image image)
+        {
+            if (image == null)
+            {
+                return;
+            }
+
+            _heatImages.Add(image);
+            _heatBaseColors.Add(image.color);
+        }
+
+        // 켜짐 구간엔 진한 색 그대로, 꺼짐 구간엔 투명도를 낮춘다. 이미지마다 원래 투명도 비율은 유지한다.
+        private void UpdateOverheatBlink()
+        {
+            bool isBlinkOn = Mathf.Repeat(Time.time, _overheatBlinkInterval * 2.0f) < _overheatBlinkInterval;
+            float alphaScale = isBlinkOn ? 1.0f : _overheatBlinkMinAlpha;
+
+            for (int i = 0; i < _heatImages.Count; i++)
+            {
+                Color color = _overheatColor;
+                color.a = _overheatColor.a * _heatBaseColors[i].a * alphaScale;
+                _heatImages[i].color = color;
             }
         }
 
