@@ -19,7 +19,11 @@ namespace Skill.Costs
         [Tooltip("열 최댓값으로 사용할 어트리뷰트 이름")]
         [SerializeField] private string _maxHeatKey = "MaxHeat";
         #endregion
-
+        
+        #region Properties
+        public bool IsOverheated => _isOverheated;
+        #endregion
+        
         #region Private Fields
         private Func<string, float> _getAttribute;
         private Func<string, float, bool> _requestPay;
