@@ -1,6 +1,7 @@
 # Codex — Handover Pointer
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — 튜토리얼 음악 파일의 오른쪽 편향 수정: [작업 기록](./2026-10-31/tutorial-music-file-right-channel-diagnosis.md)
 - **2026-10-31** — 튜토리얼 시작 영상을 재생하고 진행 바 없이 진입하도록 변경: [작업 기록](./2026-10-31/tutorial-loading-video-order.md)
 - **2026-10-31** — develop의 파일 맵 컷씬 34번을 유지하고 라이브 엔딩을 35번으로 변경: [작업 기록](./2026-10-31/live-ending-cutscene-id-merge.md)
 - **2026-10-31** — 라이브 엔딩 6줄을 E 컷씬으로 바꾸고 크레딧 음악 67.5초 연결: [작업 기록](./2026-10-31/live-ending-e-cutscene-credits-music.md)

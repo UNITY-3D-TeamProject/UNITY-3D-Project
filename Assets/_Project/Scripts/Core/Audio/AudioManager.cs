@@ -271,6 +271,7 @@ namespace Core.Audio
 
             source.transform.position = position;
             source.clip = clip;
+            source.spread = 0f;
             source.volume = Mathf.Clamp01(audioData.Volume * volumeScale);
             source.pitch = pitch;
             source.rolloffMode = audioData.RolloffMode;
@@ -288,7 +289,8 @@ namespace Core.Audio
         // 3D 효과음을 target 위치에서 반복한다. StopSfx를 부를 때까지 3D 소스 하나를 점유한다.
         // [호출] 차지 시작 등. 같은 클립 중복 차단은 하지 않는다. 3D 소스가 상한까지 모두 재생 중이면 default를 돌려준다.
         //        target이 파괴되면 마지막 위치에서 계속 나므로, 부르는 쪽이 OnDisable 등에서 꼭 멈춘다.
-        public SAudioHandle PlaySfxLoop(SOAudioData audioData, Transform target, float volumeScale = 1f, float pitchScale = 1f)
+        //        spread(0~360도)를 180으로 주면 거리 감쇠는 그대로 두고 좌우 쏠림만 없앤다.
+        public SAudioHandle PlaySfxLoop(SOAudioData audioData, Transform target, float volumeScale = 1f, float pitchScale = 1f, float spread = 0f)
         {
             if (gameObject.scene.name == MAIN_SCENE_NAME)
                 return default;
@@ -308,6 +310,7 @@ namespace Core.Audio
             source.transform.position = target.position;
             source.clip = clip;
             source.loop = true;
+            source.spread = Mathf.Clamp(spread, 0f, 360f);
             source.volume = Mathf.Clamp01(audioData.Volume * volumeScale);
             source.pitch = Mathf.Max(audioData.PickPitch() * pitchScale, MIN_PITCH);
             source.rolloffMode = audioData.RolloffMode;

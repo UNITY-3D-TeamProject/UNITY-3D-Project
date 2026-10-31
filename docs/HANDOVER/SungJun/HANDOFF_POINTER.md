@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — 튜토리얼 `MusicFile` 반복음을 2D에서 3D + `spread 180`으로 되돌려 거리 감쇠 유지·한쪽 귀 쏠림 제거. `AudioManager`/`GimmickUtility.PlaySfxLoop` 인자를 `spatialBlend` → `spread`로 교체. 빌드 오류 0, Play 청취 미확인, 커밋 안 함: [작업 기록](./2026-10-31/tutorial-music-file-3d-spread.md)
 - **2026-10-31** — intent-101: 엔딩 크레딧 왼쪽에 캐릭터 무대(`EndingCastStage` 프리팹 + `EndingCastDirector`): 플레이어·펫 장난 → 적·NPC 커튼콜 → 피날레. `Map_5_Live`에 무대·`CastView` 연결, 명단 아래 에셋 출처·스페셜 땡스·툴·마지막 문장 추가. Play 캡처 확인, 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-10-31/ending-cast-stage.md)
 - **2026-10-31** — intent-100: 피드·파일·보안·라이브로 갈 때 로딩 화면에 네온 앱 순서 줄(지금 앱 강조)·남색 배경·"○○ 앱에 접속 중..."·랜덤 TIP·준비 단계 4줄 체크 표시. `SOLoadingStageData` + `LoadingStageView`, `LoadingScreen` 필드 1개, `Loading.unity`에 `ProgressGroup/StageInfo`. 로비 이동도 "현재 스테이지 → 로비" 경로, 컷씬은 로딩 화면보다 먼저 재생. Play에서 화면 캡처 확인, 실제 이동 미확인: [작업 기록](./2026-10-31/loading-stage-info.md)
 - **2026-10-31** — intent-096 후속: 엔딩 크레딧을 영어(게임 제목·파트·이름)로 바꾸고 `CreditsRoll`을 오른쪽 절반 가운데(앵커 x 0.75, 폭 800)로 옮김, 왼쪽은 사진 자리로 비움. 임시 렌더로 배치 확인, Play 미확인, 커밋 안 함: [작업 기록](./2026-10-31/ending-credits-english-right.md)
