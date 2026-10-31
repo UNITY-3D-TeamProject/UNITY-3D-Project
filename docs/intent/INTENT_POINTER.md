@@ -4,6 +4,7 @@
 새 intent 문서를 만들거나 상태가 바뀔 때마다 이 파일을 함께 갱신한다.
 
 ## 열려있는 인텐트 (Open)
+- **[UI / Core / Stage]** 사망하면 바로 리스폰돼 다시 할지·나갈지 고를 수 없음. 사망 애니메이션 뒤 `RETRY`/`MAIN MENU` 팝업(모든 스테이지, 게임은 계속 진행), RETRY는 기존 사망 복구(첫 라운드 재시작 옵션이면 씬 재시작, 아니면 라운드 체크포인트 리스폰) → [문서](./intent-103-death-retry-popup.md)
 - **[Core / Stage / Tutorial / Player Skill]** 튜토리얼 시작 시 이동·2단 점프를 허용하고 안내 대사에 맞춰 스킬을 순차 해금 → [문서](./intent-102-tutorial-skill-unlock.md)
 - **[UI / Credits / Ending]** 엔딩 크레딧 왼쪽 절반이 비어 있음. 모습 전용 캐릭터 복사본 + RT 카메라 무대(`EndingCastStage`)로 앞부분은 플레이어·펫 장난, 뒷부분은 적·NPC 커튼콜을 `EndingCastDirector`가 재생, `EndingCredits`가 크레딧 시작 때 켬 → [문서](./intent-101-ending-cast-stage.md)
 - **[SceneTransition / Loading / UI]** 로딩 화면이 목적지와 상관없이 똑같음. 피드·파일·보안·라이브로 갈 때만 네온 앱 순서 줄(지금 앱 강조), "○○ 앱에 접속 중...", 진행 바 아래 랜덤 TIP, 오른쪽 준비 단계 4줄 체크 표시. 배경은 남색 그라데이션. `SOLoadingStageData`(씬별 앱 이름·아이콘·팁) + `LoadingStageView`, `LoadingScreen` 필드 1개 → [문서](./intent-100-loading-stage-info.md)

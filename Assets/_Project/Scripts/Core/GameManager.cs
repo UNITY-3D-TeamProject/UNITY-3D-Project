@@ -187,7 +187,8 @@ namespace Core
         }
 
 
-        private void SetCursorLocked(bool isLocked)
+        // 사망 팝업은 게임을 멈추지 않고 커서만 풀었다가, 다시하기로 리스폰하면 다시 잠근다. (UIManager)
+        public void SetCursorLocked(bool isLocked)
         {
             Cursor.lockState = isLocked
                 ? CursorLockMode.Locked

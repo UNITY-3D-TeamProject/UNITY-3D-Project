@@ -3,7 +3,9 @@ using UnityEngine;
 using Core;
 using Core.Audio;
 using Core.InputMap;
+using Core.Stage;
 using Facade.Player;
+using UI.Death;
 using UI.PlayerHud;
 using UI.Settings;
 using UIandCinematic;
@@ -20,6 +22,8 @@ namespace UI
         [SerializeField] private PlayerHudPresenter _playerHudPresenter;
         // 설정창 (볼륨 조절, 닫기)
         [SerializeField] private SettingsPresenter _settingsPresenter;
+        // 사망 팝업 (다시하기, 메인 메뉴). 없으면 죽자마자 예전처럼 바로 사망 복구를 한다.
+        [SerializeField] private DeathPopupPresenter _deathPopupPresenter;
         // 펫 안내 문구 (번호로 테이블에서 찾아 패널에 표시)
         [SerializeField] private PetGuidePresenter _petGuidePresenter;
         // 대화 진행 (대화 SO를 한 줄씩 펫 안내 패널에 표시)
@@ -45,8 +49,14 @@ namespace UI
         // 현재 플레이어의 입력(설정창 열기·닫기, 대사 넘기기)을 받는다. 입력 맵은 InputMapController에 요청한다.
         private readonly UIInputHandler _input = new UIInputHandler();
 
+        // 사망 팝업을 띄워 달라고 알려 주는 지금 씬의 StageManager. 플레이어가 스폰될 때 연결한다.
+        private StageManager _stageManager;
+
         // 설정창이 열려 있으면 true. 열린 동안에는 대화를 시작하지 않는다.
         private bool _isSettingsOpen;
+
+        // 사망 팝업이 떠 있으면 true.
+        private bool _isDeathPopupOpen;
 
         // 펫 안내가 떠 있으면 true. E로 닫을 때까지 게임을 멈춘다.
         private bool _isPetGuideOpen;
@@ -136,6 +146,8 @@ namespace UI
         private void OnDisable()
         {
             CloseSettings();
+            CloseDeathPopup();
+            BindStageManager(null);
             StopDialogue();
             EndCutscene();
             HidePetGuide();
@@ -409,6 +421,71 @@ namespace UI
             // 전달받은 플레이어를 HUD에 연결한다.
             _playerHudPresenter?.SetPlayer(playerFacade);
             _input.BindPlayer(playerFacade);
+
+            // 플레이어가 스폰될 때는 GameManager가 이 씬의 StageManager를 이미 찾아 두었다.
+            BindStageManager(_gameManager?.CurrentStageManager);
+        }
+
+        // 사망 팝업 요청을 받을 StageManager를 바꾼다. 같은 씬에서 다시 스폰되면 그대로 둔다.
+        // 사망 팝업이 없으면 구독하지 않아 StageManager가 바로 사망 복구를 한다.
+        private void BindStageManager(StageManager stageManager)
+        {
+            if (_stageManager == stageManager) return;
+
+            if (_stageManager != null)
+                _stageManager.OnRetryChoiceRequested -= OpenDeathPopup;
+
+            _stageManager = stageManager;
+
+            if ((_stageManager != null) && (_deathPopupPresenter != null))
+                _stageManager.OnRetryChoiceRequested += OpenDeathPopup;
+        }
+
+        // 사망 애니메이션이 끝나면 다시하기·메인 메뉴 팝업을 띄운다.
+        // 게임은 멈추지 않고, 버튼을 누를 수 있게 커서를 풀고 입력을 UI 맵으로 바꾼다. (UI 맵의 ESC는 설정창을 열지 않는다)
+        // [이벤트] StageManager.OnRetryChoiceRequested (BindStageManager에서 구독)
+        private void OpenDeathPopup()
+        {
+            if (_isDeathPopupOpen) return;
+
+            _isDeathPopupOpen = true;
+            _deathPopupPresenter.RetryRequested += HandleDeathRetryRequested;
+            _deathPopupPresenter.MainMenuRequested += HandleDeathMainMenuRequested;
+
+            InputMapController.Instance?.RequestMap(_deathPopupPresenter, EInputMapType.UI);
+            _gameManager?.SetCursorLocked(false);
+
+            _deathPopupPresenter.Open();
+        }
+
+        // 사망 팝업을 닫고 입력 맵 요청을 푼다. 커서는 고른 버튼에 따라 정한다.
+        private void CloseDeathPopup()
+        {
+            if (!_isDeathPopupOpen) return;
+
+            _isDeathPopupOpen = false;
+            _deathPopupPresenter.RetryRequested -= HandleDeathRetryRequested;
+            _deathPopupPresenter.MainMenuRequested -= HandleDeathMainMenuRequested;
+            _deathPopupPresenter.Close();
+
+            InputMapController.Instance?.ReleaseMap(_deathPopupPresenter);
+        }
+
+        // 사망 팝업의 다시하기. StageManager가 첫 라운드면 씬을 다시 불러오고(옵션이 켜진 씬), 아니면 라운드 체크포인트에서 리스폰한다.
+        private void HandleDeathRetryRequested()
+        {
+            StageManager stageManager = _stageManager;
+            CloseDeathPopup();
+            _gameManager?.SetCursorLocked(true);
+            stageManager?.RetryAfterDeath();
+        }
+
+        // 사망 팝업의 메인 메뉴. 설정창의 "메인 화면으로"와 같다. (체력 0은 저장되지 않는다)
+        private void HandleDeathMainMenuRequested()
+        {
+            GameManager gameManager = _gameManager;
+            CloseDeathPopup();
+            gameManager?.ReturnToMainMenu();
         }
 
         // 번호에 맞는 대화를 테이블에서 찾아 시작한다.

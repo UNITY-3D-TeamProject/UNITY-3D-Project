@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — intent-103: 보안맵 1라운드 사망 시 문 막힘(깬 방 입구가 잠긴 채)·쫄몹 미초기화 진단 → 첫 라운드 씬 재시작 옵션 사용으로 결정. 모든 스테이지에 사망 팝업(`YOU DIED`, RETRY/MAIN MENU, `UI/Death` View+Presenter, `StageManager.OnRetryChoiceRequested`/`RetryAfterDeath`), 팝업 중 게임 계속 진행. TestScene에서 팝업·리스폰·메인 메뉴 확인, 씬 재시작 경로·`Map_4_Security` 옵션 켜기 미완, 커밋 안 함: [작업 기록](./2026-10-31/death-retry-popup.md)
 - **2026-10-31** — 로딩 화면 페이드아웃을 목적지 씬 활성화 2프레임 뒤에 시작하도록 `LoadingScreen` 수정. 재측정에서 135ms 프레임이 가려진 채 지나가고 페이드아웃 6~31ms, 에러 0: [작업 기록](./2026-10-31/loading-transition-hitch-check.md)
 - **2026-10-31** — 로딩씬 경유 전환 렉 점검(코드 변경 없음): 에디터 측정으로 백그라운드 로드는 매끄럽고 에러 없음, 보이는 끊김은 로딩 화면 뜨기 전 0.24s·페이드아웃 시작 0.13s, 가려진 구간에 1.4s·0.56s 멈춤. 빌드 재측정 필요: [작업 기록](./2026-10-31/loading-transition-hitch-check.md)
 - **2026-10-31** — 튜토리얼 `MusicFile` 반복음을 2D에서 3D + `spread 180`으로 되돌려 거리 감쇠 유지·한쪽 귀 쏠림 제거. `AudioManager`/`GimmickUtility.PlaySfxLoop` 인자를 `spatialBlend` → `spread`로 교체. 빌드 오류 0, Play 청취 미확인, 커밋 안 함: [작업 기록](./2026-10-31/tutorial-music-file-3d-spread.md)
