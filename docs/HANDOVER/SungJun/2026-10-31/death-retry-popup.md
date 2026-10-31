@@ -11,6 +11,7 @@
   - `UI/Death/DeathPopupView`(버튼 두 개, `BaseView`) + `DeathPopupPresenter`(View 이벤트 → `RetryRequested`/`MainMenuRequested`, `Open`/`Close`).
   - `UIManager`: 플레이어 스폰 때 `GameManager.CurrentStageManager`를 구독. 팝업 열 때 UI 입력 맵 요청 + 커서 해제(게임 시간은 안 멈춤), RETRY는 닫고 커서 잠금 후 `RetryAfterDeath`, MAIN MENU는 닫고 `ReturnToMainMenu`.
   - `Canvas_InGame.prefab`: 설정창 `SettingsPanel`을 복제한 `DeathPopup/Panel`(창 640×210, 제목 `YOU DIED`, `RETRY`·`MAIN MENU` 버튼). `UIManager._deathPopupPresenter` 연결.
+  - 후속: 너무 크다는 의견으로 `DeathPopup/Panel/Window` localScale 0.6 (크기 값 640×210은 그대로, 글자·버튼·테두리가 함께 줄어듦). 미리보기 렌더로 확인.
 
 ## 결정 사항
 - 적용 범위: 모든 스테이지 (사용자 선택)
