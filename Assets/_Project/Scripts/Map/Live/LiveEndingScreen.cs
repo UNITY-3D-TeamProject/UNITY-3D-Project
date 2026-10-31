@@ -37,6 +37,7 @@ namespace Map.Live
         #region Private Fields
         private bool _hasStarted;
         private bool _isVideoFinished;
+        private bool _hasCutsceneHandedOff;
         #endregion
 
         #region Unity Lifecycle
@@ -77,6 +78,12 @@ namespace Map.Live
             _hasStarted = true;
             StartCoroutine(CoPlayEnding(cinematicManager));
         }
+
+        // TV 밖 대화 컷씬이 시작되면 영상 종료가 그 컷씬을 끊지 않게 한다.
+        public void HandOffCutscene()
+        {
+            _hasCutsceneHandedOff = true;
+        }
         #endregion
 
         #region Private Methods
@@ -111,7 +118,7 @@ namespace Map.Live
             while (!_isVideoFinished)
                 yield return null;
 
-            if (cinematicManager.IsPlaying)
+            if (!_hasCutsceneHandedOff && cinematicManager.IsPlaying)
                 cinematicManager.Stop();
 
             _onVideoFinished.Invoke();

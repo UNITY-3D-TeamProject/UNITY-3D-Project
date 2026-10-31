@@ -21,7 +21,7 @@ namespace SceneTransition
     }
 
     /// <summary>
-    /// 로딩씬에서 씬 이동마다 틀 컷씬 영상 목록. LoadingScreen이 로딩을 다 끝낸 뒤 목적지 씬을 켜기 전에 재생한다.
+    /// 로딩씬에서 씬 이동마다 틀 컷씬 영상 목록. 튜토리얼 시작 영상은 진행 바 없이, 나머지는 진행 바 전에 재생한다.
     /// 메인 메뉴에서 튜토리얼로 이동할 때는 출발 씬이 없고, 나머지는 (출발 씬, 목적지 씬) 쌍으로 고른다.
     /// </summary>
     [CreateAssetMenu(fileName = "SOLoadingCutsceneData", menuName = "SceneTransition/Loading Cutscene Data")]

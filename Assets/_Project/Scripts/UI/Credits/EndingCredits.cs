@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 using UnityEngine.Video;
 using Core;
@@ -10,19 +11,23 @@ namespace UI.Credits
 {
     /// <summary>
     /// 라이브 앱 엔딩의 마지막 부분. 스크린 연출을 시작하는 발판에서 Play를 부른다.
-    /// 엔딩 영상이 _startAtVideoSeconds에 오면(영상이 먼저 끝나면 그때) 화면을 어둡게 하고 제작진 명단을 아래에서 위로 올린다.
-    /// 영상이 끝나기 전에 시작하므로 노래가 나오는 채로 크레딧이 시작된다. E를 누르고 있으면 명단이 빨리 올라간다.
+    /// TV 밖 대화 컷씬이 끝나면 영상 소리를 끄고 노래 2절부터 크레딧을 시작한다.
+    /// E를 누르고 있으면 명단이 빨리 올라간다.
     /// 명단이 화면 위로 다 나가면 화면을 검게 덮은 뒤 메인 메뉴로 돌아간다.
-    /// 영상이 끝나면 스크린 연출이 끝나며 조작 막기가 풀리므로, 크레딧을 시작할 때 Cutscene 입력 맵을 직접 요청해 막아 둔다.
+    /// 크레딧을 시작할 때 Cutscene 입력 맵을 직접 요청해 조작을 막아 둔다.
     /// </summary>
     public class EndingCredits : MonoBehaviour
     {
         #region Serialized Fields
         [Header("Start")]
-        [Tooltip("시작 시각을 잴 엔딩 영상(스크린 VideoPlayer)")]
+        [Tooltip("크레딧 시작 때 오디오를 끌 스크린 VideoPlayer")]
         [SerializeField] private VideoPlayer _videoPlayer;
-        [Tooltip("영상이 이 위치(초)에 오면 크레딧을 시작한다. 영상 길이보다 길면 영상이 끝날 때 시작한다")]
-        [SerializeField] private float _startAtVideoSeconds = 63.0f;
+
+        [Header("Credits Music")]
+        [SerializeField] private AudioClip _creditsMusic;
+        [SerializeField] private AudioMixerGroup _creditsMusicGroup;
+        [Tooltip("노래 2절이 시작하는 음원 위치(초)")]
+        [SerializeField] private float _musicStartSeconds = 67.5f;
 
         [Header("Credits")]
         [Tooltip("검은 배경과 명단을 함께 담은 그룹. 시작할 때 투명하게 둔다")]
@@ -51,7 +56,7 @@ namespace UI.Credits
 
         #region Private Fields
         private bool _hasStarted;
-        private bool _isVideoFinished;
+        private AudioSource _musicSource;
         #endregion
 
         #region Unity Lifecycle
@@ -59,19 +64,17 @@ namespace UI.Credits
         {
             Debug.Assert(_creditsGroup != null, $"[{name}] Credits Group이 연결되지 않았습니다.");
             Debug.Assert(_creditsRoll != null, $"[{name}] Credits Roll이 연결되지 않았습니다.");
+            Debug.Assert(_creditsMusic != null, $"[{name}] Credits Music이 연결되지 않았습니다.");
 
             _creditsGroup.alpha = 0.0f;
             _creditsGroup.blocksRaycasts = false;
             SetFadeOutAlpha(0.0f);
 
-            if (_videoPlayer != null)
-                _videoPlayer.loopPointReached += HandleVideoFinished;
-        }
-
-        private void OnDestroy()
-        {
-            if (_videoPlayer != null)
-                _videoPlayer.loopPointReached -= HandleVideoFinished;
+            _musicSource = gameObject.AddComponent<AudioSource>();
+            _musicSource.playOnAwake = false;
+            _musicSource.spatialBlend = 0.0f;
+            _musicSource.ignoreListenerPause = true;
+            _musicSource.outputAudioMixerGroup = _creditsMusicGroup;
         }
         #endregion
 
@@ -87,9 +90,16 @@ namespace UI.Credits
         #endregion
 
         #region Private Methods
-        private void HandleVideoFinished(VideoPlayer videoPlayer)
+        private void StartCreditsMusic()
         {
-            _isVideoFinished = true;
+            if ((_videoPlayer != null) && (_videoPlayer.audioOutputMode == VideoAudioOutputMode.Direct))
+                _videoPlayer.SetDirectAudioMute(0, true);
+
+            if (_creditsMusic == null) return;
+
+            _musicSource.clip = _creditsMusic;
+            _musicSource.time = Mathf.Clamp(_musicStartSeconds, 0.0f, _creditsMusic.length - 0.1f);
+            _musicSource.Play();
         }
 
         private void SetFadeOutAlpha(float alpha)
@@ -99,14 +109,6 @@ namespace UI.Credits
             Color color = _fadeOutCover.color;
             color.a = alpha;
             _fadeOutCover.color = color;
-        }
-
-        // 영상이 시작 위치에 왔거나 이미 끝났으면 true. 영상을 연결하지 않았으면 바로 true.
-        private bool IsStartTime()
-        {
-            if ((_videoPlayer == null) || _isVideoFinished) return true;
-
-            return _videoPlayer.isPlaying && (_videoPlayer.time >= _startAtVideoSeconds);
         }
 
         // 설정창이 열려 있으면(Pause) true. 그동안은 연출 시간도 세지 않는다.
@@ -127,11 +129,9 @@ namespace UI.Credits
         #region Coroutines
         private IEnumerator CoPlayEnding()
         {
-            while (!IsStartTime())
-                yield return null;
-
-            // 영상이 끝나 스크린 연출의 조작 막기가 풀려도 크레딧 동안은 막아 둔다. 메인 메뉴로 가며 씬과 함께 정리된다.
+            // 대화가 끝난 뒤 영상 오디오에서 크레딧 음악으로 바꾼다.
             InputMapController.Instance?.RequestMap(this, EInputMapType.Cutscene);
+            StartCreditsMusic();
 
             if (_castStage != null) _castStage.SetActive(true);
             yield return CoFadeIn();

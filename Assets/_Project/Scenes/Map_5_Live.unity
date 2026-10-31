@@ -2798,8 +2798,9 @@ MonoBehaviour:
   _zoomInSeconds: 1.5
   _fadeSeconds: 0.6
   _zoomOutSeconds: 3
-  _outroMonologue: {fileID: 11400000, guid: fb1531cf44a80b140ab17d06a00e551f, type: 2}
-  _monologuePresenter: {fileID: 1942539358}
+  _endingScreen: {fileID: 1003206596}
+  _outroCutsceneId: 35
+  _endingCredits: {fileID: 1110791479}
 --- !u!225 &989432906
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -3059,7 +3060,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI.Credits.EndingCredits
   _videoPlayer: {fileID: 2072220519}
-  _startAtVideoSeconds: 63
+  _creditsMusic: {fileID: 8300000, guid: f00fff19e7f650c4d9204f47bc2788e0, type: 3}
+  _creditsMusicGroup: {fileID: 7560950119708438335, guid: 424ab51e7847a214b8fd31a60712227d, type: 2}
+  _musicStartSeconds: 67.5
   _creditsGroup: {fileID: 2043970343}
   _creditsRoll: {fileID: 549651660}
   _fadeSeconds: 2
@@ -4590,18 +4593,6 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 989432905}
         m_TargetAssemblyTypeName: UIandCinematic.ScreenVideoZoom, Assembly-CSharp
-        m_MethodName: Play
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1110791479}
-        m_TargetAssemblyTypeName: UI.Credits.EndingCredits, Assembly-CSharp
         m_MethodName: Play
         m_Mode: 1
         m_Arguments:

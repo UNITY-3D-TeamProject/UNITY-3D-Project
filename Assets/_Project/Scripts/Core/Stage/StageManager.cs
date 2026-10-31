@@ -54,6 +54,9 @@ namespace Core.Stage
         // 사망 복구 중인지 확인한다. 사망 통지 중복 처리와 복구 중 낙하·체크포인트 판정을 막는다.
         private bool _isRecovering;
 
+        // 사망 후 다시하기 선택을 기다리는 중인지 확인한다. 사망 통지가 반복되어도 선택 요청은 한 번만 보낸다.
+        private bool _isWaitingRetry;
+
         private GameManager _gameManager;
 
         private StageBase _currentStageBaseInstance;
@@ -86,6 +89,10 @@ namespace Core.Stage
 
         // 사망 후 라운드 체크포인트에서 플레이어를 다시 스폰해 달라는 요청. PlayerSpawner가 구독한다.
         public event Action OnPlayerRespawnRequested;
+
+        // 사망 애니메이션이 끝나 다시하기·메인 메뉴 선택을 기다릴 때 발생한다. UIManager가 구독해 사망 팝업을 띄우고, 다시하기를 고르면 RetryAfterDeath를 부른다.
+        // 구독자가 없으면 선택 없이 바로 사망 복구를 한다.
+        public event Action OnRetryChoiceRequested;
 
         // 새 체크포인트에 도달하면 발생한다. true면 라운드 체크포인트(사망 복귀 지점), false면 일반 체크포인트(낙하 복귀 지점).
         // 이미 지난 체크포인트를 다시 밟으면 발생하지 않는다. CheckpointNoticePresenter가 구독한다.
@@ -552,15 +559,47 @@ namespace Core.Stage
             _playerFacade = null;
         }
 
-        // 플레이어가 죽었다는 이벤트를 받았을 때, 현재 라운드의 체크포인트에서 다시 스폰을 요청하는 함수
-        // 사망한 플레이어를 여기서 파괴하고 이동이 아니라 재스폰한다. 스폰 위치는 GetSpawnPoint가 알려준다.
-        // Restart Scene On First Round Death가 켜져 있고 첫 라운드라면 재스폰 대신 현재 씬을 다시 불러온다.
+        // 사망 팝업에서 다시하기를 고르면 사망 복구를 시작한다. 선택을 기다리는 중이 아니면 무시한다.
+        // [호출] UIManager가 사망 팝업의 다시하기 버튼을 누를 때 호출한다.
+        public void RetryAfterDeath()
+        {
+            if (!_isWaitingRetry)
+            {
+                return;
+            }
+
+            _isWaitingRetry = false;
+            RecoverFromDeath();
+        }
+
+        // 플레이어가 죽었다는 이벤트를 받았을 때, 사망 팝업에 다시하기 선택을 요청한다. 팝업이 없으면 바로 복구한다.
         // [이벤트] PlayerFacade.OnDeathEnded(사망 애니메이션 종료)가 발생하면 호출된다. (BindPlayer에서 구독)
-        // [이후] OnPlayerRespawnRequested 발생 -> PlayerSpawner.HandleRespawnRequested -> 다음 프레임 재스폰.
         private void HandlePlayerDeath()
         {
             // 진행 중인 스테이지에서만 처리한다.
-            // 낙하 사망과 전투 사망이 겹치거나 사망 이벤트가 반복되어도 복구는 한 번만 처리된다.
+            // 낙하 사망과 전투 사망이 겹치거나 사망 이벤트가 반복되어도 요청은 한 번만 보낸다.
+            if (!IsRunning || _isRecovering || _isWaitingRetry)
+            {
+                return;
+            }
+
+            if (OnRetryChoiceRequested == null)
+            {
+                RecoverFromDeath();
+                return;
+            }
+
+            _isWaitingRetry = true;
+            OnRetryChoiceRequested.Invoke();
+        }
+
+        // 현재 라운드의 체크포인트에서 다시 스폰을 요청하는 함수
+        // 사망한 플레이어를 여기서 파괴하고 이동이 아니라 재스폰한다. 스폰 위치는 GetSpawnPoint가 알려준다.
+        // Restart Scene On First Round Death가 켜져 있고 첫 라운드라면 재스폰 대신 현재 씬을 다시 불러온다.
+        // [호출] HandlePlayerDeath(사망 팝업이 없을 때), RetryAfterDeath(사망 팝업의 다시하기)에서 호출된다.
+        // [이후] OnPlayerRespawnRequested 발생 -> PlayerSpawner.HandleRespawnRequested -> 다음 프레임 재스폰.
+        private void RecoverFromDeath()
+        {
             if (!IsRunning || _isRecovering)
             {
                 return;
