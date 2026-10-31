@@ -25,5 +25,7 @@ namespace CharacterSound
         Jump,
         /// <summary>요시 점프로 공중에서 버티는 중 (반복).</summary>
         Hover,
+        /// <summary>발동 실패.</summary>
+        Failed,
     }
 }

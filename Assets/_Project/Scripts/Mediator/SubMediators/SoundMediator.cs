@@ -133,6 +133,13 @@ namespace Mediator.SubMediators
             _soundController.PlayDeath();
         }
 
+        public void FireFailed()
+        {
+            if (!_soundController || !isActiveAndEnabled) return;
+
+            _soundController.PlaySkillSound("Attack", ESoundPhase.Failed, null);
+        }
+        
         /// <summary>
         /// 스킬이 실제로 동작한 단계의 단발음을 전달한다.
         /// </summary>

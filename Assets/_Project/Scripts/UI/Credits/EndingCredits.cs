@@ -11,7 +11,8 @@ namespace UI.Credits
 {
     /// <summary>
     /// 라이브 앱 엔딩의 마지막 부분. 스크린 연출을 시작하는 발판에서 Play를 부른다.
-    /// TV 밖 대화 컷씬이 끝나면 영상 소리를 끄고 노래 2절부터 크레딧을 시작한다.
+    /// TV 밖 대화가 끝나면 대화 장면을 영상 소리와 함께 천천히 검게 어둡게 한 뒤,
+    /// 검은 화면에서 노래 2절을 서서히 키우며 크레딧(왼쪽 무대·명단)을 드러낸다.
     /// E를 누르고 있으면 명단이 빨리 올라간다.
     /// 명단이 화면 위로 다 나가면 화면을 검게 덮은 뒤 메인 메뉴로 돌아간다.
     /// 크레딧을 시작할 때 Cutscene 입력 맵을 직접 요청해 조작을 막아 둔다.
@@ -34,17 +35,21 @@ namespace UI.Credits
         [SerializeField] private CanvasGroup _creditsGroup;
         [Tooltip("위로 올라가는 명단. 앵커는 부모 아래쪽 가운데, 피벗은 위쪽 가운데(0.5, 1)로 둔다")]
         [SerializeField] private RectTransform _creditsRoll;
-        [Tooltip("화면이 어두워지는 시간(초)")]
-        [SerializeField] private float _fadeSeconds = 2.0f;
+        [Tooltip("대화 장면이 검게 어두워지는 시간(초). 영상 소리도 이 시간 동안 줄어든다")]
+        [SerializeField] private float _fadeSeconds = 3.0f;
+        [Tooltip("검은 화면에서 크레딧(왼쪽 무대·명단)이 드러나는 시간(초). 노래도 이 시간 동안 커진다")]
+        [SerializeField] private float _revealSeconds = 2.0f;
         [Tooltip("명단이 올라가는 속도(px/초, 캔버스 기준)")]
         [SerializeField] private float _scrollSpeed = 80.0f;
         [Tooltip("E를 누르고 있는 동안 명단 속도에 곱하는 배수. 바꾸면 화면의 안내 문구도 같이 고친다")]
         [SerializeField] private float _fastForwardMultiplier = 2.0f;
+        [Tooltip("2배속 안내 문구. 명단이 올라가는 동안에만 보인다")]
+        [SerializeField] private GameObject _fastForwardHint;
         [Tooltip("명단이 다 올라간 뒤 메인 메뉴로 돌아가기 전까지 기다리는 시간(초)")]
         [SerializeField] private float _endHoldSeconds = 2.0f;
 
         [Header("End Fade Out")]
-        [Tooltip("크레딧 맨 위를 덮는 검은 이미지. 시작할 때 투명하게 두고, 끝날 때 불투명하게 만든다")]
+        [Tooltip("크레딧 맨 위를 덮는 검은 이미지. 시작할 때는 이것으로 검은 화면을 만든 뒤 걷어 크레딧을 드러내고, 끝날 때 다시 덮는다")]
         [SerializeField] private Graphic _fadeOutCover;
         [Tooltip("끝날 때 화면이 검게 덮이는 시간(초)")]
         [SerializeField] private float _fadeOutSeconds = 2.0f;
@@ -69,6 +74,7 @@ namespace UI.Credits
             _creditsGroup.alpha = 0.0f;
             _creditsGroup.blocksRaycasts = false;
             SetFadeOutAlpha(0.0f);
+            if (_fastForwardHint != null) _fastForwardHint.SetActive(false);
 
             _musicSource = gameObject.AddComponent<AudioSource>();
             _musicSource.playOnAwake = false;
@@ -90,6 +96,15 @@ namespace UI.Credits
         #endregion
 
         #region Private Methods
+        // 영상 소리 크기를 바꾼다. Direct 출력일 때만 조절할 수 있다.
+        private void SetVideoVolume(float volume)
+        {
+            if ((_videoPlayer == null) || (_videoPlayer.audioOutputMode != VideoAudioOutputMode.Direct)) return;
+
+            _videoPlayer.SetDirectAudioVolume(0, volume);
+        }
+
+        // 노래를 소리 없이 틀어 둔다. 크레딧이 드러나는 동안 키운다.
         private void StartCreditsMusic()
         {
             if ((_videoPlayer != null) && (_videoPlayer.audioOutputMode == VideoAudioOutputMode.Direct))
@@ -99,6 +114,7 @@ namespace UI.Credits
 
             _musicSource.clip = _creditsMusic;
             _musicSource.time = Mathf.Clamp(_musicStartSeconds, 0.0f, _creditsMusic.length - 0.1f);
+            _musicSource.volume = 0.0f;
             _musicSource.Play();
         }
 
@@ -129,12 +145,16 @@ namespace UI.Credits
         #region Coroutines
         private IEnumerator CoPlayEnding()
         {
-            // 대화가 끝난 뒤 영상 오디오에서 크레딧 음악으로 바꾼다.
             InputMapController.Instance?.RequestMap(this, EInputMapType.Cutscene);
-            StartCreditsMusic();
 
-            if (_castStage != null) _castStage.SetActive(true);
+            // 대화 장면을 영상 소리와 함께 천천히 검게 어둡게 한다. 덮개를 먼저 불투명하게 둬서 그룹이 보이면 검은 화면만 보인다.
+            SetFadeOutAlpha(1.0f);
             yield return CoFadeIn();
+
+            // 검은 화면에서 노래를 키우며 크레딧을 드러낸다.
+            StartCreditsMusic();
+            if (_castStage != null) _castStage.SetActive(true);
+            yield return CoReveal();
             yield return CoScrollRoll();
             yield return CoWait(_endHoldSeconds);
             yield return CoFadeOut();
@@ -152,10 +172,32 @@ namespace UI.Credits
                 if (IsGamePaused()) continue;
 
                 elapsed += Time.unscaledDeltaTime;
-                _creditsGroup.alpha = Mathf.Clamp01(elapsed / _fadeSeconds);
+                float progress = Mathf.Clamp01(elapsed / _fadeSeconds);
+                _creditsGroup.alpha = progress;
+                SetVideoVolume(1.0f - progress);
             }
 
             _creditsGroup.alpha = 1.0f;
+            SetVideoVolume(0.0f);
+        }
+
+        // 검은 덮개를 걷어 크레딧을 드러내고 노래를 키운다. 덮개를 연결하지 않았으면 노래만 바로 키운다.
+        private IEnumerator CoReveal()
+        {
+            float elapsed = 0.0f;
+            while ((_fadeOutCover != null) && (elapsed < _revealSeconds))
+            {
+                yield return null;
+                if (IsGamePaused()) continue;
+
+                elapsed += Time.unscaledDeltaTime;
+                float progress = Mathf.Clamp01(elapsed / _revealSeconds);
+                SetFadeOutAlpha(1.0f - progress);
+                _musicSource.volume = progress;
+            }
+
+            SetFadeOutAlpha(0.0f);
+            _musicSource.volume = 1.0f;
         }
 
         // 크레딧 화면 전체(왼쪽 무대·명단)를 검게 덮는다. 덮개를 연결하지 않았으면 바로 넘어간다.
@@ -189,6 +231,9 @@ namespace UI.Credits
             position.y = 0.0f;
             _creditsRoll.anchoredPosition = position;
 
+            // 2배속은 명단이 올라가는 동안에만 쓰이므로 안내도 그동안만 보여 준다.
+            if (_fastForwardHint != null) _fastForwardHint.SetActive(true);
+
             while (position.y < endY)
             {
                 yield return null;
@@ -198,6 +243,8 @@ namespace UI.Credits
                 position.y = Mathf.Min(endY, position.y + (speed * Time.unscaledDeltaTime));
                 _creditsRoll.anchoredPosition = position;
             }
+
+            if (_fastForwardHint != null) _fastForwardHint.SetActive(false);
         }
 
         private IEnumerator CoWait(float seconds)
