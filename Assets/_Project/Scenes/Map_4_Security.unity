@@ -7484,6 +7484,7 @@ GameObject:
   - component: {fileID: 449159738}
   - component: {fileID: 449159740}
   - component: {fileID: 449159739}
+  - component: {fileID: 449159741}
   m_Layer: 0
   m_Name: BossFight
   m_TagString: Untagged
@@ -7552,6 +7553,25 @@ MonoBehaviour:
   _prespawnRoundIndex: 1
   _entranceHeightAboveHead: 6
   _landingShakeForce: 1
+--- !u!114 &449159741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 449159737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f40d762420e62564186129063a18b63b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.Fight.BossBatteryDropper
+  _encounter: {fileID: 449159739}
+  _arena: {fileID: 1902969065}
+  _batteryPrefab: {fileID: 365870956134482254, guid: 7c456de15f079da419ff2a821a27051a, type: 3}
+  _intervalSeconds: 20
+  _maxCount: 2
+  _itemLifetime: 15
+  _spawnHeight: 1
 --- !u!1001 &452593127
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -7,6 +7,7 @@
 > ⚠️ 아래 2026-09-09 / 2026-09-10 항목의 링크 3개는 `chore : 초기화` 커밋으로 대상 파일이 삭제되어 **전부 깨져 있다**. 또한 2026-09-10 항목은 intent-001을 `open`으로 적고 있으나 실제로는 `resolved`다(`docs/intent/clear/`로 이동 완료).
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — intent-105(AI_TODO2 보스-37): 보스전 중 20초마다 아레나 안전 칸에 배터리 드롭(`BossBatteryDropper`, 최대 2개·15초 소멸, 재시작 시 초기화). `BossFight` 오브젝트에 연결. 리컴파일 통과, **Play·직접 플레이·게이트 루프 미실행, 커밋 전**: [배터리 드롭](./2026-10-31/boss-periodic-battery-drop.md)
 - **2026-10-31** — intent-103(AI_TODO2 보스-36): 박수 1타 직후 2타 화살표와 동시에 손이 쓸던 문제. `BossAClap._followUpTelegraphSeconds`(기본 1초) 대기 뒤 `BeginSweep` 으로 쓸기 시작하도록 변경. 리컴파일 통과, **직접 플레이·게이트 루프 미실행, 커밋 전**: [박수 2타 대기](./2026-10-31/boss-a-clap-second-strike-delay.md)
 - **2026-10-31** — AI_TODO2 보스-35: 보스B 도약 예고 프리팹을 화살표 있는 `LeapWarnning` → 원형 `CircleWarnning` 으로 교체(`BossB.prefab` 한 줄). 리컴파일 통과, **직접 플레이·게이트 루프 미실행, 커밋 전**: [도약 화살표 제거](./2026-10-31/boss-b-leap-no-arrow.md)
 - **2026-10-31** — AI_TODO2 보스-34: 그랩이 위로 비스듬히 날던 원인은 손 평소 높이(-10m)와 목적지(바닥+1m) 차이. `BossAGrab.Execute` 에서 예고 동안 손을 제자리에서 먼저 올리도록 변경(수직만, 수평 방향·복귀 칸은 그대로). 리컴파일 통과, **Play·직접 플레이·게이트 루프 미실행, 커밋 전**: [그랩 수평 비행](./2026-10-31/boss-a-grab-straight-fly.md)
