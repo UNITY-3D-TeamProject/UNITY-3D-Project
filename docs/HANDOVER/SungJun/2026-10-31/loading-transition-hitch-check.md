@@ -24,6 +24,11 @@
 - 1.4s 멈춤은 로딩 화면 뒤라 화면은 가려지지만 러너 애니메이션·진행 바가 0%에서 멈춰 보임.
 - 전부 에디터 수치. 에디터 씬 로드는 빌드보다 무거우므로 빌드에서 Profiler로 재확인 필요.
 
+## 3-1. 후속: 페이드아웃 끊김 수정
+- `LoadingScreen.CoLoad`: 목적지 씬 활성화(`operation.isDone`) 뒤 `SETTLE_FRAMES_AFTER_ACTIVATION`(2)프레임 기다린 다음 페이드아웃(튜토리얼 시작은 즉시 숨김) 하도록 변경.
+- 재측정(MainScene → Live): 활성화 다음 135ms 프레임이 alpha 1(가려짐)에서 지나가고, 페이드아웃 구간은 6~31ms. 에러 0.
+- 에디터에서 측정할 때 Unity 창 포커스가 없으면 Play가 멈춘다(Run In Background 꺼짐). 측정 중에만 런타임으로 켰다가 되돌렸고 ProjectSettings 변경 없음.
+
 ## 4. 다음 할 일
 - 빌드(Development Build + Profiler)에서 같은 전환을 재측정해 실제 체감 수치 확인.
 - 개선하려면 후보: 페이드아웃을 활성화 후 1~2프레임 기다렸다 시작, Loading 씬을 가볍게(러너 RT 2048×1024 축소 등) 해 첫 0.24s 줄이기.

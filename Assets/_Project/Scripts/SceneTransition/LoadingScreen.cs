@@ -26,6 +26,9 @@ namespace SceneTransition
 
         // 씬 정리 등으로 한 프레임이 길어져도 진행 바·페이드가 한 번에 튀지 않도록 한 프레임에 반영할 최대 시간(초).
         private const float MAX_STEP_DELTA_TIME = 0.05f;
+
+        // 목적지 씬을 켠 직후 몇 프레임은 첫 Start·첫 렌더링으로 길어지므로, 로딩 화면으로 덮은 채 넘긴 뒤 걷어 낸다.
+        private const int SETTLE_FRAMES_AFTER_ACTIVATION = 2;
         #endregion
 
         #region Serialized Fields
@@ -206,6 +209,11 @@ namespace SceneTransition
             DontDestroyOnLoad(gameObject);
             operation.allowSceneActivation = true;
             while (!operation.isDone)
+            {
+                yield return null;
+            }
+
+            for (int i = 0; i < SETTLE_FRAMES_AFTER_ACTIVATION; i++)
             {
                 yield return null;
             }
