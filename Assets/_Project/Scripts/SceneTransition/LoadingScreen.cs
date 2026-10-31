@@ -13,8 +13,8 @@ namespace SceneTransition
     /// 로딩씬 루트에 배치한다. SceneLoader가 로딩씬을 지금 씬 위에 겹쳐 열면 다음 순서로 전환한다.
     /// 1. 로딩 화면 페이드인 (지금 씬을 덮음. 컷씬이 있으면 진행 바 묶음은 숨긴 채)
     /// 2. 지금 씬 정리 (정리하며 생기는 멈춤은 로딩 화면 뒤에서 일어남)
-    /// 3. 이 이동에 컷씬이 있으면 재생 (목적지를 불러오기 전이라 불러오기와 겹치지 않음)
-    /// 4. 목적지 씬 불러오기 + 진행 바 (실제 진행률을 일정 속도 이하로 따라감)
+    /// 3. 컷씬 재생 (튜토리얼은 영상 뒤에서 목적지 씬을 함께 불러옴)
+    /// 4. 일반 이동의 목적지 씬 불러오기 + 진행 바 (실제 진행률을 일정 속도 이하로 따라감)
     /// 5. 목적지 씬 켜기 (로딩 화면만 DontDestroyOnLoad로 남김)
     /// 6. 로딩 화면 페이드아웃 후 삭제
     /// </summary>
@@ -165,8 +165,9 @@ namespace SceneTransition
             // 스테이지·로비로 가면 앱 아이콘·접속 문구·팁을 페이드인 전에 채운다.
             if (_stageView != null) _stageView.TryShow(from, to);
 
-            // 컷씬이 있으면 로딩 화면은 영상이 끝난 뒤에 보여 준다.
+            // 튜토리얼 시작은 진행 바 없이 영상에서 바로 목적지로 넘어간다.
             bool hasCutscene = TryGetCutscene(from, to, out VideoClip clip);
+            bool isTutorialIntro = hasCutscene && (to == ESceneType.Tutorial);
             if (hasCutscene) _progressGroup.SetActive(false);
 
             SetProgress(0f);
@@ -176,16 +177,30 @@ namespace SceneTransition
             SetLoadingCameraActive(true);
             yield return CoUnloadOtherScenes();
 
-            // 컷씬은 목적지를 불러오기 전에 튼다. (불러오기와 겹치지 않아 끊기지 않음)
-            if (hasCutscene)
+            AsyncOperation operation;
+            if (isTutorialIntro)
             {
+                // 영상 재생 중 튜토리얼을 준비하되, 영상이 끝나기 전에는 활성화하지 않는다.
+                operation = SceneLoader.LoadPendingSceneAsync();
                 yield return CoPlayCutscene(clip);
-                _progressGroup.SetActive(true);
+                while (operation.progress < READY_PROGRESS)
+                {
+                    yield return null;
+                }
             }
+            else
+            {
+                // 일반 컷씬은 목적지를 불러오기 전에 튼다. (불러오기와 겹치지 않아 끊기지 않음)
+                if (hasCutscene)
+                {
+                    yield return CoPlayCutscene(clip);
+                    _progressGroup.SetActive(true);
+                }
 
-            AsyncOperation operation = SceneLoader.LoadPendingSceneAsync();
-            yield return CoFillProgress(operation);
-            yield return new WaitForSecondsRealtime(_holdAfterFull);
+                operation = SceneLoader.LoadPendingSceneAsync();
+                yield return CoFillProgress(operation);
+                yield return new WaitForSecondsRealtime(_holdAfterFull);
+            }
 
             // 목적지 씬을 켜면 로딩씬이 정리되므로, 페이드아웃을 위해 로딩 화면만 남겨 둔다.
             DontDestroyOnLoad(gameObject);
@@ -195,7 +210,14 @@ namespace SceneTransition
                 yield return null;
             }
 
-            yield return CoFade(1f, 0f);
+            if (isTutorialIntro)
+            {
+                SetAlpha(0f);
+            }
+            else
+            {
+                yield return CoFade(1f, 0f);
+            }
             Destroy(gameObject);
         }
 
