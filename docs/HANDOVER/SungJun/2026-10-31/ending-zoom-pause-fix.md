@@ -48,3 +48,10 @@
 - 씬 저장 때 함께 바뀐 `Canvas_InGame` 프리팹 인스턴스 레이아웃 값 71줄·`CreditsRoll` 높이 1줄(에디터 재계산 값)과 `Main Camera` 7줄은 원래 값으로 되돌렸다. 씬에 남은 변경은 스킵 안내·필드 연결·크레딧 시간(3/2초)·찌꺼기 항목 정리뿐.
 - 검증: 리컴파일 에러 0, 디스크 버전 다시 열어 값 확인. Play는 2프레임에서 멈춰 실제 페이드·소리 전환은 직접 확인 필요. 커밋 안 함.
 - 커밋 시 `SOCameraShot_Live_EndingHold.asset`+`.meta`, `SOCutscene_Live_AfterShow.asset` 포함. RenderTexture 2개·Bold 폰트·ShaderGraphSettings는 제외.
+
+## 추가 작업 5: TV 보는 카메라 앞으로·2배속 안내 시점 (같은 날, 사용자 요청, 커밋 a3c40142 이후)
+- `CinematicCam_LiveScreenBack`(TV 보기·TV 밖 복귀·대화·유지 샷 공용) 위치 (0.6, 3.6, 10) → (0.4, 3.0, 14.5), 각도 x 2.86 → 1.5, y 358.57 → 358.8. 미리보기 렌더로 TV 전체 + 두 캐릭터 구도 확인.
+- `EndingCredits._fastForwardHint` 추가: 명단이 올라가는 동안에만 `FastForwardHint` 표시.
+- 씬 저장 때 또 섞인 `Canvas_InGame` 레이아웃·`Main Camera`·`CreditsRoll` 높이 79줄은 되돌림. 이 씬은 저장할 때마다 이 재계산 값이 섞이니 diff를 확인할 것.
+- 주의: 에디터가 Play 종료를 처리하지 못하고 Play 상태로 남는 일이 있었다(직접 `editor_stop`으로 종료).
+- 검증: 리컴파일 에러 0, 씬 값 확인. Play 확인 전, 커밋 안 함.

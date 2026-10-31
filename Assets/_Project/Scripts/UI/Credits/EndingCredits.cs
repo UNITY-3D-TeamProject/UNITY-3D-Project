@@ -43,6 +43,8 @@ namespace UI.Credits
         [SerializeField] private float _scrollSpeed = 80.0f;
         [Tooltip("E를 누르고 있는 동안 명단 속도에 곱하는 배수. 바꾸면 화면의 안내 문구도 같이 고친다")]
         [SerializeField] private float _fastForwardMultiplier = 2.0f;
+        [Tooltip("2배속 안내 문구. 명단이 올라가는 동안에만 보인다")]
+        [SerializeField] private GameObject _fastForwardHint;
         [Tooltip("명단이 다 올라간 뒤 메인 메뉴로 돌아가기 전까지 기다리는 시간(초)")]
         [SerializeField] private float _endHoldSeconds = 2.0f;
 
@@ -72,6 +74,7 @@ namespace UI.Credits
             _creditsGroup.alpha = 0.0f;
             _creditsGroup.blocksRaycasts = false;
             SetFadeOutAlpha(0.0f);
+            if (_fastForwardHint != null) _fastForwardHint.SetActive(false);
 
             _musicSource = gameObject.AddComponent<AudioSource>();
             _musicSource.playOnAwake = false;
@@ -228,6 +231,9 @@ namespace UI.Credits
             position.y = 0.0f;
             _creditsRoll.anchoredPosition = position;
 
+            // 2배속은 명단이 올라가는 동안에만 쓰이므로 안내도 그동안만 보여 준다.
+            if (_fastForwardHint != null) _fastForwardHint.SetActive(true);
+
             while (position.y < endY)
             {
                 yield return null;
@@ -237,6 +243,8 @@ namespace UI.Credits
                 position.y = Mathf.Min(endY, position.y + (speed * Time.unscaledDeltaTime));
                 _creditsRoll.anchoredPosition = position;
             }
+
+            if (_fastForwardHint != null) _fastForwardHint.SetActive(false);
         }
 
         private IEnumerator CoWait(float seconds)
