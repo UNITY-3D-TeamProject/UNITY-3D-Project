@@ -14,7 +14,7 @@ namespace UI.Credits
     /// TV 밖 대화가 끝나면 대화 장면을 영상 소리와 함께 천천히 검게 어둡게 한 뒤,
     /// 검은 화면에서 노래 2절을 서서히 키우며 크레딧(왼쪽 무대·명단)을 드러낸다.
     /// E를 누르고 있으면 명단이 빨리 올라간다.
-    /// 명단이 화면 위로 다 나가면 화면을 검게 덮은 뒤 메인 메뉴로 돌아간다.
+    /// 명단이 화면 위로 다 나가면 화면을 검게 덮고 노래를 줄인 뒤 메인 메뉴로 돌아간다.
     /// 크레딧을 시작할 때 Cutscene 입력 맵을 직접 요청해 조작을 막아 둔다.
     /// </summary>
     public class EndingCredits : MonoBehaviour
@@ -51,7 +51,7 @@ namespace UI.Credits
         [Header("End Fade Out")]
         [Tooltip("크레딧 맨 위를 덮는 검은 이미지. 시작할 때는 이것으로 검은 화면을 만든 뒤 걷어 크레딧을 드러내고, 끝날 때 다시 덮는다")]
         [SerializeField] private Graphic _fadeOutCover;
-        [Tooltip("끝날 때 화면이 검게 덮이는 시간(초)")]
+        [Tooltip("끝날 때 화면이 검게 덮이는 시간(초). 노래도 이 시간 동안 줄어든다")]
         [SerializeField] private float _fadeOutSeconds = 2.0f;
 
         [Header("안 해도 됨 (GameObject ← EndingCastStage, 꺼 둠)")]
@@ -200,11 +200,9 @@ namespace UI.Credits
             _musicSource.volume = 1.0f;
         }
 
-        // 크레딧 화면 전체(왼쪽 무대·명단)를 검게 덮는다. 덮개를 연결하지 않았으면 바로 넘어간다.
+        // 크레딧 화면 전체(왼쪽 무대·명단)를 검게 덮으며 노래도 같이 줄인다. 덮개를 연결하지 않았으면 노래만 줄인다.
         private IEnumerator CoFadeOut()
         {
-            if (_fadeOutCover == null) yield break;
-
             float elapsed = 0.0f;
             while (elapsed < _fadeOutSeconds)
             {
@@ -212,10 +210,13 @@ namespace UI.Credits
                 if (IsGamePaused()) continue;
 
                 elapsed += Time.unscaledDeltaTime;
-                SetFadeOutAlpha(Mathf.Clamp01(elapsed / _fadeOutSeconds));
+                float progress = Mathf.Clamp01(elapsed / _fadeOutSeconds);
+                SetFadeOutAlpha(progress);
+                _musicSource.volume = 1.0f - progress;
             }
 
             SetFadeOutAlpha(1.0f);
+            _musicSource.Stop();
         }
 
         // 명단 위쪽 끝을 화면 아래쪽에서 시작해, 아래쪽 끝이 화면 위로 다 나갈 때까지 올린다.

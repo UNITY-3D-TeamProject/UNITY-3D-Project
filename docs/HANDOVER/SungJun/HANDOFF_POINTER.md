@@ -5,6 +5,8 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-11-01** — 엔딩·로딩 컷씬 안내 문구 변경(영상 스킵 "E 꾹 눌러서 / 건너뛰기", `Loading.unity` 컷씬 스킵도 같게, 크레딧 "E 꾹 눌러서 2배속 보기", `Map_5_Live` `m_text` 두 줄만), 크레딧 끝 화면 페이드아웃 동안 노래도 같이 줄이고 멈춤(`EndingCredits.CoFadeOut`). 리컴파일 통과, 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-prompt-text-music-fade.md)
+- **2026-11-01** — intent-109: 엔딩 크레딧 옆 연출(intent-101 장난·커튼콜)을 지우고 플레이어·펫 등장 인사로 교체. 펫을 머리 위(머리 뼈 추적)에 태운 플레이어가 왼쪽에서 뛰어 들어옴 → 펫이 옆(눈높이)으로 가서 마주 봄 → 화면 보고 인사(`Wave_Loop`·`R11_EmoHello`). 프리팹 적 6개·컨트롤러 6개 삭제, `Map_5_Live` 수정 없음. 리컴파일·임시 Play 렌더 확인, 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-cast-greeting.md)
 - **2026-11-01** — intent-103 후속: 보안 앱은 씬 체크와 상관없이 1라운드 사망 → 씬 재시작(`StageManager.RecoverFromDeath`에 `CurrentStage == SecurityApp` 조건). 입장 맵 카메라·대화(컷씬 26번)는 트리거의 기존 `HideOnStageRestart`로 재시작 때 건너뜀, 씬 수정 없음. 보스전 체력 채우기는 취소. 리컴파일 통과, Play 미확인, 커밋 안 함: [작업 기록](./2026-11-01/security-first-round-restart.md)
 - **2026-10-31** — intent-108: 미로 관리자 대화 카메라. 줄 단위 `IsPartnerTalk`(2라운드 7줄·3라운드 앞 2줄)에서 펫은 제자리, 관리자가 말하면 `SpeakerCam_Partner`(플레이어 어깨 너머), 코리·비트가 말하면 관리자 등 너머 역샷. 이름 칸 폰트를 Pretendard-Bold로 바꿔 한글 이름 □□ 수정. TestScene Play 캡처·흐름 확인, 실제 미로 미확인, 커밋 안 함: [작업 기록](./2026-10-31/admin-talk-camera.md)
 - **2026-10-31** — intent-107: 미로 관리자(Spook) 정면 초상화 `AdminPortraits/Admin_00_Default.png`(조명 포함 렌더, 하늘색) 추가, 컷씬 기본 초상화에 `관리자` 등록. 화자 이름 ADMIN→관리자, PET→비트, PLAYER→코리(SO 67개·`Canvas_InGame`·스크립트 기본값). 리컴파일·에셋 값 확인, Play 미확인, 커밋 안 함: [작업 기록](./2026-10-31/admin-portrait-speaker-names.md)
