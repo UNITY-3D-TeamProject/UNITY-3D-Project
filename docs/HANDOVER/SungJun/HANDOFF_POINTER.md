@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — intent-106: 미로(`Map_3_File`, 씬 이름 상수)에서 벽 너머 3D 효과음(도둑 발소리) 처리. `AudioManager.PlaySfx`에서 Linecast로 막혔을 때만 NavMesh 경로 길이로 감쇠하고 입구 방향 가상 위치에서 재생(경로 없음·너무 길면 생략). 리컴파일 통과, 청취 미확인, 커밋 안 함: [작업 기록](./2026-10-31/audio-wall-occlusion-design.md)
 - **2026-10-31** — 튜토리얼 데모파일 소리가 낙하 중 피치가 내려가던 원인은 도플러. `AudioManager.CreateSfxSource`에서 3D 효과음 `dopplerLevel = 0`. 리컴파일 통과, 청취 미확인, 커밋 안 함: [작업 기록](./2026-10-31/audio-sfx-spread.md)
 - **2026-10-31** — intent-105: 이어폰에서 3D 효과음이 한쪽 귀로만 들림(튜토리얼 총소리 등). `AudioManager._sfxSpread`(기본 120)를 단발·반복 3D 효과음에 적용, 반복음은 넘긴 값과 큰 쪽 사용. 리컴파일 통과, 청취 미확인, 커밋 안 함: [작업 기록](./2026-10-31/audio-sfx-spread.md)
 - **2026-10-31** — intent-096 연출 수정 10: TV 보는·TV 밖 복귀 공용 카메라 `CinematicCam_LiveScreenBack`을 z 10 → 14.5로 앞당김, 2배속 안내를 명단이 올라가는 동안만 표시(`EndingCredits._fastForwardHint`). 리컴파일 통과, Play 미확인, 커밋 안 함: [작업 기록](./2026-10-31/ending-zoom-pause-fix.md)
