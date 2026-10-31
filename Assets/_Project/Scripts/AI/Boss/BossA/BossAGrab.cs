@@ -1,6 +1,7 @@
 using UnityEngine;
 using Attribute.Effect;
 using Core.Effect;
+using CharacterSound;
 using Movement;
 using Skill.Core;
 using AI.Boss.Arena;
@@ -202,7 +203,7 @@ namespace AI.Boss.BossA
             _hookDistance = GetHookDistance();
 
             _remaining = _aimSeconds * _controller.TelegraphScale;
-            _lineHandle = Arena.ShowLine(_origin, _origin + (_direction * _hookDistance), _hookRadius * 2.0f, _remaining);
+            _lineHandle = Arena.ShowArrowLine(_origin, _origin + (_direction * _hookDistance));
             _isGrabHandBusy = false;
             _isCaptured = false;
             _slamTile = -1;
@@ -224,6 +225,10 @@ namespace AI.Boss.BossA
             float flyDistance = Mathf.Max(0.0f, _hookDistance - _grabReach);
             Vector3 destination = _origin + (_direction * flyDistance) + (Vector3.up * _hookHeight);
             _grabHand.Fly(destination, flyDistance / _hookSpeed, OnFlyArrived);
+
+            // 손이 날아가기 시작하는 순간. 소리는 보스 SoundController 표의 (그랩 스킬 이름, Start) 행에 연결한다
+            SoundController soundController = _controller.GetComponentInChildren<SoundController>();
+            if (soundController) soundController.PlaySkillSound(SkillName, ESoundPhase.Start, _grabHand.transform.position);
         }
 
         private void TryCapture()
@@ -305,7 +310,7 @@ namespace AI.Boss.BossA
             _grabHand.Recall(OnGrabHandBack);
 
             _remaining = _slamTelegraphSeconds * _controller.TelegraphScale;
-            Arena.SetTelegraph(_slamTile, true, _remaining);
+            Arena.SetArrowTelegraph(_slamTile, true, _direction);
             _isTelegraphOn = true;
             _slamHand.MoveToHover(destination);
             _state = EGrabState.Telegraph;
@@ -474,7 +479,7 @@ namespace AI.Boss.BossA
         {
             if (_lineHandle < 0) return;
 
-            if (_controller && (_controller.Arena != null)) _controller.Arena.HideLine(_lineHandle);
+            if (_controller && (_controller.Arena != null)) _controller.Arena.HideArrowLine(_lineHandle);
             _lineHandle = -1;
         }
 
@@ -483,7 +488,7 @@ namespace AI.Boss.BossA
             if (!_isTelegraphOn) return;
 
             _isTelegraphOn = false;
-            if (_controller && (_controller.Arena != null)) _controller.Arena.SetTelegraph(_slamTile, false, 0.0f);
+            if (_controller && (_controller.Arena != null)) _controller.Arena.SetArrowTelegraph(_slamTile, false, Vector3.zero);
         }
         #endregion
     }

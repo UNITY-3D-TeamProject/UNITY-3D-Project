@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using DTT.AreaOfEffectRegions;
 using AI.Boss.Logic;
@@ -33,9 +34,32 @@ namespace AI.Boss.Arena
                  "DTT LineRegion 이 있으면 크기 조절 대신 시작점에 놓고 Length·Width 를 넣는다.")]
         [SerializeField] private GameObject _linePrefab;
         [SerializeField, Min(0)] private int _linePoolSize = 2;
+
+        [Header("Arrow Telegraph")]
+        [Tooltip("화살표 예고 프리팹(WarningSignals_Arrows). 화살표 머리가 로컬 +X 를 향하고 Arrow_01~03 이 꼬리에서 머리 순으로 놓여 있어야 한다.")]
+        [SerializeField] private GameObject _arrowPrefab;
+        [Tooltip("프리팹에 곱할 크기. 칸 위 맵 장식(WarningSignals)과 같게 1.2")]
+        [SerializeField, Min(0.1f)] private float _arrowScale = 1.2f;
+        [Tooltip("프리팹 크기 1 일 때 화살표 한 토막의 진행 방향 길이(m). 그랩 직선에 이어 붙이는 간격이 된다")]
+        [SerializeField, Min(0.1f)] private float _arrowStripLength = 7.6f;
+        [Tooltip("임시값. 화살표가 하나씩 더 켜지는 간격(초)")]
+        [SerializeField, Min(0.01f)] private float _arrowStepSeconds = 0.15f;
         #endregion
 
         #region Private Fields
+        private sealed class ArrowGroup
+        {
+            public readonly List<BossArrowTelegraph> Arrows = new List<BossArrowTelegraph>();
+            public readonly List<int> HiddenTiles = new List<int>();
+        }
+
+        private readonly Stack<BossArrowTelegraph> _arrowPool = new Stack<BossArrowTelegraph>();
+        private readonly Dictionary<int, ArrowGroup> _arrowGroups = new Dictionary<int, ArrowGroup>();
+        private readonly List<int> _arrowHandleBuffer = new List<int>();
+        private int[] _tileArrowHandles;
+        private int[] _signalHideCounts;
+        private int _nextArrowHandle;
+        private bool _isTileVisualSuppressed;
         private GameObject[] _circles;
         private CircleRegion[] _circleRegions;
         private AoeVfxPlayer[] _circlePlayers;
@@ -67,6 +91,10 @@ namespace AI.Boss.Arena
             Grid.OnCollapsed += HandleCollapsed;
             Grid.OnRestored += HandleRestored;
             Grid.OnTelegraphChanged += HandleTelegraphChanged;
+
+            _tileArrowHandles = new int[ArenaGrid.COUNT];
+            Array.Fill(_tileArrowHandles, -1);
+            _signalHideCounts = new int[ArenaGrid.COUNT];
 
             if (!IsTilesValid()) return;
 
@@ -147,6 +175,50 @@ namespace AI.Boss.Arena
             Grid.SetTelegraphed(index, isOn);
             _telegraphFillSeconds = 0.0f;
             _telegraphColor = null;
+        }
+
+        public void SetArrowTelegraph(int index, bool isOn, Vector3 direction)
+        {
+            if (index < 0 || index >= ArenaGrid.COUNT) return;
+
+            // 칸 상태는 SetTelegraph 와 같이 바꾸되 칸 채움은 켜지 않는다
+            _isTileVisualSuppressed = true;
+            Grid.SetTelegraphed(index, isOn);
+            _isTileVisualSuppressed = false;
+
+            HideArrowLine(_tileArrowHandles[index]);
+            _tileArrowHandles[index] = -1;
+            if (!isOn) return;
+
+            _tileArrowHandles[index] = ShowArrows(GetTileCenter(index), direction, 1);
+        }
+
+        public int ShowArrowLine(Vector3 from, Vector3 to)
+        {
+            Vector3 delta = to - from;
+            delta.y = 0.0f;
+            float length = delta.magnitude;
+            if (length < 0.001f) return -1;
+
+            int count = Mathf.Max(1, Mathf.FloorToInt(length / (_arrowStripLength * _arrowScale)));
+            return ShowArrows(from + (delta * 0.5f), delta, count);
+        }
+
+        public void HideArrowLine(int handle)
+        {
+            if (!_arrowGroups.TryGetValue(handle, out ArrowGroup group)) return;
+
+            _arrowGroups.Remove(handle);
+            foreach (BossArrowTelegraph arrow in group.Arrows)
+            {
+                arrow.Stop();
+                _arrowPool.Push(arrow);
+            }
+
+            foreach (int tile in group.HiddenTiles)
+            {
+                if (--_signalHideCounts[tile] == 0 && IsTileReady(tile)) _tiles[tile].SetWarningSignalsVisible(true);
+            }
         }
 
         public void Collapse(int index)
@@ -248,6 +320,14 @@ namespace AI.Boss.Arena
             Grid.ResetAll();
             Grid.SetRestoreSeconds(_restoreSeconds);
 
+            _arrowHandleBuffer.Clear();
+            _arrowHandleBuffer.AddRange(_arrowGroups.Keys);
+            foreach (int handle in _arrowHandleBuffer)
+            {
+                HideArrowLine(handle);
+            }
+            if (_tileArrowHandles != null) Array.Fill(_tileArrowHandles, -1);
+
             if (_circles != null)
             {
                 foreach (GameObject circle in _circles)
@@ -316,6 +396,50 @@ namespace AI.Boss.Arena
             }
         }
 
+        /// <summary>
+        /// 화살표 토막 count 개를 center 가운데로 direction 방향에 이어 붙여 띄운다. 토막이 놓인 칸의 맵 WarningSignals 는 끈다.
+        /// 화살표 머리는 프리팹의 로컬 +X 이므로 +X 가 direction 을 향하게 돌린다.
+        /// </summary>
+        /// <returns>HideArrowLine 에 쓸 핸들. 프리팹이 없거나 방향이 없으면 -1</returns>
+        private int ShowArrows(Vector3 center, Vector3 direction, int count)
+        {
+            direction.y = 0.0f;
+            if (!_arrowPrefab || direction.sqrMagnitude < 0.0001f) return -1;
+
+            direction.Normalize();
+            Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up) * Quaternion.Euler(0.0f, -90.0f, 0.0f);
+            float stripLength = _arrowStripLength * _arrowScale;
+
+            var group = new ArrowGroup();
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 position = center + (direction * ((i - ((count - 1) * 0.5f)) * stripLength));
+                BossArrowTelegraph arrow = TakeArrow();
+                arrow.transform.SetPositionAndRotation(position, rotation);
+                arrow.Play(_arrowStepSeconds);
+                group.Arrows.Add(arrow);
+
+                if (!TryGetTile(position, out int tile) || group.HiddenTiles.Contains(tile)) continue;
+
+                group.HiddenTiles.Add(tile);
+                if (_signalHideCounts[tile]++ == 0 && IsTileReady(tile)) _tiles[tile].SetWarningSignalsVisible(false);
+            }
+
+            int handle = _nextArrowHandle++;
+            _arrowGroups.Add(handle, group);
+            return handle;
+        }
+
+        private BossArrowTelegraph TakeArrow()
+        {
+            if (_arrowPool.Count > 0) return _arrowPool.Pop();
+
+            GameObject instance = Instantiate(_arrowPrefab, transform);
+            instance.transform.localScale = Vector3.one * _arrowScale;
+            if (!instance.TryGetComponent(out BossArrowTelegraph arrow)) arrow = instance.AddComponent<BossArrowTelegraph>();
+            return arrow;
+        }
+
         /// <summary>채움 연출이 있는 예고면 fillSeconds 동안 채운다. 0 이하면 처음부터 가득 채운다.</summary>
         private void PlayFill(AoeVfxPlayer player, float fillSeconds)
         {
@@ -357,7 +481,7 @@ namespace AI.Boss.Arena
 
         private void HandleTelegraphChanged(int index, bool isOn)
         {
-            if (IsTileReady(index)) _tiles[index].SetTelegraph(isOn, _telegraphFillSeconds, _telegraphColor);
+            if (!_isTileVisualSuppressed && IsTileReady(index)) _tiles[index].SetTelegraph(isOn, _telegraphFillSeconds, _telegraphColor);
         }
 
         private bool IsTileReady(int index)

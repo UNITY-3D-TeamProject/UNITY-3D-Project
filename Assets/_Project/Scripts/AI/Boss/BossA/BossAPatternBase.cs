@@ -71,6 +71,15 @@ namespace AI.Boss.BossA
         /// <summary>예고 색. null 이면 예고 머티리얼의 기본 색이다. 알파는 항상 머티리얼 값을 따른다.</summary>
         protected virtual Color? TelegraphColor => null;
 
+        /// <summary>true 면 칸 채움 대신 GetArrowDirection 방향의 화살표로 예고한다.</summary>
+        protected virtual bool IsArrowTelegraph => false;
+
+        /// <summary>화살표 예고가 tile 에서 가리킬 수평 방향. IsArrowTelegraph 일 때만 쓴다.</summary>
+        protected virtual Vector3 GetArrowDirection(int tile)
+        {
+            return Vector3.forward;
+        }
+
         /// <summary>true 면 예고가 시작될 때 손이 미리 떠오른다. 기본은 예고가 끝난 뒤 움직인다.</summary>
         protected virtual bool IsHoverDuringTelegraph => false;
 
@@ -341,7 +350,8 @@ namespace AI.Boss.BossA
 
             foreach (int tile in _tiles)
             {
-                Arena.SetTelegraph(tile, true, fillSeconds, TelegraphColor);
+                if (IsArrowTelegraph) Arena.SetArrowTelegraph(tile, true, GetArrowDirection(tile));
+                else Arena.SetTelegraph(tile, true, fillSeconds, TelegraphColor);
             }
             _isTelegraphOn = true;
         }
@@ -353,7 +363,8 @@ namespace AI.Boss.BossA
             _isTelegraphOn = false;
             foreach (int tile in _tiles)
             {
-                Arena.SetTelegraph(tile, false, 0.0f);
+                if (IsArrowTelegraph) Arena.SetArrowTelegraph(tile, false, Vector3.zero);
+                else Arena.SetTelegraph(tile, false, 0.0f);
             }
         }
 
