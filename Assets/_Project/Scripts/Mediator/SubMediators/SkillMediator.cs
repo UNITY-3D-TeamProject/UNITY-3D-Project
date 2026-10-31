@@ -75,7 +75,7 @@ namespace Mediator.SubMediators
 
         /// <summary>사격 요청. (총알 생성 위치, 차지샷 여부)</summary>
         public event Action<Vector3, bool> OnFireRequested;
-
+        
         /// <summary>사격 차지 상태 변경. 차지 시작이면 true, 발사·취소로 끝나면 false.</summary>
         public event Action<bool> OnFireChargeChanged;
 
@@ -90,6 +90,9 @@ namespace Mediator.SubMediators
 
         /// <summary>정지 요청으로 스킬을 멈췄을 때 발생한다. (스킬 이름)</summary>
         public event Action<string> OnSkillStopped;
+        
+        /// <summary>정지 요청으로 스킬을 멈췄을 때 발생한다. (스킬 이름)</summary>
+        public event Action<string> OnSkillFailed;
 
         /// <summary>상호작용 대상을 바라보는지 여부가 바뀔 때 발생한다. 대상이 있으면 true.</summary>
         public event Action<bool> OnInteractableChanged;
@@ -426,7 +429,11 @@ namespace Mediator.SubMediators
             if (isRoll && IsGrounded()) ResetRollCount();
             if (_isScanBlocked && IsScanSkill(skillName)) return;
 
-            if (!_skillController.TryExecuteSkill(skillName)) return;
+            if (!_skillController.TryExecuteSkill(skillName))
+            {
+                OnSkillFailed?.Invoke(skillName);
+                return;
+            }
 
             // 탈것 스킬은 하차할 때 쿨타임이 시작되므로 OnSkillExecuted 에서 하차 시에만 알린다
             if (IsSpawnVehicleSkill(skillName)) return;

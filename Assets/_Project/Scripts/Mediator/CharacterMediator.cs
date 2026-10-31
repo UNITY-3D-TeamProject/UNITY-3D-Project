@@ -824,6 +824,20 @@ namespace Mediator
         {
             _attributeMediator.PauseRegenOnFire();
         }
+
+        private void OnSkillFailedCallback(string skillName)
+        {
+            switch (skillName)
+            {
+                case "Attack":
+                    if (_soundMediator)
+                    {
+                        _soundMediator.FireFailed();
+                    }
+                    break;
+            }
+        }
+        
         /// <summary>
         /// 중재자 이벤트 구독
         /// </summary>
@@ -838,6 +852,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnInteractableChanged += OnInteractableChangedCallback;
             if (_skillMediator) _skillMediator.OnFireChargeChanged += OnFireChargeChangedCallback;
             if (_skillMediator) _skillMediator.OnScanRequested += OnScanRequestedCallback;
+            if (_skillMediator) _skillMediator.OnSkillFailed += OnSkillFailedCallback;
             if (_combatMediator) _combatMediator.OnHit += OnHitCallback;
             if (_combatMediator) _combatMediator.OnCriticalHit += OnCriticalHitCallback;
             if (_combatMediator) _combatMediator.OnDeath += OnDeathCallback;
@@ -908,6 +923,7 @@ namespace Mediator
             if (_skillMediator) _skillMediator.OnInteractableChanged -= OnInteractableChangedCallback;
             if (_skillMediator) _skillMediator.OnFireChargeChanged -= OnFireChargeChangedCallback;
             if (_skillMediator) _skillMediator.OnScanRequested -= OnScanRequestedCallback;
+            if (_skillMediator) _skillMediator.OnSkillFailed -= OnSkillFailedCallback;
             if (_combatMediator) _combatMediator.OnHit -= OnHitCallback;
             if (_combatMediator) _combatMediator.OnCriticalHit -= OnCriticalHitCallback;
             if (_combatMediator) _combatMediator.OnDeath -= OnDeathCallback;
