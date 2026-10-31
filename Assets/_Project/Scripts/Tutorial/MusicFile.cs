@@ -1,16 +1,16 @@
 using System.Collections;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using Core.Audio;
 using Interaction;
+using Map.Gimmicks;
 
 namespace Tutorial
 {
     /// <summary>
     /// 파이프에서 나오는 흐름 발판에 얹혀 나온 뒤 이 오브젝트 위치(분류장 중앙)로 날아가 대기한다.
-    /// 열면 CD가 회전하고 제목이 흐르는 MP3 창을 재생한다.
+    /// 열면 가운데 CD가 회전하고, 재생이 끝나면 떠올라 플레이어에게 날아가 획득된다.
     /// </summary>
-    [RequireComponent(typeof(AudioSource))]
     public class MusicFile : MonoBehaviour, IInteractable
     {
         #region Serialized Fields
@@ -32,23 +32,33 @@ namespace Tutorial
         [SerializeField, Min(0.0f)] private float _hoverAmplitude = 0.2f;
 
         [Header("MP3 Player")]
-        [SerializeField] private GameObject _contentRoot;
+        [Tooltip("음악 파일 주변에서 반복 재생할 음원")]
+        [SerializeField] private SOAudioData _musicSound;
         [SerializeField] private Transform _disc;
-        [SerializeField] private TMP_Text _titleText;
-        [SerializeField] private string _songTitle = "다시, 처음부터  ·  마지막 데모 파일";
         [SerializeField, Min(1.0f)] private float _playDuration = 8.0f;
         [SerializeField, Min(0.1f)] private float _discSpeed = 120.0f;
-        [SerializeField, Min(0.05f)] private float _scrollInterval = 0.18f;
+
+        [Header("Collect")]
+        [Tooltip("플레이어에게 날아가는 부분. 바닥 링 등 나머지는 제자리에 있다가 획득 순간 함께 사라진다.")]
+        [SerializeField] private Transform _collectRoot;
+        [Tooltip("떠오르는 높이")]
+        [SerializeField, Min(0.0f)] private float _riseHeight = 1.2f;
+        [Tooltip("떠오르는 데 걸리는 시간(초)")]
+        [SerializeField, Min(0.0f)] private float _riseDuration = 0.6f;
+        [Tooltip("떠오르는 동안 줄어들 크기 배율")]
+        [SerializeField, Min(0.01f)] private float _flyScale = 0.35f;
+        [Tooltip("떠오른 뒤 플레이어에게 날아가는 속도")]
+        [SerializeField, Min(0.1f)] private float _flySpeed = 14.0f;
+        [Tooltip("플레이어 몸에 들어가 획득되는 순간 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _collectSound;
 
         [Header("Events")]
         [SerializeField] private UnityEvent _onAcquired = new UnityEvent();
         #endregion
 
         #region Private Fields
-        private AudioSource _audioSource;
+        private SAudioHandle _musicHandle;
         private EFileState _state = EFileState.Hidden;
-        private float _scrollTimer;
-        private int _scrollOffset;
         #endregion
 
         #region Properties
@@ -59,10 +69,23 @@ namespace Tutorial
         private void Awake()
         {
             Debug.Assert(_visualRoot != null, $"[{name}] Visual Root가 연결되지 않았습니다.");
-            Debug.Assert(_contentRoot != null, $"[{name}] MP3 창이 연결되지 않았습니다.");
-            _audioSource = GetComponent<AudioSource>();
+            Debug.Assert(_collectRoot != null, $"[{name}] Collect Root가 연결되지 않았습니다.");
             _visualRoot.gameObject.SetActive(false);
-            _contentRoot.SetActive(false);
+        }
+
+        private void Start()
+        {
+            GimmickUtility.PlaySfxLoop(_musicSound, transform, ref _musicHandle);
+        }
+
+        private void OnEnable()
+        {
+            if (!IsAcquired) GimmickUtility.PlaySfxLoop(_musicSound, transform, ref _musicHandle);
+        }
+
+        private void OnDisable()
+        {
+            GimmickUtility.StopSfxLoop(ref _musicHandle);
         }
 
         private void Update()
@@ -75,13 +98,6 @@ namespace Tutorial
             if (_state != EFileState.Playing) return;
 
             if (_disc != null) _disc.Rotate(Vector3.forward, -_discSpeed * Time.deltaTime, Space.Self);
-            if ((_titleText == null) || string.IsNullOrEmpty(_songTitle)) return;
-            _scrollTimer += Time.deltaTime;
-            if (_scrollTimer < _scrollInterval) return;
-            _scrollTimer -= _scrollInterval;
-            _scrollOffset = (_scrollOffset + 1) % (_songTitle.Length + 6);
-            string strip = _songTitle + "      ";
-            _titleText.text = (strip + strip).Substring(_scrollOffset, Mathf.Min(13, strip.Length));
         }
         #endregion
 
@@ -97,7 +113,11 @@ namespace Tutorial
         public void Interact(GameObject interactor)
         {
             if (_state != EFileState.Waiting) return;
-            StartCoroutine(CoPlay());
+            foreach (Collider collider in GetComponentsInChildren<Collider>(true))
+            {
+                if (collider.gameObject.layer == LayerMask.NameToLayer("Interact")) collider.enabled = false;
+            }
+            StartCoroutine(CoPlay(interactor));
         }
         #endregion
 
@@ -146,18 +166,44 @@ namespace Tutorial
             _visualRoot.position = target;
         }
 
-        private IEnumerator CoPlay()
+        private IEnumerator CoPlay(GameObject interactor)
         {
             _state = EFileState.Playing;
-            _visualRoot.gameObject.SetActive(false);
-            _contentRoot.SetActive(true);
-            _scrollOffset = 0;
-            _scrollTimer = 0.0f;
-            if (_titleText != null) _titleText.text = _songTitle;
-            if (_audioSource.clip != null) _audioSource.Play();
             yield return new WaitForSeconds(_playDuration);
+            yield return CoFlyToPlayer(interactor);
+            GimmickUtility.StopSfxLoop(ref _musicHandle);
+            GimmickUtility.PlaySfx(_collectSound, _collectRoot.position);
+            _visualRoot.gameObject.SetActive(false);
             _state = EFileState.Acquired;
             _onAcquired.Invoke();
+        }
+
+        // ItemBox 와 같이 위로 떠오른 뒤 플레이어 몸으로 날아간다. CD는 그동안에도 계속 돈다.
+        private IEnumerator CoFlyToPlayer(GameObject interactor)
+        {
+            Vector3 start = _collectRoot.position;
+            Vector3 top = start + (Vector3.up * _riseHeight);
+            Vector3 startScale = _collectRoot.localScale;
+            Vector3 flyScale = startScale * _flyScale;
+            for (float time = 0.0f; time < _riseDuration; time += Time.deltaTime)
+            {
+                float t = Mathf.SmoothStep(0.0f, 1.0f, time / _riseDuration);
+                _collectRoot.position = Vector3.Lerp(start, top, t);
+                _collectRoot.localScale = Vector3.Lerp(startScale, flyScale, t);
+                yield return null;
+            }
+            _collectRoot.localScale = flyScale;
+
+            // 실제로 움직이는 몸체는 플레이어 루트가 아니라 자식의 CharacterController 다
+            CharacterController body = (interactor != null) ? interactor.GetComponentInChildren<CharacterController>() : null;
+            while (body != null)
+            {
+                Vector3 target = body.bounds.center;
+                _collectRoot.position = Vector3.MoveTowards(_collectRoot.position, target, _flySpeed * Time.deltaTime);
+                if ((_collectRoot.position - target).sqrMagnitude < 0.01f) break;
+
+                yield return null;
+            }
         }
         #endregion
 

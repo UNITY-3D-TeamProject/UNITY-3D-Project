@@ -107,6 +107,12 @@ namespace Tutorial
                 }
             }
 
+            if (IsCompleted)
+            {
+                MoveBoulder();
+                return;
+            }
+
             if (!IsRunning || (_player == null) || (_controller == null)) return;
             if ((GameManager.Instance.CurrentState != GameManager.GameState.Playing) ||
                 (_player.GetAttribute("CurrentHp") <= 0.0f)) return;
@@ -126,15 +132,13 @@ namespace Tutorial
                 IsRunning = false;
                 IsCompleted = true;
                 _portal.Unlock();
+                MoveBoulder();
                 return;
             }
 
             UpdateLowBattery();
 
-            _travelled += _speed * Time.deltaTime;
-            _boulder.position = _boulderHomePosition + (_direction * _travelled);
-            _boulder.Rotate(Vector3.Cross(Vector3.up, _direction),
-                (_speed / _radius) * Mathf.Rad2Deg * Time.deltaTime, Space.World);
+            MoveBoulder();
 
             Vector3 center = _controller.bounds.center;
             if (Vector3.Distance(center, _boulder.position) < _radius + _controller.radius)
@@ -146,7 +150,7 @@ namespace Tutorial
         // 추격이 멈추는 곳이 여러 군데라, 프레임 끝에 굴러가는 중인지 보고 소리를 맞춘다
         private void LateUpdate()
         {
-            if (IsRunning)
+            if (IsRunning || IsCompleted)
             {
                 GimmickUtility.PlaySfxLoop(_rollLoopSound, _boulder, ref _rollLoopHandle);
             }
@@ -189,7 +193,15 @@ namespace Tutorial
             _controller = _player.transform.root.GetComponentInChildren<CharacterController>();
         }
 
-        // 공을 처음 놓인 자리로 되돌린다. 결승 뒤에는 멈춘 자리에 둔다.
+        private void MoveBoulder()
+        {
+            _travelled += _speed * Time.deltaTime;
+            _boulder.position = _boulderHomePosition + (_direction * _travelled);
+            _boulder.Rotate(Vector3.Cross(Vector3.up, _direction),
+                (_speed / _radius) * Mathf.Rad2Deg * Time.deltaTime, Space.World);
+        }
+
+        // 공을 처음 놓인 자리로 되돌린다. 결승 뒤에는 계속 굴러간다.
         private void ResetBoulder()
         {
             if (IsCompleted) return;
