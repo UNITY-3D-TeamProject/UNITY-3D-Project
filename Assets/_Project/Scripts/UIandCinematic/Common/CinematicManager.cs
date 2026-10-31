@@ -460,7 +460,8 @@ namespace UIandCinematic
                 step.Portrait,
                 step.Message,
                 isLastLine,
-                camera == null);
+                camera == null,
+                step.IsPartnerTalk);
             if (!isShown) yield break;
 
             // 대사 중에 대화 재생 쪽이 꺼져 등록이 풀리면 기다리지 않는다.

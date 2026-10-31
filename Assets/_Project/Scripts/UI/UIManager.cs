@@ -61,8 +61,11 @@ namespace UI
         // 펫 안내가 떠 있으면 true. E로 닫을 때까지 게임을 멈춘다.
         private bool _isPetGuideOpen;
 
-        // 컷씬 대사로 펫을 세워 두었으면 true. 컷씬이 끝날 때 돌려놓는다.
+        // 컷씬 대사로 연출(펫 세우기 또는 상대와의 대화 카메라)을 시작했으면 true. 컷씬이 끝날 때 돌려놓는다.
         private bool _isCutsceneStaged;
+
+        // 컷씬 대사로 펫을 플레이어 앞에 세워 두었으면 true. 상대와의 대화 줄에서는 세우지 않는다.
+        private bool _isCutscenePetStaged;
 
         // 컷씬 대사가 패널에 떠 있으면 true.
         private bool _isCutsceneLineVisible;
@@ -255,12 +258,14 @@ namespace UI
         // 컷씬(SOCutscene)의 대사 한 줄을 띄운다. CinematicManager가 대사 단계마다 부르고, E를 누르면 IsCutsceneLineWaiting이 false가 된다.
         // 처음 부를 때 펫을 플레이어 앞에 세운다. 게임 시간·입력 맵·UI 숨김은 연출(CinematicManager)이 맡는다.
         // shouldUseSpeakerCamera가 false면 카메라 키로 고른 카메라가 보이도록 말하는 사람 카메라를 끈다.
+        // isPartnerTalk가 true면 펫은 제자리에 두고 상대(관리자 등)와의 대화 카메라를 쓴다.
         public bool ShowCutsceneLine(
             string speakerName,
             Sprite portrait,
             string message,
             bool isLastLine,
-            bool shouldUseSpeakerCamera)
+            bool shouldUseSpeakerCamera,
+            bool isPartnerTalk)
         {
             if ((_cutscenePresenter == null) || (_cutsceneDirector == null) || IsDialoguePlaying)
                 return false;
@@ -269,11 +274,17 @@ namespace UI
             StopMonologue();
 
             // 첫 대사의 말하는 사람 카메라가 바로 정해지므로 펫과 카메라를 먼저 배치한다.
-            if (!_isCutsceneStaged)
+            // 상대와의 대화 줄은 펫을 세우지 않고, 그 뒤 일반 줄이 오면 그때 펫을 세운다.
+            if (isPartnerTalk)
+            {
+                _cutsceneDirector.BeginPartnerTalk();
+            }
+            else if (!_isCutscenePetStaged)
             {
                 _cutsceneDirector.BeginStaging();
-                _isCutsceneStaged = true;
+                _isCutscenePetStaged = true;
             }
+            _isCutsceneStaged = true;
 
             if (!_cutscenePresenter.ShowSingleLine(speakerName, portrait, message, isLastLine))
                 return false;
@@ -281,7 +292,9 @@ namespace UI
             _isCutsceneLineVisible = true;
             _isCutsceneLineWaiting = true;
 
-            if (shouldUseSpeakerCamera)
+            if (shouldUseSpeakerCamera && isPartnerTalk)
+                _cutsceneDirector.ShowPartnerTalkLine(speakerName);
+            else if (shouldUseSpeakerCamera)
                 _cutsceneDirector.ShowLine(speakerName, -1);
             else
                 _cutsceneDirector.HideCameras();
@@ -312,6 +325,7 @@ namespace UI
             if (!_isCutsceneStaged) return;
 
             _isCutsceneStaged = false;
+            _isCutscenePetStaged = false;
             _cutsceneDirector.EndStaging();
         }
 

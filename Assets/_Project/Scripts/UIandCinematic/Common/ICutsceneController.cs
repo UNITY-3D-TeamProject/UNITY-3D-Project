@@ -27,13 +27,15 @@ namespace UIandCinematic
 
         // 컷씬(SOCutscene)의 대사 한 줄을 띄운다. 처음 부를 때 펫을 플레이어 앞에 세운다.
         // shouldUseSpeakerCamera가 true면 말하는 사람 카메라를 켜고, false면 끈다(카메라 키로 고른 카메라는 CinematicManager가 켠다).
+        // isPartnerTalk가 true면 펫을 세우지 않고 상대(관리자 등)와의 대화 카메라를 쓴다.
         // 대화 중이거나 띄울 수 없으면 false.
         bool ShowCutsceneLine(
             string speakerName,
             Sprite portrait,
             string message,
             bool isLastLine,
-            bool shouldUseSpeakerCamera);
+            bool shouldUseSpeakerCamera,
+            bool isPartnerTalk);
 
         // 컷씬 대사를 숨기고 말하는 사람 카메라를 끈다. 카메라 단계 앞에서 부른다.
         void HideCutsceneLine();

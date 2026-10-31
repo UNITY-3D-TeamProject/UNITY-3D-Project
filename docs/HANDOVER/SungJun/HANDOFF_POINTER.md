@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — intent-108: 미로 관리자 대화 카메라. 줄 단위 `IsPartnerTalk`(2라운드 7줄·3라운드 앞 2줄)에서 펫은 제자리, 관리자가 말하면 `SpeakerCam_Partner`(플레이어 어깨 너머), 코리·비트가 말하면 관리자 등 너머 역샷. 이름 칸 폰트를 Pretendard-Bold로 바꿔 한글 이름 □□ 수정. TestScene Play 캡처·흐름 확인, 실제 미로 미확인, 커밋 안 함: [작업 기록](./2026-10-31/admin-talk-camera.md)
 - **2026-10-31** — intent-107: 미로 관리자(Spook) 정면 초상화 `AdminPortraits/Admin_00_Default.png`(조명 포함 렌더, 하늘색) 추가, 컷씬 기본 초상화에 `관리자` 등록. 화자 이름 ADMIN→관리자, PET→비트, PLAYER→코리(SO 67개·`Canvas_InGame`·스크립트 기본값). 리컴파일·에셋 값 확인, Play 미확인, 커밋 안 함: [작업 기록](./2026-10-31/admin-portrait-speaker-names.md)
 - **2026-10-31** — intent-106: 미로(`Map_3_File`, 씬 이름 상수)에서 벽 너머 3D 효과음(도둑 발소리) 처리. `AudioManager.PlaySfx`에서 Linecast로 막혔을 때만 NavMesh 경로 길이로 감쇠하고 입구 방향 가상 위치에서 재생(경로 없음·너무 길면 생략). 리컴파일 통과, 청취 미확인, 커밋 안 함: [작업 기록](./2026-10-31/audio-wall-occlusion-design.md)
 - **2026-10-31** — 튜토리얼 데모파일 소리가 낙하 중 피치가 내려가던 원인은 도플러. `AudioManager.CreateSfxSource`에서 3D 효과음 `dopplerLevel = 0`. 리컴파일 통과, 청취 미확인, 커밋 안 함: [작업 기록](./2026-10-31/audio-sfx-spread.md)

@@ -10145,6 +10145,81 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &4222102959903416822
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9122601905882483094}
+  - component: {fileID: 1017085067553070558}
+  m_Layer: 0
+  m_Name: SpeakerCam_Partner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9122601905882483094
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4222102959903416822}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6785853582119658445}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1017085067553070558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4222102959903416822}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
+  Priority:
+    Enabled: 1
+    m_Value: 20
+  OutputChannel: 1
+  StandbyUpdate: 2
+  m_StreamingVersion: 0
+  m_LegacyPriority: 0
+  Target:
+    TrackingTarget: {fileID: 0}
+    LookAtTarget: {fileID: 0}
+    CustomLookAtTarget: 0
+  Lens:
+    FieldOfView: 35
+    OrthographicSize: 10
+    NearClipPlane: 0.1
+    FarClipPlane: 5000
+    Dutch: 0
+    ModeOverride: 0
+    PhysicalProperties:
+      GateFit: 2
+      SensorSize: {x: 21.946, y: 16.002}
+      LensShift: {x: 0, y: 0}
+      FocusDistance: 10
+      Iso: 200
+      ShutterSpeed: 0.005
+      Aperture: 16
+      BladeCount: 5
+      Curvature: {x: 2, y: 11}
+      BarrelClipping: 0.25
+      Anamorphism: 0
+  BlendHint: 0
 --- !u!1 &4264968796496146036
 GameObject:
   m_ObjectHideFlags: 0
@@ -12684,8 +12759,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: PET
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 194c956b3d864664890e731c63fd4a02, type: 2}
-  m_sharedMaterial: {fileID: 21704438749789640, guid: 194c956b3d864664890e731c63fd4a02, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8501e3003e0c2b443a8023a3e0e860bb, type: 2}
+  m_sharedMaterial: {fileID: -488000842241082197, guid: 8501e3003e0c2b443a8023a3e0e860bb, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -19501,6 +19576,7 @@ Transform:
   m_Children:
   - {fileID: 6279326556737029473}
   - {fileID: 1616672711219913589}
+  - {fileID: 9122601905882483094}
   m_Father: {fileID: 9207245020587770864}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2693135122848582690
@@ -19523,6 +19599,11 @@ MonoBehaviour:
   _playerShotOffset: {x: 0.5, y: 0, z: 2}
   _petShotOffset: {x: 0.7, y: 1.6, z: -1}
   _playerLookHeight: 0.7
+  _partnerShotCamera: {fileID: 1017085067553070558}
+  _partnerLookOffset: {x: 0, y: 2.1, z: 3}
+  _partnerShotOffset: {x: 0.8, y: 1, z: -1.6}
+  _partnerPlayerShotOffset: {x: 1.4, y: -0.1, z: 3.2}
+  _partnerPlayerLookHeight: 1.1
   _fixedCameras: []
 --- !u!1 &7669080469077425436
 GameObject:
@@ -22352,6 +22433,9 @@ MonoBehaviour:
     - {fileID: 2045569179807697592}
     GlowImage: {fileID: 4519970487695515998}
   _batteryPercentText: {fileID: 4612122765991694105}
+  _overheatColor: {r: 0.85, g: 0.04, b: 0.04, a: 1}
+  _overheatBlinkInterval: 0.1
+  _overheatBlinkMinAlpha: 0.15
   _rollCooldownBar: {fileID: 2961472761710502566}
   _rollCooldownText: {fileID: 659461211539225695}
   _bluetoothCooldownBar: {fileID: 4470085856230619034}
