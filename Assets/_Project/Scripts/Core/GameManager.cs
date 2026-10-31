@@ -35,6 +35,7 @@ namespace Core
         // 플레이어 스폰 이유는 초기값은 당연히 NewGame으로 설정 
         public EPlayerSpawnReason SpawnReason { get; private set; }
             = EPlayerSpawnReason.NewGame;
+        public bool IsContinueSpawn { get; private set; }
 
 
         // 저장할 능력치 이름 목록을 확인하기 위한 플레이어 SO 원본 (playerState를 초기화 할 때 넣어줄 매개변수 값)
@@ -234,6 +235,7 @@ namespace Core
             // 씬 이동이라면 여기서 이전 씬의 능력치를 복원한다.
             // 씬 재시작이면 씬 입장 때 저장해 둔 능력치를 다시 복원한다.
             bool shouldContinue = SceneLoader.ConsumeContinueRequest();
+            IsContinueSpawn = shouldContinue;
             bool shouldRestore =
                 (SpawnReason == EPlayerSpawnReason.SceneTransition) ||
                 (SpawnReason == EPlayerSpawnReason.StageRestart);

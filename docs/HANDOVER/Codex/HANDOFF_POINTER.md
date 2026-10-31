@@ -1,6 +1,7 @@
 # Codex — Handover Pointer
 
 ## 변경 이력 (최신순)
+- **2026-10-31** — 튜토리얼 스킬 해금 코드와 잠금 HUD 구현, 씬 연결 보류: [작업 기록](./2026-10-31/tutorial-skill-unlock-design.md)
 - **2026-10-31** — 엔딩 무대에 펫 머리 위 동행과 가비지 컬렉터 추격 추가: [작업 기록](./2026-10-31/ending-cast-chase.md)
 - **2026-10-31** — 엔딩 크레딧 시간 설정 방식 확인: [작업 기록](./2026-10-31/ending-credits-duration-review.md)
 - **2026-10-30** — 인게임 설정창 하단에 RETRY 버튼 추가 및 현재 스테이지 재시작 연결: [작업 기록](./2026-10-30/settings-stage-retry.md)
