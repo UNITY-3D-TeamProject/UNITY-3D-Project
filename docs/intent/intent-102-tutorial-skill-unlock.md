@@ -27,6 +27,7 @@ resolved: null
 - 사용자 수정에 따라 `Attack` 잠금과 상호작용 안내의 해금 이벤트를 제거했다.
 - 이어하기로 튜토리얼에 입장하면 세 스킬과 펫을 처음부터 활성화한다. 튜토리얼 이후 씬의 기본 스킬 상태는 건드리지 않는다.
 - HUD 카드 3장의 잠금 표시를 연결했다. `dotnet build Assembly-CSharp.csproj` 오류 0개, 기존 경고 87개. 실제 Unity Play 조작 확인은 남았다.
+- `Map_0_Tutorial`의 `PetGuide_3_Dash`, `PetGuide_7_Scan`, `PetGuide_8_Vehicle` 안내 이벤트에 각각 `UnlockRoll`, `UnlockScan`, `UnlockVehicle`을 연결했다. 씬 파일에서 이벤트 대상과 메서드, 기존 안내 호출의 유지 여부를 확인했다.
 
 ## 영향 범위 (Affected users and systems)
 - 플레이어의 튜토리얼 스킬 사용 시점 및 재스폰 후 사용 가능 상태.
@@ -38,7 +39,6 @@ resolved: null
 - 기존 씬의 다른 미커밋 변경을 보존한다.
 
 ## 열린 질문 (Open questions)
-- 튜토리얼 씬 담당자가 `PetGuide_3_Dash` → `UnlockRoll`, `PetGuide_7_Scan` → `UnlockScan`, `PetGuide_8_Vehicle` → `UnlockVehicle`을 기존 대사 재생 이벤트에 연결해야 한다.
 - 연결 후 실제 플레이에서 스킬 안내와 HUD 잠금 표시가 함께 바뀌는지 확인한다.
 
 ## 해결 기록 (Resolution) — 해결 후 작성
