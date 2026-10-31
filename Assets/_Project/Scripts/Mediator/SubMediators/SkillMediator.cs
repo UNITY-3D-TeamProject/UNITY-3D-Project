@@ -184,6 +184,24 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 현재 오버히트 상태인지 반환
+        /// </summary>
+        /// /// <returns>OverHit 상태면 true</returns>
+        public bool IsOverHit()
+        {
+            if (_skillController.HasSkill(FIRE_SKILL_NAME))
+            {
+                if (_skillController.TryGetSkill(FIRE_SKILL_NAME, out var fireSkill))
+                {
+                    Fire castFireSkill = fireSkill as Fire;
+                    return castFireSkill != null && castFireSkill.IsOverHit();
+                }
+            }
+
+            return false;
+        }
+        
+        /// <summary>
         /// 스킬의 활성화 여부를 반환한다.
         /// </summary>
         /// <param name="skillName">대상 스킬 이름</param>

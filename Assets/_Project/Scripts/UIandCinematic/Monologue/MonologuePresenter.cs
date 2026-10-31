@@ -13,7 +13,7 @@ namespace UIandCinematic
         [Serializable]
         private struct SSpeakerPortrait
         {
-            [Tooltip("대사의 SpeakerName과 똑같이 적는다 (예: PET, PLAYER)")]
+            [Tooltip("대사의 SpeakerName과 똑같이 적는다 (예: 비트, 코리)")]
             public string SpeakerName;
             public Sprite DefaultPortrait;
         }

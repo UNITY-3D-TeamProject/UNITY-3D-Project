@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.Audio;
 using UnityEngine.Serialization;
 using UnityEngine.SceneManagement;
@@ -35,6 +36,8 @@ namespace Core.Audio
     //    BGM·UI 소스는 ignoreListenerPause라 계속 들리고 3D 소스만 멈춘다.
     //    멈춘 동안 Time.time도 멈추므로 멈춘 3D 소스가 끝난 것으로 잘못 처리되지 않는다.
     // 6. 볼륨은 매니저가 생길 때 PlayerPrefs에서 읽어 믹서에 적용하고, SaveVolume을 부를 때만 저장한다.
+    // 7. 미로 씬(MAZE_SCENE_NAME)에서는 벽에 가려진 3D 단발음을 벽을 돌아오는 NavMesh 경로 길이로 줄이고,
+    //    리스너가 보는 통로 입구 방향에서 낸다. 경로가 없거나 MaxDistance보다 길면 내지 않는다. (반복음은 제외)
     public class AudioManager : MonoBehaviour
     {
         #region Constants
@@ -44,8 +47,14 @@ namespace Core.Audio
         private const string LOBBY_SCENE_NAME = "Map_1_Lobby";
         private const string MAIN_SCENE_NAME = "MainScene";
 
+        // 벽 차폐를 적용하는 씬. 다른 씬의 소리는 거리로만 줄어든다.
+        private const string MAZE_SCENE_NAME = "Map_3_File";
+
         // PlaySfx의 pitchScale이 0 이하로 들어와도 끝나는 시각 계산이 깨지지 않게 하는 하한값
         private const float MIN_PITCH = 0.1f;
+
+        // 벽 차폐 경로의 코너를 담는 버퍼 크기. 이만큼 꽉 차면 경로가 너무 길다고 보고 소리를 내지 않는다.
+        private const int MAX_PATH_CORNER_COUNT = 64;
         #endregion
 
         #region Static Fields
@@ -53,6 +62,9 @@ namespace Core.Audio
         // 믹서에서 Expose한 볼륨 파라미터 이름
         private static readonly string[] MixerParams = { "MasterVolume", "BgmVolume", "SfxVolume" };
         private static readonly string[] PrefsKeys = { "Volume_Master", "Volume_Bgm", "Volume_Sfx" };
+
+        // 소리를 막는 벽 레이어. 미로 벽 프리팹이 두 레이어를 섞어 쓴다. (MazeWall_A = CameraObstacle, MazeWall_B = Obstacle)
+        private static readonly string[] OcclusionLayerNames = { "Obstacle", "CameraObstacle" };
         #endregion
 
         #region Serialized Fields
@@ -87,6 +99,28 @@ namespace Core.Audio
         [Tooltip("3D 효과음 소스를 늘릴 수 있는 최대 수. 이만큼 모두 재생 중이면 새 요청은 생략하고 경고를 한 번 남긴다")]
         [Min(1)]
         [SerializeField] private int _maxSfxSourceCount = 64;
+
+        // 0이면 리스너 옆에서 난 소리가 반대쪽 귀에서 전혀 들리지 않는다. (이어폰에서 한쪽만 들림)
+        [Tooltip("3D 효과음이 좌우로 퍼지는 각도. 0이면 옆에서 난 소리가 한쪽 귀로만 들리고, 클수록 방향감이 약해진다")]
+        [Range(0f, 360f)]
+        [SerializeField] private float _sfxSpread = 120f;
+
+        [Header("Occlusion (Map_3_File only)")]
+        [Tooltip("벽을 돌아서 온 소리의 볼륨 배율. 1이면 돌아온 거리만큼만 줄어든다")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _diffractedVolumeScale = 0.6f;
+
+        [Tooltip("벽 판정 레이를 쏠 때 리스너·소리 위치를 올리는 높이 (m). 발밑 소리가 바닥에 걸리지 않게 한다")]
+        [Min(0f)]
+        [SerializeField] private float _occlusionHeight = 1f;
+
+        [Tooltip("벽 판정 레이 끝을 리스너 쪽으로 당기는 거리 (m). 벽 표면에서 난 소리가 그 벽에 가려지지 않게 한다")]
+        [Min(0f)]
+        [SerializeField] private float _occlusionEndMargin = 0.5f;
+
+        [Tooltip("소리·리스너 위치에서 가까운 NavMesh를 찾는 반경 (m). 못 찾으면 원래 위치에서 볼륨 배율만 적용한다")]
+        [Min(0.1f)]
+        [SerializeField] private float _navMeshSampleRadius = 2f;
 
         [Header("Throttle")]
         [Tooltip("UI에서 같은 클립을 이 시간(초) 안에 다시 요청하면 건너뛴다. 3D 효과음에는 적용하지 않는다")]
@@ -129,6 +163,17 @@ namespace Core.Audio
 
         // 지금 곡을 줄일 때 쓰는 시간. 평소에는 BGM SO의 페이드아웃 시간, 씬을 나갈 때는 _sceneExitFadeDuration.
         private float _bgmFadeOutDuration;
+
+        // 이 씬에서 벽 차폐를 적용하는지. Awake에서 씬 이름으로 정한다.
+        private bool _isOcclusionEnabled;
+        private int _occlusionMask;
+
+        // 켜진 AudioListener. 꺼지거나 파괴되면 다시 찾는다.
+        private AudioListener _listener;
+
+        // 벽 차폐 경로 계산에 재사용한다. (매번 만들면 GC가 생긴다)
+        private NavMeshPath _occlusionPath;
+        private readonly Vector3[] _pathCorners = new Vector3[MAX_PATH_CORNER_COUNT];
         #endregion
 
         #region Properties
@@ -151,6 +196,13 @@ namespace Core.Audio
 
             SetupSources();
             LoadVolumes();
+
+            _isOcclusionEnabled = gameObject.scene.name == MAZE_SCENE_NAME;
+            if (_isOcclusionEnabled)
+            {
+                _occlusionMask = LayerMask.GetMask(OcclusionLayerNames);
+                _occlusionPath = new NavMeshPath();
+            }
         }
 
         private void OnEnable()
@@ -262,6 +314,10 @@ namespace Core.Audio
             if (!TryPickClip(audioData, out AudioClip clip, false))
                 return default;
 
+            float volume = Mathf.Clamp01(audioData.Volume * volumeScale);
+            if (_isOcclusionEnabled && !TryResolveOcclusion(audioData, ref position, ref volume))
+                return default;
+
             int index = FindFreeSfxSource();
             if (index < 0)
                 return default;
@@ -271,8 +327,8 @@ namespace Core.Audio
 
             source.transform.position = position;
             source.clip = clip;
-            source.spread = 0f;
-            source.volume = Mathf.Clamp01(audioData.Volume * volumeScale);
+            source.spread = _sfxSpread;
+            source.volume = volume;
             source.pitch = pitch;
             source.rolloffMode = audioData.RolloffMode;
             source.minDistance = audioData.MinDistance;
@@ -289,7 +345,7 @@ namespace Core.Audio
         // 3D 효과음을 target 위치에서 반복한다. StopSfx를 부를 때까지 3D 소스 하나를 점유한다.
         // [호출] 차지 시작 등. 같은 클립 중복 차단은 하지 않는다. 3D 소스가 상한까지 모두 재생 중이면 default를 돌려준다.
         //        target이 파괴되면 마지막 위치에서 계속 나므로, 부르는 쪽이 OnDisable 등에서 꼭 멈춘다.
-        //        spread(0~360도)를 180으로 주면 거리 감쇠는 그대로 두고 좌우 쏠림만 없앤다.
+        //        spread(0~360도)를 180으로 주면 거리 감쇠는 그대로 두고 좌우 쏠림만 없앤다. _sfxSpread보다 작으면 _sfxSpread를 쓴다.
         public SAudioHandle PlaySfxLoop(SOAudioData audioData, Transform target, float volumeScale = 1f, float pitchScale = 1f, float spread = 0f)
         {
             if (gameObject.scene.name == MAIN_SCENE_NAME)
@@ -310,7 +366,7 @@ namespace Core.Audio
             source.transform.position = target.position;
             source.clip = clip;
             source.loop = true;
-            source.spread = Mathf.Clamp(spread, 0f, 360f);
+            source.spread = Mathf.Clamp(Mathf.Max(spread, _sfxSpread), 0f, 360f);
             source.volume = Mathf.Clamp01(audioData.Volume * volumeScale);
             source.pitch = Mathf.Max(audioData.PickPitch() * pitchScale, MIN_PITCH);
             source.rolloffMode = audioData.RolloffMode;
@@ -399,10 +455,12 @@ namespace Core.Audio
         }
 
         // 들리는 거리(min/max)는 재생할 때 SO 값으로 정한다.
+        // 도플러는 끈다. 플레이어가 떨어지거나 순간이동하면 리스너 속도 때문에 피치가 바뀐다.
         private AudioSource CreateSfxSource(int index)
         {
             AudioSource source = CreateSource($"SfxSource_{index:00}", _sfxGroup);
             source.spatialBlend = 1f;
+            source.dopplerLevel = 0f;
             return source;
         }
 
@@ -464,6 +522,92 @@ namespace Core.Audio
 
             _sfxEndTimes[index] = 0f;
             _sfxFollowTargets[index] = null;
+        }
+
+        // 벽에 가려진 3D 단발음의 재생 위치와 볼륨을 정한다. 내지 않아야 하면 false
+        // 직접 보이면 그대로 둔다. 가려졌으면 소리에서 리스너까지 NavMesh 경로 길이 L을 구해,
+        // 리스너 바로 앞 경로 코너(= 통로 입구) 방향으로 L만큼 떨어진 곳으로 옮긴다. 거리 감쇠는 Unity가 L 기준으로 한다.
+        // [호출] PlaySfx (미로 씬에서만)
+        private bool TryResolveOcclusion(SOAudioData audioData, ref Vector3 position, ref float volume)
+        {
+            AudioListener listener = GetListener();
+            if (listener == null)
+                return true;
+
+            Vector3 listenerPosition = listener.transform.position;
+            if (IsInDirectSight(listenerPosition, position))
+                return true;
+
+            // 직선으로도 들리지 않는 거리면 경로를 구하지 않는다.
+            float maxDistance = audioData.MaxDistance;
+            if ((position - listenerPosition).sqrMagnitude > (maxDistance * maxDistance))
+                return true;
+
+            volume *= _diffractedVolumeScale;
+
+            // 점프 중 등으로 NavMesh를 못 찾으면 경로를 알 수 없으므로 원래 위치에서 배율만 적용한다.
+            bool hasSourceHit = NavMesh.SamplePosition(position, out NavMeshHit sourceHit, _navMeshSampleRadius, NavMesh.AllAreas);
+            bool hasListenerHit = NavMesh.SamplePosition(listenerPosition, out NavMeshHit listenerHit, _navMeshSampleRadius, NavMesh.AllAreas);
+            if (!hasSourceHit || !hasListenerHit)
+                return true;
+
+            // 이어진 길이 없으면 밀폐된 곳으로 본다.
+            bool hasPath = NavMesh.CalculatePath(sourceHit.position, listenerHit.position, NavMesh.AllAreas, _occlusionPath);
+            if (!hasPath || (_occlusionPath.status != NavMeshPathStatus.PathComplete))
+                return false;
+
+            int cornerCount = _occlusionPath.GetCornersNonAlloc(_pathCorners);
+            if ((cornerCount < 2) || (cornerCount >= MAX_PATH_CORNER_COUNT))
+                return false;
+
+            float pathLength = 0f;
+            for (int i = 1; i < cornerCount; i++)
+                pathLength += Vector3.Distance(_pathCorners[i - 1], _pathCorners[i]);
+
+            if (pathLength > maxDistance)
+                return false;
+
+            // 코너는 소리 → 리스너 순서라 끝에서 두 번째가 리스너가 보는 입구다.
+            Vector3 direction = _pathCorners[cornerCount - 2] - listenerHit.position;
+            if (direction.sqrMagnitude < 0.0001f)
+                direction = position - listenerPosition;
+
+            position = listenerPosition + (direction.normalized * pathLength);
+            return true;
+        }
+
+        // 리스너에서 소리 위치까지 벽 레이어에 막히지 않았는지. 양 끝을 올리고, 끝을 리스너 쪽으로 조금 당겨 쏜다.
+        private bool IsInDirectSight(Vector3 listenerPosition, Vector3 sourcePosition)
+        {
+            Vector3 from = listenerPosition + (Vector3.up * _occlusionHeight);
+            Vector3 to = sourcePosition + (Vector3.up * _occlusionHeight);
+            Vector3 toListener = from - to;
+            float distance = toListener.magnitude;
+            if (distance <= _occlusionEndMargin)
+                return true;
+
+            to += toListener * (_occlusionEndMargin / distance);
+            return !Physics.Linecast(from, to, _occlusionMask, QueryTriggerInteraction.Ignore);
+        }
+
+        // 켜진 AudioListener를 돌려준다. 없으면 null (로딩 중 등)
+        // 꺼진 리스너(Main Camera 쪽)도 씬에 있으므로 켜진 것만 고른다.
+        private AudioListener GetListener()
+        {
+            if ((_listener != null) && _listener.isActiveAndEnabled)
+                return _listener;
+
+            _listener = null;
+            foreach (AudioListener listener in FindObjectsByType<AudioListener>(FindObjectsSortMode.None))
+            {
+                if (listener.isActiveAndEnabled)
+                {
+                    _listener = listener;
+                    break;
+                }
+            }
+
+            return _listener;
         }
 
         // 클립을 고른다. UI만 짧은 간격의 중복 요청을 거르고, 서로 다른 장애물이 쓰는 3D 효과음은 모두 허용한다.

@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using Core.Effect;
 using Skill.Core;
+using Skill.Costs;
 
 namespace Skill.Skills
 {
@@ -73,7 +74,7 @@ namespace Skill.Skills
 
         /// <summary>마지막 발사가 차지샷인지 여부. Phase 가 Fired 일 때 읽는다.</summary>
         public bool IsCharged { get; private set; }
-
+        
         /// <summary>
         /// 차지 진행도(0~1). 차지 중이 아니면(발사·취소 후, 재차지 대기 중) 0.
         /// </summary>
@@ -146,6 +147,16 @@ namespace Skill.Skills
             _isHeld = false;
             EndRecharge();
             Cancel();
+        }
+
+        public bool IsOverHit()
+        {
+            if (TryGetComponent<HeatCost>(out var heatCost))
+            {
+                return heatCost.IsOverheated;
+            }
+            
+            return true;
         }
         #endregion
 
