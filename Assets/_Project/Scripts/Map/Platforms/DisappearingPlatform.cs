@@ -1,4 +1,6 @@
 using UnityEngine;
+using Core.Audio;
+using Map.Gimmicks;
 
 namespace Map.Platforms
 {
@@ -13,6 +15,9 @@ namespace Map.Platforms
 
         [Tooltip("사라지기 전에 깜빡여 예고하는 시간(초). 0이면 예고하지 않는다.")]
         public float warningDuration = 0f;
+
+        [Tooltip("발판이 사라지는 순간 낼 소리 (비우면 무음)")]
+        [SerializeField] private SOAudioData _vanishSound;
 
         private PlatformBody body;
         private bool isSolid = true;
@@ -62,6 +67,8 @@ namespace Map.Platforms
             isSolid = isActive;
             isVisible = isActive;
             body.SetSolid(isActive);
+
+            if (!isActive) GimmickUtility.PlaySfx(_vanishSound, transform.position);
         }
     }
 }

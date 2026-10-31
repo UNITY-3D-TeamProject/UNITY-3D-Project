@@ -48,7 +48,7 @@ namespace UIandCinematic
 
         [Header("Outro Cutscene")]
         [SerializeField] private LiveEndingScreen _endingScreen;
-        [SerializeField] private int _outroCutsceneId = 34;
+        [SerializeField] private int _outroCutsceneId = 35;
         [SerializeField] private EndingCredits _endingCredits;
         #endregion
 

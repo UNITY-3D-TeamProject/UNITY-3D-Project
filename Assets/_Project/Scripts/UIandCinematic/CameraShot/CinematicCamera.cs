@@ -44,6 +44,11 @@ namespace UIandCinematic
         #endregion
 
         #region Public Methods
+        public void SetKey(string key)
+        {
+            _key = key;
+        }
+
         // 키가 같은 카메라를 찾는다. 키가 비었거나 켜진 카메라 중에 없으면 false.
         public static bool TryFind(string key, out CinemachineCamera camera)
         {
