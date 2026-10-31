@@ -1650,6 +1650,7 @@ MonoBehaviour:
   _hitEffect: {fileID: 11400000, guid: 2c8600821fc33df4dbfe491719e8288a, type: 2}
   _slamDustVfx: {fileID: 11400000, guid: b7aada382f5c440186702ea329c4df2f, type: 2}
   _telegraphSeconds: 2
+  _followUpTelegraphSeconds: 1
   _strikeInterval: 1.4
   _clapGap: 8
   _hitRadius: 6
@@ -2206,8 +2207,15 @@ MonoBehaviour:
   - {fileID: 6343079012660607808}
   _leftCannon: {fileID: 2372059241614006842}
   _rightCannon: {fileID: 977677724426958589}
-  _handHintVfx: {fileID: 11400000, guid: 989002e075f374044b0ca50579986272, type: 2}
+  _handHintVfx: {fileID: 11400000, guid: 2cee78f17d78dda41a9834078c7c90d2, type: 2}
+  _handGlowRenderers:
+  - {fileID: 2518791961773558666}
+  - {fileID: 4617223900147640451}
   _energyShield: {fileID: 6786475778438192109}
+  _handGlowIntensity: 6
+  _handGlowWidth: 0.04
+  _handGlowPulseSpeed: 6
+  _handGlowPulseAmount: 1
   _telegraphScaleFinal: 0.8
   _handStayPhase1: 2
   _handStayFinal: 0
