@@ -9,7 +9,7 @@ namespace AI.Boss.BossA
     /// <summary>
     /// A6 박수치기. 한 줄의 양 끝 칸을 양 주먹으로 쾅 내려친 뒤(1타) 주먹을 펴고 바닥 위로 줄을 따라 쓸어 가운데로 모아 박수친다(2타).
     /// 칸은 무너뜨리지 않고 손도 머물지 않으며 어깨 포격도 없다. 최종 단계 전용이다.
-    /// 예고는 맞는 칸에만 띄운다. 1타는 양 끝 칸, 1타 직후 그 사이 칸으로 바꿔 2타 간격 동안 채운다.
+    /// 예고는 1타에는 양 끝 칸을 칸 채움으로, 1타 직후 2타 간격 동안은 양 끝에서 가운데로 모이는 화살표 줄(그랩과 같은 방식)로 띄운다.
     /// 다른 내려치기와 구분되게 예고 시작부터 손이 주먹을 쥐고 떠오르고, 사이 칸 위에 상자 예고를 박수 순간까지 세운다.
     /// 1타는 양 끝 칸 위에 있으면 맞는다. 2타는 B 돌진처럼 쓸어 오는 손에 닿으면 맞고(한 패턴에 한 번),
     /// 그랩처럼 붙잡혀 손바닥 앞에 붙은 채 가운데까지 끌려간다. 박수 순간 놓고 이동 잠금은 _holdSeconds 뒤에 풀린다.
@@ -53,6 +53,7 @@ namespace AI.Boss.BossA
         private bool _isPlayerHeld;
         private bool _isPlayerLocked;
         private Transform _wall;
+        private readonly int[] _lineHandles = { -1, -1 };
         #endregion
 
         #region Properties
@@ -62,8 +63,6 @@ namespace AI.Boss.BossA
 
         // 예고가 시작될 때 주먹을 쥐고 미리 떠올라 다른 내려치기 패턴과 구분되게 한다
         protected override bool IsHoverDuringTelegraph => true;
-
-        protected override bool IsArrowTelegraph => true;
         #endregion
 
         #region Unity Lifecycle
@@ -84,6 +83,7 @@ namespace AI.Boss.BossA
         {
             _isClapping = false;
             HideWall();
+            HideArrowLines();
             ReleasePlayer();
             base.Stop();
         }
@@ -113,14 +113,6 @@ namespace AI.Boss.BossA
             return new[] { tiles[0], tiles[ArenaGrid.SIZE - 1] };
         }
 
-        protected override Vector3 GetArrowDirection(int tile)
-        {
-            // 박수는 두 손이 가운데로 모이므로 왼쪽 절반은 오른쪽을, 오른쪽 절반은 왼쪽을 가리킨다. 가운데 칸은 줄 방향을 따른다
-            int[] tiles = Controller.CurrentChoice.Tiles;
-            GetRowLayout(tiles, out _, out Vector3 rowDirection, out _);
-            return (System.Array.IndexOf(tiles, tile) > (ArenaGrid.SIZE / 2)) ? -rowDirection : rowDirection;
-        }
-
         protected override void OnImpact()
         {
             // 1타는 양 끝 칸. 칸은 무너뜨리지 않는다
@@ -130,11 +122,13 @@ namespace AI.Boss.BossA
 
         protected override bool StartFollowUp()
         {
-            // 손이 가운데에서 맞부딪칠 때까지 사이 칸 예고를 채운다
-            ReplaceTelegraph(_innerTiles, _strikeInterval);
-
             // 줄 방향(왼손 쪽 끝 → 오른손 쪽 끝)을 따라 바닥 위로 쓸어 가운데 양옆으로 모은다
-            GetRowLayout(Controller.CurrentChoice.Tiles, out Vector3 middle, out Vector3 rowDirection, out _);
+            int[] tiles = Controller.CurrentChoice.Tiles;
+            GetRowLayout(tiles, out Vector3 middle, out Vector3 rowDirection, out float tileStep);
+
+            // 1타 칸 채움은 끄고, 손이 가운데에서 맞부딪칠 때까지 양 끝에서 가운데로 모이는 화살표 줄을 깐다
+            ReplaceTelegraph(System.Array.Empty<int>(), 0.0f);
+            ShowArrowLines(tiles, middle, rowDirection, tileStep);
 
             Vector3 halfGap = rowDirection * (_clapGap * 0.5f);
 
@@ -225,6 +219,7 @@ namespace AI.Boss.BossA
             else TryCapture();
             DropPlayer();
             HideWall();
+            HideArrowLines();
 
             _isClapping = false;
             FinishFollowUp();
@@ -342,6 +337,29 @@ namespace AI.Boss.BossA
         private void HideWall()
         {
             if (_wall) _wall.gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// 양 끝 칸 바깥 가장자리에서 가운데 칸 중심까지 손이 쓸어 갈 길을 화살표 줄로 깐다. 1타 예고부터 박수 순간까지 둔다.
+        /// </summary>
+        private void ShowArrowLines(int[] tiles, Vector3 middle, Vector3 rowDirection, float tileStep)
+        {
+            HideArrowLines();
+
+            Vector3 outerOffset = rowDirection * (tileStep * 0.5f);
+            Vector3 leftStart = Arena.GetTileCenter(tiles[0]) - outerOffset;
+            Vector3 rightStart = Arena.GetTileCenter(tiles[ArenaGrid.SIZE - 1]) + outerOffset;
+            _lineHandles[0] = Arena.ShowArrowLine(leftStart, middle);
+            _lineHandles[1] = Arena.ShowArrowLine(rightStart, middle);
+        }
+
+        private void HideArrowLines()
+        {
+            for (int i = 0; i < _lineHandles.Length; i++)
+            {
+                Arena.HideArrowLine(_lineHandles[i]);
+                _lineHandles[i] = -1;
+            }
         }
 
         private bool AreClapHandsIdle()
