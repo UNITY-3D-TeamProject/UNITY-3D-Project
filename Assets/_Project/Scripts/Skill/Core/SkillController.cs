@@ -174,6 +174,26 @@ namespace Skill.Core
         }
 
         /// <summary>
+        /// 등록된 스킬을 이름으로 찾는다. 없으면 경고를 남긴다.
+        /// </summary>
+        /// <param name="skillName">찾을 스킬 이름</param>
+        /// <param name="skill">찾은 스킬</param>
+        /// <returns>찾았으면 true</returns>
+        public bool TryGetSkill(string skillName, out SkillBase skill)
+        {
+            skill = null;
+            if (string.IsNullOrEmpty(skillName)) return false;
+
+            if (!_skills.TryGetValue(skillName, out skill) || !skill)
+            {
+                Debug.LogWarning($"[{name}] '{skillName}' 이름으로 등록된 스킬이 없습니다.", this);
+                return false;
+            }
+
+            return true;
+        }
+        
+        /// <summary>
         /// 스킬의 쿨타임을 반환한다.
         /// </summary>
         /// <param name="skillName">대상 스킬 이름</param>
@@ -195,28 +215,6 @@ namespace Skill.Core
                 SkillBase skill = skillPair.Value;
                 if (skill) skill.Stop();
             }
-        }
-        #endregion
-
-        #region Private Methods
-        /// <summary>
-        /// 등록된 스킬을 이름으로 찾는다. 없으면 경고를 남긴다.
-        /// </summary>
-        /// <param name="skillName">찾을 스킬 이름</param>
-        /// <param name="skill">찾은 스킬</param>
-        /// <returns>찾았으면 true</returns>
-        private bool TryGetSkill(string skillName, out SkillBase skill)
-        {
-            skill = null;
-            if (string.IsNullOrEmpty(skillName)) return false;
-
-            if (!_skills.TryGetValue(skillName, out skill) || !skill)
-            {
-                Debug.LogWarning($"[{name}] '{skillName}' 이름으로 등록된 스킬이 없습니다.", this);
-                return false;
-            }
-
-            return true;
         }
         #endregion
     }

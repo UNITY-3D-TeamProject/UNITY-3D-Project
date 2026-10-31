@@ -133,7 +133,7 @@ namespace Mediator.SubMediators
             _soundController.PlayDeath();
         }
 
-        public void FireFailed()
+        public void FireInOverHit()
         {
             if (!_soundController || !isActiveAndEnabled) return;
 

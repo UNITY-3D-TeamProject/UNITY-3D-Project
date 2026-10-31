@@ -830,9 +830,12 @@ namespace Mediator
             switch (skillName)
             {
                 case "Attack":
-                    if (_soundMediator)
+                    if (_skillMediator && _soundMediator)
                     {
-                        _soundMediator.FireFailed();
+                        if (_skillMediator.IsOverHit())
+                        {
+                            _soundMediator.FireInOverHit();
+                        }
                     }
                     break;
             }
