@@ -49,7 +49,7 @@ namespace AI.Crowd
         [Range(0.0f, 1.0f)]
         [SerializeField] private float _initialFillRatio = 0.3f;
         [Tooltip("플레이어가 레인(모든 스플라인)의 어느 점에서도 이 거리(m)보다 멀면 개체를 새로 꺼내지 않는다. 이미 나온 개체는 끝까지 걸어가 반납되므로 먼 레인은 서서히 비워진다. 0 이하이거나 플레이어가 없으면 거리와 상관없이 꺼낸다.")]
-        [SerializeField] private float _playerSpawnDistance = 25.0f;
+        [SerializeField] private float _playerSpawnDistance = 50.0f;
 
         [Header("Speed")]
         [SerializeField] private string _speedAttributeKey = "MoveSpeed";
