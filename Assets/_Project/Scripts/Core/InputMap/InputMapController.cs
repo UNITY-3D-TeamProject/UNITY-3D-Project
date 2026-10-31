@@ -136,6 +136,10 @@ namespace Core.InputMap
                     map = requestedMap;
             }
 
+            // 조작 맵이 아니면 버튼 뗌 입력이 전달되지 않으므로, 진행 중인 차지를 먼저 취소한다
+            if (map != EInputMapType.Player)
+                _playerFacade.CancelFireCharge();
+
             switch (map)
             {
                 case EInputMapType.UI:

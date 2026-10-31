@@ -171,6 +171,16 @@ namespace Mediator.SubMediators
         }
 
         /// <summary>
+        /// 진행 중인 사격 차지를 쏘지 않고 취소한다. 누름 상태도 해제된다.
+        /// </summary>
+        public void CancelFireCharge()
+        {
+            if (!_skillController) return;
+
+            if (_skillController.HasSkill(FIRE_SKILL_NAME)) _skillController.ResetSkill(FIRE_SKILL_NAME);
+        }
+
+        /// <summary>
         /// 스킬의 활성화 여부를 반환한다.
         /// </summary>
         /// <param name="skillName">대상 스킬 이름</param>
