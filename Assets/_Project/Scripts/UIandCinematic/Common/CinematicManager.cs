@@ -51,6 +51,9 @@ namespace UIandCinematic
         // 연출이 시작·끝날 때 알린다. 씬마다 CinematicManager가 새로 생기므로 UIManager가 Awake 순서와 상관없이 구독할 수 있게 static으로 둔다.
         public static event Action<CinematicManager> OnPlayStarted;
         public static event Action<CinematicManager> OnPlayFinished;
+        // 샷 카메라와 시간 설정이 적용된 뒤 알린다. 화면 속 연출의 시작 시점을 맞추는 데 쓴다.
+        public static event Action<CinematicManager, CinemachineCamera> OnShotStarted;
+        public static event Action<SOCutscene, int> OnCutsceneStepStarted;
         #endregion
 
         #region Unity Lifecycle
@@ -333,6 +336,8 @@ namespace UIandCinematic
             {
                 if (!cutscene.TryGetStep(i, out SCutsceneStep step)) continue;
 
+                OnCutsceneStepStarted?.Invoke(cutscene, i);
+
                 if (step.Type == ECutsceneStepType.Line)
                 {
                     bool isLastLine = (i == cutscene.StepCount - 1);
@@ -390,6 +395,8 @@ namespace UIandCinematic
                 else
                     gameManager.ResumeGameTime(this);
             }
+
+            OnShotStarted?.Invoke(this, camera);
 
             float elapsed = 0.0f;
             while (elapsed < duration)
