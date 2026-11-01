@@ -192,10 +192,14 @@ namespace SceneTransition
         }
 
         // 설정창의 "메인 화면으로". 이번 이동을 멈추고 인게임 설정창과 같은 경로로 메인 메뉴에 간다.
+        // 이미 로딩씬 안이므로 새 로딩씬을 열지 않고 이 로딩 화면이 이어서 메인 메뉴를 불러온다.
         private void HandleMainMenuRequested()
         {
             StopLoadingForExit();
             GameManager.Instance?.ReturnToMainMenu();
+
+            if (SceneLoader.IsMainMenuPending)
+                StartCoroutine(CoLoadMainMenuFromCutscene());
         }
 
         // 설정창의 "게임 종료". 이번 이동을 멈추고 인게임 설정창과 같은 경로로 끝낸다.
@@ -312,6 +316,30 @@ namespace SceneTransition
                 yield return new WaitForSecondsRealtime(_holdAfterFull);
             }
 
+            yield return CoActivateDestination(operation, !isTutorialIntro);
+        }
+
+        // 컷씬 중 설정창에서 메인 화면을 고르면, 영상을 걷고 달리는 플레이어 화면으로 바꿔 메인 메뉴를 불러온다.
+        private IEnumerator CoLoadMainMenuFromCutscene()
+        {
+            _cutsceneScreen.enabled = false;
+            if (_skipPrompt != null) _skipPrompt.SetActive(false);
+            SetSkipProgress(0f);
+
+            // 오프닝에서 검게 칠한 배경을 기본 로딩 배경(흰색 틴트)으로 돌린다.
+            if (_background != null) _background.color = Color.white;
+            if (_stageView != null) _stageView.ShowMainMenu();
+            _progressGroup.SetActive(true);
+
+            AsyncOperation operation = SceneLoader.LoadPendingSceneAsync();
+            yield return CoFillProgress(operation);
+            yield return new WaitForSecondsRealtime(_holdAfterFull);
+            yield return CoActivateDestination(operation, true);
+        }
+
+        // 목적지 씬을 켜고 로딩 화면을 걷어 낸다. shouldFadeOut이 false면 바로 걷는다(튜토리얼 시작).
+        private IEnumerator CoActivateDestination(AsyncOperation operation, bool shouldFadeOut)
+        {
             // 목적지 씬을 켜면 로딩씬이 정리되므로, 페이드아웃을 위해 로딩 화면만 남겨 둔다.
             DontDestroyOnLoad(gameObject);
             operation.allowSceneActivation = true;
@@ -325,13 +353,13 @@ namespace SceneTransition
                 yield return null;
             }
 
-            if (isTutorialIntro)
+            if (shouldFadeOut)
             {
-                SetAlpha(0f);
+                yield return CoFade(1f, 0f);
             }
             else
             {
-                yield return CoFade(1f, 0f);
+                SetAlpha(0f);
             }
             Destroy(gameObject);
         }

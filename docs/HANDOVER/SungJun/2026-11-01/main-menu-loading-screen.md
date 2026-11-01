@@ -5,7 +5,9 @@
   - 설정창에 "메인 화면으로"도 보이게 함. 미리 불러온 튜토리얼은 취소가 안 돼(메인 메뉴를 열면 유니티가 튜토리얼부터 켬 → StageManager가 커서 잠금·플레이어 스폰) 오프닝도 영상이 끝난 뒤 튜토리얼을 불러오도록 변경. `_mainMenuButton` 필드 제거.
   - 오프닝 흐름에서는 로딩 배경(`T_LoadingBackground`, 파란색)을 검게 칠함: `LoadingScreen._background`(`LoadingScreen/Background` 연결, `Loading.unity`).
 - 메인 메뉴 복귀 로딩 화면 (intent-116):
-  - `SceneLoader.TryLoadMainMenu`: 저장·세션 초기화 뒤 `_isLoading`·`_isMainMenuPending`을 켜고 로딩씬을 Additive로 연다. 로딩씬이 이미 열려 있으면(로딩 컷씬 설정창) 메인 씬을 바로 연다.
+  - `SceneLoader.TryLoadMainMenu`: 저장·세션 초기화 뒤 `_isLoading`·`_isMainMenuPending`을 켜고 로딩씬을 Additive로 연다. 로딩씬이 이미 열려 있으면(로딩 컷씬 설정창) 새로 열지 않는다.
+  - 후속(사용자 요청): 로딩 컷씬 설정창의 메인 화면도 달리는 화면을 보여 줌. `LoadingScreen.HandleMainMenuRequested` → `ReturnToMainMenu` 뒤 `CoLoadMainMenuFromCutscene`: 영상·스킵 안내 끄기, 배경 기본색(흰색 틴트)으로, `ShowMainMenu`, 진행 바 → 메인 씬 불러오기. 목적지 켜기·페이드아웃은 `CoActivateDestination`으로 묶음. `LoadingStageView.ShowMainMenu`는 로비 화면 뒤에 불러도 숨긴 기본 문구·옮긴 러너를 되돌림.
+  - 후속(사용자 요청): 최소 로딩 시간(진행 바가 끝까지 차는 최소 시간, `Loading.unity` `_fillDuration`) 5초 → 4초.
   - `SceneLoader.LoadPendingSceneAsync`: 메인 메뉴가 기다리면 `MainScene`을 불러오고, 끝나면 `_isMainMenuPending`도 푼다.
   - `LoadingScreen.CoLoad`: 메인 메뉴면 컷씬 없이 `LoadingStageView.ShowMainMenu()` → 기본 화면(달리는 플레이어·펫, 진행 바) 문구 "메인 메뉴로 가는 중..."(`_mainMenuMoveText`).
   - 설정창 메인 화면·사망 팝업 메인 메뉴·엔딩 크레딧 끝 모두 `GameManager.ReturnToMainMenu` → `TryLoadMainMenu`라 함께 적용.
@@ -17,10 +19,11 @@
 ## 3. 현재 상태 및 이슈
 - 리컴파일 통과, 새 콘솔 에러 없음. TestScene Play(PlayerPrefs 백업·복원):
   - `ReturnToMainMenu` → 로딩 화면(달리는 플레이어·펫, "메인 메뉴로 가는 중...", 진행 바) 캡처 확인 → MainScene, 커서 풀림, 로딩 상태 정리, AudioManager는 MainScene 것.
-  - 오프닝 중 설정창 메인 화면 → 로딩씬을 또 열지 않고 MainScene으로 바로 감, 튜토리얼 안 켜짐.
+  - (후속 변경 전) 오프닝 중 설정창 메인 화면 → MainScene, 튜토리얼 안 켜짐.
+  - 후속 변경(로딩 컷씬 메인 화면 → 달리는 화면, 최소 로딩 4초)은 사용자가 Play 중이라 리컴파일만 확인, Play 미확인. `_fillDuration`은 Play를 끄지 않으려고 씬 파일 한 줄을 직접 수정.
   - 오프닝 배경 검정, 영상 끝 → 검은 화면 대기 → 튜토리얼 진입.
 - `GameManager.ReturnToMainMenu`는 바로 게임 시간을 되돌리므로, 로딩 화면이 덮이는 0.3초 페이드 동안 이전 씬이 잠깐 움직일 수 있다 (화면은 로딩 화면이 덮는 중).
-- 실제 게임 흐름(사망 팝업·엔딩 크레딧 끝·인게임 설정창 버튼 클릭)으로는 확인 안 함. 커밋 안 함.
+- 실제 게임 흐름(사망 팝업·엔딩 크레딧 끝·인게임 설정창 버튼 클릭)으로는 확인 안 함. 1차는 73090190으로 커밋, 후속(로딩 컷씬 메인 화면 달리는 화면·최소 로딩 4초)은 커밋 안 함.
 
 ## 4. 다음 할 일 (Next Steps)
 - 실제 게임에서 각 메인 메뉴 복귀 경로와 오프닝 대기 시간(빌드) 확인.

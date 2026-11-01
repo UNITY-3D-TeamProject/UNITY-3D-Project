@@ -235,7 +235,7 @@ namespace SceneTransition
 
         /// <summary>
         /// 현재 진행을 저장하고 SceneLoader 런타임 상태를 비운 뒤 메인 메뉴로 이동한다.
-        /// 다른 이동처럼 로딩씬(달리는 플레이어 화면)을 거친다. 로딩씬 안에서 부르면(로딩 컷씬 설정창) 이미 로딩 화면이므로 바로 연다.
+        /// 다른 이동처럼 로딩씬(달리는 플레이어 화면)을 거친다. 로딩씬 안에서 부르면(로딩 컷씬 설정창) 이미 떠 있는 로딩 화면이 이어서 불러온다.
         /// </summary>
         /// <returns>메인 메뉴를 불러왔으면 true</returns>
         public static bool TryLoadMainMenu()
@@ -251,16 +251,11 @@ namespace SceneTransition
             SaveCurrentProgress();
             ResetSessionState();
 
-            if (SceneManager.GetSceneByName(LOADING_SCENE_NAME).isLoaded)
-            {
-                SceneManager.LoadScene(MAIN_MENU_SCENE_NAME);
-                return true;
-            }
-
             // _isLoading과 _isMainMenuPending은 메인 메뉴 로드가 끝날 때 푼다.
             _isLoading = true;
             _isMainMenuPending = true;
-            SceneManager.LoadSceneAsync(LOADING_SCENE_NAME, LoadSceneMode.Additive);
+            if (!SceneManager.GetSceneByName(LOADING_SCENE_NAME).isLoaded)
+                SceneManager.LoadSceneAsync(LOADING_SCENE_NAME, LoadSceneMode.Additive);
             return true;
         }
 
