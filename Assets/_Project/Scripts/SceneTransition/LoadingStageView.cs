@@ -63,6 +63,8 @@ namespace SceneTransition
         [Header("Text")]
         [Tooltip("{0}에 앱 이름이 들어간다")]
         [SerializeField] private string _connectFormat = "{0} 앱에 접속 중...";
+        [Tooltip("메인 메뉴로 돌아갈 때 기본 화면 문구. 메인 메뉴는 ESceneType에 없어 SO 이동 문구 목록에 넣을 수 없다")]
+        [SerializeField] private string _mainMenuMoveText = "메인 메뉴로 가는 중...";
 
         [Header("Step")]
         [SerializeField] private Sprite _doneSprite;
@@ -108,6 +110,15 @@ namespace SceneTransition
 
             gameObject.SetActive(false);
             return false;
+        }
+
+        /// <summary>
+        /// 메인 메뉴로 돌아갈 때 부른다. 꺼 두고 기본 화면(달리는 플레이어) 문구만 메인 메뉴 문구로 바꾼다.
+        /// </summary>
+        public void ShowMainMenu()
+        {
+            if (_defaultLoadingText != null) _defaultLoadingText.text = _mainMenuMoveText;
+            gameObject.SetActive(false);
         }
 
         /// <summary>

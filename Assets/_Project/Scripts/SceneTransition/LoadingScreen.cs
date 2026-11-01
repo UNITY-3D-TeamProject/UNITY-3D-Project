@@ -15,7 +15,7 @@ namespace SceneTransition
     /// 로딩씬 루트에 배치한다. SceneLoader가 로딩씬을 지금 씬 위에 겹쳐 열면 다음 순서로 전환한다.
     /// 1. 로딩 화면 페이드인 (지금 씬을 덮음. 컷씬이 있으면 진행 바 묶음은 숨긴 채)
     /// 2. 지금 씬 정리 (정리하며 생기는 멈춤은 로딩 화면 뒤에서 일어남)
-    /// 3. 컷씬 재생 (튜토리얼은 영상 뒤에서 목적지 씬을 함께 불러옴)
+    /// 3. 컷씬 재생 (튜토리얼 시작은 배경을 검게 하고, 영상이 끝난 뒤 진행 바 없이 목적지 씬을 불러옴)
     /// 4. 일반 이동의 목적지 씬 불러오기 + 진행 바 (실제 진행률을 일정 속도 이하로 따라감)
     /// 5. 목적지 씬 켜기 (로딩 화면만 DontDestroyOnLoad로 남김)
     /// 6. 로딩 화면 페이드아웃 후 삭제
@@ -57,6 +57,10 @@ namespace SceneTransition
         [Header("필수 (RawImage ← Cutscene 오브젝트, 저장 시 꺼 둠)")]
         [SerializeField] private RawImage _cutsceneScreen;
 
+        [Header("안 해도 됨 (Image ← Background)")]
+        [Tooltip("튜토리얼 시작(메인 메뉴 → 영상 → 튜토리얼)에서는 검게 칠한다")]
+        [SerializeField] private Image _background;
+
         [Header("안 해도 됨 (SOLoadingCutsceneData ← ScriptableObjects/SceneTransition)")]
         [Tooltip("비워 두면 컷씬 없이 넘어간다")]
         [SerializeField] private SOLoadingCutsceneData _cutsceneData;
@@ -86,8 +90,6 @@ namespace SceneTransition
         [SerializeField] private SettingsPresenter _settingsPresenter;
         [Tooltip("설정창이 열린 동안만 켠다. 이전 씬·목적지 씬의 EventSystem과 겹치지 않게 꺼 둔 채로 저장")]
         [SerializeField] private GameObject _eventSystem;
-        [Tooltip("튜토리얼 시작 영상 중에는 숨긴다 (영상 뒤에서 튜토리얼을 불러오는 중이라 메인 화면으로 갈 수 없음)")]
-        [SerializeField] private GameObject _mainMenuButton;
         #endregion
 
         #region Private Fields
@@ -144,7 +146,7 @@ namespace SceneTransition
         }
 
         // 영상을 멈추고 설정창을 연다. 버튼을 누를 수 있게 커서를 풀고, 닫을 때 원래대로 돌린다.
-        private void OpenSettings(bool canReturnToMainMenu)
+        private void OpenSettings()
         {
             if (_isSettingsOpen || (_settingsPresenter == null)) return;
 
@@ -157,7 +159,6 @@ namespace SceneTransition
             Cursor.visible = true;
 
             if (_eventSystem != null) _eventSystem.SetActive(true);
-            if (_mainMenuButton != null) _mainMenuButton.SetActive(canReturnToMainMenu);
 
             _settingsPresenter.CloseRequested += CloseSettings;
             _settingsPresenter.MainMenuRequested += HandleMainMenuRequested;
@@ -246,7 +247,8 @@ namespace SceneTransition
         #region Coroutines
         private IEnumerator CoLoad()
         {
-            if (!SceneLoader.PendingScene.HasValue)
+            bool isMainMenu = SceneLoader.IsMainMenuPending;
+            if (!isMainMenu && !SceneLoader.PendingScene.HasValue)
             {
                 // 로딩씬에서 바로 Play한 경우 등. 포탈(SceneLoader.TryLoad)을 거쳐야 목적지가 있다.
                 Debug.LogWarning("[LoadingScreen] 불러올 목적지 씬이 없습니다.", this);
@@ -257,15 +259,25 @@ namespace SceneTransition
 
             // 목적지 로드가 끝나면 SceneLoader 값이 비워지므로 이번 이동을 미리 받아 둔다.
             ESceneType? from = SceneLoader.PreviousScene;
-            ESceneType to = SceneLoader.PendingScene.Value;
+            ESceneType? to = SceneLoader.PendingScene;
 
-            // 스테이지·로비로 가면 앱 아이콘·접속 문구·팁을 페이드인 전에 채운다.
-            if (_stageView != null) _stageView.TryShow(from, to);
+            // 스테이지·로비로 가면 앱 아이콘·접속 문구·팁을, 메인 메뉴로 가면 기본 화면 문구를 페이드인 전에 채운다.
+            if (_stageView != null)
+            {
+                if (isMainMenu)
+                    _stageView.ShowMainMenu();
+                else
+                    _stageView.TryShow(from, to.Value);
+            }
 
-            // 튜토리얼 시작은 진행 바 없이 영상에서 바로 목적지로 넘어간다.
-            bool hasCutscene = TryGetCutscene(from, to, out VideoClip clip);
+            // 튜토리얼 시작은 진행 바 없이 영상에서 바로 목적지로 넘어간다. 메인 메뉴로 갈 때는 컷씬이 없다.
+            VideoClip clip = null;
+            bool hasCutscene = !isMainMenu && TryGetCutscene(from, to.Value, out clip);
             bool isTutorialIntro = hasCutscene && (to == ESceneType.Tutorial);
             if (hasCutscene) _progressGroup.SetActive(false);
+
+            // 메인 메뉴 → 영상 → 튜토리얼은 파란 로딩 배경 대신 검은 화면으로 잇는다.
+            if (isTutorialIntro && (_background != null)) _background.color = Color.black;
 
             SetProgress(0f);
             yield return CoFade(0f, 1f);
@@ -277,9 +289,10 @@ namespace SceneTransition
             AsyncOperation operation;
             if (isTutorialIntro)
             {
-                // 영상 재생 중 튜토리얼을 준비하되, 영상이 끝나기 전에는 활성화하지 않는다.
+                // 영상이 끝난 뒤 튜토리얼을 불러온다. 미리 불러 둔 씬은 취소할 수 없어서,
+                // 영상 중 설정창에서 메인 화면으로 가면 튜토리얼이 먼저 켜져 버린다.
+                yield return CoPlayCutscene(clip);
                 operation = SceneLoader.LoadPendingSceneAsync();
-                yield return CoPlayCutscene(clip, false);
                 while (operation.progress < READY_PROGRESS)
                 {
                     yield return null;
@@ -290,7 +303,7 @@ namespace SceneTransition
                 // 일반 컷씬은 목적지를 불러오기 전에 튼다. (불러오기와 겹치지 않아 끊기지 않음)
                 if (hasCutscene)
                 {
-                    yield return CoPlayCutscene(clip, true);
+                    yield return CoPlayCutscene(clip);
                     _progressGroup.SetActive(true);
                 }
 
@@ -379,8 +392,8 @@ namespace SceneTransition
         }
 
         // 진행 바를 숨기고 영상을 재생한다. E 유지·자연 종료·재생 오류는 같은 정리 경로를 쓴다.
-        // ESC로 설정창이 열린 동안은 영상이 멈추고 E 스킵 게이지는 0으로 돌아간다. canReturnToMainMenu가 false면 설정창의 메인 화면 버튼을 숨긴다.
-        private IEnumerator CoPlayCutscene(VideoClip clip, bool canReturnToMainMenu)
+        // ESC로 설정창이 열린 동안은 영상이 멈추고 E 스킵 게이지는 0으로 돌아간다.
+        private IEnumerator CoPlayCutscene(VideoClip clip)
         {
             bool isFinished = false;
             VideoPlayer.EventHandler onFinished = _ => isFinished = true;
@@ -420,7 +433,7 @@ namespace SceneTransition
                         if (_isSettingsOpen)
                             CloseSettings();
                         else
-                            OpenSettings(canReturnToMainMenu);
+                            OpenSettings();
                     }
 
                     if (_isSettingsOpen)
