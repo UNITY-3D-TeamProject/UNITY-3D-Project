@@ -29,7 +29,7 @@ namespace Core.Stage
         [SerializeField] private SOAttributeEffect _fallEffect;
 
         [Header("Restart")]
-        [Tooltip("첫 라운드(다음 라운드 체크포인트 도달 전)에 사망하면 체크포인트 재스폰 대신 씬을 다시 불러옵니다.")]
+        [Tooltip("첫 라운드(다음 라운드 체크포인트 도달 전)에 사망하면 체크포인트 재스폰 대신 씬을 다시 불러옵니다. 보안 앱은 꺼져 있어도 항상 다시 불러옵니다.")]
         [SerializeField] private bool _restartSceneOnFirstRoundDeath;
 
         // 현재 라운드. 0부터 시작하며 -1은 아직 시작하지 않은 상태.
@@ -595,7 +595,7 @@ namespace Core.Stage
 
         // 현재 라운드의 체크포인트에서 다시 스폰을 요청하는 함수
         // 사망한 플레이어를 여기서 파괴하고 이동이 아니라 재스폰한다. 스폰 위치는 GetSpawnPoint가 알려준다.
-        // Restart Scene On First Round Death가 켜져 있고 첫 라운드라면 재스폰 대신 현재 씬을 다시 불러온다.
+        // Restart Scene On First Round Death가 켜져 있거나 보안 앱이고, 첫 라운드라면 재스폰 대신 현재 씬을 다시 불러온다.
         // [호출] HandlePlayerDeath(사망 팝업이 없을 때), RetryAfterDeath(사망 팝업의 다시하기)에서 호출된다.
         // [이후] OnPlayerRespawnRequested 발생 -> PlayerSpawner.HandleRespawnRequested -> 다음 프레임 재스폰.
         private void RecoverFromDeath()
@@ -607,7 +607,10 @@ namespace Core.Stage
 
             // 첫 라운드 사망이면 씬을 다시 불러온다. 능력치는 씬 입장 때 저장된 값으로 복원된다.
             // SceneLoader는 순서상 다음 씬만 허용하고 전환 이벤트로 능력치를 덮어쓰므로 직접 불러온다.
-            if (_restartSceneOnFirstRoundDeath && _currentRoundIndex == 0)
+            // 보안 앱은 깬 방 입구 문이 잠긴 채 남아 리스폰하면 진행이 막히므로 옵션과 상관없이 씬을 다시 불러온다.
+            // 입장 컷씬(맵 카메라·대화)은 트리거에 붙은 HideOnStageRestart가 재시작 때 꺼서 건너뛴다.
+            bool shouldRestartScene = _restartSceneOnFirstRoundDeath || (CurrentStage == EStageType.SecurityApp);
+            if (shouldRestartScene && _currentRoundIndex == 0)
             {
                 RestartStage();
                 return;

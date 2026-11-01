@@ -18,6 +18,8 @@ resolved: null # 해결 시 YYYY-MM-DD 로 변경
 - `RETRY`: 지금까지의 사망 복구를 그대로 실행한다. 첫 라운드이고 재시작 옵션이 켜져 있으면 씬을 다시 불러오고, 아니면 현재 라운드 체크포인트에서 리스폰한다(보안맵 2라운드는 발판 전체 리셋 후 리스폰).
 - `MAIN MENU`: 설정창의 메인 화면 버튼과 같이 `GameManager.ReturnToMainMenu`. HP 0은 저장되지 않으므로 이어하기는 마지막 저장값으로 시작한다.
 - 보안맵은 `Map_4_Security` StageManager의 `Restart Scene On First Round Death`를 켠다(사용자가 직접 켬).
+  - 변경(2026-11-01, 사용자 결정): 씬 체크 대신 코드로 켠다. 현재 스테이지가 보안 앱이면 체크와 상관없이 첫 라운드 사망 시 씬을 다시 불러온다.
+  - 재시작하면 처음 입장 때 보안맵을 카메라로 보여 주는 연출과 대화(컷씬 26번)는 건너뛴다. 26번 트리거(`Cutscene_26_SecurityEnter`)에 이미 붙은 `HideOnStageRestart`가 처리하므로 씬은 고치지 않는다.
 
 ## 영향 범위 (Affected users and systems)
 - 누가 사용하는가: 모든 스테이지의 플레이어

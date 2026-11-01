@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.Video;
 using Unity.Cinemachine;
+using Core;
 using Map.Live;
 using UI.Credits;
 
@@ -17,6 +18,7 @@ namespace UIandCinematic
     /// 마무리 카메라에 도착하면 E로 넘기는 대화 컷씬으로 이어지고, 대화가 끝나면 크레딧을 시작한다.
     /// 영상을 보는 동안 E를 길게 누르면 영상을 나오는 위치로 넘기고 바로 TV 밖으로 나온다.
     /// 블렌드 시간은 Brain 기본 블렌드를 잠시 바꿔 정한다. CinematicManager가 다음 샷에서 다시 정하고, 연출이 끝나면 원래 값으로 돌린다.
+    /// 영상은 게임 시간과 상관없이 돌므로, 설정창이 열린 동안(Pause)은 영상을 멈추고 대기·페이드·스킵 게이지도 세지 않는다.
     /// </summary>
     public class ScreenVideoZoom : MonoBehaviour
     {
@@ -69,6 +71,8 @@ namespace UIandCinematic
         private bool _hasStarted;
         private float _skipHeldTime;
         private bool _isOutroDialogueDone;
+        // 설정창 때문에 영상을 멈춰 두었으면 true. 닫히면 이어서 튼다.
+        private bool _isVideoPausedBySettings;
         #endregion
 
         #region Unity Lifecycle
@@ -83,6 +87,24 @@ namespace UIandCinematic
             _fullscreenGroup.blocksRaycasts = false;
             if (_skipPrompt != null) _skipPrompt.SetActive(false);
             if (_skipProgress != null) _skipProgress.fillAmount = 0.0f;
+        }
+
+        // 설정창이 열려 있는 동안(Pause) 영상(TV·전체화면)과 영상 소리를 멈췄다가, 닫히면 그 자리부터 이어서 튼다.
+        private void Update()
+        {
+            if (!_hasStarted) return;
+
+            bool isPaused = IsGamePaused();
+            if (isPaused && _videoPlayer.isPlaying)
+            {
+                _videoPlayer.Pause();
+                _isVideoPausedBySettings = true;
+            }
+            else if (!isPaused && _isVideoPausedBySettings)
+            {
+                _isVideoPausedBySettings = false;
+                _videoPlayer.Play();
+            }
         }
 
         private void OnDestroy()
@@ -122,9 +144,19 @@ namespace UIandCinematic
             return _videoPlayer.isPlaying || _videoPlayer.isPaused;
         }
 
+        // 설정창이 열려 있으면(Pause) true. 그동안은 연출 시간도 세지 않는다.
+        private bool IsGamePaused()
+        {
+            GameManager gameManager = GameManager.Instance;
+            return (gameManager != null) && (gameManager.CurrentState != GameManager.GameState.Playing);
+        }
+
         // 매 프레임 불러 E를 누른 시간을 쌓고 게이지에 표시한다. 떼면 처음부터 다시 센다. 로딩 영상 스킵처럼 키보드를 직접 읽는다.
+        // 설정창이 열린 동안은 쌓은 시간을 그대로 두고 세지 않는다.
         private bool IsSkipHoldComplete()
         {
+            if (IsGamePaused()) return false;
+
             Keyboard keyboard = Keyboard.current;
             bool isHeld = (keyboard != null) && keyboard.eKey.isPressed;
 
@@ -236,6 +268,7 @@ namespace UIandCinematic
             while (elapsed < _fadeSeconds)
             {
                 yield return null;
+                if (IsGamePaused()) continue;
 
                 elapsed += Time.unscaledDeltaTime;
                 _fullscreenGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, elapsed / _fadeSeconds);
@@ -250,6 +283,8 @@ namespace UIandCinematic
             while (elapsed < seconds)
             {
                 yield return null;
+                if (IsGamePaused()) continue;
+
                 elapsed += Time.unscaledDeltaTime;
             }
         }
