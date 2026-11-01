@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-11-01** — 메인 메뉴 플레이어 발광 감소. `Art/Materials/MainMenu/` 복사본 3개(몸 10→2, 총·파워팟 29.62→5)를 `MainScene` 오버라이드로 `MainMenu_Player`에만 연결, `Player.prefab`·원본 머티리얼·Bloom 수정 없음. 최종 화면 확인은 사용자, 커밋 안 함: [작업 기록](./2026-11-01/main-menu-player-glow.md)
 - **2026-11-01** — 파일 앱 1라운드 정보 패널에 `미로를 탈출하세요` 추가(`FileApp.MAZE_ESCAPE_ROUND_INDEX`, `InfoPanelPresenter`). TestScene Play로 화면 확인, 실제 파일 맵 미확인, 커밋 안 함: [작업 기록](./2026-11-01/file-round1-objective-text.md)
 - **2026-11-01** — 메인 메뉴 왼쪽 아래 `v0.1.0 PROTOTYPE`, 오른쪽 아래 `PRESS ENTER TO SELECT` 제거. `Canvas_MainMenu.prefab`의 `Menu/Version`·`Menu/Hint`를 비활성으로 변경(삭제 안 함). 프리팹·MainScene 인스턴스 비활성 확인, Play 화면 미확인, 커밋 안 함: [작업 기록](./2026-11-01/main-menu-corner-text-off.md)
 - **2026-11-01** — 오프닝 영상 폰 떨어뜨리는 장면의 카메라 튐 수정. 원인은 `New_1_BeforeTutorial.mp4` 프레임 1057(35.23초) 한 장이 다른 구도로 들어간 것. ffmpeg로 1056으로 덮어써 같은 경로에 교체·재임포트(GUID·프레임 수 유지, 소리 복사). 원본 대비 프레임 비교·임포트 값 확인, 게임 안 재생·청취 미확인, mp4는 SVN 커밋 필요: [작업 기록](./2026-11-01/opening-video-frame-fix.md)
