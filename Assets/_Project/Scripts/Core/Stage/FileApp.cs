@@ -17,6 +17,9 @@ namespace Core.Stage
     public class FileApp : StageBase
     {
         #region Constants
+        /// <summary>미로를 빠져나가기만 하면 되는 라운드 번호 (0부터, 1라운드).</summary>
+        public const int MAZE_ESCAPE_ROUND_INDEX = 0;
+
         /// <summary>숫자 퍼즐을 하는 라운드 번호 (0부터, 2라운드).</summary>
         public const int NUMBER_PUZZLE_ROUND_INDEX = 1;
 
