@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Splines;
 using Mediator;
@@ -9,6 +10,7 @@ namespace AI.Crowd
     /// <summary>
     /// 로비 군중(보행자·차량)을 스플라인 레인을 따라 이동시키는 조종부.
     /// 닫힌 스플라인은 계속 돌고, 열린 스플라인은 끝에 닿으면 멈추고 OnLaneEndReached 를 알린다.
+    /// 열린 레인 끝에서 _exitDepth 가 있으면 앞의 벽·문을 그만큼 지나 건물 안으로 걸어 들어간 뒤 OnLaneEndReached 를 알린다.
     /// 열린 레인에서 지금 스플라인의 Knot 에 다른 스플라인의 0번 Knot 이 Link 돼 있으면 갈림길로 보고, 직진과 갈래 중 하나를 무작위로 고른다.
     /// AIController 와 같은 방식으로 이동·회전 요청만 중재자에게 보내며, 앞이 막히면 이동을 멈추고 앞이 빈 뒤 _restartDelay 만큼 기다렸다 출발한다.
     /// 이동 속도는 CharacterMediator 의 속도 어트리뷰트가 정한다. 레인이 꺼낼 때마다 ApplySpeed 로 개체별 순항 속도를 넣는다.
@@ -38,6 +40,15 @@ namespace AI.Crowd
         /// <summary>다음 경로 계산까지의 이동 거리를 기본값에 곱해 뽑는 배율의 범위. 같은 프레임에 생성된 개체들이 같은 프레임에 몰리지 않게 한다.</summary>
         private const float MIN_PATH_UPDATE_RATIO = 0.5f;
         private const float MAX_PATH_UPDATE_RATIO = 1.5f;
+
+        /// <summary>레인 끝에서 앞의 벽·문을 찾는 최대 거리(m). 이 안에 벽이 없으면 퇴장 구간 없이 바로 반납한다.</summary>
+        private const float EXIT_SEARCH_DISTANCE = 10.0f;
+
+        /// <summary>앞의 벽·문 콜라이더를 한 덩어리로 보는 최대 간격(m). 문 소품 뒤의 건물 벽까지 이어서 지나가게 한다.</summary>
+        private const float EXIT_WALL_JOIN_GAP = 1.5f;
+
+        /// <summary>퇴장 구간 앞쪽 검사 한 번에 받는 최대 충돌체 수.</summary>
+        private const int EXIT_BUFFER_SIZE = 16;
         #endregion
 
         #region Serialized Fields
@@ -62,6 +73,10 @@ namespace AI.Crowd
         [SerializeField] private LayerMask _playerLayers;
         [Tooltip("막혀 멈춘 뒤 앞이 비어도 이 시간(초) 동안 더 기다렸다 출발한다. 느린 개체 뒤에서 멈춤·출발이 매 프레임 반복되지 않게 한다.")]
         [SerializeField] private float _restartDelay = 0.4f;
+
+        [Header("Exit")]
+        [Tooltip("열린 레인 끝에서 앞의 벽·문을 이만큼(m) 지난 곳까지 더 걸어 들어간 뒤 반납한다. 몸이 가려질 깊이로 둔다. 0 이면 끝에서 바로 반납한다. 보행자 1.5 / 차량 3 권장.")]
+        [SerializeField] private float _exitDepth = 0.0f;
 
         [Header("Speed")]
         [Tooltip("꺼낼 때마다 속도에 (1-값)~(1+값) 사이 무작위 배율을 곱한다. 보행자 0.2 / 차량 0 권장.")]
@@ -89,6 +104,11 @@ namespace AI.Crowd
         private bool _isJumpingOver;
         private float _jumpOverStartTime;
         private bool _isBlockedByPlayer;
+        private bool _isExiting;
+        private Vector3 _exitStartPosition;
+        private float _exitTravelDistance;
+        private readonly List<Collider> _exitIgnoredColliders = new List<Collider>();
+        private readonly RaycastHit[] _exitHitBuffer = new RaycastHit[EXIT_BUFFER_SIZE];
         private Vector3 _moveDirection;
         private float _restartTime;
 
@@ -158,8 +178,18 @@ namespace AI.Crowd
                 return;
             }
 
+            // 퇴장 중에는 경로를 따르지 않고 정해 둔 방향으로 벽 안쪽까지 걸어 들어간다
+            if (_isExiting)
+            {
+                if (HasFinishedExit())
+                {
+                    RequestMove(Vector2.zero);
+                    OnLaneEndReached?.Invoke(this);
+                    return;
+                }
+            }
             // 스플라인 계산이 군중 비용의 대부분이라 일정 거리 이동할 때만 다시 하고, 그 사이에는 직전 방향을 재사용한다
-            if (ShouldUpdatePath())
+            else if (ShouldUpdatePath())
             {
                 AdvanceProgress();
 
@@ -168,20 +198,26 @@ namespace AI.Crowd
 
                 if (HasReachedLaneEnd())
                 {
-                    RequestMove(Vector2.zero);
-                    OnLaneEndReached?.Invoke(this);
-                    return;
+                    // 벽이 있으면 퇴장 구간으로 넘어가 이번 프레임부터 그 방향으로 이동한다
+                    if (!TryBeginExit())
+                    {
+                        RequestMove(Vector2.zero);
+                        OnLaneEndReached?.Invoke(this);
+                        return;
+                    }
                 }
-
-                Vector3 targetDirection = GetDirectionToTarget();
-                if (targetDirection.sqrMagnitude <= MIN_DIRECTION_SQR_MAGNITUDE)
+                else
                 {
-                    RequestMove(Vector2.zero);
-                    return;
-                }
+                    Vector3 targetDirection = GetDirectionToTarget();
+                    if (targetDirection.sqrMagnitude <= MIN_DIRECTION_SQR_MAGNITUDE)
+                    {
+                        RequestMove(Vector2.zero);
+                        return;
+                    }
 
-                _moveDirection = targetDirection.normalized;
-                RecordPathSample();
+                    _moveDirection = targetDirection.normalized;
+                    RecordPathSample();
+                }
             }
 
             Vector3 direction = _moveDirection;
@@ -224,6 +260,7 @@ namespace AI.Crowd
             _moveDirection = Vector3.zero;
             _restartTime = 0.0f;
             _hasPathSample = false;
+            EndExit();
         }
         #endregion
 
@@ -419,6 +456,98 @@ namespace AI.Crowd
         private bool HasReachedLaneEnd()
         {
             return !_isLaneClosed && (_laneLength - _progress <= _lookAheadDistance);
+        }
+
+        /// <summary>
+        /// 레인 끝 접선 방향으로 앞의 벽·문을 찾아, 그 벽을 _exitDepth 만큼 지나는 곳까지 걸어 들어가는 퇴장 구간을 시작한다.
+        /// 지나갈 벽·문 콜라이더와는 충돌을 끈다 (지면은 눈높이 검사에 걸리지 않아 그대로다). 충돌은 비활성화될 때 되돌린다.
+        /// </summary>
+        /// <returns>퇴장 구간을 시작했으면 true. 끄거나 앞에 벽이 없으면 false 이고, 이때는 바로 반납한다.</returns>
+        private bool TryBeginExit()
+        {
+            if ((_exitDepth <= 0.0f) || !_characterController) return false;
+
+            Vector3 direction = GetHorizontalTangent(_laneLength - TANGENT_SAMPLE_DISTANCE);
+            if (direction.sqrMagnitude <= MIN_DIRECTION_SQR_MAGNITUDE) return false;
+
+            direction.Normalize();
+
+            // 감지 레이어(플레이어·군중)를 뺀 나머지가 벽·문이다
+            int hitCount = Physics.SphereCastNonAlloc(
+                transform.TransformPoint(_characterController.center),
+                _characterController.radius,
+                direction,
+                _exitHitBuffer,
+                EXIT_SEARCH_DISTANCE,
+                ~_detectLayers.value,
+                QueryTriggerInteraction.Ignore);
+
+            float nearest = float.MaxValue;
+            for (int i = 0; i < hitCount; i++)
+            {
+                if (_exitHitBuffer[i].collider.transform.IsChildOf(transform)) continue;
+                nearest = Mathf.Min(nearest, _exitHitBuffer[i].distance);
+            }
+
+            if (nearest == float.MaxValue) return false;
+
+            // 문 소품 뒤의 건물 벽처럼 가까이 이어진 콜라이더까지 한 덩어리로 보고 그 끝을 기준으로 삼는다
+            float reach = nearest;
+            bool hasExtended;
+            do
+            {
+                hasExtended = false;
+                for (int i = 0; i < hitCount; i++)
+                {
+                    float distance = _exitHitBuffer[i].distance;
+                    if ((distance <= reach) || (distance > reach + EXIT_WALL_JOIN_GAP)) continue;
+                    if (_exitHitBuffer[i].collider.transform.IsChildOf(transform)) continue;
+
+                    reach = distance;
+                    hasExtended = true;
+                }
+            }
+            while (hasExtended);
+
+            for (int i = 0; i < hitCount; i++)
+            {
+                Collider wall = _exitHitBuffer[i].collider;
+                if ((_exitHitBuffer[i].distance > reach) || wall.transform.IsChildOf(transform)) continue;
+
+                Physics.IgnoreCollision(_characterController, wall, true);
+                _exitIgnoredColliders.Add(wall);
+            }
+
+            _isExiting = true;
+            _moveDirection = direction;
+            _exitStartPosition = transform.position;
+            _exitTravelDistance = reach + _exitDepth;
+
+            return true;
+        }
+
+        /// <summary>
+        /// 퇴장 구간에서 시작 위치로부터 정해 둔 거리만큼 걸어 들어갔는지 확인한다.
+        /// </summary>
+        /// <returns>다 걸어 들어갔으면 true</returns>
+        private bool HasFinishedExit()
+        {
+            return Vector3.Dot(transform.position - _exitStartPosition, _moveDirection) >= _exitTravelDistance;
+        }
+
+        /// <summary>
+        /// 퇴장 구간을 끝내고 꺼 둔 벽·문 충돌을 되돌린다.
+        /// </summary>
+        private void EndExit()
+        {
+            _isExiting = false;
+
+            foreach (Collider wall in _exitIgnoredColliders)
+            {
+                if (wall && _characterController) Physics.IgnoreCollision(_characterController, wall, false);
+            }
+
+            _exitIgnoredColliders.Clear();
         }
 
         /// <summary>

@@ -128,6 +128,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdController
   _lookAheadDistance: 1
   _lateralOffsetRange: 0.2
+  _pathUpdateDistance: 0.1
   _detectDistance: 1.5
   _detectRadius: 0.3
   _detectHeight: 0.5
@@ -138,6 +139,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   _restartDelay: 0.4
+  _exitDepth: 1.5
   _speedVariation: 0.2
   _canJumpOver: 1
   _jumpOverSpeedMultiplier: 3
@@ -846,6 +848,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimation.EnemyAnimator
   _referenceMoveSpeed: 3
+  _footstepStride: 0
   _skillAnimations:
   - SkillName: Attack
     Parameter: Attack
@@ -1004,15 +1007,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4626110551910950705, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 21.582031
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4626110551910950705, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 7
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4626110551910950705, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.7304902
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4626110551910950705, guid: 414e1a063597b2049a70921375af86cd, type: 3}
       propertyPath: m_LocalRotation.w
