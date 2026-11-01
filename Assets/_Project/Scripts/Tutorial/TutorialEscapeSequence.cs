@@ -10,7 +10,7 @@ namespace Tutorial
 {
     /// <summary>
     /// 음악 확인 후 숨은 발판을 열고, 플레이어가 출발 트리거를 지나면 미리 놓인 공을 코스 방향으로 굴린다.
-    /// 공에 닿거나 코스에서 떨어지면 사망 처리하고, 재스폰하면 공을 처음 자리로 되돌린다. 결승점에 닿으면 포탈을 연다.
+    /// 공에 닿거나 공 위로 넘어가거나 코스에서 떨어지면 사망 처리하고, 재스폰하면 공을 처음 자리로 되돌린다. 결승점에 닿으면 포탈을 연다.
     /// 추격 중 배터리가 기준 이하로 떨어지면 펫 안내를 띄우고 한 번만 배터리를 채워 준다.
     /// </summary>
     public class TutorialEscapeSequence : MonoBehaviour
@@ -141,7 +141,10 @@ namespace Tutorial
             MoveBoulder();
 
             Vector3 center = _controller.bounds.center;
-            if (Vector3.Distance(center, _boulder.position) < _radius + _controller.radius)
+            float hitRange = _radius + _controller.radius;
+            Vector3 toPlayer = center - _boulder.position;
+            bool isOverBoulder = (toPlayer.y > 0.0f) && (new Vector2(toPlayer.x, toPlayer.z).magnitude < hitRange);
+            if (isOverBoulder || (toPlayer.magnitude < hitRange))
             {
                 Kill();
             }
