@@ -289,6 +289,64 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7289874203620748893}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &270841739562214715
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4209357075510097915}
+  - component: {fileID: 5771166882986276663}
+  m_Layer: 0
+  m_Name: 02_PlayerDance
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4209357075510097915
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 270841739562214715}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7813548454958544864}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5771166882986276663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 270841739562214715}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c48c4a4438dc0c408bef9266eeef687, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI.Credits.EndingCastPlayerDanceBeat
+  _cameraPosition: {x: 0, y: 1.2, z: -6.5}
+  _cameraPitch: 4
+  _playerPosition: {x: -0.4, y: 0, z: 0}
+  _playerYaw: 180
+  _playerState: Idle
+  _isPetOnHead: 0
+  _petPosition: {x: 0.45, y: 0.9, z: 0}
+  _petYaw: 180
+  _petState: R11_Idle
+  _danceClip: {fileID: 7400000, guid: d0680d722fb2b85418230f332028c1a1, type: 2}
+  _blendSeconds: 0.5
+  _repeatCount: 0
+  _petWatchPosition: {x: 0.8, y: 1.3, z: 0.4}
+  _petDanceState: R11_Dance0
 --- !u!1 &387605397841620855
 GameObject:
   m_ObjectHideFlags: 0
@@ -634,6 +692,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8386157157726359771}
+  - {fileID: 4209357075510097915}
   m_Father: {fileID: 635307823457731176}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1242884040917840911
