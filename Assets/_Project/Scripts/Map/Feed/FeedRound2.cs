@@ -40,6 +40,13 @@ namespace Map.Feed
 
         // 한 프레임에 만드는 발판 수. 한꺼번에 만들면 시작 순간 화면이 끊긴다.
         private const int PLATFORMS_PER_FRAME = 30;
+
+        // 안내 카메라 자리를 찾을 때 좌우로 돌려 보는 각도 간격 (도)
+        private const float SHOT_ANGLE_STEP = 20.0f;
+        // 카메라가 대상을 보는 길을 검사하는 두께 (반지름, m)
+        private const float SHOT_CHECK_RADIUS = 0.3f;
+        // 대상과 겹쳐 시작한 콜라이더(벽 글자 뒤의 벽 등)로 보고 무시하는 거리 (m)
+        private const float SHOT_OVERLAP_DISTANCE = 0.05f;
         #endregion
 
         #region Serialized Fields
@@ -139,9 +146,31 @@ namespace Map.Feed
         [Tooltip("피드를 모두 올려 보냈을 때 이 오브젝트(라운드 중앙)에서 낼 클리어 효과 (비우면 없음)")]
         [SerializeField] private SOEffectData _clearVfx;
 
+        [Header("Sort Guide")]
+        [Tooltip("안내 대화에서 예시로 보여 줄 태그의 순서. 대사에 적은 태그와 맞춘다.")]
+        [SerializeField, Min(0)] private int _guideTagIndex = 1;
+
+        [Tooltip("예시 피드를 비추는 연출 카메라")]
+        [SerializeField] private Transform _guideFeedCamera;
+
+        [Tooltip("예시 피드의 태그 벽을 비추는 연출 카메라")]
+        [SerializeField] private Transform _guideWallCamera;
+
+        [Tooltip("예시 피드에서 카메라까지의 거리")]
+        [SerializeField, Min(1f)] private float _guideFeedCameraDistance = 9.0f;
+
+        [Tooltip("태그 벽에서 카메라까지의 거리")]
+        [SerializeField, Min(1f)] private float _guideWallCameraDistance = 35.0f;
+
+        [Tooltip("카메라 시선이 피드에서 떨어져야 하는 거리. 피드가 시선을 가리지 않게 한다")]
+        [SerializeField, Min(0f)] private float _guideFeedClearance = 3.0f;
+
         [Header("Event")]
         [Tooltip("2라운드가 시작될 때 실행할 동작")]
         [SerializeField] private UnityEvent _onStarted = new UnityEvent();
+
+        [Tooltip("처음 피드가 모두 떠오른 뒤 한 번 실행할 동작")]
+        [SerializeField] private UnityEvent _onFeedsRaised = new UnityEvent();
 
         [Tooltip("피드를 모두 올려 보냈을 때 실행할 동작")]
         [SerializeField] private UnityEvent _onCleared = new UnityEvent();
@@ -153,6 +182,12 @@ namespace Map.Feed
 
         // 피드마다 떠 있는 자리. 올라간 피드는 뺀다.
         private readonly Dictionary<FeedPost, Vector3> _slots = new Dictionary<FeedPost, Vector3>();
+
+        // 순서가 _walls 와 같은 해시태그 벽
+        private readonly List<FeedTagWall> _tagWalls = new List<FeedTagWall>();
+
+        // 처음 상승이 끝나기를 기다리는 동안만 값이 있다
+        private Coroutine _feedsRaisedRoutine;
         #endregion
 
         #region Properties
@@ -240,7 +275,10 @@ namespace Map.Feed
             {
                 Debug.LogWarning($"[{name}] 씬에 주위 피드(FeedPost)가 하나도 없어 바로 클리어 처리합니다.", this);
                 Clear();
+                return;
             }
+
+            _feedsRaisedRoutine = StartCoroutine(CoNotifyFeedsRaised());
         }
 
         /// <summary>
@@ -252,6 +290,13 @@ namespace Map.Feed
 
             _slots.Clear();
             RaiseFeeds();
+
+            // 상승 중에 다시 시작했으면 다시 떠오른 뒤에 알린다
+            if (_feedsRaisedRoutine != null)
+            {
+                StopCoroutine(_feedsRaisedRoutine);
+                _feedsRaisedRoutine = StartCoroutine(CoNotifyFeedsRaised());
+            }
         }
 
         /// <summary>
@@ -315,7 +360,103 @@ namespace Map.Feed
                 FeedTagWall wall = Instantiate(_wallPrefab, position, Quaternion.LookRotation(-direction), transform);
                 wall.name = $"TagWall_{i:00}_{_walls[i].Label}";
                 wall.Setup(width, _wallHeight, _wallBottom, _walls[i].Label, _walls[i].Color);
+                _tagWalls.Add(wall);
             }
+        }
+
+        // 안내 태그의 피드 중 가운데에서 가장 가까운 것과 그 태그의 벽을 비추도록 연출 카메라를 놓는다.
+        private void PlaceGuideCameras()
+        {
+            if ((_guideTagIndex >= _tagWalls.Count) || (_guideFeedCamera == null) || (_guideWallCamera == null)) return;
+
+            bool hasFeed = false;
+            Vector3 feedPosition = Vector3.zero;
+            float nearestDistance = float.MaxValue;
+
+            foreach (KeyValuePair<FeedPost, Vector3> entry in _slots)
+            {
+                if (entry.Key.TagIndex != _guideTagIndex) continue;
+
+                float distance = Vector3.Distance(entry.Value, transform.position);
+                if (distance >= nearestDistance) continue;
+
+                hasFeed = true;
+                nearestDistance = distance;
+                feedPosition = entry.Value;
+            }
+
+            if (!hasFeed)
+            {
+                Debug.LogWarning($"[{name}] 안내 태그({_guideTagIndex})의 피드가 없어 카메라를 옮기지 않습니다.", this);
+                return;
+            }
+
+            Vector3 toCenter = transform.position - feedPosition;
+            toCenter.y = 0.0f;
+            PlaceClearShot(_guideFeedCamera, feedPosition, toCenter.normalized, 180.0f, _guideFeedCameraDistance);
+
+            // 벽 뒤로 돌아가지 않도록 벽을 비스듬히 보는 데까지만 돌려 본다
+            Vector3 labelPosition = _tagWalls[_guideTagIndex].LabelPosition;
+            PlaceClearShot(_guideWallCamera, labelPosition, -GetWallDirection(_guideTagIndex), 60.0f, _guideWallCameraDistance);
+        }
+
+        // target 둘레를 direction 부터 좌우로 돌려 보며, 시선이 가리지 않는 첫 자리에 카메라를 놓는다. 없으면 처음 자리에 놓는다.
+        private void PlaceClearShot(
+            Transform cameraTransform,
+            Vector3 target,
+            Vector3 direction,
+            float maxAngle,
+            float distance)
+        {
+            int stepCount = Mathf.FloorToInt(maxAngle / SHOT_ANGLE_STEP);
+
+            for (int i = 0; i <= (stepCount * 2); i++)
+            {
+                // 0, +1, -1, +2, -2 ... 순서로 처음 방향에서 가까운 자리부터 본다
+                int step = (i + 1) / 2;
+                float angle = (((i % 2) == 0) ? -step : step) * SHOT_ANGLE_STEP;
+                Vector3 position = target + (Quaternion.AngleAxis(angle, Vector3.up) * direction * distance);
+
+                if (!IsShotClear(position, target)) continue;
+
+                AimCamera(cameraTransform, position, target);
+                return;
+            }
+
+            Debug.LogWarning($"[{name}] {cameraTransform.name} 의 가리지 않는 자리를 찾지 못해 처음 자리에 놓습니다.", this);
+            AimCamera(cameraTransform, target + (direction * distance), target);
+        }
+
+        // position 에서 target 을 볼 때 콜라이더나 떠 있는 피드가 가리지 않는지 여부.
+        // 피드 콜라이더는 트리거이고 쏠 수 있을 때만 켜지므로 자리로 따로 검사한다.
+        private bool IsShotClear(Vector3 position, Vector3 target)
+        {
+            Vector3 offset = position - target;
+            float distance = offset.magnitude;
+            if (distance <= Mathf.Epsilon) return true;
+
+            Vector3 direction = offset / distance;
+
+            foreach (RaycastHit hit in Physics.SphereCastAll(target, SHOT_CHECK_RADIUS, direction, distance, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.distance > SHOT_OVERLAP_DISTANCE) return false;
+            }
+
+            foreach (Vector3 slot in _slots.Values)
+            {
+                // 비추려는 피드 자신은 빼고 본다
+                if (Vector3.Distance(slot, target) <= _guideFeedClearance) continue;
+
+                float along = Mathf.Clamp(Vector3.Dot(slot - target, direction), 0.0f, distance);
+                if (Vector3.Distance(slot, target + (direction * along)) <= _guideFeedClearance) return false;
+            }
+
+            return true;
+        }
+
+        private static void AimCamera(Transform cameraTransform, Vector3 position, Vector3 target)
+        {
+            cameraTransform.SetPositionAndRotation(position, Quaternion.LookRotation(target - position));
         }
 
         // 줄어든 가운데 발판 바깥부터 벽 안쪽 전체(모서리 포함)에, 동심원 위의 자리마다 확률로 발판을 놓는다.
@@ -701,6 +842,16 @@ namespace Map.Feed
         #endregion
 
         #region Coroutines
+        // 피드가 다 떠오르면 안내 카메라를 놓고 알린다.
+        private IEnumerator CoNotifyFeedsRaised()
+        {
+            yield return new WaitForSeconds(_riseDuration);
+
+            _feedsRaisedRoutine = null;
+            PlaceGuideCameras();
+            _onFeedsRaised.Invoke();
+        }
+
         // points 의 순서(가운데에서 가까운 것부터)대로 발판을 여러 프레임에 나눠 만든다.
         private IEnumerator CoSpawnPlatforms(Transform root, List<Vector3> points)
         {

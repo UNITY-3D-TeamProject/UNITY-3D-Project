@@ -185,8 +185,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 90203129}
-  - component: {fileID: 90203131}
   - component: {fileID: 90203130}
+  - component: {fileID: 90203131}
   m_Layer: 0
   m_Name: Cutscene_15_FeedRound2Arrive
   m_TagString: Untagged
@@ -203,8 +203,8 @@ Transform:
   m_GameObject: {fileID: 90203128}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.5, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0.25, z: 24}
+  m_LocalScale: {x: 49, y: 0.25, z: 49}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2013492197}
@@ -238,8 +238,8 @@ MonoBehaviour:
         m_CallState: 2
   _isOneShot: 1
   _pressedSound: {fileID: 0}
---- !u!65 &90203131
-BoxCollider:
+--- !u!64 &90203131
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -256,9 +256,10 @@ BoxCollider:
   m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 12, y: 0.5, z: 3}
-  m_Center: {x: 0, y: -1.25, z: 0}
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &115222926
 GameObject:
   m_ObjectHideFlags: 0
@@ -1011,14 +1012,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7302749568019999692, guid: 7c511e92952f70340b4a25f2ecbf86d7, type: 3}
+      propertyPath: _bgm
+      value: 
+      objectReference: {fileID: 11400000, guid: a96202c27c8a41a097829c034a02f3e2, type: 2}
     - target: {fileID: 7982426921487473606, guid: 7c511e92952f70340b4a25f2ecbf86d7, type: 3}
       propertyPath: m_Name
       value: AudioManager
       objectReference: {fileID: 0}
-    - target: {fileID: 7302749568019999692, guid: 7c511e92952f70340b4a25f2ecbf86d7, type: 3}
-      propertyPath: _bgm
-      value:
-      objectReference: {fileID: 11400000, guid: a96202c27c8a41a097829c034a02f3e2, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
