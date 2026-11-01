@@ -604,6 +604,38 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2717464936593170559}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1189983924130780335
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7813548454958544864}
+  m_Layer: 0
+  m_Name: Beats
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7813548454958544864
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1189983924130780335}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8386157157726359771}
+  m_Father: {fileID: 635307823457731176}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1242884040917840911
 GameObject:
   m_ObjectHideFlags: 0
@@ -4548,6 +4580,7 @@ Transform:
   - {fileID: 3412974681058385448}
   - {fileID: 8370268024170661203}
   - {fileID: 6195785008866610853}
+  - {fileID: 7813548454958544864}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6861338473761191422
@@ -4563,20 +4596,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI.Credits.EndingCastDirector
   _camera: {fileID: 709517349452455109}
-  _cameraPosition: {x: 0, y: 1.2, z: -6.5}
-  _cameraPitch: 4
   _player: {fileID: 8370268024170661203}
   _playerAnimator: {fileID: 6656055453425014916}
   _pet: {fileID: 6195785008866610853}
   _petAnimator: {fileID: 8951096866310353850}
-  _playerStartPosition: {x: -2.8, y: 0, z: 0}
-  _playerStandPosition: {x: -0.4, y: 0, z: 0}
-  _runSeconds: 2
   _playerHead: {fileID: 4465860388879162857}
   _petHeadOffset: {x: 0, y: 0.36, z: 0}
-  _petSidePosition: {x: 0.45, y: 0.9, z: 0}
-  _lookAtEachOtherSeconds: 1.5
-  _greetSeconds: 3
+  _beatsRoot: {fileID: 7813548454958544864}
 --- !u!1 &7182692615277756105
 GameObject:
   m_ObjectHideFlags: 0
@@ -4881,6 +4907,64 @@ Transform:
   - {fileID: 2213533284862202418}
   m_Father: {fileID: 3956463979891790773}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8139683952865549616
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8386157157726359771}
+  - component: {fileID: 1148658928099803622}
+  m_Layer: 0
+  m_Name: 01_Greeting
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8386157157726359771
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8139683952865549616}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7813548454958544864}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1148658928099803622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8139683952865549616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4b8e8497c96bf846ade6b3e0ca9dfe3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI.Credits.EndingCastGreetingBeat
+  _cameraPosition: {x: 0, y: 1.2, z: -6.5}
+  _cameraPitch: 4
+  _playerPosition: {x: -2.8, y: 0, z: 0}
+  _playerYaw: 90
+  _playerState: Run
+  _isPetOnHead: 1
+  _petPosition: {x: 0.45, y: 0.9, z: 0}
+  _petYaw: 90
+  _petState: R11_Idle
+  _playerStandPosition: {x: -0.4, y: 0, z: 0}
+  _runSeconds: 2
+  _petSidePosition: {x: 0.45, y: 0.9, z: 0}
+  _lookAtEachOtherSeconds: 1.5
+  _greetSeconds: 3
 --- !u!1 &8149499789565826284
 GameObject:
   m_ObjectHideFlags: 0
