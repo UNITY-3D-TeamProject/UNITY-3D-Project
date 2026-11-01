@@ -23,8 +23,8 @@ namespace Mediator.SubMediators
         #region Events
         /// <summary>CharacterCombat 이 피격되었을 때 발생한다.</summary>
         public event Action OnHit;
-        /// <summary>약점에 명중해 피해 배율이 적용될 때 맞은 지점을 알린다. OnHit 보다 먼저 발생한다.</summary>
-        public event Action<Vector3?> OnCriticalHit;
+        /// <summary>약점에 명중해 피해 배율이 적용될 때 맞은 지점과 효과가 날아온 방향을 알린다. OnHit 보다 먼저 발생한다.</summary>
+        public event Action<Vector3?, Vector3?> OnCriticalHit;
         /// <summary>CharacterCombat 이 사망했을 때 발생한다.</summary>
         public event Action OnDeath;
         /// <summary>피격 후 무적 시간이 끝났을 때 발생한다. 사망으로 멈춘 경우에는 발생하지 않는다.</summary>
@@ -182,9 +182,9 @@ namespace Mediator.SubMediators
             OnHit?.Invoke();
         }
 
-        private void OnCriticalHitCallback(Vector3? hitPoint)
+        private void OnCriticalHitCallback(Vector3? hitPoint, Vector3? direction)
         {
-            OnCriticalHit?.Invoke(hitPoint);
+            OnCriticalHit?.Invoke(hitPoint, direction);
         }
 
         private void OnDeathCallback()

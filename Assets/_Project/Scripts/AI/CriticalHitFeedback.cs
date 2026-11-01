@@ -41,21 +41,29 @@ namespace AI
         #endregion
 
         #region Private Methods
-        private void OnCriticalHitCallback(Vector3? hitPoint)
+        private void OnCriticalHitCallback(Vector3? hitPoint, Vector3? direction)
         {
             if (!hitPoint.HasValue) return;
 
             Vector3 position = hitPoint.Value;
-            if (_effect && EffectManager.Instance) EffectManager.Instance.Play(_effect, position, GetFacingRotation(position));
+            if (_effect && EffectManager.Instance) EffectManager.Instance.Play(_effect, position, GetHitRotation(position, direction));
             if (_sound && (_sound.ClipCount > 0) && AudioManager.Instance) AudioManager.Instance.PlaySfx(_sound, position);
         }
 
         /// <summary>
-        /// position 에서 메인 카메라를 향하는 회전을 돌려준다. 카메라가 없거나 같은 위치면 기본 회전.
+        /// 총알이 날아온 쪽(-direction)으로 앞(Z)을 향하고, 그 축을 중심으로 메인 카메라의 위쪽에 맞춰 도는 회전을 돌려준다.
+        /// 방향이 없으면 position 에서 메인 카메라를 향하는 회전, 카메라도 없으면 기본 회전.
         /// </summary>
-        private static Quaternion GetFacingRotation(Vector3 position)
+        private static Quaternion GetHitRotation(Vector3 position, Vector3? direction)
         {
             Camera mainCamera = Camera.main;
+
+            if (direction.HasValue && (direction.Value.sqrMagnitude > 0.0001f))
+            {
+                Vector3 up = mainCamera ? mainCamera.transform.up : Vector3.up;
+                return Quaternion.LookRotation(-direction.Value, up);
+            }
+
             if (!mainCamera) return Quaternion.identity;
 
             Vector3 toCamera = mainCamera.transform.position - position;
