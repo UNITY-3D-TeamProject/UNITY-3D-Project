@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-11-01** — intent-114: 엔딩 무대 추격 전에 `03_Flair` 추가(기존 추격은 `04_Chase`). 믹사모 Flair를 `SK_ZMike/` 경로 변환 + 눈 고정 곡선 + Loop Time으로 만든 `ThirdParty/Mixamo/EndingCast_Player_Flair.anim`(Git 제외), 컨트롤러 상태 추가, `EndingCastPlayerDanceBeat`는 반복 클립이면 한 번 틀고 `길이 × 횟수`(5 = 5초) 대기. 리컴파일·샘플링·미리보기 렌더 확인, Play·실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-cast-flair.md)
 - **2026-11-01** — 엔딩 크레딧 `ASSETS & SOURCES`의 `...` 자리에 컷신 에셋 출처 목록(캐릭터·배경·소품 / 애니메이션 / 음악·효과음 / 자체 제작) 추가. `Map_5_Live` `CreditsRoll`의 `m_text`만 YAML로 수정(씬 안 엶), 출처 줄은 폭 800px에 맞춰 26. 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-credits-cutscene-assets.md)
 - **2026-11-01** — intent-113: 엔딩 무대 세 번째 장면 `03_Chase`(`EndingCastChaseBeat`) 추가. 컷 1 플레이어(`Run_Chase` 손 뻗고 달리기)·펫 도망 → 컷 2 가비지 컬렉터 혼자 추격(올려다보는 카메라) → 컷 3 넓은 카메라로 셋 한 화면, 크레딧 끝까지 반복. GC 모습 복사본(1.4배)·`EndingCast_GC` 컨트롤러 되살림, 춤 반복 1번으로 변경(사용자 확정, intent-113 해결). 리컴파일·미리보기 렌더·코루틴 흐름 확인, 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-cast-chase.md)
 - **2026-11-01** — 컷씬 영상 4개를 `NewCutScene/` 새 버전으로 교체: 임포트를 기존과 같은 VP8 트랜스코드로 맞추고, `SOLoadingCutsceneData` 3칸·`Map_5_Live` 스크린 VideoPlayer 클립만 GUID 교체(엔딩 68초로 같아 연출 값 유지). Play 미확인, 커밋 안 함, mp4+meta 공유 필요: [작업 기록](./2026-11-01/new-cutscene-videos.md)
