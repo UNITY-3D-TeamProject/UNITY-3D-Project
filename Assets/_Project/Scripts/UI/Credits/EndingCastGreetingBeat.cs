@@ -50,7 +50,7 @@ namespace UI.Credits
             float elapsed = 0.0f;
             while (elapsed < _runSeconds)
             {
-                elapsed += Time.unscaledDeltaTime;
+                elapsed += stage.DeltaTime;
                 // 달리다가 끝에서만 살짝 감속한다.
                 float t = Mathf.Sin(Mathf.Clamp01(elapsed / _runSeconds) * Mathf.PI * 0.5f);
                 player.localPosition = Vector3.Lerp(from, _playerStandPosition, t);

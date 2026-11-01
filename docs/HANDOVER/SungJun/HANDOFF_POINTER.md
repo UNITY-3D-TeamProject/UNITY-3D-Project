@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-11-01** — 엔딩 무대 플레이어 양손 총(`RadicalBuster`) 삭제(무대 플레이어는 원래 실제 프리팹과 연결 없는 복사본), 믹사모 춤에 Idle의 눈 뜬 값을 고정 곡선으로 넣어 눈 감김 수정(ThirdParty 클립, 커밋 안 됨). 엔딩 ESC = 설정창, 열려 있는 동안 명단·노래(`EndingCredits.Update`)·왼쪽 무대(`EndingCastDirector` 애니메이터 속도 0·`DeltaTime`)가 함께 멈추도록 수정. 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-cast-no-guns-eyes.md)
 - **2026-11-01** — intent-111: 엔딩 무대에 플레이어 믹사모 춤 장면(`02_PlayerDance`, `EndingCastPlayerDanceBeat`) 추가. 인사 뒤 `Thriller Part 3` 전체를 추고 0.5초 크로스페이드로 반복, 펫은 옆으로 비켜 같이 춤(`R11_Dance0`). 믹사모 클립 경로에 `SK_ZMike/`를 붙인 변환 클립(약 23MB)은 원본과 함께 `ThirdParty/Mixamo`(Git 제외). 리컴파일·임시 Play 확인, 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-player-dance.md)
 - **2026-11-01** — intent-110: 엔딩 크레딧 왼쪽 무대를 장면 단위로 분리. `EndingCastStage/Beats` 자식 순서대로 재생(끄면 건너뜀), 장면마다 시작 배치를 따로 잡음(`EndingCastBeat`), 기존 등장 인사는 `01_Greeting`(`EndingCastGreetingBeat`). 새 장면 추가 방법은 기록 참고. 리컴파일·임시 Play 확인, 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-cast-beats.md)
 - **2026-11-01** — 엔딩·로딩 컷씬 안내 문구 변경(영상 스킵 "E 꾹 눌러서 / 건너뛰기", `Loading.unity` 컷씬 스킵도 같게, 크레딧 "E 꾹 눌러서 2배속 보기", `Map_5_Live` `m_text` 두 줄만), 크레딧 끝 화면 페이드아웃 동안 노래도 같이 줄이고 멈춤(`EndingCredits.CoFadeOut`). 리컴파일 통과, 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-prompt-text-music-fade.md)

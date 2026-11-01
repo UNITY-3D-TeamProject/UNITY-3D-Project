@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Core;
 
 namespace UI.Credits
 {
@@ -7,7 +8,8 @@ namespace UI.Credits
     /// 엔딩 크레딧 왼쪽 무대. 켜지면 Beats 아래 장면(EndingCastBeat)을 위에서부터 차례로 재생한다.
     /// 하이어라키에서 장면 오브젝트를 옮기면 순서가 바뀌고, 끄면 그 장면은 건너뛴다.
     /// 장면들이 함께 쓰는 등장인물·카메라와 이동·회전·대기 기능을 가진다.
-    /// 크레딧과 같이 게임 시간이 아닌 실제 시간으로 움직인다.
+    /// 크레딧과 같이 게임 시간이 아닌 실제 시간으로 움직이고, 설정창이 열려 있는 동안(Pause)에는 멈춘다.
+    /// 장면 스크립트는 시간을 셀 때 Time.unscaledDeltaTime 대신 DeltaTime을 쓴다.
     /// </summary>
     public class EndingCastDirector : MonoBehaviour
     {
@@ -38,6 +40,11 @@ namespace UI.Credits
         [SerializeField] private Transform _beatsRoot;
         #endregion
 
+        #region Private Fields
+        private GameManager _gameManager;
+        private bool _isPaused;
+        #endregion
+
         #region Properties
         public Transform StageCamera => _camera;
         public Transform Player => _player;
@@ -47,12 +54,29 @@ namespace UI.Credits
 
         // 켜져 있으면 펫이 플레이어 머리 위를 따라다닌다.
         public bool IsPetOnHead { get; set; }
+
+        // 이번 프레임에 흐른 실제 시간. 설정창이 열려 있으면 0이다.
+        public float DeltaTime => _isPaused ? 0.0f : Time.unscaledDeltaTime;
         #endregion
 
         #region Unity Lifecycle
         private void OnEnable()
         {
+            _gameManager = GameManager.Instance;
+            _isPaused = false;
             StartCoroutine(CoPlayBeats());
+        }
+
+        // 설정창이 열리고 닫힐 때 애니메이션도 같이 멈추고 다시 돌린다. (코루틴보다 먼저 돈다)
+        private void Update()
+        {
+            bool isPaused = (_gameManager != null) && (_gameManager.CurrentState != GameManager.GameState.Playing);
+            if (isPaused == _isPaused) return;
+
+            _isPaused = isPaused;
+            float speed = isPaused ? 0.0f : 1.0f;
+            _playerAnimator.speed = speed;
+            _petAnimator.speed = speed;
         }
 
         // 애니메이션이 적용된 뒤의 머리 위치를 따라간다.
@@ -98,7 +122,7 @@ namespace UI.Credits
             float elapsed = 0.0f;
             while (elapsed < seconds)
             {
-                elapsed += Time.unscaledDeltaTime;
+                elapsed += DeltaTime;
                 target.localRotation = Quaternion.Slerp(from, to, elapsed / seconds);
                 yield return null;
             }
@@ -112,7 +136,7 @@ namespace UI.Credits
             float elapsed = 0.0f;
             while (elapsed < seconds)
             {
-                elapsed += Time.unscaledDeltaTime;
+                elapsed += DeltaTime;
                 target.localPosition = Vector3.Lerp(from, to, Mathf.SmoothStep(0.0f, 1.0f, elapsed / seconds));
                 yield return null;
             }
@@ -125,7 +149,7 @@ namespace UI.Credits
             float elapsed = 0.0f;
             while (elapsed < seconds)
             {
-                elapsed += Time.unscaledDeltaTime;
+                elapsed += DeltaTime;
                 yield return null;
             }
         }

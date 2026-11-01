@@ -16,6 +16,7 @@ namespace UI.Credits
     /// E를 누르고 있으면 명단이 빨리 올라간다.
     /// 명단이 화면 위로 다 나가면 화면을 검게 덮고 노래를 줄인 뒤 메인 메뉴로 돌아간다.
     /// 크레딧을 시작할 때 Cutscene 입력 맵을 직접 요청해 조작을 막아 둔다.
+    /// 설정창이 열려 있는 동안에는 연출 시간과 노래를 멈춘다.
     /// </summary>
     public class EndingCredits : MonoBehaviour
     {
@@ -61,6 +62,7 @@ namespace UI.Credits
 
         #region Private Fields
         private bool _hasStarted;
+        private bool _isMusicPaused;
         private AudioSource _musicSource;
         #endregion
 
@@ -81,6 +83,19 @@ namespace UI.Credits
             _musicSource.spatialBlend = 0.0f;
             _musicSource.ignoreListenerPause = true;
             _musicSource.outputAudioMixerGroup = _creditsMusicGroup;
+        }
+
+        // 설정창이 열려 있는 동안(Pause) 노래도 멈췄다가, 닫히면 이어서 튼다.
+        private void Update()
+        {
+            if (!_hasStarted) return;
+
+            bool isPaused = IsGamePaused();
+            if (isPaused == _isMusicPaused) return;
+
+            _isMusicPaused = isPaused;
+            if (isPaused) _musicSource.Pause();
+            else _musicSource.UnPause();
         }
         #endregion
 
