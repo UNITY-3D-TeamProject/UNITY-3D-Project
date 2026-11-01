@@ -96,11 +96,12 @@ namespace Map.Gimmicks
         /// PlaySfxLoop로 시작한 반복음을 끊고 핸들을 비운다.
         /// </summary>
         /// <param name="handle">끊을 소리 핸들</param>
-        public static void StopSfxLoop(ref SAudioHandle handle)
+        /// <param name="fadeDuration">소리를 줄이는 시간(초). 0이면 바로 끊는다</param>
+        public static void StopSfxLoop(ref SAudioHandle handle, float fadeDuration = 0f)
         {
             if (!handle.IsValid) return;
 
-            AudioManager.Instance?.StopSfx(handle);
+            AudioManager.Instance?.StopSfx(handle, fadeDuration);
             handle = default;
         }
         #endregion

@@ -37,6 +37,8 @@ namespace Tutorial
         [SerializeField] private Transform _disc;
         [SerializeField, Min(1.0f)] private float _playDuration = 8.0f;
         [SerializeField, Min(0.1f)] private float _discSpeed = 120.0f;
+        [Tooltip("파일이 떠오르기 시작할 때부터 음악을 줄이는 시간(초). 다 줄어든 뒤 획득 처리한다")]
+        [SerializeField, Min(0.0f)] private float _musicFadeOutDuration = 1.5f;
 
         [Header("Collect")]
         [Tooltip("플레이어에게 날아가는 부분. 바닥 링 등 나머지는 제자리에 있다가 획득 순간 함께 사라진다.")]
@@ -170,10 +172,18 @@ namespace Tutorial
         {
             _state = EFileState.Playing;
             yield return new WaitForSeconds(_playDuration);
+
+            GimmickUtility.StopSfxLoop(ref _musicHandle, _musicFadeOutDuration);
+            float fadeEndTime = Time.time + _musicFadeOutDuration;
+
             yield return CoFlyToPlayer(interactor);
-            GimmickUtility.StopSfxLoop(ref _musicHandle);
             GimmickUtility.PlaySfx(_collectSound, _collectRoot.position);
             _visualRoot.gameObject.SetActive(false);
+
+            // 획득 이벤트의 컷씬이 시간을 멈추면 페이드도 멈추므로, 다 줄어든 뒤에 알린다.
+            while (Time.time < fadeEndTime)
+                yield return null;
+
             _state = EFileState.Acquired;
             _onAcquired.Invoke();
         }
