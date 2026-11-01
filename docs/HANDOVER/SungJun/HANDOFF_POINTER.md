@@ -5,6 +5,7 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-11-01** — 컷씬 영상 4개를 `NewCutScene/` 새 버전으로 교체: 임포트를 기존과 같은 VP8 트랜스코드로 맞추고, `SOLoadingCutsceneData` 3칸·`Map_5_Live` 스크린 VideoPlayer 클립만 GUID 교체(엔딩 68초로 같아 연출 값 유지). Play 미확인, 커밋 안 함, mp4+meta 공유 필요: [작업 기록](./2026-11-01/new-cutscene-videos.md)
 - **2026-11-01** — intent-112: 라이브씬에서 구르기·블루투스·스캔 끔(`LiveApp`), 엔딩 중 ESC 뒤 대화·크레딧이 안 나오던 원인(영상이 `UnscaledGameTime`이라 설정창 중에도 진행 → Pause 상태에서 35번 컷씬 거절) 수정: 설정창 동안 `ScreenVideoZoom`이 영상(TV·전체화면)을 멈추고 대기·페이드·스킵 게이지도 멈춤. 사망 팝업이 뜨면 BGM만 남기고 게임 시간 정지(`UIManager`). 후속: 크레딧 캔버스(100)에 가려지던 설정창 Canvas Sort Order 10→200(`Canvas_InGame` 프리팹), 춤 흔들림은 변환 클립의 선형·성분별 키 줄이기 탓이라 원본 FBX 곡선으로 다시 만듦(ThirdParty, 커밋 안 됨). 리컴파일 통과, Play 미확인, 커밋 안 함: [작업 기록](./2026-11-01/live-skills-pause-death.md)
 - **2026-11-01** — 엔딩 무대 플레이어 양손 총(`RadicalBuster`) 삭제(무대 플레이어는 원래 실제 프리팹과 연결 없는 복사본), 믹사모 춤에 Idle의 눈 뜬 값을 고정 곡선으로 넣어 눈 감김 수정(ThirdParty 클립, 커밋 안 됨). 엔딩 ESC = 설정창, 열려 있는 동안 명단·노래(`EndingCredits.Update`)·왼쪽 무대(`EndingCastDirector` 애니메이터 속도 0·`DeltaTime`)가 함께 멈추도록 수정. 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-cast-no-guns-eyes.md)
 - **2026-11-01** — intent-111: 엔딩 무대에 플레이어 믹사모 춤 장면(`02_PlayerDance`, `EndingCastPlayerDanceBeat`) 추가. 인사 뒤 `Thriller Part 3` 전체를 추고 0.5초 크로스페이드로 반복, 펫은 옆으로 비켜 같이 춤(`R11_Dance0`). 믹사모 클립 경로에 `SK_ZMike/`를 붙인 변환 클립(약 23MB)은 원본과 함께 `ThirdParty/Mixamo`(Git 제외). 리컴파일·임시 Play 확인, 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-player-dance.md)
