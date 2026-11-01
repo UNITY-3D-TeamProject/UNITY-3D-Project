@@ -37,6 +37,10 @@ namespace Core.Scanning
         [Tooltip("셸을 자동 생성할 때 SkinnedMeshRenderer 를 찾을 기준 오브젝트. 비어 있으면 이 오브젝트. 약점 오브젝트에 붙일 때는 몬스터 루트를 연결한다.")]
         // 몬스터는 루트에 스캔 스크립트를 두지 않고 약점 오브젝트에 이 반응을 붙이므로, 몸 전체 렌더러를 찾을 기준을 따로 받는다.
         [SerializeField] private Transform _shellSourceRoot;
+        [Header("안 해도 됨 (셸을 만들지 않을 자식)")]
+        [Tooltip("셸을 자동 생성할 때 제외할 오브젝트. 이 오브젝트와 그 자식의 렌더러에는 셸을 만들지 않는다. 보스A 에너지 실드처럼 몸이 아닌 이펙트를 연결한다.")]
+        // 기준 오브젝트 아래에 몸이 아닌 렌더러(실드 구체 등)가 있으면 그 모양까지 홀로그램으로 보이므로 따로 뺀다.
+        [SerializeField] private Transform[] _shellExcludeRoots;
         #endregion
 
         #region Private Fields
@@ -158,11 +162,11 @@ namespace Core.Scanning
             SkinnedMeshRenderer[] sources = sourceRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true);
             if (sources.Length == 0) return BuildMeshShellRenderers(sourceRoot);
 
-            Renderer[] shells = new Renderer[sources.Length];
+            List<Renderer> shells = new List<Renderer>(sources.Length);
 
-            for (int i = 0; i < sources.Length; i++)
+            foreach (SkinnedMeshRenderer source in sources)
             {
-                SkinnedMeshRenderer source = sources[i];
+                if (IsShellExcluded(source.transform)) continue;
 
                 GameObject shellObject = new GameObject("ScanHologram");
                 shellObject.transform.SetParent(source.transform, false);
@@ -184,10 +188,10 @@ namespace Core.Scanning
                 }
                 shell.sharedMaterials = materials;
 
-                shells[i] = shell;
+                shells.Add(shell);
             }
 
-            return shells;
+            return shells.ToArray();
         }
 
         /// <summary>
@@ -202,6 +206,7 @@ namespace Core.Scanning
 
             foreach (MeshRenderer source in sources)
             {
+                if (IsShellExcluded(source.transform)) continue;
                 if (!source.TryGetComponent(out MeshFilter sourceFilter) || !sourceFilter.sharedMesh) continue;
 
                 GameObject shellObject = new GameObject("ScanHologram");
@@ -224,6 +229,23 @@ namespace Core.Scanning
             }
 
             return shells.ToArray();
+        }
+
+        /// <summary>
+        /// 셸을 만들지 않을 오브젝트(_shellExcludeRoots) 또는 그 자식인지 확인한다.
+        /// </summary>
+        /// <param name="source">셸을 만들려는 원본 렌더러의 Transform</param>
+        /// <returns>제외 대상이면 true</returns>
+        private bool IsShellExcluded(Transform source)
+        {
+            if (_shellExcludeRoots == null) return false;
+
+            foreach (Transform excludeRoot in _shellExcludeRoots)
+            {
+                if (excludeRoot && source.IsChildOf(excludeRoot)) return true;
+            }
+
+            return false;
         }
 
         /// <summary>
