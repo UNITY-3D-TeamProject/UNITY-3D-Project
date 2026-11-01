@@ -58,12 +58,16 @@ namespace SceneTransition
         [SerializeField] private Texture2D _lobbyIcon;
         [Tooltip("로비로 갈 때 준비 단계 문구 (위에서부터)")]
         [SerializeField] private string[] _lobbyStepLabels;
+        [Tooltip("로비로 갈 때 진행 바 아래에 띄울 팁. 비우면 숨긴다")]
+        [TextArea(1, 3)]
+        [SerializeField] private string _lobbyTip;
         #endregion
 
         #region Properties
         public IReadOnlyList<SLoadingStageInfo> Stages => _stages ?? Array.Empty<SLoadingStageInfo>();
         public Texture2D LobbyIcon => _lobbyIcon;
         public IReadOnlyList<string> LobbyStepLabels => _lobbyStepLabels ?? Array.Empty<string>();
+        public string LobbyTip => _lobbyTip;
         #endregion
 
         #region Public Methods
