@@ -5,6 +5,8 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-11-01** — 보스 체력 UI 거대보스 초상화(`BossA_Front.png`)가 모델 교체 전 머리로 남아 있어, 지금 Virus_King_Boss 모델을 원래 구도(정면·머리 블록 가득·눈 띠 약간 위·투명 배경 512)로 다시 찍어 교체. UI 연결 수정 없음, 보스전 화면 미확인: [작업 기록](./2026-11-01/boss-portrait-retake.md)
+- **2026-11-01** — 보스A 스캔 시 에너지 실드 구체까지 홀로그램으로 보이던 문제 수정: `SilhouetteReaction._shellExcludeRoots` 추가(셸 자동 생성에서 제외), `BossA.prefab` 에 `EnergyShield` 연결. 컴파일 오류 0(dotnet build), TestScene Play 비교 캡처 + Play 중 보스맵 런타임 로드로 실제 자리 보스 스캔 캡처 확인(씬 파일 변경 없음): [작업 기록](./2026-11-01/boss-scan-exclude-shield.md)
 - **2026-11-01** — 엔딩 크레딧 `ASSETS & SOURCES`에 "게임 제작 및 사용 에셋"(3D 아트·UI / 시각 효과 / 캐릭터 애니메이션 Mixamo / 음악·효과음 / 폰트)을 컷신 묶음 앞에 같은 형식으로 추가, Third-Party Notices 고지 줄은 두 묶음 뒤. `Map_5_Live` `m_text`만 YAML 수정(씬 안 엶). 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-credits-game-assets.md)
 - **2026-11-01** — intent-116: 메인 메뉴로 돌아갈 때도 로딩씬을 거쳐 달리는 플레이어 화면 + "메인 메뉴로 가는 중..." 표시(`SceneLoader.IsMainMenuPending`, `LoadingStageView.ShowMainMenu`). 오프닝은 영상 뒤 튜토리얼 불러오기 + 메인 버튼 + 검은 배경. 후속: 로딩 컷씬 설정창 메인 화면도 달리는 화면, 최소 로딩 시간 5→4초(Play 미확인). TestScene Play로 확인, 실제 게임 흐름 미확인, 커밋 안 함: [작업 기록](./2026-11-01/main-menu-loading-screen.md)
 - **2026-11-01** — intent-115: 로딩 화면 폰 주인 영상(오프닝·피드→로비·파일→로비) 중 ESC로 설정창 열고 영상 멈춤·E 스킵 게이지 초기화(`LoadingScreen`, 라이브 엔딩 `ScreenVideoZoom`도 게이지 초기화). 메인 화면·게임 종료는 `SceneLoader.CancelPendingLoad` 뒤 GameManager 경로. 후속: 오프닝도 메인 버튼 보임(튜토리얼은 영상 뒤에 불러옴), 오프닝 로딩 배경 검정. `Loading.unity`에 인게임 설정창 복사본·EventSystem(설정창 동안만)·AudioManager(BGM 없음) 추가, 영상 소리를 Bgm 믹서로. 오프닝에서 열기·닫기 확인, 다른 영상·버튼 클릭·볼륨 체감 미확인, 커밋 안 함: [작업 기록](./2026-11-01/loading-cutscene-settings.md)
