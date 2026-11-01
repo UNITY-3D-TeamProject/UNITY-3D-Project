@@ -7484,6 +7484,7 @@ GameObject:
   - component: {fileID: 449159738}
   - component: {fileID: 449159740}
   - component: {fileID: 449159739}
+  - component: {fileID: 449159741}
   m_Layer: 0
   m_Name: BossFight
   m_TagString: Untagged
@@ -7552,6 +7553,25 @@ MonoBehaviour:
   _prespawnRoundIndex: 1
   _entranceHeightAboveHead: 6
   _landingShakeForce: 1
+--- !u!114 &449159741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 449159737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f40d762420e62564186129063a18b63b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AI.Boss.Fight.BossBatteryDropper
+  _encounter: {fileID: 449159739}
+  _arena: {fileID: 1902969065}
+  _batteryPrefab: {fileID: 365870956134482254, guid: 7c456de15f079da419ff2a821a27051a, type: 3}
+  _intervalSeconds: 20
+  _maxCount: 2
+  _itemLifetime: 15
+  _spawnHeight: 1
 --- !u!1001 &452593127
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -29513,7 +29533,7 @@ GameObject:
   - component: {fileID: 1637770255}
   - component: {fileID: 1637770256}
   - component: {fileID: 1637770257}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: CombatZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -32458,13 +32478,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1882301733}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 26, y: 0, z: 0}
+  m_LocalRotation: {x: 0.0861746, y: -0.70183617, z: 0.0861746, w: 0.70183617}
+  m_LocalPosition: {x: 26, y: 5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 449159738}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 14, y: -90, z: 0}
 --- !u!1001 &1882797640
 PrefabInstance:
   m_ObjectHideFlags: 0

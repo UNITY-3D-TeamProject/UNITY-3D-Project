@@ -372,13 +372,13 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 2.8
-  m_Radius: 1.4
+  m_Height: 1.5
+  m_Radius: 0.5
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 1.4, z: 0}
+  m_Center: {x: 0, y: 0.8, z: 0}
 --- !u!114 &2910215879157747340
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -393,6 +393,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AI.Crowd.CrowdController
   _lookAheadDistance: 1
   _lateralOffsetRange: 0
+  _pathUpdateDistance: 0.1
   _detectDistance: 4
   _detectRadius: 1.4
   _detectHeight: 1.2
@@ -403,6 +404,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   _restartDelay: 0.4
+  _exitDepth: 3
   _speedVariation: 0
   _canJumpOver: 0
   _jumpOverSpeedMultiplier: 3
@@ -609,8 +611,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.817517, y: 1.1473594, z: 2.0918674}
-  m_Center: {x: -0.026952147, y: 0.93956876, z: 0.01083207}
+  m_Size: {x: 1.38763, y: 1.4984779, z: 2.0918674}
+  m_Center: {x: 0.04291725, y: 0.7640095, z: 0.010832072}
 --- !u!1 &7581305318680976378
 GameObject:
   m_ObjectHideFlags: 0

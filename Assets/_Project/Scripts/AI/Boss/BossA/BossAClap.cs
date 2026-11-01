@@ -9,7 +9,8 @@ namespace AI.Boss.BossA
     /// <summary>
     /// A6 박수치기. 한 줄의 양 끝 칸을 양 주먹으로 쾅 내려친 뒤(1타) 주먹을 펴고 바닥 위로 줄을 따라 쓸어 가운데로 모아 박수친다(2타).
     /// 칸은 무너뜨리지 않고 손도 머물지 않으며 어깨 포격도 없다. 최종 단계 전용이다.
-    /// 예고는 1타에는 양 끝 칸을 칸 채움으로, 1타 직후 2타 간격 동안은 양 끝에서 가운데로 모이는 화살표 줄(그랩과 같은 방식)로 띄운다.
+    /// 예고는 1타에는 양 끝 칸을 칸 채움으로, 1타 직후부터 2타까지는 양 끝에서 가운데로 모이는 화살표 줄(그랩과 같은 방식)로 띄운다.
+    /// 2타 화살표는 _followUpTelegraphSeconds 동안 먼저 보이고, 그 뒤에 손이 쓸기 시작한다.
     /// 다른 내려치기와 구분되게 예고 시작부터 손이 주먹을 쥐고 떠오르고, 사이 칸 위에 상자 예고를 박수 순간까지 세운다.
     /// 1타는 양 끝 칸 위에 있으면 맞는다. 2타는 B 돌진처럼 쓸어 오는 손에 닿으면 맞고(한 패턴에 한 번),
     /// 그랩처럼 붙잡혀 손바닥 앞에 붙은 채 가운데까지 끌려간다. 박수 순간 놓고 이동 잠금은 _holdSeconds 뒤에 풀린다.
@@ -19,7 +20,9 @@ namespace AI.Boss.BossA
         #region Serialized Fields
         [Tooltip("임시값. 스펙에 정해진 시간이 없어 A2·A4 와 같게 둔다")]
         [SerializeField, Min(0.0f)] private float _telegraphSeconds = 1.5f;
-        [Tooltip("1타에서 2타(손이 가운데서 맞부딪치는 순간)까지의 간격(초)")]
+        [Tooltip("1타 직후 2타 화살표 예고만 보이고 손이 아직 움직이지 않는 시간(초). 최종 단계 예고 배율을 따른다")]
+        [SerializeField, Min(0.0f)] private float _followUpTelegraphSeconds = 1.0f;
+        [Tooltip("손이 쓸기 시작해서 2타(가운데서 맞부딪치는 순간)까지의 간격(초)")]
         [SerializeField, Min(0.0f)] private float _strikeInterval = 1.0f;
         [Tooltip("임시값. 맞부딪친 두 손 사이 거리(m). 손바닥이 서로 닿아 보이게 맞춘다")]
         [SerializeField, Min(0.0f)] private float _clapGap = 8.0f;
@@ -43,6 +46,8 @@ namespace AI.Boss.BossA
         private int[] _innerTiles;
         private int _pendingClapCount;
         private bool _isClapping;
+        private bool _isWaitingSweep;
+        private float _sweepDelayRemaining;
         private bool _isHitApplied;
         private Collider[] _passThroughHandColliders;
         private Collider _passThroughPlayerCollider;
@@ -82,6 +87,7 @@ namespace AI.Boss.BossA
         public override void Stop()
         {
             _isClapping = false;
+            _isWaitingSweep = false;
             HideWall();
             HideArrowLines();
             ReleasePlayer();
@@ -130,6 +136,48 @@ namespace AI.Boss.BossA
             ReplaceTelegraph(System.Array.Empty<int>(), 0.0f);
             ShowArrowLines(tiles, middle, rowDirection, tileStep);
 
+            // 화살표만 먼저 보여 주고, 손은 대기가 끝난 뒤에 쓸기 시작한다
+            _isWaitingSweep = true;
+            _sweepDelayRemaining = _followUpTelegraphSeconds * Controller.TelegraphScale;
+            if (_sweepDelayRemaining <= 0.0f) BeginSweep();
+            return true;
+        }
+
+        protected override void OnTick(float deltaTime)
+        {
+            if (_isWaitingSweep)
+            {
+                _sweepDelayRemaining -= deltaTime;
+                if (_sweepDelayRemaining <= 0.0f) BeginSweep();
+            }
+
+            // 놓은 뒤의 이동 잠금은 패턴 단계와 따로 센다
+            if (_isPlayerLocked && !_isPlayerHeld)
+            {
+                _holdRemaining -= deltaTime;
+                if (_holdRemaining <= 0.0f) ReleasePlayer();
+            }
+
+            // 패턴이 끝나거나 끊긴 뒤 두 손이 평소 자리로 돌아오면 충돌을 되돌린다
+            if (!_isClapping && (_passThroughPlayerCollider != null) && AreClapHandsIdle()) SetHandPassThrough(false);
+
+            if (!_isClapping) return;
+
+            if (_captureHandIndex >= 0) DragPlayer();
+            else TryCapture();
+        }
+        #endregion
+
+        #region Private Methods
+        /// <summary>
+        /// 2타 예고 대기가 끝나 두 손이 줄을 따라 쓸어 가운데로 모이기 시작한다.
+        /// </summary>
+        private void BeginSweep()
+        {
+            _isWaitingSweep = false;
+
+            int[] tiles = Controller.CurrentChoice.Tiles;
+            GetRowLayout(tiles, out Vector3 middle, out Vector3 rowDirection, out _);
             Vector3 halfGap = rowDirection * (_clapGap * 0.5f);
 
             _isHitApplied = false;
@@ -149,29 +197,8 @@ namespace AI.Boss.BossA
             StartClap(_clapHands[1], middle + halfGap, _palmDirections[1]);
 
             if (_pendingClapCount == 0) EndClap();
-            return true;
         }
 
-        protected override void OnTick(float deltaTime)
-        {
-            // 놓은 뒤의 이동 잠금은 패턴 단계와 따로 센다
-            if (_isPlayerLocked && !_isPlayerHeld)
-            {
-                _holdRemaining -= deltaTime;
-                if (_holdRemaining <= 0.0f) ReleasePlayer();
-            }
-
-            // 패턴이 끝나거나 끊긴 뒤 두 손이 평소 자리로 돌아오면 충돌을 되돌린다
-            if (!_isClapping && (_passThroughPlayerCollider != null) && AreClapHandsIdle()) SetHandPassThrough(false);
-
-            if (!_isClapping) return;
-
-            if (_captureHandIndex >= 0) DragPlayer();
-            else TryCapture();
-        }
-        #endregion
-
-        #region Private Methods
         /// <summary>
         /// 박수 줄의 가운데 칸 중심, 줄 방향(왼손 쪽 끝 → 오른손 쪽 끝, 수평 단위 벡터), 이웃 칸 중심 사이 거리를 구한다.
         /// </summary>

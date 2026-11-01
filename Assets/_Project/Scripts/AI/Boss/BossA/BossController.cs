@@ -37,8 +37,20 @@ namespace AI.Boss.BossA
         [SerializeField] private BossShoulderCannon _rightCannon;
         [Tooltip("그로기(손만 피격 가능) 동안 피격 가능한 손 위에 반복 재생하는 표시 이펙트. 비워 두면 표시하지 않는다")]
         [SerializeField] private SOEffectData _handHintVfx;
+        [Tooltip("그로기(손만 피격 가능) 동안 균열을 발광·점멸시킬 손 렌더러(BossAVirusKingArmor 머티리얼). 비워 두면 발광하지 않는다")]
+        [SerializeField] private Renderer[] _handGlowRenderers;
         [Tooltip("피해를 받을 수 없는 동안(최종 단계 전) 몸을 감싸는 에너지 실드. 비워 두면 표시하지 않는다")]
         [SerializeField] private GameObject _energyShield;
+
+        [Header("Hand Glow")]
+        [Tooltip("그로기 동안 손 균열 발광 세기(머티리얼 CrackIntensity 대체)")]
+        [SerializeField, Min(0.0f)] private float _handGlowIntensity = 6.0f;
+        [Tooltip("그로기 동안 손 균열 굵기(머티리얼 CrackWidth 대체)")]
+        [SerializeField, Min(0.0f)] private float _handGlowWidth = 0.04f;
+        [Tooltip("점멸 속도(머티리얼 PulseSpeed 대체)")]
+        [SerializeField, Min(0.0f)] private float _handGlowPulseSpeed = 6.0f;
+        [Tooltip("점멸 폭. 1 이면 발광이 0~2배 사이를 오간다(머티리얼 PulseAmount 대체)")]
+        [SerializeField, Range(0.0f, 1.0f)] private float _handGlowPulseAmount = 1.0f;
 
         [Header("Settings")]
         [Tooltip("최종 단계 손 패턴 예고 시간 배율")]
@@ -58,6 +70,12 @@ namespace AI.Boss.BossA
         #endregion
 
         #region Private Fields
+        private static readonly int CrackIntensityId = Shader.PropertyToID("_CrackIntensity");
+        private static readonly int CrackWidthId = Shader.PropertyToID("_CrackWidth");
+        private static readonly int PulseSpeedId = Shader.PropertyToID("_PulseSpeed");
+        private static readonly int PulseAmountId = Shader.PropertyToID("_PulseAmount");
+
+        private MaterialPropertyBlock _glowProperties;
         private Action<string> _requestExecuteSkill;
         private Action<string> _requestStopSkill;
         private BossAPatternSelector _selector;
@@ -109,6 +127,7 @@ namespace AI.Boss.BossA
             if (!_mediator) _mediator = GetComponent<CharacterMediator>();
 
             HandStayDuration = _handStayPhase1;
+            _glowProperties = new MaterialPropertyBlock();
         }
 
         private void OnEnable()
@@ -122,6 +141,7 @@ namespace AI.Boss.BossA
             CancelPattern();
             CancelCannons();
             StopHandHints();
+            SetHandGlow(false);
         }
 
         private void Update()
@@ -213,6 +233,7 @@ namespace AI.Boss.BossA
 
             StopHandHints();
             if (mode == EBossDamageMode.HandsOnly) PlayHandHints();
+            SetHandGlow(mode == EBossDamageMode.HandsOnly);
 
             // 몸·머리는 최종 단계(All) 전까지 피해를 받지 못하므로 실드로 알린다. 그로기에는 손만 실드 밖으로 맞는다
             if (_energyShield) _energyShield.SetActive(mode != EBossDamageMode.All);
@@ -369,6 +390,25 @@ namespace AI.Boss.BossA
             }
 
             _handHintHandles.Clear();
+        }
+
+        // 손 머티리얼의 균열 발광·점멸 값을 렌더러별로 덮어쓴다. 끌 때는 머티리얼 값으로 되돌린다(BossAGlitch 와 같은 블록을 공유).
+        private void SetHandGlow(bool isOn)
+        {
+            if ((_handGlowRenderers == null) || (_glowProperties == null)) return;
+
+            foreach (Renderer target in _handGlowRenderers)
+            {
+                if (!target) continue;
+
+                Material material = target.sharedMaterial;
+                target.GetPropertyBlock(_glowProperties);
+                _glowProperties.SetFloat(CrackIntensityId, isOn ? _handGlowIntensity : material.GetFloat(CrackIntensityId));
+                _glowProperties.SetFloat(CrackWidthId, isOn ? _handGlowWidth : material.GetFloat(CrackWidthId));
+                _glowProperties.SetFloat(PulseSpeedId, isOn ? _handGlowPulseSpeed : material.GetFloat(PulseSpeedId));
+                _glowProperties.SetFloat(PulseAmountId, isOn ? _handGlowPulseAmount : material.GetFloat(PulseAmountId));
+                target.SetPropertyBlock(_glowProperties);
+            }
         }
 
         private static bool IsAllowed(EBossDamageMode mode, EBossHitPart part)

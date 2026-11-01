@@ -60,6 +60,9 @@ namespace CharacterAnimation
 
         /// <summary>이동 중 보폭만큼 움직일 때마다 발생한다. 보폭이 0 이면 발생하지 않는다.</summary>
         public event Action OnFootstep;
+
+        /// <summary>애니메이션 이벤트가 알리는 스킬 타격 시점.</summary>
+        public event Action<string> OnSkillImpact;
         #endregion
 
         #region Unity Lifecycle
@@ -144,6 +147,16 @@ namespace CharacterAnimation
             if (!_skillAnimations[index].IsHold) return;
 
             _animator.SetBool(_skillParameterHashes[index], false);
+        }
+
+        /// <summary>
+        /// AnimationClip 의 타격 프레임에 등록한 이벤트를 스킬에 전달한다.
+        /// </summary>
+        public void NotifySkillImpact(string skillName)
+        {
+            if (!enabled || _isDead) return;
+
+            OnSkillImpact?.Invoke(skillName);
         }
 
         /// <summary>
