@@ -12,7 +12,7 @@ namespace UIandCinematic
         [Serializable]
         private struct SSpeakerPortrait
         {
-            [Tooltip("대사의 SpeakerName과 똑같이 적는다 (예: 비트, 코리, 관리자)")]
+            [Tooltip("대사의 SpeakerName과 똑같이 적는다 (예: 코리, 타코, 관리자)")]
             public string SpeakerName;
             public Sprite DefaultPortrait;
         }
@@ -85,16 +85,18 @@ namespace UIandCinematic
         }
 
         // 대화 묶음 없이 한 줄만 띄운다(컷씬 대사). 넘기기와 다음 줄은 부르는 쪽이 정한다.
+        // displayName이 있으면 이름 칸에 그 이름을 보여 준다. 기본 얼굴은 speakerName으로 고른다.
         // 패널이 없거나 대화 중이면 띄우지 않고 false를 돌려준다.
         public bool ShowSingleLine(
             string speakerName,
+            string displayName,
             Sprite portrait,
             string message,
             bool isLastLine)
         {
             if ((_petGuideView == null) || IsDialoguePlaying) return false;
 
-            DrawLine(speakerName, portrait, message, isLastLine);
+            DrawLine(speakerName, displayName, portrait, message, isLastLine);
             return true;
         }
 
@@ -114,7 +116,7 @@ namespace UIandCinematic
                 return;
 
             bool isLastLine = (_currentLineIndex >= _currentDialogue.LineCount - 1);
-            DrawLine(line.SpeakerName, line.Portrait, line.Message, isLastLine);
+            DrawLine(line.SpeakerName, line.SpeakerName, line.Portrait, line.Message, isLastLine);
 
             OnDialogueLineChanged?.Invoke(line);
         }
@@ -122,6 +124,7 @@ namespace UIandCinematic
         // 한 줄을 패널에 그린다.
         private void DrawLine(
             string speakerName,
+            string displayName,
             Sprite portrait,
             string message,
             bool isLastLine)
@@ -129,7 +132,9 @@ namespace UIandCinematic
             // 대사에 초상화를 넣었으면 그 표정, 비워 두었으면 말하는 사람의 기본 얼굴
             Sprite shownPortrait = (portrait != null) ? portrait : GetSpeakerDefaultPortrait(speakerName);
 
-            _petGuideView.ShowLine(speakerName, shownPortrait, message);
+            string shownName = string.IsNullOrEmpty(displayName) ? speakerName : displayName;
+
+            _petGuideView.ShowLine(shownName, shownPortrait, message);
 
             // 마지막 줄이면 E로 대화가 닫힌다는 것을 알려 준다.
             _petGuideView.ShowNextLabel(isLastLine ? _lastLineLabel : _nextLineLabel);

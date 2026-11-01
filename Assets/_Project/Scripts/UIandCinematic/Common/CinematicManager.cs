@@ -436,8 +436,10 @@ namespace UIandCinematic
         // 컷씬 대사 한 줄을 띄우고 E로 넘길 때까지 기다린다.
         private IEnumerator CoPlayCutsceneLine(SCutsceneStep step, bool isLastLine)
         {
-            // 카메라 키가 있으면 그 카메라를, 없으면(또는 씬에 없으면) 말하는 사람 카메라를 쓴다. 블렌드는 원래 기본값으로 둔다.
-            if (_brain != null)
+            // 카메라 키가 있으면 그 카메라를, 없으면(또는 씬에 없으면) 말하는 사람 카메라를 쓴다. 블렌드는 줄에 시간이 없으면 원래 기본값으로 둔다.
+            if (step.BlendSeconds > 0.0f)
+                SetBlend(step.BlendSeconds);
+            else if (_brain != null)
                 _brain.DefaultBlend = _brainDefaultBlend;
 
             CinemachineCamera camera = FindCamera(step.CameraKey);
@@ -457,6 +459,7 @@ namespace UIandCinematic
 
             bool isShown = cutsceneController.ShowCutsceneLine(
                 step.SpeakerName,
+                step.DisplayName,
                 step.Portrait,
                 step.Message,
                 isLastLine,

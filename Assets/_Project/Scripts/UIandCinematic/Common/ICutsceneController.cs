@@ -31,6 +31,7 @@ namespace UIandCinematic
         // 대화 중이거나 띄울 수 없으면 false.
         bool ShowCutsceneLine(
             string speakerName,
+            string displayName,
             Sprite portrait,
             string message,
             bool isLastLine,

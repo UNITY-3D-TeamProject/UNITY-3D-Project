@@ -164,7 +164,7 @@ namespace UIandCinematic.Test
             {
                 if (step.Type == ECutsceneStepType.Line)
                 {
-                    speaker = step.SpeakerName;
+                    speaker = string.IsNullOrEmpty(step.DisplayName) ? step.SpeakerName : step.DisplayName;
                     message = step.Message;
                     camera = string.IsNullOrEmpty(step.CameraKey) ? "카메라: 화자 기본 구도" : "카메라: " + step.CameraKey;
                 }
