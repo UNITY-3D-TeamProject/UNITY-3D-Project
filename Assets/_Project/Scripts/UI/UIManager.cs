@@ -456,7 +456,7 @@ namespace UI
         }
 
         // 사망 애니메이션이 끝나면 다시하기·메인 메뉴 팝업을 띄운다.
-        // 게임은 멈추지 않고, 버튼을 누를 수 있게 커서를 풀고 입력을 UI 맵으로 바꾼다. (UI 맵의 ESC는 설정창을 열지 않는다)
+        // 몬스터가 계속 때리지 않도록 BGM만 남기고 게임 시간을 멈추고, 버튼을 누를 수 있게 커서를 풀고 입력을 UI 맵으로 바꾼다. (UI 맵의 ESC는 설정창을 열지 않는다)
         // [이벤트] StageManager.OnRetryChoiceRequested (BindStageManager에서 구독)
         private void OpenDeathPopup()
         {
@@ -466,13 +466,14 @@ namespace UI
             _deathPopupPresenter.RetryRequested += HandleDeathRetryRequested;
             _deathPopupPresenter.MainMenuRequested += HandleDeathMainMenuRequested;
 
+            _gameManager?.PauseGameTime(_deathPopupPresenter);
             InputMapController.Instance?.RequestMap(_deathPopupPresenter, EInputMapType.UI);
             _gameManager?.SetCursorLocked(false);
 
             _deathPopupPresenter.Open();
         }
 
-        // 사망 팝업을 닫고 입력 맵 요청을 푼다. 커서는 고른 버튼에 따라 정한다.
+        // 사망 팝업을 닫고 게임 시간 정지·입력 맵 요청을 푼다. 커서는 고른 버튼에 따라 정한다.
         private void CloseDeathPopup()
         {
             if (!_isDeathPopupOpen) return;
@@ -482,6 +483,7 @@ namespace UI
             _deathPopupPresenter.MainMenuRequested -= HandleDeathMainMenuRequested;
             _deathPopupPresenter.Close();
 
+            _gameManager?.ResumeGameTime(_deathPopupPresenter);
             InputMapController.Instance?.ReleaseMap(_deathPopupPresenter);
         }
 
