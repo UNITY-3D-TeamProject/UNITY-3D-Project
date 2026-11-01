@@ -44,6 +44,8 @@ namespace Skill.Skills
         [SerializeField] private LayerMask _obstacleLayers;
 
         [Header("Knockback")]
+        [Tooltip("마지막 강한 밀치기가 닿는 3D 거리(m). 약한 바람에 밀려난 대상도 닿도록 바람 사거리보다 크게 둔다.")]
+        [SerializeField, Min(0.0f)] private float _knockbackRange = 8.0f;
         [Tooltip("램프가 끝나는 순간 범위 안이면 수평으로 밀어내는 거리(m)")]
         [SerializeField, Min(0.0f)] private float _knockbackDistance = 4.0f;
         [Tooltip("넉백에 걸리는 시간(초). 짧을수록 세게 튕긴다.")]
@@ -144,6 +146,15 @@ namespace Skill.Skills
             Gizmos.DrawRay(origin, up * _range);
             Gizmos.DrawRay(origin, down * _range);
             DrawGizmoArc(origin, side, up, _verticalHalfAngle * 2.0f, _range);
+
+            // 마지막 강한 밀치기는 별도 사거리를 노란색으로 표시한다
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawRay(origin, left * _knockbackRange);
+            Gizmos.DrawRay(origin, right * _knockbackRange);
+            DrawGizmoArc(origin, Vector3.up, left, _horizontalHalfAngle * 2.0f, _knockbackRange);
+            Gizmos.DrawRay(origin, up * _knockbackRange);
+            Gizmos.DrawRay(origin, down * _knockbackRange);
+            DrawGizmoArc(origin, side, up, _verticalHalfAngle * 2.0f, _knockbackRange);
         }
         #endregion
 
@@ -207,7 +218,7 @@ namespace Skill.Skills
             _forward = direction;
             _controller.Hold(_forward, (_rampDuration - _elapsed) + _knockbackDuration + HOLD_MARGIN);
 
-            bool isInWind = IsTargetInWind();
+            bool isInWind = IsTargetInWind(_range);
             if (isInWind)
             {
                 _motor.AddExternalDisplacement(direction * (speed * Time.deltaTime));
@@ -226,8 +237,8 @@ namespace Skill.Skills
                 EffectManager.Instance?.Play(
                     _burstLinesVfx, vfxAnchor.position, GetVfxRotation(_burstLinesVfx), vfxAnchor);
 
-            // 램프가 끝나는 순간 범위 안이면 넉백, 아니면 그대로 끝
-            if (isInWind)
+            // 약한 바람 밖으로 밀려났어도 강한 밀치기 사거리 안이면 넉백한다
+            if (IsTargetInWind(_knockbackRange))
             {
                 _knockbackDirection = direction;
                 _elapsed = 0.0f;
@@ -253,13 +264,13 @@ namespace Skill.Skills
         /// <summary>
         /// 대상이 고정 정면 기준 부채꼴(수평·수직 각도, 3D 거리) 안에 있고 사이에 장애물이 없는지 판정한다.
         /// </summary>
-        private bool IsTargetInWind()
+        private bool IsTargetInWind(float range)
         {
             Vector3 origin = _windOrigin.position;
             Vector3 targetPoint = GetTargetPoint();
             Vector3 toTarget = targetPoint - origin;
 
-            if (toTarget.magnitude > _range) return false;
+            if (toTarget.magnitude > range) return false;
 
             Vector3 flat = Vector3.ProjectOnPlane(toTarget, Vector3.up);
             if (Vector3.Angle(_forward, flat) > _horizontalHalfAngle) return false;
