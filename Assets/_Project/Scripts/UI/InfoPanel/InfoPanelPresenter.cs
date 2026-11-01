@@ -144,13 +144,17 @@ namespace UI.InfoPanel
                 _view.SetTexts("2라운드", "피드 분류", $"{_feedApp.Round2SentCount}/{_feedApp.Round2TotalCount}");
         }
 
-        // 2라운드는 목표값과 먹은 숫자·연산자, 3라운드는 남은 도둑 수. 로직이 없는 라운드(1라운드)는 비운다.
+        // 1라운드는 미로 탈출 안내, 2라운드는 목표값과 먹은 숫자·연산자, 3라운드는 남은 도둑 수.
         private void RefreshFileApp()
         {
             string title = $"{_fileApp.CurrentRoundIndex + 1}라운드";
 
             switch (_fileApp.CurrentRoundIndex)
             {
+                case FileApp.MAZE_ESCAPE_ROUND_INDEX:
+                    _view.SetTexts(title, "미로를 탈출하세요");
+                    return;
+
                 case FileApp.NUMBER_PUZZLE_ROUND_INDEX:
                     RefreshPuzzle(title, _fileApp.NumberPuzzleRound);
                     return;

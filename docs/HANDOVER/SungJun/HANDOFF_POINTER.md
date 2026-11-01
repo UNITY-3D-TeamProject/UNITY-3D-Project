@@ -5,6 +5,11 @@
 작업을 마무리할 때는 오늘 날짜 폴더에 새 문서를 만들고, 아래 목록 맨 위에 한 줄 항목을 추가한다.
 
 ## 변경 이력 (최신순)
+- **2026-11-01** — 메인 메뉴 플레이어 발광 감소. `Art/Materials/MainMenu/` 복사본 3개(몸 10→2, 총·파워팟 29.62→5)를 `MainScene` 오버라이드로 `MainMenu_Player`에만 연결, `Player.prefab`·원본 머티리얼·Bloom 수정 없음. 최종 화면 확인은 사용자, 커밋 안 함: [작업 기록](./2026-11-01/main-menu-player-glow.md)
+- **2026-11-01** — 파일 앱 1라운드 정보 패널에 `미로를 탈출하세요` 추가(`FileApp.MAZE_ESCAPE_ROUND_INDEX`, `InfoPanelPresenter`). TestScene Play로 화면 확인, 실제 파일 맵 미확인, 커밋 안 함: [작업 기록](./2026-11-01/file-round1-objective-text.md)
+- **2026-11-01** — 메인 메뉴 왼쪽 아래 `v0.1.0 PROTOTYPE`, 오른쪽 아래 `PRESS ENTER TO SELECT` 제거. `Canvas_MainMenu.prefab`의 `Menu/Version`·`Menu/Hint`를 비활성으로 변경(삭제 안 함). 프리팹·MainScene 인스턴스 비활성 확인, Play 화면 미확인, 커밋 안 함: [작업 기록](./2026-11-01/main-menu-corner-text-off.md)
+- **2026-11-01** — 오프닝 영상 폰 떨어뜨리는 장면의 카메라 튐 수정. 원인은 `New_1_BeforeTutorial.mp4` 프레임 1057(35.23초) 한 장이 다른 구도로 들어간 것. ffmpeg로 1056으로 덮어써 같은 경로에 교체·재임포트(GUID·프레임 수 유지, 소리 복사). 원본 대비 프레임 비교·임포트 값 확인, 게임 안 재생·청취 미확인, mp4는 SVN 커밋 필요: [작업 기록](./2026-11-01/opening-video-frame-fix.md)
+- **2026-11-01** — 플레이어용 게임 가이드 PDF(`docs/game-guide/FID_게임가이드.pdf`, A4 5쪽) 제작. MainScene Play(저장 없음)로 타이틀·메인 메뉴·튜토리얼·HUD 실제 화면을 찍고 HUD 6항목 번호 표시. 목표 안내 창 사진은 `ShowPetGuide(1)`로 띄운 실제 UI, exe 화면은 빌드 없어 미포함. 커밋 안 함: [작업 기록](./2026-11-01/game-guide-pdf.md)
 - **2026-11-01** — 보스 체력 UI 거대보스 초상화(`BossA_Front.png`)가 모델 교체 전 머리로 남아 있어, 지금 Virus_King_Boss 모델을 원래 구도(정면·머리 블록 가득·눈 띠 약간 위·투명 배경 512)로 다시 찍어 교체. UI 연결 수정 없음, 보스전 화면 미확인: [작업 기록](./2026-11-01/boss-portrait-retake.md)
 - **2026-11-01** — 보스A 스캔 시 에너지 실드 구체까지 홀로그램으로 보이던 문제 수정: `SilhouetteReaction._shellExcludeRoots` 추가(셸 자동 생성에서 제외), `BossA.prefab` 에 `EnergyShield` 연결. 컴파일 오류 0(dotnet build), TestScene Play 비교 캡처 + Play 중 보스맵 런타임 로드로 실제 자리 보스 스캔 캡처 확인(씬 파일 변경 없음): [작업 기록](./2026-11-01/boss-scan-exclude-shield.md)
 - **2026-11-01** — 엔딩 크레딧 `ASSETS & SOURCES`에 "게임 제작 및 사용 에셋"(3D 아트·UI / 시각 효과 / 캐릭터 애니메이션 Mixamo / 음악·효과음 / 폰트)을 컷신 묶음 앞에 같은 형식으로 추가, Third-Party Notices 고지 줄은 두 묶음 뒤. `Map_5_Live` `m_text`만 YAML 수정(씬 안 엶). 실제 엔딩 미확인, 커밋 안 함: [작업 기록](./2026-11-01/ending-credits-game-assets.md)
