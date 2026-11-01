@@ -440,6 +440,20 @@ namespace AI
             return true;
         }
 
+        /// <summary>대상을 바라보며 사거리 안의 좌우 지점 중 하나로 짧게 이동한다.</summary>
+        public bool TryMoveSideways(float moveDistance, float maxDistanceFromTarget)
+        {
+            if (!HasVisibleTarget) return false;
+
+            bool hasPoint = RetreatPointFinder.TryFindSideStep(
+                Position,
+                VisibleTarget.position,
+                moveDistance,
+                maxDistanceFromTarget,
+                out Vector3 point);
+            return hasPoint && MoveTo(point);
+        }
+
         /// <summary>
         /// 다음 순찰 지점을 목적지로 삼는다. WaypointPatrolRoute 에서 지점을 받을 수 있으면 그 지점을,
         /// 아니면 스폰 지점 기준 순찰 반경 안의 무작위 지점을 쓴다.

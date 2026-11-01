@@ -7,7 +7,8 @@ namespace AI.BT
 {
     /// <summary>
     /// 사거리 안의 대상을 예고 후 사격한다. 원거리 적 전용.
-    /// 노드가 시작되면(대상을 보자마자) 바로 예비 동작에 들어가고, 그 뒤로는 대기(랜덤 간격, 대상을 바라봄) → 예비 동작(고정 시간, 조준 방향 고정·조준선 표시) → 발사를 반복한다.
+    /// 노드가 시작되면 바로 예비 동작에 들어가고, 그 뒤로는 발사 → 모션 종료 → 짧은 측면 이동 → 예비 동작을 반복한다.
+    /// 이동과 남은 랜덤 대기 중에는 대상을 바라보고, 이동할 곳이 없으면 제자리에서 다음 사격을 준비한다.
     /// 사격 모션은 조준선이 켜져 있는 동안 FireDelay 만큼 먼저 시작해, 조준선이 꺼지는 순간 총알이 나가게 한다
     /// (WindupDuration 이 FireDelay 보다 짧으면 예비 동작이 FireDelay 까지 늘어난다).
     /// 발사 직후 발사 모션(AttackMotionDuration) 동안은 대기 중이어도 조준 방향을 유지한다.
@@ -38,6 +39,9 @@ namespace AI.BT
 
         /// <summary>그래프에 FireDelay 값이 없을 때 쓰는 발사 지연(초). 사격 스킬의 Fire Delay 와 같은 값이다.</summary>
         private const float DEFAULT_FIRE_DELAY = 0.15f;
+
+        private const float REPOSITION_DISTANCE = 2.0f;
+        private const float REPOSITION_DURATION = 1.0f;
         #endregion
 
         #region Serialized Fields
@@ -58,6 +62,9 @@ namespace AI.BT
         [CreateProperty] private Vector3 _aimDirection;
         [CreateProperty] private float _superArmorEndTime;
         [CreateProperty] private float _lastShotTime = -1000.0f;
+        [CreateProperty] private bool _shouldReposition;
+        [CreateProperty] private bool _isRepositioning;
+        [CreateProperty] private float _repositionEndTime;
         #endregion
 
         #region Node Lifecycle
@@ -99,6 +106,9 @@ namespace AI.BT
             if (_isWindingUp && Controller) Controller.StopSkill(WINDUP_SKILL);
             _isWindingUp = false;
             _isAttackStarted = false;
+            if (_isRepositioning && Controller) Controller.StopMove();
+            _shouldReposition = false;
+            _isRepositioning = false;
 
             if (Controller)
             {
@@ -116,6 +126,8 @@ namespace AI.BT
         private void BeginFirstWait()
         {
             _isWindingUp = false;
+            _shouldReposition = false;
+            _isRepositioning = false;
             _phaseEndTime = Mathf.Max(Time.time, _lastShotTime + MinInterval.Value);
         }
 
@@ -125,6 +137,8 @@ namespace AI.BT
         private void BeginWait()
         {
             _isWindingUp = false;
+            // 후퇴와 병렬 실행하는 가지에서는 이동 목적지를 덮어쓰지 않는다.
+            _shouldReposition = !KeepMoving.Value;
             _phaseEndTime = Time.time + UnityEngine.Random.Range(MinInterval.Value, MaxInterval.Value);
         }
 
@@ -140,6 +154,7 @@ namespace AI.BT
             // 발사 모션 중(슈퍼아머 유지 중)에는 쏜 방향을 유지해, 모션보다 늦게 나가는 총알과 몸 방향이 어긋나지 않게 한다
             Controller.FaceDirection(Controller.IsSuperArmor ? _aimDirection : toTarget);
 
+            if (!CanFinishReposition()) return;
             if (Time.time < _phaseEndTime) return;
             // 경직 중에는 조준선 스킬이 무시되므로, 조준선 없이 쏘지 않도록 풀릴 때까지 예비 동작을 미룬다
             if (Controller.IsStunned) return;
@@ -186,6 +201,26 @@ namespace AI.BT
             // 발사 모션 동안에도 슈퍼아머를 유지해 힛모션이 공격 모션을 덮거나 뒤로 밀리지 않게 한다. 해제는 UpdateWait 가 맡는다
             float motionDuration = (AttackMotionDuration != null) ? AttackMotionDuration.Value : DEFAULT_ATTACK_MOTION_DURATION;
             _superArmorEndTime = Time.time + motionDuration;
+        }
+
+        /// <summary>사격 모션이 끝난 뒤 한 번 이동하고, 도착·시간 초과 시 멈춰 다음 조준을 허용한다.</summary>
+        private bool CanFinishReposition()
+        {
+            if (_shouldReposition)
+            {
+                if ((Time.time < _superArmorEndTime) || Controller.IsStunned) return false;
+
+                _shouldReposition = false;
+                _isRepositioning = Controller.TryMoveSideways(REPOSITION_DISTANCE, Range.Value);
+                _repositionEndTime = Time.time + REPOSITION_DURATION;
+            }
+
+            if (!_isRepositioning) return true;
+            if (!Controller.HasArrived && !Controller.IsStuck && (Time.time < _repositionEndTime)) return false;
+
+            Controller.StopMove();
+            _isRepositioning = false;
+            return true;
         }
 
         private float GetFireDelay()

@@ -14,6 +14,8 @@ namespace AI
         /// <summary>후보 지점을 NavMesh 위로 끌어당길 때 허용하는 최대 거리(m).</summary>
         private const float SAMPLE_DISTANCE = 2.0f;
 
+        private const float SIDE_STEP_SAMPLE_DISTANCE = 0.5f;
+
         /// <summary>
         /// 경로 길이가 이동 거리의 이 배수를 넘으면 버린다.
         /// 벽을 크게 돌아 대상 쪽으로 지나가는 경로를 거르기 위함이다.
@@ -70,6 +72,41 @@ namespace AI
                 if (NavMesh.Raycast(candidateHit.position, targetPosition, out _, NavMesh.AllAreas)) continue;
 
                 point = candidateHit.position;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>좌우를 무작위 순서로 검사해 직진할 수 있고 사선·사거리를 유지하는 짧은 이동 지점을 고른다.</summary>
+        public static bool TryFindSideStep(
+            Vector3 origin,
+            Vector3 targetPosition,
+            float moveDistance,
+            float maxDistanceFromTarget,
+            out Vector3 point)
+        {
+            point = origin;
+            if (!NavMesh.SamplePosition(origin, out NavMeshHit originHit, SIDE_STEP_SAMPLE_DISTANCE, NavMesh.AllAreas)) return false;
+
+            Vector3 toTarget = Vector3.ProjectOnPlane(targetPosition - originHit.position, Vector3.up);
+            Vector3 side = Vector3.Cross(Vector3.up, toTarget.normalized);
+            if (side.sqrMagnitude <= Mathf.Epsilon) return false;
+            if (Random.value < 0.5f) side = -side;
+
+            for (int i = 0; i < 2; i++)
+            {
+                Vector3 candidate = originHit.position + side * (i == 0 ? moveDistance : -moveDistance);
+                // 사거리 끝에서도 옆으로 움직일 수 있도록 대상과의 수평 거리를 유지한다.
+                Vector3 fromTarget = Vector3.ProjectOnPlane(candidate - targetPosition, Vector3.up);
+                candidate -= fromTarget - fromTarget.normalized * toTarget.magnitude;
+                if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, SIDE_STEP_SAMPLE_DISTANCE, NavMesh.AllAreas)) continue;
+                if (GetHorizontalDistance(originHit.position, hit.position) < moveDistance * 0.5f) continue;
+                if (GetHorizontalDistance(hit.position, targetPosition) > maxDistanceFromTarget) continue;
+                if (NavMesh.Raycast(originHit.position, hit.position, out _, NavMesh.AllAreas)) continue;
+                if (NavMesh.Raycast(hit.position, targetPosition, out _, NavMesh.AllAreas)) continue;
+
+                point = hit.position;
                 return true;
             }
 
