@@ -12,6 +12,7 @@ namespace Map.Maze
     {
         #region Serialized Fields
         [SerializeField] private Collider _interactionCollider;
+        [SerializeField] private GameObject _machineModel;
         [SerializeField] private SOCutscene _introCutscene;
         [SerializeField] private int _uploadCutsceneId = 34;
         #endregion
@@ -125,6 +126,9 @@ namespace Map.Maze
             _isUploaded = true;
             if (_portalVisual != null) _portalVisual.SetActive(true);
             if (_portalCollider != null) _portalCollider.enabled = true;
+            // 전송 카메라와 이 컴포넌트는 샷이 끝날 때까지 필요하므로 외형과 상호작용 판정만 제거한다.
+            if (_machineModel != null) Destroy(_machineModel);
+            if (_interactionCollider != null) Destroy(_interactionCollider.gameObject);
         }
         #endregion
 
