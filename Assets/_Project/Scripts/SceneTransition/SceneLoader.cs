@@ -58,6 +58,7 @@ namespace SceneTransition
         private static bool _isLoading;
         private static bool _isCampaignSession;
         private static bool _hasContinueRequest;
+        private static bool _isMainMenuPending;
         #endregion
 
         #region Properties
@@ -76,6 +77,11 @@ namespace SceneTransition
         /// 로딩씬이 불러갈 목적지 씬. 전환 중이 아니면 null.
         /// </summary>
         public static ESceneType? PendingScene { get; private set; }
+
+        /// <summary>
+        /// 로딩씬이 메인 메뉴를 불러가야 하면 true. 메인 메뉴는 ESceneType에 없으므로 PendingScene과 따로 둔다.
+        /// </summary>
+        public static bool IsMainMenuPending => _isMainMenuPending;
         #endregion
 
         #region Events
@@ -229,6 +235,7 @@ namespace SceneTransition
 
         /// <summary>
         /// 현재 진행을 저장하고 SceneLoader 런타임 상태를 비운 뒤 메인 메뉴로 이동한다.
+        /// 다른 이동처럼 로딩씬(달리는 플레이어 화면)을 거친다. 로딩씬 안에서 부르면(로딩 컷씬 설정창) 이미 떠 있는 로딩 화면이 이어서 불러온다.
         /// </summary>
         /// <returns>메인 메뉴를 불러왔으면 true</returns>
         public static bool TryLoadMainMenu()
@@ -243,8 +250,23 @@ namespace SceneTransition
 
             SaveCurrentProgress();
             ResetSessionState();
-            SceneManager.LoadScene(MAIN_MENU_SCENE_NAME);
+
+            // _isLoading과 _isMainMenuPending은 메인 메뉴 로드가 끝날 때 푼다.
+            _isLoading = true;
+            _isMainMenuPending = true;
+            if (!SceneManager.GetSceneByName(LOADING_SCENE_NAME).isLoaded)
+                SceneManager.LoadSceneAsync(LOADING_SCENE_NAME, LoadSceneMode.Additive);
             return true;
+        }
+
+        /// <summary>
+        /// 로딩씬이 목적지 씬으로 넘어가기 전에 이번 이동을 멈춘다. 로딩 컷씬 설정창에서 메인 화면·게임 종료를 고를 때 부른다.
+        /// 진행 순번은 되돌리지 않으므로, 저장하면 이어하기는 목적지 씬부터 시작한다.
+        /// </summary>
+        public static void CancelPendingLoad()
+        {
+            _isLoading = false;
+            PendingScene = null;
         }
 
         /// <summary>
@@ -254,13 +276,20 @@ namespace SceneTransition
         /// <returns>불러오기 작업. 기다리는 목적지가 없으면 null</returns>
         public static AsyncOperation LoadPendingSceneAsync()
         {
-            if (!PendingScene.HasValue) return null;
+            string sceneName;
+            if (_isMainMenuPending)
+                sceneName = MAIN_MENU_SCENE_NAME;
+            else if (PendingScene.HasValue)
+                sceneName = SceneNames[(int)PendingScene.Value];
+            else
+                return null;
 
-            AsyncOperation operation = SceneManager.LoadSceneAsync(SceneNames[(int)PendingScene.Value]);
+            AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
             operation.allowSceneActivation = false;
             operation.completed += _ =>
             {
                 _isLoading = false;
+                _isMainMenuPending = false;
                 PendingScene = null;
                 SaveCurrentProgress();
             };
@@ -285,6 +314,7 @@ namespace SceneTransition
             _isLoading = false;
             _isCampaignSession = false;
             _hasContinueRequest = false;
+            _isMainMenuPending = false;
             PreviousScene = null;
             PendingScene = null;
         }

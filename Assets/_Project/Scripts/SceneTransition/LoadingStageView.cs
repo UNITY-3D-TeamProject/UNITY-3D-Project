@@ -21,6 +21,7 @@ namespace SceneTransition
     /// 스테이지로 갈 때는 앱 순서 줄(지금 들어가는 앱 강조)과 랜덤 팁을, 로비로 갈 때는 "현재 스테이지 → 로비" 경로를 보여 준다.
     /// LoadingScreen이 이동을 알면 TryShow를, 진행 바가 바뀔 때마다 SetProgress를 부른다.
     /// 로딩씬은 이동할 때마다 새로 열리므로, 옮긴 러너 위치·바꾼 문구 등은 되돌리지 않는다.
+    /// 단, 로딩 컷씬 중 메인 메뉴로 바꿀 때는 ShowMainMenu가 기본 화면으로 되돌린다.
     /// </summary>
     public class LoadingStageView : MonoBehaviour
     {
@@ -63,6 +64,8 @@ namespace SceneTransition
         [Header("Text")]
         [Tooltip("{0}에 앱 이름이 들어간다")]
         [SerializeField] private string _connectFormat = "{0} 앱에 접속 중...";
+        [Tooltip("메인 메뉴로 돌아갈 때 기본 화면 문구. 메인 메뉴는 ESceneType에 없어 SO 이동 문구 목록에 넣을 수 없다")]
+        [SerializeField] private string _mainMenuMoveText = "메인 메뉴로 가는 중...";
 
         [Header("Step")]
         [SerializeField] private Sprite _doneSprite;
@@ -71,6 +74,12 @@ namespace SceneTransition
         [SerializeField] private Color _pendingColor = new Color(1f, 1f, 1f, 0.35f);
         [SerializeField] private Color _doneLabelColor = Color.white;
         [SerializeField] private Color _pendingLabelColor = new Color(1f, 1f, 1f, 0.45f);
+        #endregion
+
+        #region Private Fields
+        // ShowScreen이 옮기기 전의 러너 위치. ShowMainMenu가 기본 화면으로 되돌릴 때 쓴다.
+        private Vector2 _runnersDefaultPosition;
+        private bool _hasMovedRunners;
         #endregion
 
         #region Public Methods
@@ -108,6 +117,23 @@ namespace SceneTransition
 
             gameObject.SetActive(false);
             return false;
+        }
+
+        /// <summary>
+        /// 메인 메뉴로 돌아갈 때 부른다. 꺼 두고 기본 화면(달리는 플레이어) 문구만 메인 메뉴 문구로 바꾼다.
+        /// 로비 화면(로딩 컷씬 피드·파일 → 로비)을 띄운 뒤에 부르면 숨긴 문구와 옮긴 러너도 되돌린다.
+        /// </summary>
+        public void ShowMainMenu()
+        {
+            if (_defaultLoadingText != null)
+            {
+                _defaultLoadingText.text = _mainMenuMoveText;
+                _defaultLoadingText.gameObject.SetActive(true);
+            }
+
+            if (_hasMovedRunners) _runners.anchoredPosition = _runnersDefaultPosition;
+
+            gameObject.SetActive(false);
         }
 
         /// <summary>
@@ -173,7 +199,12 @@ namespace SceneTransition
         private void ShowScreen()
         {
             if (_defaultLoadingText != null) _defaultLoadingText.gameObject.SetActive(false);
-            if (_runners != null) _runners.anchoredPosition = _runnersPosition;
+            if (_runners != null)
+            {
+                _runnersDefaultPosition = _runners.anchoredPosition;
+                _hasMovedRunners = true;
+                _runners.anchoredPosition = _runnersPosition;
+            }
 
             gameObject.SetActive(true);
             SetProgress(0f);
