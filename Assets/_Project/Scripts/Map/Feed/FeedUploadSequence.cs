@@ -17,6 +17,10 @@ namespace Map.Feed
         [SerializeField] private Transform _card;
         [SerializeField] private CinemachineCamera _uploadCamera;
         [SerializeField] private GameObject _portal;
+        [Tooltip("업로드 중 작아져 사라지는 작성 콘솔 외형")]
+        [SerializeField] private Transform _consoleModel;
+        [Tooltip("외형이 사라지면 함께 끌 콘솔과 상호작용 판정")]
+        [SerializeField] private GameObject _consoleRoot;
         [SerializeField] private TrailRenderer[] _trails;
         [SerializeField] private ParticleSystem _uploadParticles;
         [SerializeField] private ParticleSystem _completionBurst;
@@ -33,6 +37,7 @@ namespace Map.Feed
         [Tooltip("초당 회전 각도. 시작은 느리고 끝으로 갈수록 빨라진다")]
         [SerializeField, Min(0.0f)] private float _startSpinSpeed = 20.0f;
         [SerializeField, Min(0.0f)] private float _endSpinSpeed = 720.0f;
+        [SerializeField, Min(0.05f)] private float _consoleShrinkDuration = 0.5f;
         #endregion
 
         #region Private Fields
@@ -45,6 +50,7 @@ namespace Map.Feed
         private bool _isRequested;
         private bool _isStarted;
         private bool _isUploading;
+        private Vector3 _consoleStartScale;
         #endregion
 
         #region Properties
@@ -57,6 +63,7 @@ namespace Map.Feed
             Debug.Assert((_card != null) && (_uploadCamera != null) && (_portal != null),
                 $"[{name}] 피드 업로드 참조가 누락되었습니다.");
             _billboard = _card.GetComponent<Billboard>();
+            if (_consoleModel != null) _consoleStartScale = _consoleModel.localScale;
             SetTrails(false);
         }
 
@@ -119,6 +126,12 @@ namespace Map.Feed
             _isUploading = false;
             _isRequested = false;
             _isStarted = false;
+            if (!IsUploaded && (_consoleModel != null))
+            {
+                _consoleModel.localScale = _consoleStartScale;
+                _consoleModel.gameObject.SetActive(true);
+                if (_consoleRoot != null) _consoleRoot.SetActive(true);
+            }
         }
         #endregion
 
@@ -140,6 +153,7 @@ namespace Map.Feed
                 _isUploading || IsUploaded) return;
 
             StartCoroutine(CoUpload());
+            if (_consoleModel != null) StartCoroutine(CoShrinkConsole());
         }
 
         private void HandlePlayFinished(CinematicManager manager)
@@ -180,6 +194,8 @@ namespace Map.Feed
                 GimmickUtility.PlayUi(_completionSound);
             }
             _card.gameObject.SetActive(false);
+            if (_consoleModel != null) _consoleModel.gameObject.SetActive(false);
+            if (_consoleRoot != null) _consoleRoot.SetActive(false);
             if ((_billboard != null) && _isUploading) _billboard.enabled = _wasBillboardEnabled;
             _isUploading = false;
             IsUploaded = true;
@@ -187,6 +203,19 @@ namespace Map.Feed
         #endregion
 
         #region Coroutines
+        private IEnumerator CoShrinkConsole()
+        {
+            for (float time = 0.0f; time < _consoleShrinkDuration; time += Time.unscaledDeltaTime)
+            {
+                float progress = Mathf.SmoothStep(0.0f, 1.0f, time / _consoleShrinkDuration);
+                _consoleModel.localScale = Vector3.Lerp(_consoleStartScale, Vector3.zero, progress);
+                yield return null;
+            }
+
+            _consoleModel.gameObject.SetActive(false);
+            if (_consoleRoot != null) _consoleRoot.SetActive(false);
+        }
+
         private IEnumerator CoUpload()
         {
             _isUploading = true;

@@ -41,7 +41,7 @@ namespace Map.Maze
             CreateCamera("FileMachineCamera", "FileUploadMachine",
                 new Vector3(3.0f, 2.5f, -5.5f), new Vector3(0.0f, 1.0f, 0.5f));
             _camera = CreateCamera("FileUploadCamera", "FileUploadSequence",
-                new Vector3(4.5f, 5.0f, -9.0f), new Vector3(0.0f, 4.0f, 0.0f));
+                new Vector3(4.5f, 5.0f, 9.0f), new Vector3(0.0f, 4.0f, 0.0f));
             _camera.Lens.FieldOfView = 55.0f;
         }
 

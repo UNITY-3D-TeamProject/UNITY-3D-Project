@@ -14,6 +14,31 @@ namespace Map.Maze
     /// <summary>파일 미로 컷신의 관리자, 파일 전달 및 도둑 군중 연출.</summary>
     public class FileMazeCutsceneStaging : MonoBehaviour
     {
+        #region Constants
+        private const int FILE_COLUMNS = 16;
+        private const int FILE_ROWS = 22;
+        private const float FILE_PIXEL_SIZE = 0.0364f;
+        private const float FILE_BACK_Z = 0.015f;
+        private const float FILE_BASE_FRONT_Z = -0.015f;
+        private const float FILE_RAISED_FRONT_Z = -0.03f;
+        private const int PIXEL_DARK = 1;
+        private const int PIXEL_SHADE = 2;
+        private const int PIXEL_EDGE = 3;
+        private const int PIXEL_LIGHT = 4;
+        private const float FILE_GLOW_MARGIN = 0.28f;
+        private const float FILE_GLOW_STRENGTH = 0.6f;
+        private const int FILE_GLOW_TEXTURE_SIZE = 64;
+        private static readonly int[] PixelCubeTriangles =
+        {
+            0, 3, 2, 0, 2, 1,
+            5, 6, 7, 5, 7, 4,
+            4, 7, 3, 4, 3, 0,
+            1, 2, 6, 1, 6, 5,
+            3, 7, 6, 3, 6, 2,
+            1, 5, 4, 1, 4, 0
+        };
+        #endregion
+
         #region Serialized Fields
         [SerializeField] private GameObject _administratorPrefab;
         [SerializeField] private GameObject _thiefPrefab;
@@ -26,6 +51,7 @@ namespace Map.Maze
         private readonly List<GameObject> _actors = new();
         private readonly List<Material> _materials = new();
         private readonly List<Mesh> _meshes = new();
+        private Texture2D _fileGlowTexture;
         private CinemachineCamera _camera;
         private GameObject _administrator;
         private PlayableGraph _idleGraph;
@@ -168,6 +194,8 @@ namespace Map.Maze
             _materials.Clear();
             foreach (Mesh mesh in _meshes) if (mesh != null) Destroy(mesh);
             _meshes.Clear();
+            if (_fileGlowTexture != null) Destroy(_fileGlowTexture);
+            _fileGlowTexture = null;
             // 복귀 블렌드가 진행되는 동안 마지막 카메라를 유지한다.
             if (shouldDestroyCamera && _camera != null)
             {
@@ -182,68 +210,172 @@ namespace Map.Maze
         private GameObject CreateMusicFile(string label, Color color, int type)
         {
             var card = new GameObject("MusicFile_" + label);
-            var body = new GameObject("Document");
-            body.transform.SetParent(card.transform, false);
-            var mesh = new Mesh { name = "RewardFileDocument" };
-            mesh.vertices = new[]
-            {
-                new Vector3(-0.3f, -0.4f, 0f), new Vector3(0.3f, -0.4f, 0f),
-                new Vector3(0.3f, 0.22f, 0f), new Vector3(0.12f, 0.4f, 0f),
-                new Vector3(-0.3f, 0.4f, 0f)
-            };
-            mesh.triangles = new[] { 0, 4, 3, 0, 3, 2, 0, 2, 1, 3, 4, 0, 2, 3, 0, 1, 2, 0 };
-            mesh.RecalculateNormals();
-            mesh.RecalculateBounds();
-            body.AddComponent<MeshFilter>().sharedMesh = mesh;
-            var surface = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-            surface.color = Color.Lerp(Color.black, color, 0.16f);
-            body.AddComponent<MeshRenderer>().sharedMaterial = surface;
-            _meshes.Add(mesh);
-            _materials.Add(surface);
-
-            var ink = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-            ink.color = color;
-            _materials.Add(ink);
-            AddFileBar(card.transform, ink, new Vector2(-0.3f, 0f), new Vector2(0.025f, 0.8f), 0f);
-            AddFileBar(card.transform, ink, new Vector2(0f, -0.4f), new Vector2(0.6f, 0.025f), 0f);
-            AddFileBar(card.transform, ink, new Vector2(0.3f, -0.09f), new Vector2(0.025f, 0.62f), 0f);
-            AddFileBar(card.transform, ink, new Vector2(-0.09f, 0.4f), new Vector2(0.42f, 0.025f), 0f);
-            AddFileBar(card.transform, ink, new Vector2(0.21f, 0.31f), new Vector2(0.255f, 0.025f), -45f);
-            AddFileBar(card.transform, ink, new Vector2(0.12f, 0.31f), new Vector2(0.022f, 0.18f), 0f);
-            AddFileBar(card.transform, ink, new Vector2(0.21f, 0.22f), new Vector2(0.18f, 0.022f), 0f);
-
-            if (type == 0)
-            {
-                for (int i = 0; i < 4; i++)
-                    AddFileBar(card.transform, ink, new Vector2(-0.015f, 0.12f - i * 0.09f), new Vector2(i == 3 ? 0.2f : 0.34f, 0.027f), 0f);
-            }
-            else if (type == 1)
-            {
-                float[] heights = { 0.07f, 0.17f, 0.29f, 0.17f, 0.07f };
-                for (int i = 0; i < heights.Length; i++)
-                    AddFileBar(card.transform, ink, new Vector2((i - 2) * 0.075f, -0.015f), new Vector2(0.035f, heights[i]), 0f);
-            }
-            else
-            {
-                for (int i = 0; i < 3; i++)
-                    AddFileBar(card.transform, ink, new Vector2(-0.005f, 0.085f - i * 0.07f), new Vector2(0.34f, 0.018f), 0f);
-                AddFileBar(card.transform, ink, new Vector2(-0.08f, 0.005f), new Vector2(0.05f, 0.05f), 25f);
-                AddFileBar(card.transform, ink, new Vector2(0.06f, 0.075f), new Vector2(0.05f, 0.05f), 25f);
-                AddFileBar(card.transform, ink, new Vector2(-0.055f, 0.075f), new Vector2(0.016f, 0.14f), 0f);
-                AddFileBar(card.transform, ink, new Vector2(0.085f, 0.145f), new Vector2(0.016f, 0.14f), 0f);
-            }
+            int[,] pixels = BuildFilePixels(type);
+            Color dark = Color.Lerp(Color.black, color, 0.16f);
+            AddPixelLayer(card.transform, pixels, PIXEL_DARK, dark, FILE_BASE_FRONT_Z);
+            AddPixelLayer(card.transform, pixels, PIXEL_SHADE, Color.Lerp(Color.black, color, 0.55f), FILE_BASE_FRONT_Z);
+            AddPixelLayer(card.transform, pixels, PIXEL_EDGE, color, FILE_RAISED_FRONT_Z);
+            AddPixelLayer(card.transform, pixels, PIXEL_LIGHT, Color.Lerp(color, Color.white, 0.65f), FILE_RAISED_FRONT_Z);
+            AddFileGlow(card.transform, color);
 
             GameObject tag = new GameObject("FileType");
             tag.transform.SetParent(card.transform, false);
-            tag.transform.localPosition = new Vector3(0f, -0.29f, -0.055f);
+            tag.transform.localPosition = new Vector3(0f, -0.255f, FILE_RAISED_FRONT_Z - 0.005f);
             tag.transform.localRotation = Quaternion.identity;
             TextMeshPro text = tag.AddComponent<TextMeshPro>();
             text.text = type == 1 ? ".WAV" : ".TXT";
-            text.fontSize = 2f;
+            text.fontSize = 1.2f;
+            text.fontStyle = FontStyles.Bold;
             text.alignment = TextAlignmentOptions.Center;
-            text.color = color;
-            text.rectTransform.sizeDelta = new Vector2(0.55f, 0.17f);
+            text.color = dark;
+            text.rectTransform.sizeDelta = new Vector2(0.44f, 0.145f);
             return card;
+        }
+
+        /// <summary>시안 D의 픽셀 파일 아이콘을 행·열 격자로 만든다. 0행이 맨 위다.</summary>
+        private static int[,] BuildFilePixels(int type)
+        {
+            var pixels = new int[FILE_ROWS, FILE_COLUMNS];
+            for (int y = 0; y < FILE_ROWS; y++)
+            {
+                for (int x = 0; x < FILE_COLUMNS; x++)
+                {
+                    if (x > 11 && y < x - 11) continue;
+                    bool isEdge = x == 0 || x == FILE_COLUMNS - 1 || y == 0 || y == FILE_ROWS - 1 || (x > 11 && y == x - 11);
+                    if (isEdge) pixels[y, x] = PIXEL_EDGE;
+                    else if (x >= 11 && y <= 4) pixels[y, x] = PIXEL_LIGHT;
+                    else pixels[y, x] = x < 2 || y < 2 ? PIXEL_SHADE : PIXEL_DARK;
+                }
+            }
+
+            // 접힌 모서리 안쪽 선과 확장자 띠
+            for (int y = 1; y <= 4; y++) pixels[y, 11] = PIXEL_EDGE;
+            for (int x = 12; x <= 14; x++) pixels[4, x] = PIXEL_EDGE;
+            for (int y = 16; y <= 19; y++)
+                for (int x = 2; x <= 13; x++) pixels[y, x] = PIXEL_EDGE;
+
+            if (type == 0)
+            {
+                int[] widths = { 10, 10, 9, 10, 6 };
+                for (int i = 0; i < widths.Length; i++)
+                    for (int x = 0; x < widths[i]; x++) pixels[6 + i * 2, 3 + x] = PIXEL_LIGHT;
+            }
+            else if (type == 1)
+            {
+                int[] heights = { 2, 6, 10, 4, 8 };
+                for (int i = 0; i < heights.Length; i++)
+                    for (int y = 0; y < heights[i]; y++) pixels[10 - heights[i] / 2 + y, 3 + i * 2] = PIXEL_LIGHT;
+            }
+            else
+            {
+                string[] note = { "..#####", "..#...#", "..#...#", "..#...#", "###.###", "###.###" };
+                for (int y = 0; y < note.Length; y++)
+                    for (int x = 0; x < note[y].Length; x++)
+                        if (note[y][x] == '#') pixels[7 + y, 4 + x] = PIXEL_LIGHT;
+            }
+            return pixels;
+        }
+
+        /// <summary>맵 Bloom이 약해 네온 빛 번짐은 파일 뒤의 가산 혼합 판으로 표현한다.</summary>
+        private void AddFileGlow(Transform parent, Color color)
+        {
+            float halfWidth = FILE_COLUMNS * FILE_PIXEL_SIZE * 0.5f + FILE_GLOW_MARGIN;
+            float halfHeight = FILE_ROWS * FILE_PIXEL_SIZE * 0.5f + FILE_GLOW_MARGIN;
+            if (_fileGlowTexture == null) _fileGlowTexture = CreateFileGlowTexture(halfWidth, halfHeight);
+
+            var mesh = new Mesh { name = "RewardFileGlow" };
+            mesh.vertices = new[]
+            {
+                new Vector3(-halfWidth, -halfHeight, FILE_BACK_Z), new Vector3(halfWidth, -halfHeight, FILE_BACK_Z),
+                new Vector3(halfWidth, halfHeight, FILE_BACK_Z), new Vector3(-halfWidth, halfHeight, FILE_BACK_Z)
+            };
+            mesh.uv = new[] { Vector2.zero, Vector2.right, Vector2.one, Vector2.up };
+            mesh.triangles = new[] { 0, 3, 2, 0, 2, 1 };
+            mesh.RecalculateBounds();
+            _meshes.Add(mesh);
+
+            var material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            material.SetFloat("_Surface", 1f);
+            material.SetFloat("_Blend", 2f);
+            material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.One);
+            material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.One);
+            material.SetFloat("_ZWrite", 0f);
+            material.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Off);
+            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            material.SetOverrideTag("RenderType", "Transparent");
+            material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+            material.mainTexture = _fileGlowTexture;
+            material.color = color * FILE_GLOW_STRENGTH;
+            _materials.Add(material);
+
+            var glow = new GameObject("FileGlow");
+            glow.transform.SetParent(parent, false);
+            glow.AddComponent<MeshFilter>().sharedMesh = mesh;
+            glow.AddComponent<MeshRenderer>().sharedMaterial = material;
+        }
+
+        private static Texture2D CreateFileGlowTexture(float halfWidth, float halfHeight)
+        {
+            var texture = new Texture2D(FILE_GLOW_TEXTURE_SIZE, FILE_GLOW_TEXTURE_SIZE, TextureFormat.RGBA32, false);
+            texture.wrapMode = TextureWrapMode.Clamp;
+            for (int y = 0; y < FILE_GLOW_TEXTURE_SIZE; y++)
+            {
+                for (int x = 0; x < FILE_GLOW_TEXTURE_SIZE; x++)
+                {
+                    // 파일 외곽에서 가장자리까지 빛이 줄어들도록 파일 밖 거리로 밝기를 정한다.
+                    float offsetX = Mathf.Abs((x + 0.5f) / FILE_GLOW_TEXTURE_SIZE * 2f - 1f) * halfWidth;
+                    float offsetY = Mathf.Abs((y + 0.5f) / FILE_GLOW_TEXTURE_SIZE * 2f - 1f) * halfHeight;
+                    float distanceX = Mathf.Max(0f, offsetX - (halfWidth - FILE_GLOW_MARGIN));
+                    float distanceY = Mathf.Max(0f, offsetY - (halfHeight - FILE_GLOW_MARGIN));
+                    float distance = Mathf.Sqrt(distanceX * distanceX + distanceY * distanceY);
+                    float brightness = Mathf.Pow(Mathf.Clamp01(1f - distance / FILE_GLOW_MARGIN), 2f);
+                    texture.SetPixel(x, y, new Color(brightness, brightness, brightness, brightness));
+                }
+            }
+            texture.Apply();
+            return texture;
+        }
+
+        private void AddPixelLayer(Transform parent, int[,] pixels, int pixel, Color color, float frontZ)
+        {
+            var vertices = new List<Vector3>();
+            var triangles = new List<int>();
+            for (int y = 0; y < FILE_ROWS; y++)
+            {
+                for (int x = 0; x < FILE_COLUMNS; x++)
+                {
+                    if (pixels[y, x] != pixel) continue;
+                    float left = (x - FILE_COLUMNS * 0.5f) * FILE_PIXEL_SIZE;
+                    float right = left + FILE_PIXEL_SIZE;
+                    float top = (FILE_ROWS * 0.5f - y) * FILE_PIXEL_SIZE;
+                    float bottom = top - FILE_PIXEL_SIZE;
+                    int start = vertices.Count;
+                    vertices.Add(new Vector3(left, bottom, frontZ));
+                    vertices.Add(new Vector3(right, bottom, frontZ));
+                    vertices.Add(new Vector3(right, top, frontZ));
+                    vertices.Add(new Vector3(left, top, frontZ));
+                    vertices.Add(new Vector3(left, bottom, FILE_BACK_Z));
+                    vertices.Add(new Vector3(right, bottom, FILE_BACK_Z));
+                    vertices.Add(new Vector3(right, top, FILE_BACK_Z));
+                    vertices.Add(new Vector3(left, top, FILE_BACK_Z));
+                    foreach (int index in PixelCubeTriangles) triangles.Add(start + index);
+                }
+            }
+
+            var mesh = new Mesh { name = "RewardFilePixels" };
+            mesh.SetVertices(vertices);
+            mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateBounds();
+            _meshes.Add(mesh);
+
+            var material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            material.color = color;
+            _materials.Add(material);
+
+            var layer = new GameObject("FilePixels");
+            layer.transform.SetParent(parent, false);
+            layer.AddComponent<MeshFilter>().sharedMesh = mesh;
+            layer.AddComponent<MeshRenderer>().sharedMaterial = material;
         }
 
         /// <summary>관리자 전달과 마지막 전송에서 같은 파일 디자인을 사용한다.</summary>
@@ -255,18 +387,6 @@ namespace Map.Maze
             GameObject card = CreateMusicFile(labels[type], colors[type], type);
             _actors.Add(card);
             return card;
-        }
-
-        private static void AddFileBar(Transform parent, Material material, Vector2 position, Vector2 size, float angle)
-        {
-            GameObject bar = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            bar.name = "FileDetail";
-            Destroy(bar.GetComponent<Collider>());
-            bar.transform.SetParent(parent, false);
-            bar.transform.localPosition = new Vector3(position.x, position.y, -0.025f);
-            bar.transform.localRotation = Quaternion.Euler(0f, 0f, angle);
-            bar.transform.localScale = new Vector3(size.x, size.y, 0.035f);
-            bar.GetComponent<Renderer>().sharedMaterial = material;
         }
 
         private IEnumerator CoFiles()
