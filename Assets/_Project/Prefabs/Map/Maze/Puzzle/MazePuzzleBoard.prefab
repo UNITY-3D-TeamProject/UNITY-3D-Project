@@ -256,6 +256,7 @@ Transform:
   - {fileID: 4874470826201967810}
   - {fileID: 7042301883435226531}
   - {fileID: 3751818736901517561}
+  - {fileID: 6526649752797714120}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3206262867131444034
@@ -1640,6 +1641,95 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 1243406773546738343}
   m_maskType: 0
+--- !u!1 &6382896614391012398
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6526649752797714120}
+  - component: {fileID: 2655978987494270664}
+  - component: {fileID: 8117413113816334514}
+  m_Layer: 0
+  m_Name: CinematicCam_PuzzleReset
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6526649752797714120
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6382896614391012398}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.07742082, y: 0, z: 0, w: 0.99699855}
+  m_LocalPosition: {x: 0, y: 1.4, z: -3.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5905202890784512408}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2655978987494270664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6382896614391012398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
+  Priority:
+    Enabled: 1
+    m_Value: 30
+  OutputChannel: 1
+  StandbyUpdate: 2
+  m_StreamingVersion: 0
+  m_LegacyPriority: 0
+  Target:
+    TrackingTarget: {fileID: 0}
+    LookAtTarget: {fileID: 0}
+    CustomLookAtTarget: 0
+  Lens:
+    FieldOfView: 40
+    OrthographicSize: 10
+    NearClipPlane: 0.1
+    FarClipPlane: 5000
+    Dutch: 0
+    ModeOverride: 0
+    PhysicalProperties:
+      GateFit: 2
+      SensorSize: {x: 21.946, y: 16.002}
+      LensShift: {x: 0, y: 0}
+      FocusDistance: 10
+      Iso: 200
+      ShutterSpeed: 0.005
+      Aperture: 16
+      BladeCount: 5
+      Curvature: {x: 2, y: 11}
+      BarrelClipping: 0.25
+      Anamorphism: 0
+  BlendHint: 0
+--- !u!114 &8117413113816334514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6382896614391012398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc73cde1739a34c4c9a1634521be30f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIandCinematic.CinematicCamera
+  _key: File_PuzzleReset
 --- !u!1 &6802477588714204681
 GameObject:
   m_ObjectHideFlags: 0
@@ -2436,6 +2526,7 @@ MonoBehaviour:
   - {fileID: 3905149729615416832}
   _autoShellMaterial: {fileID: 0}
   _shellSourceRoot: {fileID: 0}
+  _shellExcludeRoots: []
 --- !u!65 &1648016724130816201
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2689,6 +2780,7 @@ MonoBehaviour:
   - {fileID: 7617072063424731368}
   _autoShellMaterial: {fileID: 0}
   _shellSourceRoot: {fileID: 0}
+  _shellExcludeRoots: []
 --- !u!65 &9117016887091778227
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3079,6 +3171,7 @@ MonoBehaviour:
   - {fileID: 2517532312977091703}
   _autoShellMaterial: {fileID: 0}
   _shellSourceRoot: {fileID: 0}
+  _shellExcludeRoots: []
 --- !u!65 &3761796130845291829
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3432,6 +3525,7 @@ MonoBehaviour:
   - {fileID: 2382055750160602545}
   _autoShellMaterial: {fileID: 0}
   _shellSourceRoot: {fileID: 0}
+  _shellExcludeRoots: []
 --- !u!65 &5573315697959287343
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3652,6 +3746,7 @@ MonoBehaviour:
   - {fileID: 7769343820614444696}
   _autoShellMaterial: {fileID: 0}
   _shellSourceRoot: {fileID: 0}
+  _shellExcludeRoots: []
 --- !u!4 &2546559113906176968 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8830258708837171198, guid: 450b0dc3b41ddac46a6b8a34c1266a1a, type: 3}
@@ -4109,6 +4204,7 @@ MonoBehaviour:
   - {fileID: 7849813828850095220}
   _autoShellMaterial: {fileID: 0}
   _shellSourceRoot: {fileID: 0}
+  _shellExcludeRoots: []
 --- !u!65 &8426152831249000171
 BoxCollider:
   m_ObjectHideFlags: 0
