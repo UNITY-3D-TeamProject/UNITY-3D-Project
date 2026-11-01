@@ -1,5 +1,6 @@
 using UnityEngine;
 using AI;
+using CharacterAnimation;
 using CharacterSound;
 using Core.Effect;
 using Movement;
@@ -10,7 +11,7 @@ namespace Skill.Skills
     /// <summary>
     /// 적의 바람 스킬. 발동하면 몸통을 제자리에 붙잡고(AIController.Hold),
     /// 램프 시간 동안 바람 방향을 매 프레임 대상 쪽으로 맞추며 점점 세지는 바람으로 부채꼴 안의 대상을 밀어낸 뒤,
-    /// 끝나는 순간 범위 안이면 그 순간 방향으로 한 번 크게 넉백한다.
+    /// 강한 밀치기 애니메이션의 타격 이벤트 순간 범위 안이면 그 순간 방향으로 한 번 크게 넉백한다.
     /// 피해는 없다. 쿨타임은 이 스킬이 아니라 BT 가 관리한다(CooldownCost 를 붙이지 않는다).
     /// 끝나면(정상·대상 놓침·Stop·비활성화) 붙잡힘을 풀므로, BT 는 IsHolding 이 풀릴 때까지 기다리면 된다.
     /// </summary>
@@ -20,6 +21,8 @@ namespace Skill.Skills
         #region Constants
         /// <summary>정상 종료는 ReleaseHold 가 맡으므로, 붙잡힘 안전 시간에 더하는 여유(초).</summary>
         private const float HOLD_MARGIN = 0.5f;
+        /// <summary>애니메이션이 중단되거나 타격 이벤트가 누락됐을 때 기다리는 최대 시간(초).</summary>
+        private const float IMPACT_WAIT_TIMEOUT = 2.0f;
         /// <summary>기즈모 호를 나누어 그리는 선분 수.</summary>
         private const int GIZMO_ARC_SEGMENTS = 16;
         #endregion
@@ -46,7 +49,7 @@ namespace Skill.Skills
         [Header("Knockback")]
         [Tooltip("마지막 강한 밀치기가 닿는 3D 거리(m). 약한 바람에 밀려난 대상도 닿도록 바람 사거리보다 크게 둔다.")]
         [SerializeField, Min(0.0f)] private float _knockbackRange = 8.0f;
-        [Tooltip("램프가 끝나는 순간 범위 안이면 수평으로 밀어내는 거리(m)")]
+        [Tooltip("애니메이션 타격 순간 범위 안이면 수평으로 밀어내는 거리(m)")]
         [SerializeField, Min(0.0f)] private float _knockbackDistance = 4.0f;
         [Tooltip("넉백에 걸리는 시간(초). 짧을수록 세게 튕긴다.")]
         [SerializeField, Min(0.05f)] private float _knockbackDuration = 0.3f;
@@ -68,11 +71,13 @@ namespace Skill.Skills
         {
             Idle,
             Ramp,
+            AwaitImpact,
             Knockback,
         }
 
         private SEffectHandle _windHandle;
         private AIController _controller;
+        private EnemyAnimator _enemyAnimator;
         private SoundController _soundController;
         private EWindPhase _phase;
         private Transform _target;
@@ -87,10 +92,17 @@ namespace Skill.Skills
         {
             base.Awake();
             _controller = GetComponentInParent<AIController>();
+            if (_controller) _enemyAnimator = _controller.GetComponentInChildren<EnemyAnimator>();
             if (_controller) _soundController = _controller.GetComponentInChildren<SoundController>();
 
             Debug.Assert(_controller != null, $"[{name}] AIController 를 찾을 수 없습니다.");
             Debug.Assert(_windOrigin != null, $"[{name}] 바람 기준점이 연결되지 않았습니다.");
+            Debug.Assert(_enemyAnimator != null, $"[{name}] EnemyAnimator 를 찾을 수 없습니다.");
+        }
+
+        private void OnEnable()
+        {
+            if (_enemyAnimator) _enemyAnimator.OnSkillImpact += OnSkillImpactCallback;
         }
 
         private void Update()
@@ -108,6 +120,10 @@ namespace Skill.Skills
             {
                 UpdateRamp();
             }
+            else if (_phase == EWindPhase.AwaitImpact)
+            {
+                UpdateAwaitImpact();
+            }
             else
             {
                 UpdateKnockback();
@@ -116,6 +132,7 @@ namespace Skill.Skills
 
         private void OnDisable()
         {
+            if (_enemyAnimator) _enemyAnimator.OnSkillImpact -= OnSkillImpactCallback;
             Stop();
         }
 
@@ -170,7 +187,7 @@ namespace Skill.Skills
         {
             // 쿨타임 코스트가 없어 CanExecute 가 계속 true 이므로 진행 중 재발동은 여기서 무시한다
             if (_phase != EWindPhase.Idle) return;
-            if (!_controller || !_windOrigin) return;
+            if (!_controller || !_windOrigin || !_enemyAnimator) return;
 
             Transform target = _controller.VisibleTarget;
             if (!target) return;
@@ -189,7 +206,7 @@ namespace Skill.Skills
             _elapsed = 0.0f;
             _phase = EWindPhase.Ramp;
 
-            _controller.Hold(_forward, _rampDuration + _knockbackDuration + HOLD_MARGIN);
+            _controller.Hold(_forward, _rampDuration + IMPACT_WAIT_TIMEOUT + _knockbackDuration + HOLD_MARGIN);
             Transform vfxAnchor = GetVfxAnchor();
             if (_windVfx && _windVfx.Prefab && EffectManager.Instance)
                 _windHandle = EffectManager.Instance.PlayLoop(_windVfx, vfxAnchor.position, GetVfxRotation(_windVfx), vfxAnchor);
@@ -216,7 +233,7 @@ namespace Skill.Skills
             // 램프 동안 바람 방향과 몸 방향을 매 프레임 대상 쪽으로 다시 맞춰, 움직이는 대상을 따라간다
             Vector3 direction = GetPushDirection();
             _forward = direction;
-            _controller.Hold(_forward, (_rampDuration - _elapsed) + _knockbackDuration + HOLD_MARGIN);
+            _controller.Hold(_forward, (_rampDuration - _elapsed) + IMPACT_WAIT_TIMEOUT + _knockbackDuration + HOLD_MARGIN);
 
             bool isInWind = IsTargetInWind(_range);
             if (isInWind)
@@ -228,6 +245,39 @@ namespace Skill.Skills
 
             EffectManager.Instance?.Stop(_windHandle);
             _windHandle = default;
+            if (_soundController) _soundController.SetSkillLoop(SkillName, ESoundPhase.Move, false);
+            _elapsed = 0.0f;
+            _phase = EWindPhase.AwaitImpact;
+        }
+
+        private void UpdateAwaitImpact()
+        {
+            _elapsed += Time.deltaTime;
+            if (!_controller || !_controller.HasVisibleTarget || _elapsed >= IMPACT_WAIT_TIMEOUT)
+            {
+                End();
+                return;
+            }
+
+            _forward = GetPushDirection();
+            _controller.Hold(_forward, IMPACT_WAIT_TIMEOUT - _elapsed + _knockbackDuration + HOLD_MARGIN);
+        }
+
+        private void OnSkillImpactCallback(string skillName)
+        {
+            if (skillName != SkillName) return;
+            if (_phase != EWindPhase.Ramp && _phase != EWindPhase.AwaitImpact) return;
+            if (!_target || !_motor || !_controller || !_controller.HasVisibleTarget)
+            {
+                End();
+                return;
+            }
+
+            // 재생 속도가 달라도 실제 팔 타격 프레임에서 바람을 끝내고 판정·연출을 함께 실행한다.
+            EffectManager.Instance?.Stop(_windHandle);
+            _windHandle = default;
+            if (_soundController) _soundController.SetSkillLoop(SkillName, ESoundPhase.Move, false);
+            _forward = GetPushDirection();
             if (_soundController) _soundController.PlaySkillSound(SkillName, ESoundPhase.Impact, _windOrigin.position);
             Transform vfxAnchor = GetVfxAnchor();
             if (_burstSmokeVfx && _burstSmokeVfx.Prefab)
@@ -240,9 +290,10 @@ namespace Skill.Skills
             // 약한 바람 밖으로 밀려났어도 강한 밀치기 사거리 안이면 넉백한다
             if (IsTargetInWind(_knockbackRange))
             {
-                _knockbackDirection = direction;
+                _knockbackDirection = _forward;
                 _elapsed = 0.0f;
                 _phase = EWindPhase.Knockback;
+                _controller.Hold(_forward, _knockbackDuration + HOLD_MARGIN);
             }
             else
             {
