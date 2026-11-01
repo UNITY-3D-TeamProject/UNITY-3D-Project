@@ -152,10 +152,15 @@ namespace UIandCinematic
         }
 
         // 매 프레임 불러 E를 누른 시간을 쌓고 게이지에 표시한다. 떼면 처음부터 다시 센다. 로딩 영상 스킵처럼 키보드를 직접 읽는다.
-        // 설정창이 열린 동안은 쌓은 시간을 그대로 두고 세지 않는다.
+        // 설정창이 열리면 쌓은 시간과 게이지를 0으로 되돌리고 세지 않는다.
         private bool IsSkipHoldComplete()
         {
-            if (IsGamePaused()) return false;
+            if (IsGamePaused())
+            {
+                _skipHeldTime = 0.0f;
+                if (_skipProgress != null) _skipProgress.fillAmount = 0.0f;
+                return false;
+            }
 
             Keyboard keyboard = Keyboard.current;
             bool isHeld = (keyboard != null) && keyboard.eKey.isPressed;

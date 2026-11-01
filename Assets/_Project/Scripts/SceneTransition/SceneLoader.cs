@@ -248,6 +248,16 @@ namespace SceneTransition
         }
 
         /// <summary>
+        /// 로딩씬이 목적지 씬으로 넘어가기 전에 이번 이동을 멈춘다. 로딩 컷씬 설정창에서 메인 화면·게임 종료를 고를 때 부른다.
+        /// 진행 순번은 되돌리지 않으므로, 저장하면 이어하기는 목적지 씬부터 시작한다.
+        /// </summary>
+        public static void CancelPendingLoad()
+        {
+            _isLoading = false;
+            PendingScene = null;
+        }
+
+        /// <summary>
         /// 로딩씬에서 호출한다. 기다리던 목적지 씬을 비동기로 불러오기 시작한다.
         /// 활성화를 막아 둔 채로 반환하므로, 호출한 쪽에서 allowSceneActivation을 true로 바꿔야 씬이 넘어간다.
         /// </summary>

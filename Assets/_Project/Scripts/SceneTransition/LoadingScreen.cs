@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.Video;
+using Core;
+using UI.Settings;
 
 namespace SceneTransition
 {
@@ -17,6 +19,7 @@ namespace SceneTransition
     /// 4. 일반 이동의 목적지 씬 불러오기 + 진행 바 (실제 진행률을 일정 속도 이하로 따라감)
     /// 5. 목적지 씬 켜기 (로딩 화면만 DontDestroyOnLoad로 남김)
     /// 6. 로딩 화면 페이드아웃 후 삭제
+    /// 컷씬 재생 중 ESC를 누르면 영상을 멈추고 설정창을 연다. (로딩씬에는 PlayerInput이 없어 키보드를 직접 읽는다)
     /// </summary>
     public class LoadingScreen : MonoBehaviour
     {
@@ -77,6 +80,21 @@ namespace SceneTransition
 
         [Tooltip("진행 바가 끝까지 찬 뒤 목적지 씬을 켜기 전까지 머무는 시간(초)")]
         [SerializeField] private float _holdAfterFull = 0.2f;
+
+        [Header("안 해도 됨 (컷씬 중 ESC 설정창)")]
+        [Tooltip("비워 두면 컷씬 중 ESC로 설정창을 열지 않는다")]
+        [SerializeField] private SettingsPresenter _settingsPresenter;
+        [Tooltip("설정창이 열린 동안만 켠다. 이전 씬·목적지 씬의 EventSystem과 겹치지 않게 꺼 둔 채로 저장")]
+        [SerializeField] private GameObject _eventSystem;
+        [Tooltip("튜토리얼 시작 영상 중에는 숨긴다 (영상 뒤에서 튜토리얼을 불러오는 중이라 메인 화면으로 갈 수 없음)")]
+        [SerializeField] private GameObject _mainMenuButton;
+        #endregion
+
+        #region Private Fields
+        private bool _isSettingsOpen;
+        // 설정창을 닫을 때 돌려놓을 커서 상태
+        private CursorLockMode _cursorLockModeBeforeSettings;
+        private bool _isCursorVisibleBeforeSettings;
         #endregion
 
         #region Unity Lifecycle
@@ -117,6 +135,82 @@ namespace SceneTransition
         {
             Keyboard keyboard = Keyboard.current;
             return (keyboard != null) && keyboard.eKey.isPressed;
+        }
+
+        private bool IsSettingsKeyPressed()
+        {
+            Keyboard keyboard = Keyboard.current;
+            return (keyboard != null) && keyboard.escapeKey.wasPressedThisFrame;
+        }
+
+        // 영상을 멈추고 설정창을 연다. 버튼을 누를 수 있게 커서를 풀고, 닫을 때 원래대로 돌린다.
+        private void OpenSettings(bool canReturnToMainMenu)
+        {
+            if (_isSettingsOpen || (_settingsPresenter == null)) return;
+
+            _isSettingsOpen = true;
+            _videoPlayer.Pause();
+
+            _cursorLockModeBeforeSettings = Cursor.lockState;
+            _isCursorVisibleBeforeSettings = Cursor.visible;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            if (_eventSystem != null) _eventSystem.SetActive(true);
+            if (_mainMenuButton != null) _mainMenuButton.SetActive(canReturnToMainMenu);
+
+            _settingsPresenter.CloseRequested += CloseSettings;
+            _settingsPresenter.MainMenuRequested += HandleMainMenuRequested;
+            _settingsPresenter.QuitRequested += HandleQuitRequested;
+            _settingsPresenter.Open();
+        }
+
+        // 설정창을 닫고 영상을 이어서 재생한다.
+        private void CloseSettings()
+        {
+            if (!_isSettingsOpen) return;
+
+            ReleaseSettings();
+            _videoPlayer.Play();
+        }
+
+        // 설정창 구독을 풀고 닫은 뒤 EventSystem·커서를 돌려놓는다. 영상은 건드리지 않는다.
+        private void ReleaseSettings()
+        {
+            if (!_isSettingsOpen) return;
+
+            _isSettingsOpen = false;
+            _settingsPresenter.CloseRequested -= CloseSettings;
+            _settingsPresenter.MainMenuRequested -= HandleMainMenuRequested;
+            _settingsPresenter.QuitRequested -= HandleQuitRequested;
+            _settingsPresenter.Close();
+
+            if (_eventSystem != null) _eventSystem.SetActive(false);
+            Cursor.lockState = _cursorLockModeBeforeSettings;
+            Cursor.visible = _isCursorVisibleBeforeSettings;
+        }
+
+        // 설정창의 "메인 화면으로". 이번 이동을 멈추고 인게임 설정창과 같은 경로로 메인 메뉴에 간다.
+        private void HandleMainMenuRequested()
+        {
+            StopLoadingForExit();
+            GameManager.Instance?.ReturnToMainMenu();
+        }
+
+        // 설정창의 "게임 종료". 이번 이동을 멈추고 인게임 설정창과 같은 경로로 끝낸다.
+        private void HandleQuitRequested()
+        {
+            StopLoadingForExit();
+            GameManager.Instance?.QuitGame();
+        }
+
+        // 컷씬·로딩 진행을 멈추고, 로딩 중이면 거절하는 GameManager의 메인 화면·종료가 동작하도록 이동을 취소한다.
+        private void StopLoadingForExit()
+        {
+            StopAllCoroutines();
+            ReleaseSettings();
+            _videoPlayer.Stop();
+            SceneLoader.CancelPendingLoad();
         }
 
         private void SetAlpha(float value)
@@ -185,7 +279,7 @@ namespace SceneTransition
             {
                 // 영상 재생 중 튜토리얼을 준비하되, 영상이 끝나기 전에는 활성화하지 않는다.
                 operation = SceneLoader.LoadPendingSceneAsync();
-                yield return CoPlayCutscene(clip);
+                yield return CoPlayCutscene(clip, false);
                 while (operation.progress < READY_PROGRESS)
                 {
                     yield return null;
@@ -196,7 +290,7 @@ namespace SceneTransition
                 // 일반 컷씬은 목적지를 불러오기 전에 튼다. (불러오기와 겹치지 않아 끊기지 않음)
                 if (hasCutscene)
                 {
-                    yield return CoPlayCutscene(clip);
+                    yield return CoPlayCutscene(clip, true);
                     _progressGroup.SetActive(true);
                 }
 
@@ -285,7 +379,8 @@ namespace SceneTransition
         }
 
         // 진행 바를 숨기고 영상을 재생한다. E 유지·자연 종료·재생 오류는 같은 정리 경로를 쓴다.
-        private IEnumerator CoPlayCutscene(VideoClip clip)
+        // ESC로 설정창이 열린 동안은 영상이 멈추고 E 스킵 게이지는 0으로 돌아간다. canReturnToMainMenu가 false면 설정창의 메인 화면 버튼을 숨긴다.
+        private IEnumerator CoPlayCutscene(VideoClip clip, bool canReturnToMainMenu)
         {
             bool isFinished = false;
             VideoPlayer.EventHandler onFinished = _ => isFinished = true;
@@ -320,6 +415,24 @@ namespace SceneTransition
 
                 while (!isFinished)
                 {
+                    if (IsSettingsKeyPressed())
+                    {
+                        if (_isSettingsOpen)
+                            CloseSettings();
+                        else
+                            OpenSettings(canReturnToMainMenu);
+                    }
+
+                    if (_isSettingsOpen)
+                    {
+                        // 설정창이 열리면 스킵 게이지를 비우고, 닫은 뒤에는 E를 한 번 뗐다 눌러야 다시 찬다.
+                        heldTime = 0f;
+                        canSkip = false;
+                        SetSkipProgress(0f);
+                        yield return null;
+                        continue;
+                    }
+
                     bool isHeld = IsSkipHeld();
                     if (!isHeld)
                     {
