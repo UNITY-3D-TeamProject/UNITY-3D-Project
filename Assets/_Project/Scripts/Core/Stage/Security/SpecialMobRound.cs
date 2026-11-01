@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Map.Gimmicks;
+using UI;
 
 namespace Core.Stage.Security
 {
@@ -31,6 +32,9 @@ namespace Core.Stage.Security
 
             [Tooltip("이 발판을 깨면 나타나는 다음 발판. 스테이지가 시작될 때 꺼 둔다.")]
             public GameObject NextPlatform;
+
+            [Tooltip("이 발판을 깨면 재생할 독백 번호(SOMonologueTable). 씬에서 한 번만 재생한다. 0 이면 재생하지 않는다.")]
+            public int ClearMonologueId;
         }
         #endregion
 
@@ -44,6 +48,7 @@ namespace Core.Stage.Security
 
         #region Private Fields
         private StageManager _stageManager;
+        private bool _hasPlayedClearMonologue;
         #endregion
 
         #region Properties
@@ -192,12 +197,20 @@ namespace Core.Stage.Security
             }
         }
 
-        // 깬 발판의 다음 발판을 켠다. 특수몹은 그 발판을 밟으면 만든다.
+        // 깬 발판의 다음 발판을 켠다. 특수몹은 그 발판을 밟으면 만든다. 독백이 지정된 발판이면 독백도 재생한다(사망 리셋 뒤에는 다시 재생하지 않는다).
         private void HandleZoneCleared(CombatZone zone)
         {
             foreach (SPlatformStep step in _steps)
             {
-                if ((step.Zone == zone) && (step.NextPlatform != null)) step.NextPlatform.SetActive(true);
+                if (step.Zone != zone) continue;
+
+                if (step.NextPlatform != null) step.NextPlatform.SetActive(true);
+
+                if ((step.ClearMonologueId > 0) && !_hasPlayedClearMonologue && (UIManager.Instance != null))
+                {
+                    _hasPlayedClearMonologue = true;
+                    UIManager.Instance.PlayMonologue(step.ClearMonologueId);
+                }
             }
         }
 

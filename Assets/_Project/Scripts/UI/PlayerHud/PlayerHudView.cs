@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UIandCinematic;
 
 namespace UI.PlayerHud
 {
@@ -63,6 +64,11 @@ namespace UI.PlayerHud
         // 상호작용 대상을 조준하는 동안에만 보이는 안내 ("E 상호작용")
         [Header("Interact Label")]
         [SerializeField] private GameObject _interactLabelRoot;
+
+        // 튜토리얼 독백 중에 크로스헤어 게이지를 가리키는 화살표
+        [Header("Gauge Hint")]
+        [SerializeField] private GameObject _heatHintRoot;
+        [SerializeField] private GameObject _batteryHintRoot;
 
         private CanvasGroup _rollCardGroup;
         private CanvasGroup _bluetoothCardGroup;
@@ -159,6 +165,19 @@ namespace UI.PlayerHud
             if (_interactLabelRoot != null)
             {
                 _interactLabelRoot.SetActive(isVisible);
+            }
+        }
+
+        public void SetGaugeHint(ECrosshairGaugeHint hint)
+        {
+            if (_heatHintRoot != null)
+            {
+                _heatHintRoot.SetActive(hint == ECrosshairGaugeHint.Heat);
+            }
+
+            if (_batteryHintRoot != null)
+            {
+                _batteryHintRoot.SetActive(hint == ECrosshairGaugeHint.Battery);
             }
         }
 

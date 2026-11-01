@@ -25,6 +25,11 @@ namespace Map.Feed
         [SerializeField] private TMP_Text _label;
         #endregion
 
+        #region Properties
+        /// <summary>해시태그 글자의 월드 위치. 글자가 없으면 이 오브젝트의 위치.</summary>
+        public Vector3 LabelPosition => (_label != null) ? _label.transform.position : transform.position;
+        #endregion
+
         #region Public Methods
         /// <summary>
         /// 벽의 크기, 글자, 색을 정한다.

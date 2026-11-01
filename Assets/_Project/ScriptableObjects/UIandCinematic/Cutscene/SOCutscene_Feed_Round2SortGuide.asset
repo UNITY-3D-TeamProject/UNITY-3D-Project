@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a996e19c4d83684a905dbed745d44a8, type: 3}
+  m_Name: SOCutscene_Feed_Round2SortGuide
+  m_EditorClassIdentifier: Assembly-CSharp::UIandCinematic.SOCutscene
+  _endBlendSeconds: 1
+  _steps:
+  - Type: 0
+    SpeakerName: "코리"
+    Portrait: {fileID: 0}
+    CameraKey: Feed_SortGuideFeed
+    Message: "피드들이 전부 올라왔어! 이제 각자 맞는 태그로 보내 주면 돼."
+    ShouldRunTime: 0
+    IsPartnerTalk: 1
+    BlendSeconds: 1.5
+    CameraShot: {fileID: 0}
+  - Type: 0
+    SpeakerName: "타코"
+    Portrait: {fileID: 0}
+    CameraKey: Feed_SortGuideFeed
+    Message: "어떻게 보내?"
+    ShouldRunTime: 0
+    IsPartnerTalk: 1
+    BlendSeconds: 0
+    CameraShot: {fileID: 0}
+  - Type: 0
+    SpeakerName: "코리"
+    Portrait: {fileID: 0}
+    CameraKey: Feed_SortGuideFeed
+    Message: "이 피드를 봐. 음식 사진이지? 총으로 쏘면 네가 서 있는 반대쪽으로 날아가."
+    ShouldRunTime: 0
+    IsPartnerTalk: 1
+    BlendSeconds: 0
+    CameraShot: {fileID: 0}
+  - Type: 0
+    SpeakerName: "코리"
+    Portrait: {fileID: 0}
+    CameraKey: Feed_SortGuideWall
+    Message: "그러니까 이 #음식 벽 쪽으로 날아가게 쏘면 돼. 벽과 피드가 일직선이 되는 자리에서 쏴 봐."
+    ShouldRunTime: 0
+    IsPartnerTalk: 1
+    BlendSeconds: 1.5
+    CameraShot: {fileID: 0}
+  - Type: 0
+    SpeakerName: "코리"
+    Portrait: {fileID: 0}
+    CameraKey: Feed_SortGuideWall
+    Message: "다른 벽에 닿으면 피드는 돌아오고 너도 피해를 입으니까 조심해!"
+    ShouldRunTime: 0
+    IsPartnerTalk: 1
+    BlendSeconds: 0
+    CameraShot: {fileID: 0}
+  - Type: 0
+    SpeakerName: "타코"
+    Portrait: {fileID: 0}
+    CameraKey: Feed_SortGuideWall
+    Message: "알았어. 방향 잘 보고 쏠게!"
+    ShouldRunTime: 0
+    IsPartnerTalk: 1
+    BlendSeconds: 0
+    CameraShot: {fileID: 0}

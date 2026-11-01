@@ -26,8 +26,8 @@ namespace UIandCinematic
         #region Serialized Fields
         [Header("Speakers")]
         [Tooltip("대사의 SpeakerName과 똑같이 적는다")]
-        [SerializeField] private string _playerSpeakerName = "코리";
-        [SerializeField] private string _petSpeakerName = "비트";
+        [SerializeField] private string _playerSpeakerName = "타코";
+        [SerializeField] private string _petSpeakerName = "코리";
 
         [Header("Pet Staging")]
         [Tooltip("대화 중 펫이 설 위치. 플레이어 기준 (오른쪽, 위, 앞) m. 펫은 이 자리에서 플레이어를 본다")]
@@ -52,7 +52,7 @@ namespace UIandCinematic
         [SerializeField] private Vector3 _partnerLookOffset = new(0.0f, 2.1f, 3.0f);
         [Tooltip("상대를 비추는 카메라 위치. 플레이어 기준 (오른쪽, 위, 앞) m. 플레이어 머리가 화면 왼쪽 아래에 걸린다")]
         [SerializeField] private Vector3 _partnerShotOffset = new(0.8f, 1.0f, -1.6f);
-        [Tooltip("상대와 대화 중 코리·비트가 말할 때 플레이어를 비추는 카메라 위치. 상대를 바라볼 위치 기준 (오른쪽, 위, 앞) m. 앞은 플레이어가 보는 방향이라 상대 뒤쪽이다")]
+        [Tooltip("상대와 대화 중 타코·코리가 말할 때 플레이어를 비추는 카메라 위치. 상대를 바라볼 위치 기준 (오른쪽, 위, 앞) m. 앞은 플레이어가 보는 방향이라 상대 뒤쪽이다")]
         [SerializeField] private Vector3 _partnerPlayerShotOffset = new(1.4f, -0.1f, 3.2f);
         [Tooltip("상대 쪽에서 플레이어를 비출 때 바라볼 높이 (플레이어 발 기준) m. 높을수록 상대가 화면에 더 걸린다")]
         [SerializeField] private float _partnerPlayerLookHeight = 1.1f;
@@ -189,7 +189,7 @@ namespace UIandCinematic
             SetActiveCamera(target);
         }
 
-        // 상대와 대화하는 줄에서 부른다. 상대가 말하면 상대 카메라, 코리·비트가 말하면 상대 쪽에서 플레이어를 비추는 카메라를 켠다.
+        // 상대와 대화하는 줄에서 부른다. 상대가 말하면 상대 카메라, 타코·코리가 말하면 상대 쪽에서 플레이어를 비추는 카메라를 켠다.
         public void ShowPartnerTalkLine(string speakerName)
         {
             bool isOurSide = (speakerName == _playerSpeakerName) || (speakerName == _petSpeakerName);

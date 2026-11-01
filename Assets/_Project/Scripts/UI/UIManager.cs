@@ -261,6 +261,7 @@ namespace UI
         // isPartnerTalk가 true면 펫은 제자리에 두고 상대(관리자 등)와의 대화 카메라를 쓴다.
         public bool ShowCutsceneLine(
             string speakerName,
+            string displayName,
             Sprite portrait,
             string message,
             bool isLastLine,
@@ -286,7 +287,7 @@ namespace UI
             }
             _isCutsceneStaged = true;
 
-            if (!_cutscenePresenter.ShowSingleLine(speakerName, portrait, message, isLastLine))
+            if (!_cutscenePresenter.ShowSingleLine(speakerName, displayName, portrait, message, isLastLine))
                 return false;
 
             _isCutsceneLineVisible = true;

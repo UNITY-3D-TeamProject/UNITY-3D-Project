@@ -78,6 +78,18 @@ MonoBehaviour:
       Rule: 1
       CellsBehind: 0
       CellsAhead: 0
+    - Prefab: {fileID: 8731887055806553684, guid: ecef143e1e6e03149a00570b0aefa05d, type: 3}
+      Count: 2
+      Offset: {x: 0, y: 1, z: 0}
+      Rule: 0
+      CellsBehind: 0
+      CellsAhead: 0
+    - Prefab: {fileID: 365870956134482254, guid: 7c456de15f079da419ff2a821a27051a, type: 3}
+      Count: 2
+      Offset: {x: 0, y: 1, z: 0}
+      Rule: 0
+      CellsBehind: 0
+      CellsAhead: 0
     ShouldBakeNavMesh: 1
   - WallPrefabs:
     - {fileID: 8696989729492793409, guid: 2eb24309eb64fbf429ff1f1c3b873b37, type: 3}
@@ -93,15 +105,15 @@ MonoBehaviour:
     NewestCellRatio: 0.4
     BraidRatio: 0.3
     Placements:
-    - Prefab: {fileID: 0}
-      Count: 1
-      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 8731887055806553684, guid: ecef143e1e6e03149a00570b0aefa05d, type: 3}
+      Count: 2
+      Offset: {x: 0, y: 1, z: 0}
       Rule: 0
       CellsBehind: 0
       CellsAhead: 0
-    - Prefab: {fileID: 0}
-      Count: 0
-      Offset: {x: 0, y: 0, z: 0}
+    - Prefab: {fileID: 365870956134482254, guid: 7c456de15f079da419ff2a821a27051a, type: 3}
+      Count: 3
+      Offset: {x: 0, y: 1, z: 0}
       Rule: 0
       CellsBehind: 0
       CellsAhead: 0
@@ -196,7 +208,13 @@ MonoBehaviour:
     GatePrefab: {fileID: 3801399245816027665, guid: 5920bfa7eec30704785bff4f40d39b9c, type: 3}
     NewestCellRatio: 0.3
     BraidRatio: 0.15
-    Placements: []
+    Placements:
+    - Prefab: {fileID: 365870956134482254, guid: 7c456de15f079da419ff2a821a27051a, type: 3}
+      Count: 4
+      Offset: {x: 0, y: 1, z: 0}
+      Rule: 0
+      CellsBehind: 0
+      CellsAhead: 0
     ShouldBakeNavMesh: 1
   _bridgeTileCount: 4
   _floorPrefab: {fileID: 1653281512355698945, guid: 5dfe75d1020136a46a28103146bf69d1, type: 3}

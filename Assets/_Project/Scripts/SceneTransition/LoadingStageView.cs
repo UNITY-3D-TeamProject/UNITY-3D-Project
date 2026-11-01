@@ -189,7 +189,10 @@ namespace SceneTransition
                 _connectText.text = moveText;
             }
 
-            if (_tipGroup != null) _tipGroup.SetActive(false);
+            bool hasTip = !string.IsNullOrEmpty(_stageData.LobbyTip);
+            if (_tipGroup != null) _tipGroup.SetActive(hasTip);
+            if (hasTip && (_tipText != null)) _tipText.text = _stageData.LobbyTip;
+
             SetStepLabels(_stageData.LobbyStepLabels);
 
             ShowScreen();

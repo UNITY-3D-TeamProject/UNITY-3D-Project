@@ -3,6 +3,14 @@ using UnityEngine;
 
 namespace UIandCinematic
 {
+    // 독백 줄이 떠 있는 동안 크로스헤어에서 가리킬 게이지.
+    public enum ECrosshairGaugeHint
+    {
+        None,
+        Heat,
+        Battery,
+    }
+
     // 독백 한 줄. 말하는 사람, 초상화, 대사를 담는다.
     [Serializable]
     public struct SMonologueLine
@@ -11,6 +19,8 @@ namespace UIandCinematic
         [Tooltip("비워 두면 말하는 사람의 기본 얼굴(MonologuePresenter에 지정)을 쓴다. 표정을 바꿀 때만 넣는다")]
         public Sprite Portrait;
         [TextArea(3, 5)] public string Message;
+        [Tooltip("이 줄이 떠 있는 동안 화살표로 가리킬 크로스헤어 게이지")]
+        public ECrosshairGaugeHint GaugeHint;
     }
 
     // 독백 한 묶음. 줄 순서대로, 줄마다 정해진 시간이 지나면 다음 줄로 넘어간다.
