@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UI.PlayerHud;
 
 namespace UIandCinematic
 {
@@ -13,7 +14,7 @@ namespace UIandCinematic
         [Serializable]
         private struct SSpeakerPortrait
         {
-            [Tooltip("대사의 SpeakerName과 똑같이 적는다 (예: 비트, 코리)")]
+            [Tooltip("대사의 SpeakerName과 똑같이 적는다 (예: 코리, 타코)")]
             public string SpeakerName;
             public Sprite DefaultPortrait;
         }
@@ -21,6 +22,8 @@ namespace UIandCinematic
         #region Serialized Fields
         // 대사를 그릴 패널. 컷씬·펫 안내와 같은 패널을 같이 쓴다.
         [SerializeField] private PetGuideView _petGuideView;
+        // 대사가 가리키는 크로스헤어 게이지를 화살표로 보여 줄 HUD
+        [SerializeField] private PlayerHudView _playerHudView;
         [Tooltip("한 줄을 보여 주는 기본 시간(초). 독백(SOMonologue)의 시간이 0이면 이 값을 쓴다. 이 시간 동안 게이지가 가득 찬 상태에서 0까지 준다")]
         [SerializeField] private float _defaultLineDuration = 3.0f;
 
@@ -79,6 +82,7 @@ namespace UIandCinematic
         {
             _petGuideView.HideGauge();
             _petGuideView.Hide();
+            _playerHudView?.SetGaugeHint(ECrosshairGaugeHint.None);
         }
 
         // 기본 얼굴이 없으면 null을 돌려줘 초상화 칸을 숨긴다.
@@ -107,6 +111,7 @@ namespace UIandCinematic
                 // 대사에 초상화를 넣었으면 그 표정, 비워 두었으면 말하는 사람의 기본 얼굴
                 Sprite portrait = (line.Portrait != null) ? line.Portrait : GetSpeakerDefaultPortrait(line.SpeakerName);
                 _petGuideView.ShowLine(line.SpeakerName, portrait, line.Message);
+                _playerHudView?.SetGaugeHint(line.GaugeHint);
 
                 // 줄마다 게이지를 가득 채운 뒤 lineDuration 동안 0까지 줄인다.
                 float elapsed = 0.0f;
