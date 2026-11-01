@@ -9,6 +9,7 @@ using AI.Boss.BossB;
 using Attribute.Core;
 using Core;
 using Facade.Player;
+using UIandCinematic;
 
 namespace AI.Boss.Fight
 {
@@ -43,6 +44,8 @@ namespace AI.Boss.Fight
         [SerializeField, Min(0.0f)] private float _entranceHeightAboveHead = 6.0f;
         [Tooltip("B 가 땅에 내려앉는 순간 플레이어 카메라를 흔드는 세기. 차지샷 쉐이크가 1 이다. 0 이면 흔들지 않는다.")]
         [SerializeField, Min(0.0f)] private float _landingShakeForce = 1.0f;
+        [Tooltip("B 등장 연출과 함께 시작해 끝나야 보스전이 시작되는 컷씬 번호(SOCutsceneTable). 씬에서 한 번만 재생한다. 0 이면 재생하지 않는다.")]
+        [SerializeField, Min(0)] private int _entranceCutsceneId;
         #endregion
 
         #region Private Fields
@@ -52,6 +55,7 @@ namespace AI.Boss.Fight
         private bool _isPrespawned;
         private bool _isBeginFailed;
         private bool _isStartAllowed;
+        private bool _hasPlayedEntranceCutscene;
         private Coroutine _entranceRoutine;
         private PlayerFacade _lockedPlayer;
         #endregion
@@ -239,6 +243,16 @@ namespace AI.Boss.Fight
             if (player && (_landingShakeForce > 0.0f)) player.PlayCameraShake(_landingShakeForce);
         }
 
+        // 등장 컷씬을 재생한다. 재도전 때는 다시 재생하지 않는다.
+        private void PlayEntranceCutscene()
+        {
+            CinematicManager cinematicManager = CinematicManager.Instance;
+            if ((_entranceCutsceneId <= 0) || _hasPlayedEntranceCutscene || !cinematicManager) return;
+
+            _hasPlayedEntranceCutscene = true;
+            cinematicManager.PlayCutscene(_entranceCutsceneId);
+        }
+
         private void HandleBossDefeated()
         {
             OnBossDefeated?.Invoke();
@@ -277,6 +291,9 @@ namespace AI.Boss.Fight
             BossBController controllerB = _bossB.GetComponent<BossBController>();
             controllerB.OnEntranceLanded += HandleEntranceLanded;
 
+            // 컷씬 첫 단계가 등장 카메라다. 시간이 흐르는 샷이라 착지 연출과 함께 진행되고, 대사는 그 뒤에 나온다
+            PlayEntranceCutscene();
+
             // 땅에 내려앉을 자리는 B 생성 위치(_bossBPoint) 다
             bool isPlaying = controllerB.PlayEntrance(hoverPosition, _bossBPoint.position);
             if (!isPlaying)
@@ -288,6 +305,10 @@ namespace AI.Boss.Fight
             while (controllerB && controllerB.IsEntrancePlaying) yield return null;
 
             controllerB.OnEntranceLanded -= HandleEntranceLanded;
+
+            CinematicManager cinematicManager = CinematicManager.Instance;
+            while (cinematicManager && cinematicManager.IsPlaying) yield return null;
+
             UnlockPlayer();
             _entranceRoutine = null;
 
