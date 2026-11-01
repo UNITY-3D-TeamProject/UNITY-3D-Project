@@ -55,6 +55,9 @@ namespace UI.Credits
         // 켜져 있으면 펫이 플레이어 머리 위를 따라다닌다.
         public bool IsPetOnHead { get; set; }
 
+        // 설정창이 열려 있는지. 장면이 따로 가진 애니메이터를 멈출 때 쓴다.
+        public bool IsPaused => _isPaused;
+
         // 이번 프레임에 흐른 실제 시간. 설정창이 열려 있으면 0이다.
         public float DeltaTime => _isPaused ? 0.0f : Time.unscaledDeltaTime;
         #endregion
